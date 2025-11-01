@@ -8,6 +8,7 @@ interface AppStatisticsCardProps {
   value: number;
   color: string;
   delay?: number;
+  onClick?: () => void;
 }
 
 export const AppStatisticsCard = ({ 
@@ -15,7 +16,8 @@ export const AppStatisticsCard = ({
   title, 
   value, 
   color,
-  delay = 0 
+  delay = 0,
+  onClick
 }: AppStatisticsCardProps) => {
   const [displayValue, setDisplayValue] = useState(0);
 
@@ -42,7 +44,10 @@ export const AppStatisticsCard = ({
   }, [value, delay]);
 
   return (
-    <Card className="p-6 hover:shadow-lg transition-all hover:scale-105">
+    <Card 
+      className={`p-6 hover:shadow-lg transition-all hover:scale-105 ${onClick ? 'cursor-pointer' : ''}`}
+      onClick={onClick}
+    >
       <div className="flex flex-col items-center text-center gap-4">
         <div className={`p-4 rounded-full ${color}`}>
           <Icon className="w-8 h-8 text-white" />

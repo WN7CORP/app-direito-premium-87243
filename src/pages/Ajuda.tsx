@@ -4,14 +4,17 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { MessageCircle, Book, Scale, User, FileText, HelpCircle, Mail, Copy, Video, Headphones, BookOpen, FileQuestion, GraduationCap, Gavel, TrendingUp } from "lucide-react";
+import { MessageCircle, Book, Scale, User, FileText, HelpCircle, Mail, Copy, Video, Headphones, BookOpen, FileQuestion, GraduationCap, Gavel, TrendingUp, Brain, Sparkles } from "lucide-react";
 import { SuporteChatModal } from "@/components/SuporteChatModal";
 import { EmailSupportModal } from "@/components/EmailSupportModal";
 import { FAQSearch } from "@/components/FAQSearch";
 import { AppStatisticsCard } from "@/components/AppStatisticsCard";
 import { useAppStatistics } from "@/hooks/useAppStatistics";
 import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
+
 export default function Ajuda() {
+  const navigate = useNavigate();
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -119,6 +122,18 @@ export default function Ajuda() {
     title: "Casos de Simulação",
     value: statistics.casosSimulacao,
     color: "bg-pink-500"
+  }, {
+    icon: Sparkles,
+    title: "Funções do App",
+    value: statistics.funcoesApp,
+    color: "bg-teal-500",
+    onClick: () => navigate("/numeros-detalhes?tipo=funcoes")
+  }, {
+    icon: Brain,
+    title: "Mapas Mentais",
+    value: statistics.mapasMentais,
+    color: "bg-violet-500",
+    onClick: () => navigate("/numeros-detalhes?tipo=mapas")
   }];
   return <div className="min-h-screen bg-background py-8 px-4">
       <div className="max-w-6xl mx-auto space-y-8">
@@ -255,8 +270,8 @@ export default function Ajuda() {
               </div>
             </Card>
 
-            {isLoading ? <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                {[...Array(8)].map((_, i) => <Card key={i} className="p-6">
+            {isLoading ? <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+                {[...Array(10)].map((_, i) => <Card key={i} className="p-6">
                     <div className="flex flex-col items-center gap-4">
                       <Skeleton className="w-16 h-16 rounded-full" />
                       <div className="w-full space-y-2">
@@ -265,8 +280,8 @@ export default function Ajuda() {
                       </div>
                     </div>
                   </Card>)}
-              </div> : <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                {statisticsCards.map((card, index) => <AppStatisticsCard key={card.title} icon={card.icon} title={card.title} value={card.value} color={card.color} delay={index * 100} />)}
+              </div> : <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+                {statisticsCards.map((card, index) => <AppStatisticsCard key={card.title} icon={card.icon} title={card.title} value={card.value} color={card.color} delay={index * 100} onClick={card.onClick} />)}
               </div>}
 
             {!isLoading && <Card className="p-6">

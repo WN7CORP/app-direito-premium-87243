@@ -15,6 +15,8 @@ export interface AppStatistics {
   questoesOAB: number;
   cursosAulas: number;
   casosSimulacao: number;
+  mapasMentais: number;
+  funcoesApp: number;
   loading: boolean;
 }
 
@@ -36,6 +38,7 @@ export const useAppStatistics = () => {
         questoesOABCount,
         cursosCount,
         casosSimulacaoCount,
+        mapasMentaisCount,
       ] = await Promise.all([
         supabase.from("FLASHCARDS").select("*", { count: "exact", head: true }),
         supabase.from("VIDEO AULAS-NOVO").select("*", { count: "exact", head: true }),
@@ -49,6 +52,7 @@ export const useAppStatistics = () => {
         supabase.from("SIMULADO-OAB").select("*", { count: "exact", head: true }),
         supabase.from("CURSOS").select("*", { count: "exact", head: true }),
         supabase.from("SIMULACAO_CASOS").select("*", { count: "exact", head: true }),
+        supabase.from("MAPA MENTAL" as any).select("*", { count: "exact", head: true }),
       ]);
 
       const livrosTotal =
@@ -57,6 +61,9 @@ export const useAppStatistics = () => {
         (livrosClassicosCount.count || 0) +
         (livrosLiderancaCount.count || 0) +
         (livrosOratoriaCount.count || 0);
+
+      // Número fixo de funcionalidades principais do app
+      const funcoesApp = 50;
 
       return {
         flashcards: flashcardsCount.count || 0,
@@ -72,6 +79,8 @@ export const useAppStatistics = () => {
         questoesOAB: questoesOABCount.count || 0,
         cursosAulas: cursosCount.count || 0,
         casosSimulacao: casosSimulacaoCount.count || 0,
+        mapasMentais: mapasMentaisCount.count || 0,
+        funcoesApp,
         loading: false,
       };
     },
@@ -93,6 +102,8 @@ export const useAppStatistics = () => {
       questoesOAB: 0,
       cursosAulas: 0,
       casosSimulacao: 0,
+      mapasMentais: 0,
+      funcoesApp: 0,
       loading: true,
     },
     isLoading,
