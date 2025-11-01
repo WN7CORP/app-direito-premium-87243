@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { GraduationCap, Sparkles, FileText, Calendar, Headphones, Gavel, Gamepad2, FileSearch, BookOpen, Monitor, Video, Home, Search as SearchIcon, Loader2, Newspaper, Brain } from "lucide-react";
+import { GraduationCap, Sparkles, FileText, Calendar, Headphones, Gavel, Gamepad2, ScrollText, BookOpen, Monitor, Video, Home, Search as SearchIcon, Loader2, Newspaper, Brain } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -62,7 +62,7 @@ const Aprender = () => {
       id: "resumos",
       titulo: "Resumos Jurídicos",
       descricao: "Crie resumos estruturados de textos e documentos",
-      icon: FileSearch,
+      icon: ScrollText,
       path: "/resumos-juridicos",
       iconBg: "bg-orange-600 shadow-lg shadow-orange-500/50",
       glowColor: "rgb(234, 88, 12)",
