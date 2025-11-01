@@ -153,7 +153,7 @@ const JogoConfig = () => {
                     >
                       {/* Marcador numerado */}
                       <div className="relative z-10 flex-shrink-0">
-                        <div className={`w-12 h-12 rounded-full ${colors.bg} flex items-center justify-center text-white font-bold text-lg shadow-lg ${colors.shadow}`}>
+                        <div className={`w-10 h-10 rounded-full ${colors.bg} flex items-center justify-center text-white font-bold text-base shadow-lg ${colors.shadow}`}>
                           {idx + 1}
                         </div>
                       </div>
@@ -204,17 +204,17 @@ const JogoConfig = () => {
             <h2 className="text-lg font-semibold mb-6">📖 Selecione o Tema</h2>
             <div className="relative">
               {/* Linha vertical */}
-              <div className="absolute left-6 top-0 bottom-0 w-0.5 bg-border" />
+              <div className="absolute left-5 top-0 bottom-0 w-0.5 bg-border" />
 
               <div className="space-y-4">
                 {temasAgrupados[selectedArea]?.map((tema, idx) => {
-                  const getColorByIndex = (index: number) => {
-                    if (index < 3) return { bg: 'bg-green-500', border: 'border-l-green-500', shadow: 'shadow-green-500/50' };
-                    if (index < 6) return { bg: 'bg-yellow-500', border: 'border-l-yellow-500', shadow: 'shadow-yellow-500/50' };
+                  const getColorByDifficulty = () => {
+                    if (dificuldade === 'facil') return { bg: 'bg-green-500', border: 'border-l-green-500', shadow: 'shadow-green-500/50' };
+                    if (dificuldade === 'medio') return { bg: 'bg-yellow-500', border: 'border-l-yellow-500', shadow: 'shadow-yellow-500/50' };
                     return { bg: 'bg-red-500', border: 'border-l-red-500', shadow: 'shadow-red-500/50' };
                   };
                   
-                  const colors = getColorByIndex(idx);
+                  const colors = getColorByDifficulty();
                   
                   return (
                     <div
@@ -224,7 +224,7 @@ const JogoConfig = () => {
                     >
                       {/* Marcador numerado */}
                       <div className="relative z-10 flex-shrink-0">
-                        <div className={`w-12 h-12 rounded-full ${colors.bg} flex items-center justify-center text-white font-bold text-lg shadow-lg ${colors.shadow}`}>
+                        <div className={`w-10 h-10 rounded-full ${colors.bg} flex items-center justify-center text-white font-bold text-base shadow-lg ${colors.shadow}`}>
                           {idx + 1}
                         </div>
                       </div>
