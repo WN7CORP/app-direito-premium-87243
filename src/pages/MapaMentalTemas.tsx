@@ -170,11 +170,10 @@ export default function MapaMentalTemas() {
                   <div className="flex gap-2">
                     <Button 
                       onClick={() => handleVerClick(temaData)} 
-                      className="flex-1" 
+                      className="flex-1 text-white hover:text-white" 
                       size="sm"
                       style={{
                         backgroundColor: areaConfig.glowColor.replace('rgb', 'rgba').replace(')', ', 0.2)'),
-                        color: areaConfig.glowColor,
                         borderColor: areaConfig.glowColor.replace('rgb', 'rgba').replace(')', ', 0.3)')
                       }}
                       variant="outline"
