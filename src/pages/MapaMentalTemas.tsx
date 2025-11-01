@@ -15,41 +15,41 @@ const CORES_AREAS: Record<string, {
   cor: string;
   glowColor: string;
 }> = {
-  "Direito Penal": {
+  "DIREITO CIVIL": {
     cor: "bg-red-600",
     glowColor: "rgb(239, 68, 68)"
   },
-  "Direito Civil": {
+  "DIREITO CONSTITUCIONAL": {
     cor: "bg-blue-600",
     glowColor: "rgb(59, 130, 246)"
   },
-  "Direito Constitucional": {
+  "DIREITO EMPRESARIAL": {
     cor: "bg-green-600",
     glowColor: "rgb(34, 197, 94)"
   },
-  "Direito Administrativo": {
+  "DIREITO PENAL": {
     cor: "bg-purple-600",
     glowColor: "rgb(168, 85, 247)"
   },
-  "Direito Trabalhista": {
+  "DIREITO TRIBUTÁRIO": {
     cor: "bg-yellow-600",
     glowColor: "rgb(234, 179, 8)"
   },
-  "Direito Empresarial": {
-    cor: "bg-pink-600",
-    glowColor: "rgb(236, 72, 153)"
-  },
-  "Direito Tributário": {
+  "DIREITO ADMINISTRATIVO": {
     cor: "bg-indigo-600",
     glowColor: "rgb(99, 102, 241)"
   },
-  "Direito Processual Civil": {
+  "DIREITO TRABALHISTA": {
+    cor: "bg-orange-600",
+    glowColor: "rgb(249, 115, 22)"
+  },
+  "DIREITO PROCESSUAL CIVIL": {
     cor: "bg-cyan-600",
     glowColor: "rgb(6, 182, 212)"
   },
-  "Direito Processual Penal": {
-    cor: "bg-orange-600",
-    glowColor: "rgb(249, 115, 22)"
+  "DIREITO PROCESSUAL PENAL": {
+    cor: "bg-pink-600",
+    glowColor: "rgb(236, 72, 153)"
   }
 };
 export default function MapaMentalTemas() {
@@ -66,7 +66,7 @@ export default function MapaMentalTemas() {
   const [showPDFViewer, setShowPDFViewer] = useState(false);
   const [selectedTema, setSelectedTema] = useState<TemaData | null>(null);
   const areaDecoded = area ? decodeURIComponent(area) : '';
-  const areaConfig = CORES_AREAS[areaDecoded] || {
+  const areaConfig = CORES_AREAS[areaDecoded.toUpperCase()] || {
     cor: 'bg-violet-600',
     glowColor: 'rgb(124, 58, 237)'
   };

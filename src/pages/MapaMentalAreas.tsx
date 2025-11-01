@@ -11,18 +11,20 @@ interface AreaData {
   count: number;
 }
 
-const CORES_AREAS = [
-  { cor: "from-red-500 to-red-700", bordaCor: "border-red-500/30", glowColor: "rgb(239, 68, 68)" },
-  { cor: "from-blue-500 to-blue-700", bordaCor: "border-blue-500/30", glowColor: "rgb(59, 130, 246)" },
-  { cor: "from-green-500 to-green-700", bordaCor: "border-green-500/30", glowColor: "rgb(34, 197, 94)" },
-  { cor: "from-purple-500 to-purple-700", bordaCor: "border-purple-500/30", glowColor: "rgb(168, 85, 247)" },
-  { cor: "from-yellow-500 to-yellow-700", bordaCor: "border-yellow-500/30", glowColor: "rgb(234, 179, 8)" },
-  { cor: "from-pink-500 to-pink-700", bordaCor: "border-pink-500/30", glowColor: "rgb(236, 72, 153)" },
-  { cor: "from-indigo-500 to-indigo-700", bordaCor: "border-indigo-500/30", glowColor: "rgb(99, 102, 241)" },
-  { cor: "from-orange-500 to-orange-700", bordaCor: "border-orange-500/30", glowColor: "rgb(249, 115, 22)" },
-  { cor: "from-teal-500 to-teal-700", bordaCor: "border-teal-500/30", glowColor: "rgb(20, 184, 166)" },
-  { cor: "from-cyan-500 to-cyan-700", bordaCor: "border-cyan-500/30", glowColor: "rgb(6, 182, 212)" },
-];
+// Mapeamento de cores por área (deve ser consistente com MapaMentalTemas)
+const CORES_POR_AREA: Record<string, { cor: string; bordaCor: string; glowColor: string }> = {
+  "DIREITO CIVIL": { cor: "from-red-500 to-red-700", bordaCor: "border-red-500/30", glowColor: "rgb(239, 68, 68)" },
+  "DIREITO CONSTITUCIONAL": { cor: "from-blue-500 to-blue-700", bordaCor: "border-blue-500/30", glowColor: "rgb(59, 130, 246)" },
+  "DIREITO EMPRESARIAL": { cor: "from-green-500 to-green-700", bordaCor: "border-green-500/30", glowColor: "rgb(34, 197, 94)" },
+  "DIREITO PENAL": { cor: "from-purple-500 to-purple-700", bordaCor: "border-purple-500/30", glowColor: "rgb(168, 85, 247)" },
+  "DIREITO TRIBUTÁRIO": { cor: "from-yellow-500 to-yellow-700", bordaCor: "border-yellow-500/30", glowColor: "rgb(234, 179, 8)" },
+  "DIREITO ADMINISTRATIVO": { cor: "from-indigo-500 to-indigo-700", bordaCor: "border-indigo-500/30", glowColor: "rgb(99, 102, 241)" },
+  "DIREITO TRABALHISTA": { cor: "from-orange-500 to-orange-700", bordaCor: "border-orange-500/30", glowColor: "rgb(249, 115, 22)" },
+  "DIREITO PROCESSUAL CIVIL": { cor: "from-cyan-500 to-cyan-700", bordaCor: "border-cyan-500/30", glowColor: "rgb(6, 182, 212)" },
+  "DIREITO PROCESSUAL PENAL": { cor: "from-pink-500 to-pink-700", bordaCor: "border-pink-500/30", glowColor: "rgb(236, 72, 153)" },
+};
+
+const CORES_DEFAULT = { cor: "from-violet-500 to-violet-700", bordaCor: "border-violet-500/30", glowColor: "rgb(124, 58, 237)" };
 
 export default function MapaMentalAreas() {
   const navigate = useNavigate();
@@ -103,8 +105,8 @@ export default function MapaMentalAreas() {
         {/* Grid de áreas */}
         {areas.length > 0 ? (
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-            {areas.map((areaData, index) => {
-              const cores = CORES_AREAS[index % CORES_AREAS.length];
+            {areas.map((areaData) => {
+              const cores = CORES_POR_AREA[areaData.area.toUpperCase()] || CORES_DEFAULT;
               return (
                 <Card
                   key={areaData.area}
@@ -125,7 +127,7 @@ export default function MapaMentalAreas() {
                       <Brain className="w-8 h-8 text-white" />
                     </div>
 
-                    <h3 className="text-lg font-bold text-foreground mb-2">
+                    <h3 className="text-base font-bold text-foreground mb-2 break-words leading-tight">
                       {areaData.area}
                     </h3>
                     
