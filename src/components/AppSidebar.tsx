@@ -89,10 +89,7 @@ export const AppSidebar = ({ onClose }: AppSidebarProps = {}) => {
     { title: "Flashcards", icon: Layers, path: "/flashcards" },
     { title: "Mapas Mentais", icon: Brain, path: "/mapa-mental" },
     { title: "Plano de Estudos", icon: ClipboardList, path: "/plano-estudos" },
-    { title: "Jogos Jurídicos", icon: Gamepad2, path: "/jogos-juridicos" },
     { title: "Simulação Jurídica", icon: Gavel, path: "/simulacao-juridica" },
-    { title: "Buscar Estágios", icon: Search, path: "/aprender/estagios/buscar" },
-    { title: "Blog Estágios", icon: Newspaper, path: "/aprender/estagios/blog" },
   ];
 
   const bibliotecasSections = [
@@ -105,14 +102,11 @@ export const AppSidebar = ({ onClose }: AppSidebarProps = {}) => {
   ];
 
   const ferramentasSections = [
-    { title: "Meu Brasil", icon: MapPin, path: "/meu-brasil" },
     { title: "Assistente Pessoal", icon: MessageCircle, path: "/assistente-pessoal" },
     { title: "Notícias Jurídicas", icon: Newspaper, path: "/noticias-juridicas" },
     { title: "Dicionário Jurídico", icon: BookText, path: "/dicionario" },
     { title: "JuriFlix", icon: Film, path: "/juriflix" },
     { title: "Ranking Faculdades", icon: GraduationCap, path: "/ranking-faculdades" },
-    { title: "Advogado", icon: BriefcaseIcon, path: "/advogado" },
-    { title: "Analisar Documentos", icon: FileSearch, path: "/analisar" },
     { title: "Resumos Jurídicos", icon: FileCheck2, path: "/resumos-juridicos" },
   ];
 
