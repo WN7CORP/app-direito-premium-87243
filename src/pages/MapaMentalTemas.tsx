@@ -168,7 +168,17 @@ export default function MapaMentalTemas() {
 
                   {/* Botões de ação */}
                   <div className="flex gap-2">
-                    <Button onClick={() => handleVerClick(temaData)} className="flex-1" size="sm">
+                    <Button 
+                      onClick={() => handleVerClick(temaData)} 
+                      className="flex-1" 
+                      size="sm"
+                      style={{
+                        backgroundColor: areaConfig.glowColor.replace('rgb', 'rgba').replace(')', ', 0.2)'),
+                        color: areaConfig.glowColor,
+                        borderColor: areaConfig.glowColor.replace('rgb', 'rgba').replace(')', ', 0.3)')
+                      }}
+                      variant="outline"
+                    >
                       <Eye className="w-4 h-4 mr-2" />
                       Ver
                     </Button>
