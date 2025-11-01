@@ -40,6 +40,7 @@ export const Layout = ({ children }: LayoutProps) => {
   // Esconder BottomNav em páginas de conteúdo jurídico e simulados
   const hideBottomNav = 
     location.pathname === "/vade-mecum" ||
+    location.pathname === "/vade-mecum/sobre" ||
     location.pathname.startsWith("/codigo/") ||
     location.pathname === "/codigos" ||
     location.pathname === "/constituicao" ||

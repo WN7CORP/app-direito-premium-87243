@@ -44,6 +44,7 @@ import NoticiaWebView from "./components/NoticiaWebView";
 import NotFound from "./pages/NotFound";
 import VadeMecumTodas from "./pages/VadeMecumTodas";
 import VadeMecumBusca from "./pages/VadeMecumBusca";
+import VadeMecumSobre from "./pages/VadeMecumSobre";
 import BibliotecaOAB from "./pages/BibliotecaOAB";
 import BibliotecaOABLivro from "./pages/BibliotecaOABLivro";
 import BibliotecaEstudos from "./pages/BibliotecaEstudos";
@@ -187,6 +188,7 @@ const App = () => {
               <Route path="/" element={<Index />} />
               <Route path="/vade-mecum" element={<VadeMecumTodas />} />
               <Route path="/vade-mecum/busca" element={<VadeMecumBusca />} />
+              <Route path="/vade-mecum/sobre" element={<VadeMecumSobre />} />
               <Route path="/codigos" element={<Codigos />} />
               <Route path="/codigo/:id" element={<CodigoView />} />
               <Route path="/video-aula" element={<VideoAula />} />

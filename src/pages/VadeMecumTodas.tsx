@@ -4,13 +4,11 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import VadeMecumInfoModal from "@/components/VadeMecumInfoModal";
 import ProposicoesRecentesCarousel from "@/components/ProposicoesRecentesCarousel";
 
 const VadeMecumTodas = () => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
-  const [isInfoModalOpen, setIsInfoModalOpen] = useState(false);
   const [isSearchFocused, setIsSearchFocused] = useState(false);
 
   const categories = [
@@ -182,7 +180,7 @@ const VadeMecumTodas = () => {
             Sua ferramenta completa de consulta jurídica, reunindo toda a legislação brasileira essencial.
           </p>
           <Button 
-            onClick={() => setIsInfoModalOpen(true)}
+            onClick={() => navigate("/vade-mecum/sobre")}
             variant="outline"
             className="w-full sm:w-auto gap-2"
           >
@@ -191,11 +189,6 @@ const VadeMecumTodas = () => {
           </Button>
         </CardContent>
       </Card>
-
-      <VadeMecumInfoModal 
-        isOpen={isInfoModalOpen} 
-        onClose={() => setIsInfoModalOpen(false)} 
-      />
     </div>
   );
 };
