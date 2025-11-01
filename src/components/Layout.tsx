@@ -62,6 +62,7 @@ export const Layout = ({ children }: LayoutProps) => {
     location.pathname === "/aprender/estagios/buscar" ||
     location.pathname.startsWith("/meu-brasil/jurista/") ||
     location.pathname.startsWith("/iniciando-direito/") ||
+    location.pathname.startsWith("/mapa-mental") ||
     // Esconder em páginas de livros específicos (que contêm /número no final)
     /\/biblioteca-estudos\/\d+/.test(location.pathname) ||
     /\/biblioteca-classicos\/\d+/.test(location.pathname) ||

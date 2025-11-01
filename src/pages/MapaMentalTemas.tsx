@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { SmartLoadingIndicator } from "@/components/chat/SmartLoadingIndicator";
 import PDFViewerModal from "@/components/PDFViewerModal";
-import PDFReaderModeSelector from "@/components/PDFReaderModeSelector";
 
 interface TemaData {
   id: number;
@@ -33,10 +32,8 @@ export default function MapaMentalTemas() {
   const [loading, setLoading] = useState(true);
   
   // Estados para visualização de PDF
-  const [showModeSelector, setShowModeSelector] = useState(false);
   const [showPDFViewer, setShowPDFViewer] = useState(false);
   const [selectedTema, setSelectedTema] = useState<TemaData | null>(null);
-  const [viewMode, setViewMode] = useState<'normal' | 'vertical'>('vertical');
 
   const areaDecoded = area ? decodeURIComponent(area) : '';
   const areaConfig = CORES_AREAS[areaDecoded] || { cor: 'bg-violet-600', glowColor: 'rgb(124, 58, 237)' };
@@ -67,12 +64,6 @@ export default function MapaMentalTemas() {
 
   const handleVerClick = (tema: TemaData) => {
     setSelectedTema(tema);
-    setShowModeSelector(true);
-  };
-
-  const handleModeSelect = (mode: 'normal' | 'vertical') => {
-    setViewMode(mode);
-    setShowModeSelector(false);
     setShowPDFViewer(true);
   };
 
@@ -201,25 +192,16 @@ export default function MapaMentalTemas() {
         )}
       </div>
 
-      {/* Modais de visualização */}
+      {/* Modal de visualização em modo vertical */}
       {selectedTema && (
-        <>
-          <PDFReaderModeSelector
-            isOpen={showModeSelector}
-            onClose={() => setShowModeSelector(false)}
-            onSelectMode={handleModeSelect}
-            bookTitle={selectedTema.tema}
-          />
-
-          <PDFViewerModal
-            isOpen={showPDFViewer}
-            onClose={() => setShowPDFViewer(false)}
-            normalModeUrl={selectedTema.link}
-            verticalModeUrl={selectedTema.link}
-            title={selectedTema.tema}
-            viewMode={viewMode}
-          />
-        </>
+        <PDFViewerModal
+          isOpen={showPDFViewer}
+          onClose={() => setShowPDFViewer(false)}
+          normalModeUrl={selectedTema.link}
+          verticalModeUrl={selectedTema.link}
+          title={selectedTema.tema}
+          viewMode="vertical"
+        />
       )}
     </div>
   );
