@@ -34,7 +34,14 @@ import {
   ClipboardCheck,
   MessageCircle,
   HelpCircle,
-  Star
+  Star,
+  Brain,
+  Gamepad2,
+  Search,
+  Newspaper,
+  MapPin,
+  Film,
+  BookText
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ProfessoraChatDesktop } from "./ProfessoraChatDesktop";
@@ -75,12 +82,17 @@ export const AppSidebar = ({ onClose }: AppSidebarProps = {}) => {
     },
   ];
 
-  const aprenderSections = [
+  const faculdadeSections = [
     { title: "Cursos", icon: GraduationCap, path: "/cursos" },
     { title: "Videoaulas", icon: Video, path: "/videoaulas" },
     { title: "Audioaulas", icon: Headphones, path: "/audioaulas" },
     { title: "Flashcards", icon: Layers, path: "/flashcards" },
+    { title: "Mapas Mentais", icon: Brain, path: "/mapa-mental" },
     { title: "Plano de Estudos", icon: ClipboardList, path: "/plano-estudos" },
+    { title: "Jogos Jurídicos", icon: Gamepad2, path: "/jogos-juridicos" },
+    { title: "Simulação Jurídica", icon: Gavel, path: "/simulacao-juridica" },
+    { title: "Buscar Estágios", icon: Search, path: "/aprender/estagios/buscar" },
+    { title: "Blog Estágios", icon: Newspaper, path: "/aprender/estagios/blog" },
   ];
 
   const bibliotecasSections = [
@@ -93,7 +105,12 @@ export const AppSidebar = ({ onClose }: AppSidebarProps = {}) => {
   ];
 
   const ferramentasSections = [
-    { title: "Ferramentas", icon: Wrench, path: "/ferramentas" },
+    { title: "Meu Brasil", icon: MapPin, path: "/meu-brasil" },
+    { title: "Assistente Pessoal", icon: MessageCircle, path: "/assistente-pessoal" },
+    { title: "Notícias Jurídicas", icon: Newspaper, path: "/noticias-juridicas" },
+    { title: "Dicionário Jurídico", icon: BookText, path: "/dicionario" },
+    { title: "JuriFlix", icon: Film, path: "/juriflix" },
+    { title: "Ranking Faculdades", icon: GraduationCap, path: "/ranking-faculdades" },
     { title: "Advogado", icon: BriefcaseIcon, path: "/advogado" },
     { title: "Analisar Documentos", icon: FileSearch, path: "/analisar" },
     { title: "Resumos Jurídicos", icon: FileCheck2, path: "/resumos-juridicos" },
@@ -173,12 +190,12 @@ export const AppSidebar = ({ onClose }: AppSidebarProps = {}) => {
         </div>
 
 
-        {/* Aprender Section */}
+        {/* Faculdade Section */}
         <div className="px-4 space-y-1 mb-6">
           <h3 className="px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
-            Aprender
+            Faculdade
           </h3>
-          {aprenderSections.map((section) => {
+          {faculdadeSections.map((section) => {
             const Icon = section.icon;
             return (
               <button
