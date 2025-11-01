@@ -84,7 +84,12 @@ export default function MapaMentalTemas() {
         ascending: true
       });
       if (error) throw error;
-      setTemas(data as any[] || []);
+      
+      // Ordenar numericamente por sequencia
+      const temasOrdenados = (data as any[] || []).sort((a, b) => 
+        Number(a.sequencia) - Number(b.sequencia)
+      );
+      setTemas(temasOrdenados);
     } catch (error) {
       console.error('Erro ao buscar temas:', error);
     } finally {
