@@ -56,12 +56,12 @@ export const useFeaturedNews = () => {
 
   const fetchNews = async (): Promise<FeaturedNews[]> => {
     try {
-      // Buscar as 5 notícias mais recentes
+      // Buscar as 10 notícias mais recentes
       const { data, error } = await supabase
         .from('noticias_juridicas_cache')
         .select('*')
         .order('data_publicacao', { ascending: false })
-        .limit(5);
+        .limit(10);
 
       if (error) throw error;
 
