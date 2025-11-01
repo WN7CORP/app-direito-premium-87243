@@ -160,12 +160,11 @@ const Index = () => {
           </span>
         </div>
 
-        {/* Bibliotecas Elite Section - Carrossel */}
+        {/* Bibliotecas Jurídicas Section - Carrossel */}
         <div className="space-y-3">
           <div className="flex items-center justify-between px-1">
-            <div className="flex items-center gap-2">
-              <h2 className="md:text-lg text-foreground font-normal text-base">Bibliotecas Elite</h2>
-              <span className="px-2.5 py-0.5 md:px-2 md:py-0.5 bg-accent rounded-full text-xs md:text-[10px] font-bold text-accent-foreground">PRO</span>
+            <div>
+              <h2 className="md:text-lg text-foreground font-normal text-base">Bibliotecas Jurídicas</h2>
             </div>
             <Button 
               size="sm"
