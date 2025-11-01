@@ -87,7 +87,7 @@ const PerguntaModal = ({
     onClose();
   };
   if (!isOpen) return null;
-  return <div className="fixed inset-0 bg-background z-50 flex flex-col">
+  return <div className="fixed inset-0 bg-background z-[100] flex flex-col">
       {/* Header */}
       <div className="flex items-center gap-4 px-4 py-4 border-b border-border/50 bg-secondary/30">
         <Button variant="ghost" size="icon" onClick={handleClose} className="hover:bg-secondary">
