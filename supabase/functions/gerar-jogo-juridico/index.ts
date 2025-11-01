@@ -58,7 +58,16 @@ serve(async (req) => {
             {
               parts: [
                 {
-                  text: `Você é um gerador de jogos educativos jurídicos. Retorne sempre JSON válido.\n\n${prompt}`
+          text: `Você é um gerador de jogos educativos jurídicos. 
+
+CRÍTICO: Retorne APENAS JSON válido, sem nenhum texto adicional antes ou depois.
+- Use APENAS aspas duplas (")
+- NÃO use aspas simples (')
+- NÃO inclua comentários
+- NÃO inclua trailing commas
+- Certifique-se de que todas as propriedades estejam entre aspas duplas
+
+${prompt}`
                 }
               ]
             }
@@ -84,15 +93,33 @@ serve(async (req) => {
       throw new Error('Conteúdo não gerado pela API');
     }
 
-    // Extrair JSON do conteúdo (pode vir com ```json)
+    console.log('Conteúdo bruto recebido:', content.substring(0, 200));
+
+    // Extrair JSON do conteúdo (pode vir com ```json ou ```markdown)
     let jsonContent = content.trim();
-    if (jsonContent.startsWith('```json')) {
-      jsonContent = jsonContent.slice(7, -3).trim();
-    } else if (jsonContent.startsWith('```')) {
-      jsonContent = jsonContent.slice(3, -3).trim();
-    }
     
-    const dadosJogo = JSON.parse(jsonContent);
+    // Remover blocos de código markdown
+    if (jsonContent.startsWith('```json')) {
+      jsonContent = jsonContent.replace(/^```json\s*\n?/, '').replace(/\n?```\s*$/, '').trim();
+    } else if (jsonContent.startsWith('```')) {
+      jsonContent = jsonContent.replace(/^```\s*\n?/, '').replace(/\n?```\s*$/, '').trim();
+    }
+
+    // Limpar possíveis caracteres inválidos
+    jsonContent = jsonContent
+      .replace(/[\u0000-\u001F\u007F-\u009F]/g, '') // Remove caracteres de controle
+      .replace(/,(\s*[}\]])/g, '$1'); // Remove trailing commas
+    
+    console.log('JSON limpo (primeiros 300 chars):', jsonContent.substring(0, 300));
+    
+    let dadosJogo;
+    try {
+      dadosJogo = JSON.parse(jsonContent);
+    } catch (parseError) {
+      console.error('Erro ao fazer parse do JSON:', parseError);
+      console.error('JSON que causou erro:', jsonContent);
+      throw new Error(`JSON inválido retornado pela API: ${parseError instanceof Error ? parseError.message : 'erro desconhecido'}`);
+    }
 
     // Salvar no cache
     const { data: novoJogo, error } = await supabase
