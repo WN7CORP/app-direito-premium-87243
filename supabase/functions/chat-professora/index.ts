@@ -254,6 +254,115 @@ serve(async (request) => {
       return artigos;
     }
 
+    // Função para buscar contexto do banco de dados
+    async function buscarContextoBancoDados(pergunta: string) {
+      let contextoExtra = "";
+      
+      try {
+        // 1. Detectar números de artigos mencionados na pergunta
+        const artigoRegex = /art(?:igo)?\.?\s*(\d+)/gi;
+        const matches = [...pergunta.matchAll(artigoRegex)];
+        const numerosArtigos = matches.map(m => m[1]);
+
+        // 2. Detectar código mencionado (CP, CC, CF, etc.)
+        const codigoRegex = /(CP|CC|CF|CPC|CPP|CLT|CDC|CTN|CTB|CE|CA|CBA|CBT|CCOM|CDM|ECA|OAB|Código Penal|Código Civil|Constituição)/gi;
+        const codigoMatch = pergunta.match(codigoRegex);
+        
+        let tabelaBusca = null;
+        if (codigoMatch) {
+          const codigo = codigoMatch[0].toUpperCase();
+          // Mapear para nome da tabela
+          const mapaCodigos: any = {
+            'CP': 'CP - Código Penal',
+            'CÓDIGO PENAL': 'CP - Código Penal',
+            'CC': 'CC - Código Civil',
+            'CÓDIGO CIVIL': 'CC - Código Civil',
+            'CF': 'CF - Constituição Federal',
+            'CONSTITUIÇÃO': 'CF - Constituição Federal',
+            'CPC': 'CPC – Código de Processo Civil',
+            'CPP': 'CPP – Código de Processo Penal',
+            'CLT': 'CLT – Consolidação das Leis do Trabalho',
+            'CDC': 'CDC – Código de Defesa do Consumidor',
+            'CTN': 'CTN – Código Tributário Nacional',
+            'CTB': 'CTB Código de Trânsito Brasileiro',
+            'CE': 'CE – Código Eleitoral',
+            'ECA': 'ESTATUTO - ECA',
+            'OAB': 'ESTATUTO - OAB'
+          };
+          tabelaBusca = mapaCodigos[codigo] || null;
+        }
+
+        // 3. Buscar artigos específicos se foram mencionados
+        if (numerosArtigos.length > 0 && tabelaBusca) {
+          const { data: artigos, error } = await supabaseClient
+            .from(tabelaBusca as any)
+            .select('*')
+            .in('Número do Artigo', numerosArtigos)
+            .limit(5);
+
+          if (!error && artigos && artigos.length > 0) {
+            contextoExtra += "\n\n📚 ARTIGOS DO VADE MECUM RELACIONADOS:\n\n";
+            artigos.forEach((art: any) => {
+              contextoExtra += `**Art. ${art['Número do Artigo']} - ${tabelaBusca?.split(' - ')[1] || tabelaBusca}**\n`;
+              contextoExtra += `${art.Artigo}\n`;
+              if (art.explicacao_resumido) {
+                contextoExtra += `💡 Explicação: ${art.explicacao_resumido}\n`;
+              }
+              contextoExtra += "\n";
+            });
+          }
+        }
+
+        // 4. Buscar termos jurídicos relacionados no dicionário
+        const palavrasChave = pergunta.toLowerCase().split(' ')
+          .filter(p => p.length > 4)
+          .slice(0, 5);
+        
+        if (palavrasChave.length > 0) {
+          const { data: termos, error } = await supabaseClient
+            .from('DICIONARIO')
+            .select('*')
+            .or(palavrasChave.map(p => `Palavra.ilike.%${p}%`).join(','))
+            .limit(3);
+
+          if (!error && termos && termos.length > 0) {
+            contextoExtra += "\n\n📖 DEFINIÇÕES JURÍDICAS RELEVANTES:\n\n";
+            termos.forEach((termo: any) => {
+              contextoExtra += `**${termo.Palavra}:** ${termo.Significado}\n`;
+              if (termo.exemplo_pratico) {
+                contextoExtra += `Exemplo: ${termo.exemplo_pratico}\n`;
+              }
+              contextoExtra += "\n";
+            });
+          }
+        }
+
+        // 5. Buscar conteúdo de cursos relacionados
+        const { data: cursosRelacionados, error: cursosError } = await supabaseClient
+          .from('CURSOS-APP')
+          .select('area, tema, conteudo')
+          .or(palavrasChave.map(p => `tema.ilike.%${p}%`).join(','))
+          .limit(2);
+
+        if (!cursosError && cursosRelacionados && cursosRelacionados.length > 0) {
+          contextoExtra += "\n\n🎓 CONTEÚDO DE CURSOS RELACIONADO:\n\n";
+          cursosRelacionados.forEach((curso: any) => {
+            contextoExtra += `**${curso.tema}** (${curso.area})\n`;
+            // Pegar apenas os primeiros 500 caracteres do conteúdo
+            const preview = curso.conteudo?.substring(0, 500) || '';
+            if (preview) {
+              contextoExtra += `${preview}...\n\n`;
+            }
+          });
+        }
+
+      } catch (error) {
+        console.error('Erro ao buscar contexto do banco:', error);
+      }
+
+      return contextoExtra;
+    }
+
     // Contexto dos artigos detectados
     let artigosContext = "";
     if (extractedText) {
@@ -275,6 +384,12 @@ serve(async (request) => {
     let cfContext = "";
     if (deepMode) {
       cfContext = `\n\nCONTEXTO:\n- O usuário pediu análise aprofundada\n`;
+    }
+    
+    // Buscar contexto adicional do banco de dados
+    const contextoBanco = await buscarContextoBancoDados(lastUserMessage);
+    if (contextoBanco) {
+      cfContext += contextoBanco;
     }
     
     // Instruções FORTES para análise automática de imagem/PDF
