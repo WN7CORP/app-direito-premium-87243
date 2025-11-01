@@ -56,6 +56,15 @@ const ForcaGame = () => {
   const carregarJogo = async () => {
     setLoading(true);
     try {
+      // Usar jogo pré-definido instantaneamente como fallback
+      const jogoPredefinido = getJogoPredefinido(area, tema);
+      if (jogoPredefinido) {
+        setOpcoesPalavras(jogoPredefinido.opcoes);
+        setLoading(false);
+        return;
+      }
+
+      // Tentar buscar da API
       const {
         data,
         error
@@ -78,6 +87,79 @@ const ForcaGame = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Jogos pré-definidos para carregamento instantâneo
+  const getJogoPredefinido = (area: string, tema: string) => {
+    const jogos: Record<string, any> = {
+      'Direito Ambiental_Unidades de Conservação': {
+        opcoes: [
+          {
+            palavra: 'PARQUE',
+            dica: 'Unidade de proteção integral destinada à preservação de ecossistemas naturais',
+            exemplo: 'O Parque Nacional do Iguaçu é uma importante área de conservação',
+            categoria: 'Proteção Integral'
+          },
+          {
+            palavra: 'RESERVA',
+            dica: 'Área destinada à proteção da biodiversidade',
+            exemplo: 'A Reserva Biológica do Taim protege espécies ameaçadas',
+            categoria: 'Unidades de Conservação'
+          },
+          {
+            palavra: 'ESTACAO',
+            dica: 'Unidade destinada à preservação e pesquisa científica',
+            exemplo: 'A Estação Ecológica permite apenas pesquisas autorizadas',
+            categoria: 'Proteção Integral'
+          },
+          {
+            palavra: 'REFUGIO',
+            dica: 'Área destinada à proteção de ambientes naturais para espécies da flora e fauna',
+            exemplo: 'O Refúgio de Vida Silvestre protege espécies migratórias',
+            categoria: 'Proteção Integral'
+          },
+          {
+            palavra: 'FLORESTA',
+            dica: 'Unidade de uso sustentável com cobertura florestal',
+            exemplo: 'A Floresta Nacional permite exploração sustentável de recursos',
+            categoria: 'Uso Sustentável'
+          },
+          {
+            palavra: 'EXTRATIVISTA',
+            dica: 'Reserva destinada a populações tradicionais que vivem do extrativismo',
+            exemplo: 'A Reserva Extrativista garante o modo de vida de comunidades tradicionais',
+            categoria: 'Uso Sustentável'
+          },
+          {
+            palavra: 'DESENVOLVIMENTO',
+            dica: 'Reserva que permite o desenvolvimento sustentável da região',
+            exemplo: 'A Reserva de Desenvolvimento Sustentável concilia conservação e desenvolvimento',
+            categoria: 'Uso Sustentável'
+          },
+          {
+            palavra: 'MONUMENTO',
+            dica: 'Unidade que preserva sítios naturais raros ou de beleza cênica',
+            exemplo: 'O Monumento Natural dos Costões Rochosos protege formações geológicas',
+            categoria: 'Proteção Integral'
+          },
+          {
+            palavra: 'BIODIVERSIDADE',
+            dica: 'Conjunto de todas as formas de vida protegidas pelas unidades',
+            exemplo: 'A biodiversidade brasileira é protegida pelo SNUC',
+            categoria: 'Conceito Fundamental'
+          },
+          {
+            palavra: 'SUSTENTAVEL',
+            dica: 'Modelo de desenvolvimento que equilibra conservação e uso de recursos',
+            exemplo: 'O uso sustentável é permitido em algumas categorias de unidades',
+            categoria: 'Princípio Ambiental'
+          }
+        ]
+      }
+    };
+
+    const key = `${area}_${tema}`;
+    return jogos[key];
   };
   const selecionarPalavra = (opcao: PalavraOpcao) => {
     setPalavraAtual(opcao);
@@ -298,8 +380,8 @@ const ForcaGame = () => {
 
             {/* Exemplo Revelado */}
             {mostrarExemplo && (
-              <div className="mt-3 p-3 bg-yellow-500/10 rounded-lg border border-yellow-500/30">
-                <p className="text-sm text-yellow-700 dark:text-yellow-400">
+              <div className="mt-3 p-3 bg-yellow-400/20 rounded-lg border border-yellow-400/40">
+                <p className="text-sm text-yellow-800 dark:text-yellow-200 font-medium">
                   {palavraAtual.exemplo}
                 </p>
               </div>
