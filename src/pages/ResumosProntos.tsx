@@ -170,11 +170,11 @@ const ResumosProntos = () => {
                 <div
                   key={area.area}
                   className="relative"
-                  style={{ paddingLeft: '2.5rem' }}
+                  style={{ paddingLeft: '2.25rem' }}
                 >
                   {/* Número circular */}
                   <div
-                    className={`absolute left-0 top-1/2 -translate-y-1/2 w-10 h-10 ${colors.bg} rounded-full flex items-center justify-center text-white font-bold text-base z-10 ${colors.shadow} shadow-lg`}
+                    className={`absolute left-0 top-1/2 -translate-y-1/2 w-8 h-8 ${colors.bg} rounded-full flex items-center justify-center text-white font-bold text-sm z-10 ${colors.shadow} shadow-lg`}
                   >
                     {idx + 1}
                   </div>
@@ -182,18 +182,18 @@ const ResumosProntos = () => {
                   {/* Linha vertical */}
                   {idx < (areasFiltradas?.length || 0) - 1 && (
                     <div
-                      className="absolute left-5 top-1/2 w-0.5 bg-border"
+                      className="absolute left-4 top-1/2 w-0.5 bg-border"
                       style={{ height: 'calc(100% + 1rem)', transform: 'translateX(-50%)' }}
                     />
                   )}
 
                   {/* Card */}
                   <Card
-                    className={`cursor-pointer hover:shadow-md transition-all hover:border-accent/50 group border-l-4 ${colors.border}`}
+                    className={`cursor-pointer hover:shadow-md transition-all hover:border-accent/50 group border-l-4 ${colors.border} min-h-[80px]`}
                     onClick={() => setAreaSelecionada(area.area)}
                   >
-                    <CardContent className="p-4">
-                      <div className="flex items-center justify-between">
+                    <CardContent className="p-4 h-full flex items-center">
+                      <div className="flex items-center justify-between w-full">
                         <div className="flex-1">
                           <h3 className="font-semibold text-sm mb-1">{area.area}</h3>
                           <p className="text-xs text-muted-foreground">
@@ -259,11 +259,11 @@ const ResumosProntos = () => {
               <div
                 key={tema.tema}
                 className="relative"
-                style={{ paddingLeft: '2.5rem' }}
+                style={{ paddingLeft: '2.25rem' }}
               >
                 {/* Número circular */}
                 <div
-                  className={`absolute left-0 top-1/2 -translate-y-1/2 w-10 h-10 ${colors.bg} rounded-full flex items-center justify-center text-white font-bold text-base z-10 ${colors.shadow} shadow-lg`}
+                  className={`absolute left-0 top-1/2 -translate-y-1/2 w-8 h-8 ${colors.bg} rounded-full flex items-center justify-center text-white font-bold text-sm z-10 ${colors.shadow} shadow-lg`}
                 >
                   {idx + 1}
                 </div>
@@ -271,14 +271,14 @@ const ResumosProntos = () => {
                 {/* Linha vertical */}
                 {idx < (temasFiltrados?.length || 0) - 1 && (
                   <div
-                    className="absolute left-5 top-1/2 w-0.5 bg-border"
+                    className="absolute left-4 top-1/2 w-0.5 bg-border"
                     style={{ height: 'calc(100% + 1rem)', transform: 'translateX(-50%)' }}
                   />
                 )}
 
                 {/* Card */}
                 <Card
-                  className={`cursor-pointer hover:shadow-md transition-all hover:border-accent/50 group border-l-4 ${colors.border}`}
+                  className={`cursor-pointer hover:shadow-md transition-all hover:border-accent/50 group border-l-4 ${colors.border} min-h-[80px]`}
                   onClick={() =>
                     navigate(
                       `/resumos-juridicos/prontos/${encodeURIComponent(
@@ -287,8 +287,8 @@ const ResumosProntos = () => {
                     )
                   }
                 >
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between">
+                  <CardContent className="p-4 h-full flex items-center">
+                    <div className="flex items-center justify-between w-full">
                       <div className="flex-1">
                         <h3 className="font-semibold text-sm mb-1">{tema.tema}</h3>
                         <p className="text-xs text-muted-foreground">
