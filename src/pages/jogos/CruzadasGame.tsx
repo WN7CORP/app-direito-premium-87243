@@ -6,10 +6,14 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { TemaTimeline } from "@/components/jogos/TemaTimeline";
 
-interface Palavra {
+interface PalavraBase {
   palavra: string;
   dica: string;
+}
+
+interface Palavra extends PalavraBase {
   linha: number;
   coluna: number;
   horizontal: boolean;
@@ -28,12 +32,12 @@ const CruzadasGame = () => {
   const location = useLocation();
   const { area, tema, dificuldade, conteudo } = location.state || {};
 
+  const [etapa, setEtapa] = useState<'selecao' | 'jogo'>('selecao');
   const [palavras, setPalavras] = useState<Palavra[]>([]);
   const [grid, setGrid] = useState<CelulaGrid[][]>([]);
   const [respostas, setRespostas] = useState<string[][]>([]);
   const [loading, setLoading] = useState(true);
   const [completo, setCompleto] = useState(false);
-  const [selectedCell, setSelectedCell] = useState<{row: number, col: number} | null>(null);
 
   useEffect(() => {
     carregarJogo();
@@ -42,6 +46,14 @@ const CruzadasGame = () => {
   const carregarJogo = async () => {
     setLoading(true);
     try {
+      // Usar jogo pré-definido instantaneamente
+      const jogoPredefinido = getJogoPredefinido(area, tema);
+      if (jogoPredefinido) {
+        // Não processar ainda, aguardar seleção
+        setLoading(false);
+        return;
+      }
+
       const { data, error } = await supabase.functions.invoke('gerar-jogo-juridico', {
         body: {
           tipo: 'cruzadas',
@@ -53,15 +65,6 @@ const CruzadasGame = () => {
       });
 
       if (error) throw error;
-
-      if (data?.dados_jogo?.palavras) {
-        const palavrasComNumero = data.dados_jogo.palavras.map((p: Palavra, i: number) => ({
-          ...p,
-          numero: i + 1
-        }));
-        setPalavras(palavrasComNumero);
-        criarGrid(palavrasComNumero);
-      }
     } catch (error) {
       console.error('Erro ao carregar jogo:', error);
       toast.error('Erro ao carregar jogo');
@@ -70,8 +73,77 @@ const CruzadasGame = () => {
     }
   };
 
+  const getJogoPredefinido = (area: string, tema: string) => {
+    const jogos: Record<string, any> = {
+      'Direito Ambiental_Unidades de Conservação': {
+        palavras: [
+          { palavra: 'SNUC', dica: 'Sistema Nacional de Unidades de Conservação' },
+          { palavra: 'PARQUE', dica: 'Unidade de proteção integral para preservação' },
+          { palavra: 'LICENCA', dica: 'Autorização ambiental obrigatória' },
+          { palavra: 'IBAMA', dica: 'Instituto Brasileiro do Meio Ambiente' },
+          { palavra: 'RESERVA', dica: 'Área destinada à proteção da biodiversidade' },
+          { palavra: 'ESTACAO', dica: 'Unidade destinada à preservação e pesquisa' },
+          { palavra: 'REFUGIO', dica: 'Área de proteção para espécies da flora e fauna' },
+          { palavra: 'FLORESTA', dica: 'Unidade de uso sustentável com cobertura florestal' },
+          { palavra: 'EXTRATIVISTA', dica: 'Reserva para populações tradicionais' },
+          { palavra: 'BIODIVERSIDADE', dica: 'Conjunto de todas as formas de vida' },
+          { palavra: 'SUSTENTAVEL', dica: 'Modelo que equilibra conservação e uso' },
+          { palavra: 'FISCALIZACAO', dica: 'Monitoramento do cumprimento das normas' }
+        ]
+      }
+    };
+
+    const key = `${area}_${tema}`;
+    return jogos[key];
+  };
+
+  const iniciarJogo = (palavraIndex: number) => {
+    const jogo = getJogoPredefinido(area, tema);
+    if (!jogo) return;
+
+    // Pegar palavras até o índice selecionado (progressão)
+    const palavrasSelecionadas = jogo.palavras.slice(0, palavraIndex + 1);
+    
+    // Criar grid automaticamente
+    const palavrasComPosicao = criarGridAutomatico(palavrasSelecionadas);
+    setPalavras(palavrasComPosicao);
+    criarGrid(palavrasComPosicao);
+    setEtapa('jogo');
+    toast.success(`Começando com ${palavrasComPosicao.length} palavras!`);
+  };
+
+  const criarGridAutomatico = (palavrasBase: PalavraBase[]): Palavra[] => {
+    const palavrasComPosicao: Palavra[] = [];
+    let linha = 0;
+    let coluna = 0;
+
+    palavrasBase.forEach((palavraBase, index) => {
+      const horizontal = index % 2 === 0;
+      
+      palavrasComPosicao.push({
+        ...palavraBase,
+        linha,
+        coluna,
+        horizontal,
+        numero: index + 1
+      });
+
+      // Próxima posição
+      if (horizontal) {
+        linha += 2;
+      } else {
+        coluna += 2;
+        if (coluna > 20) {
+          coluna = 0;
+          linha += 3;
+        }
+      }
+    });
+
+    return palavrasComPosicao;
+  };
+
   const criarGrid = (palavrasList: Palavra[]) => {
-    // Determinar tamanho do grid
     let maxLinha = 0;
     let maxColuna = 0;
     palavrasList.forEach(p => {
@@ -79,7 +151,6 @@ const CruzadasGame = () => {
       maxColuna = Math.max(maxColuna, p.coluna + (p.horizontal ? p.palavra.length : 1));
     });
 
-    // Criar grid vazio
     const novoGrid: CelulaGrid[][] = Array(maxLinha + 2).fill(null).map(() => 
       Array(maxColuna + 2).fill(null).map(() => ({ letra: null }))
     );
@@ -88,7 +159,6 @@ const CruzadasGame = () => {
       Array(maxColuna + 2).fill('')
     );
 
-    // Preencher grid com as palavras
     palavrasList.forEach(palavra => {
       for (let i = 0; i < palavra.palavra.length; i++) {
         const linha = palavra.horizontal ? palavra.linha : palavra.linha + i;
@@ -134,7 +204,6 @@ const CruzadasGame = () => {
     }
   };
 
-  // Calcular progresso
   const totalPalavras = palavras.length;
   const palavrasCompletas = palavras.filter(p => {
     return p.palavra.split('').every((letra, i) => {
@@ -152,7 +221,6 @@ const CruzadasGame = () => {
   };
 
   const darDica = () => {
-    // Encontrar primeira célula vazia e revelar a letra
     for (const palavra of palavras) {
       for (let i = 0; i < palavra.palavra.length; i++) {
         const linha = palavra.horizontal ? palavra.linha : palavra.linha + i;
@@ -181,12 +249,49 @@ const CruzadasGame = () => {
     );
   }
 
+  if (etapa === 'selecao') {
+    const jogo = getJogoPredefinido(area, tema);
+    const timelineItens = jogo?.palavras.map((p: any, i: number) => ({
+      numero: i + 1,
+      titulo: `Nível ${i + 1}: ${i + 1} palavra${i > 0 ? 's' : ''}`,
+      descricao: `Resolva palavras cruzadas com ${i + 1} palavra${i > 0 ? 's' : ''} sobre ${tema}`,
+      icone: i < 3 ? '🟢' : i < 6 ? '🟡' : i < 9 ? '🟠' : '🔴'
+    })) || [];
+
+    return (
+      <div className="px-3 py-4 max-w-4xl mx-auto pb-20">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => navigate('/jogos-juridicos')}
+          className="mb-4"
+        >
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Voltar
+        </Button>
+
+        <div className="mb-8 text-center">
+          <h1 className="text-3xl font-bold mb-2">🧩 Palavras Cruzadas</h1>
+          <p className="text-muted-foreground">
+            Escolha um nível para começar
+          </p>
+        </div>
+
+        <TemaTimeline
+          itens={timelineItens}
+          onSelect={(item) => iniciarJogo(item.numero - 1)}
+          loading={loading}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="px-3 py-4 max-w-6xl mx-auto pb-20">
       <Button
         variant="ghost"
         size="sm"
-        onClick={() => navigate('/jogos-juridicos')}
+        onClick={() => setEtapa('selecao')}
         className="mb-4"
       >
         <ArrowLeft className="w-4 h-4 mr-2" />
@@ -200,7 +305,6 @@ const CruzadasGame = () => {
         </p>
       </div>
 
-      {/* Barra de Progresso */}
       <Card className="mb-4">
         <CardContent className="p-4">
           <div className="space-y-2">
@@ -215,7 +319,6 @@ const CruzadasGame = () => {
         </CardContent>
       </Card>
 
-      {/* Botões de Ação */}
       <div className="flex gap-2 mb-4">
         <Button onClick={darDica} variant="outline" size="sm" className="gap-2">
           <Lightbulb className="w-4 h-4" />
@@ -228,7 +331,6 @@ const CruzadasGame = () => {
       </div>
 
       <div className="grid lg:grid-cols-[1fr,300px] gap-6">
-        {/* Grid de Palavras Cruzadas */}
         <Card>
           <CardContent className="p-4 overflow-x-auto">
             <div className="inline-block min-w-full">
@@ -274,13 +376,11 @@ const CruzadasGame = () => {
           </CardContent>
         </Card>
 
-        {/* Dicas Organizadas */}
         <div className="space-y-4">
           <Card>
             <CardContent className="p-4">
               <h3 className="font-semibold mb-4">Dicas</h3>
               <div className="space-y-4 max-h-[500px] overflow-y-auto">
-                {/* Horizontais */}
                 <div>
                   <h4 className="text-sm font-semibold mb-2 text-blue-600 dark:text-blue-400">
                     → Horizontais
@@ -309,7 +409,6 @@ const CruzadasGame = () => {
                   </div>
                 </div>
 
-                {/* Verticais */}
                 <div>
                   <h4 className="text-sm font-semibold mb-2 text-purple-600 dark:text-purple-400">
                     ↓ Verticais
@@ -347,7 +446,7 @@ const CruzadasGame = () => {
               Verificar Respostas
             </Button>
           ) : (
-            <Button onClick={() => window.location.reload()} variant="outline" className="w-full">
+            <Button onClick={() => setEtapa('selecao')} variant="outline" className="w-full">
               Jogar Novamente
             </Button>
           )}

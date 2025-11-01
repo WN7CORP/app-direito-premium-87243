@@ -182,80 +182,71 @@ REGRAS DE PROGRESSÃO:
 `;
 
     case 'cruzadas':
-      return basePrompt + `Crie palavras cruzadas com 4 níveis progressivos de dificuldade ${dificuldade}. 
-      
-Retorne JSON com array de níveis:
+      return basePrompt + `Crie 12 palavras jurídicas do tema "${tema}" em "${area}".
+
+Retorne JSON com:
 {
-  "niveis": [
+  "palavras": [
     {
-      "nivel": 1,
-      "palavras": [
-        {
-          "palavra": "PALAVRA",
-          "dica": "Definição ou pergunta clara",
-          "linha": 0,
-          "coluna": 0,
-          "horizontal": true
-        }
-      ]
+      "palavra": "PALAVRA",
+      "dica": "Definição jurídica clara e objetiva"
     }
   ]
 }
 
-REGRAS DE PROGRESSÃO:
-- Nível 1: 3 palavras (4-6 letras, termos básicos)
-- Nível 2: 5 palavras (7-9 letras, termos moderados)
-- Nível 3: 7 palavras (10-12 letras, termos avançados)
-- Nível 4: 10 palavras (13+ letras, termos complexos)
-- Todas relacionadas ao tema "${tema}" em "${area}"
-- Dicas progressivamente mais desafiadoras
-- Distribuição variada (horizontal e vertical)
+REGRAS CRÍTICAS:
+- TODAS as palavras DEVEM ser termos, conceitos, institutos ou princípios JURÍDICOS
+- Mínimo 4 letras, máximo 15 letras
+- 12 palavras no total
+- Palavras progressivamente mais complexas (começar com termos simples, terminar com complexos)
+- Dicas claras e educativas sobre o significado jurídico
+- Exemplo de termos jurídicos válidos: RECURSO, SENTENCA, EMBARGO, HABEAS CORPUS, PRECEDENTE
+- NUNCA usar palavras genéricas como "LEGAL", "FLORA", "FAUNA" etc.
 `;
 
     case 'caca_palavras':
-      return basePrompt + `Crie uma caça-palavras com 5 níveis progressivos de dificuldade ${dificuldade}. 
-      
-Retorne JSON com array de níveis:
+      return basePrompt + `Crie APENAS termos jurídicos do tema "${tema}" em "${area}" para caça-palavras com 5 níveis.
+
+Retorne JSON com:
 {
   "niveis": [
     {
       "nivel": 1,
-      "palavras": ["PALAVRA1", "PALAVRA2", "PALAVRA3"],
-      "grid": [["A","B","C"]],
-      "tamanho": 10
+      "palavras": ["TERMO1", "TERMO2", "TERMO3"]
     }
   ]
 }
 
-REGRAS DE PROGRESSÃO:
-- Nível 1: 3 palavras, grid 10x10 (termos básicos 4-6 letras)
-- Nível 2: 4 palavras, grid 10x10 (termos moderados 7-8 letras)
-- Nível 3: 5 palavras, grid 12x12 (termos médios 9-10 letras)
-- Nível 4: 6 palavras, grid 12x12 (termos avançados 11-12 letras)
-- Nível 5: 8 palavras, grid 15x15 (termos complexos 13+ letras)
-- Todas relacionadas ao tema "${tema}" em "${area}"
-- Grid preenchido com letras aleatórias
-- Palavras horizontais, verticais e diagonais
+REGRAS CRÍTICAS - LEIA COM ATENÇÃO:
+- TODAS as palavras DEVEM ser termos JURÍDICOS específicos do Direito
+- Nível 1: 3 palavras jurídicas (4-6 letras) - ex: LEI, ATO, REU
+- Nível 2: 4 palavras jurídicas (7-8 letras) - ex: RECURSO, SENTENCA
+- Nível 3: 5 palavras jurídicas (9-10 letras) - ex: JURISPRUDENCIA
+- Nível 4: 6 palavras jurídicas (11-12 letras) - ex: CONSTITUCIONAL
+- Nível 5: 8 palavras jurídicas (13+ letras) - ex: ADMINISTRATIVO
+- Exemplo para Direito Ambiental: LICENCA, FISCALIZACAO, SNUC, IBAMA, BIODIVERSIDADE
+- PROIBIDO usar palavras genéricas não jurídicas como FLORA, FAUNA, LEGAL, VERDE, NATUREZA
+- Foco em institutos, leis, órgãos, princípios e conceitos do Direito ${area}
 `;
 
     case 'stop':
-      return basePrompt + `Crie 6 categorias jurídicas para o jogo Stop com exemplos de respostas relacionadas a "${tema}" em "${area}". 
-      
+      return basePrompt + `Crie 6 categorias JURÍDICAS específicas para o jogo Stop sobre "${tema}" em "${area}".
+
 Retorne JSON com:
 {
   "categorias": [
     {
-      "nome": "Nome da Categoria",
+      "nome": "Nome da Categoria Jurídica",
       "exemplos": ["EXEMPLO1", "EXEMPLO2", "EXEMPLO3"]
     }
   ]
 }
 
 REGRAS:
-- 6 categorias relacionadas especificamente ao tema "${tema}" em "${area}"
-- 3 exemplos por categoria (palavras maiúsculas)
-- Categorias variadas: crimes, princípios, institutos, direitos, procedimentos, documentos, etc.
-- Exemplos educativos e relevantes ao tema
+- 6 categorias relacionadas ESPECIFICAMENTE ao Direito ${area} e tema ${tema}
+- 3 exemplos por categoria (palavras maiúsculas, termos jurídicos)
+- Categorias sugeridas: Leis/Códigos, Crimes/Infrações, Princípios, Institutos Jurídicos, Órgãos Públicos, Direitos/Deveres
+- Exemplos DEVEM ser termos jurídicos reais e aplicáveis
 `;
 
     default:

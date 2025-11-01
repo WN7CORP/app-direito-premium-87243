@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { TemaTimeline } from "@/components/jogos/TemaTimeline";
 
 interface Categoria {
   nome: string;
@@ -13,13 +14,14 @@ interface Categoria {
 }
 
 const LETRAS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
-const TEMPO_JOGO = 60; // 60 segundos
+const TEMPO_JOGO = 60;
 
 const StopGame = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { area, tema, dificuldade, conteudo } = location.state || {};
 
+  const [etapa, setEtapa] = useState<'selecao' | 'jogo'>('selecao');
   const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [letraSorteada, setLetraSorteada] = useState('');
   const [respostas, setRespostas] = useState<Record<string, string>>({});
@@ -51,6 +53,12 @@ const StopGame = () => {
   const carregarJogo = async () => {
     setLoading(true);
     try {
+      const jogoPredefinido = getJogoPredefinido(area, tema);
+      if (jogoPredefinido) {
+        setLoading(false);
+        return;
+      }
+
       const { data, error } = await supabase.functions.invoke('gerar-jogo-juridico', {
         body: {
           tipo: 'stop',
@@ -74,12 +82,40 @@ const StopGame = () => {
     }
   };
 
+  const getJogoPredefinido = (area: string, tema: string) => {
+    const jogos: Record<string, any> = {
+      'Direito Ambiental_Unidades de Conservação': {
+        categorias: [
+          { nome: 'Unidades de Conservação', exemplos: ['PARQUE', 'RESERVA', 'ESTACAO'] },
+          { nome: 'Órgãos Ambientais', exemplos: ['IBAMA', 'ICMBIO', 'CONAMA'] },
+          { nome: 'Crimes Ambientais', exemplos: ['POLUICAO', 'DESMATAMENTO', 'CAÇA'] },
+          { nome: 'Princípios', exemplos: ['PRECAUCAO', 'PREVENCAO', 'SUSTENTABILIDADE'] },
+          { nome: 'Leis', exemplos: ['SNUC', 'PNMA', 'SISNAMA'] },
+          { nome: 'Conceitos', exemplos: ['BIODIVERSIDADE', 'ECOSSISTEMA', 'FAUNA'] }
+        ]
+      }
+    };
+
+    const key = `${area}_${tema}`;
+    return jogos[key];
+  };
+
+  const iniciarSelecao = () => {
+    const jogo = getJogoPredefinido(area, tema);
+    if (!jogo) return;
+
+    setCategorias(jogo.categorias);
+    setEtapa('jogo');
+    toast.success('Jogo carregado! Clique em Iniciar para começar.');
+  };
+
   const iniciarJogo = () => {
     const letra = LETRAS[Math.floor(Math.random() * LETRAS.length)];
     setLetraSorteada(letra);
     setJogando(true);
     setTempo(TEMPO_JOGO);
     setRespostas({});
+    setFinalizado(false);
     toast.info(`Letra sorteada: ${letra}!`);
   };
 
@@ -111,12 +147,56 @@ const StopGame = () => {
     );
   }
 
+  if (etapa === 'selecao') {
+    const jogo = getJogoPredefinido(area, tema);
+    const timelineItens = jogo?.categorias.map((cat: Categoria, i: number) => ({
+      numero: i + 1,
+      titulo: cat.nome,
+      descricao: `Exemplos: ${cat.exemplos.slice(0, 2).join(', ')}...`,
+      icone: '📝'
+    })) || [];
+
+    return (
+      <div className="px-3 py-4 max-w-4xl mx-auto pb-20">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => navigate('/jogos-juridicos')}
+          className="mb-4"
+        >
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Voltar
+        </Button>
+
+        <div className="mb-8 text-center">
+          <h1 className="text-3xl font-bold mb-2">⏱️ Stop Jurídico</h1>
+          <p className="text-muted-foreground">
+            Veja as categorias antes de começar
+          </p>
+        </div>
+
+        <TemaTimeline
+          itens={timelineItens}
+          onSelect={iniciarSelecao}
+          loading={loading}
+        />
+
+        <div className="mt-6 text-center">
+          <Button onClick={iniciarSelecao} size="lg" className="gap-2">
+            <Play className="w-5 h-5" />
+            Iniciar Jogo
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="px-3 py-4 max-w-4xl mx-auto">
       <Button
         variant="ghost"
         size="sm"
-        onClick={() => navigate('/jogos-juridicos')}
+        onClick={() => setEtapa('selecao')}
         className="mb-4"
       >
         <ArrowLeft className="w-4 h-4 mr-2" />
@@ -130,7 +210,6 @@ const StopGame = () => {
         </p>
       </div>
 
-      {/* Status do Jogo */}
       {!jogando && !finalizado && (
         <Card className="mb-6">
           <CardContent className="p-6 text-center">
@@ -145,10 +224,8 @@ const StopGame = () => {
 
       {jogando && (
         <>
-          {/* Timer Circular e Letra */}
           <Card className="mb-6 border-2 border-orange-500/50">
             <CardContent className="p-8 text-center">
-              {/* Timer Circular */}
               <div className="relative inline-flex items-center justify-center mb-4">
                 <svg className="w-32 h-32 transform -rotate-90">
                   <circle
@@ -178,7 +255,6 @@ const StopGame = () => {
                 </div>
               </div>
 
-              {/* Letra Sorteada */}
               <div className="mb-4">
                 <p className="text-sm text-muted-foreground mb-2">Letra:</p>
                 <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-orange-500 text-white text-5xl font-bold shadow-lg">
@@ -193,7 +269,6 @@ const StopGame = () => {
             </CardContent>
           </Card>
 
-          {/* Categorias com Validação Visual */}
           <div className="space-y-3">
             {categorias.map((categoria, index) => {
               const resposta = (respostas[`cat-${index}`] || '').toUpperCase().trim();
@@ -258,7 +333,7 @@ const StopGame = () => {
             <Button onClick={validarRespostas} className="w-full" size="lg">
               Ver Pontuação
             </Button>
-            <Button onClick={() => window.location.reload()} variant="outline" className="w-full">
+            <Button onClick={() => setEtapa('selecao')} variant="outline" className="w-full">
               Jogar Novamente
             </Button>
           </div>

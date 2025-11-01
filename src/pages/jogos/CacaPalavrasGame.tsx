@@ -8,10 +8,17 @@ import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
 import confetti from "canvas-confetti";
 import { supabase } from "@/integrations/supabase/client";
+import { TemaTimeline } from "@/components/jogos/TemaTimeline";
 
 interface CelulaSelecionada {
   linha: number;
   coluna: number;
+}
+
+interface Nivel {
+  nivel: number;
+  palavras: string[];
+  grid?: string[][];
 }
 
 const CacaPalavrasGame = () => {
@@ -19,12 +26,12 @@ const CacaPalavrasGame = () => {
   const location = useLocation();
   const { area, tema, dificuldade, conteudo } = location.state || {};
 
-  const [niveis, setNiveis] = useState<any[]>([]);
+  const [etapa, setEtapa] = useState<'selecao' | 'jogo'>('selecao');
+  const [niveis, setNiveis] = useState<Nivel[]>([]);
   const [nivelAtual, setNivelAtual] = useState(1);
   const [palavrasEncontradas, setPalavrasEncontradas] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   
-  // Seleção por arraste
   const [isSelecting, setIsSelecting] = useState(false);
   const [celulasPath, setCelulasPath] = useState<CelulaSelecionada[]>([]);
   const [celulasHighlight, setCelulasHighlight] = useState<Set<string>>(new Set());
@@ -41,6 +48,12 @@ const CacaPalavrasGame = () => {
   const carregarJogo = async () => {
     setLoading(true);
     try {
+      const jogoPredefinido = getJogoPredefinido(area, tema);
+      if (jogoPredefinido) {
+        setLoading(false);
+        return;
+      }
+
       const { data, error } = await supabase.functions.invoke('gerar-jogo-juridico', {
         body: {
           tipo: 'caca_palavras',
@@ -54,7 +67,11 @@ const CacaPalavrasGame = () => {
       if (error) throw error;
 
       if (data?.dados_jogo?.niveis) {
-        setNiveis(data.dados_jogo.niveis || []);
+        const niveisComGrid = data.dados_jogo.niveis.map((n: Nivel) => ({
+          ...n,
+          grid: gerarGrid(n.palavras, n.nivel * 2 + 8)
+        }));
+        setNiveis(niveisComGrid);
       }
     } catch (error) {
       console.error('Erro ao carregar jogo:', error);
@@ -62,6 +79,98 @@ const CacaPalavrasGame = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const getJogoPredefinido = (area: string, tema: string) => {
+    const jogos: Record<string, any> = {
+      'Direito Ambiental_Unidades de Conservação': {
+        niveis: [
+          { nivel: 1, palavras: ['SNUC', 'IBAMA', 'LICENCA'] },
+          { nivel: 2, palavras: ['PARQUE', 'RESERVA', 'ESTACAO', 'REFUGIO'] },
+          { nivel: 3, palavras: ['FLORESTA', 'MONUMENTO', 'EXTRATIVISTA', 'FISCALIZACAO', 'BIODIVERSIDADE'] },
+          { nivel: 4, palavras: ['SUSTENTAVEL', 'CONSERVACAO', 'ECOSSISTEMA', 'PRESERVACAO', 'AMBIENTAL', 'PROTECAO'] },
+          { nivel: 5, palavras: ['DESENVOLVIMENTO', 'INTEGRAL', 'GERENCIAMENTO', 'SUSTENTABILIDADE', 'LICENCIAMENTO', 'AUTORIZACAO', 'RECUPERACAO', 'FISCALIZACAO'] }
+        ]
+      }
+    };
+
+    const key = `${area}_${tema}`;
+    return jogos[key];
+  };
+
+  const gerarGrid = (palavras: string[], tamanho: number): string[][] => {
+    const grid: string[][] = Array(tamanho).fill(null).map(() => 
+      Array(tamanho).fill('')
+    );
+
+    palavras.forEach((palavra) => {
+      let colocada = false;
+      let tentativas = 0;
+
+      while (!colocada && tentativas < 50) {
+        const horizontal = Math.random() > 0.5;
+        const linha = Math.floor(Math.random() * tamanho);
+        const coluna = Math.floor(Math.random() * tamanho);
+
+        if (horizontal && coluna + palavra.length <= tamanho) {
+          let espacoLivre = true;
+          for (let i = 0; i < palavra.length; i++) {
+            if (grid[linha][coluna + i] !== '' && grid[linha][coluna + i] !== palavra[i]) {
+              espacoLivre = false;
+              break;
+            }
+          }
+          if (espacoLivre) {
+            for (let i = 0; i < palavra.length; i++) {
+              grid[linha][coluna + i] = palavra[i];
+            }
+            colocada = true;
+          }
+        } else if (!horizontal && linha + palavra.length <= tamanho) {
+          let espacoLivre = true;
+          for (let i = 0; i < palavra.length; i++) {
+            if (grid[linha + i][coluna] !== '' && grid[linha + i][coluna] !== palavra[i]) {
+              espacoLivre = false;
+              break;
+            }
+          }
+          if (espacoLivre) {
+            for (let i = 0; i < palavra.length; i++) {
+              grid[linha + i][coluna] = palavra[i];
+            }
+            colocada = true;
+          }
+        }
+        tentativas++;
+      }
+    });
+
+    const letras = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    for (let i = 0; i < tamanho; i++) {
+      for (let j = 0; j < tamanho; j++) {
+        if (grid[i][j] === '') {
+          grid[i][j] = letras[Math.floor(Math.random() * letras.length)];
+        }
+      }
+    }
+
+    return grid;
+  };
+
+  const iniciarJogo = (nivelSelecionado: number) => {
+    const jogo = getJogoPredefinido(area, tema);
+    if (!jogo) return;
+
+    const niveisComGrid = jogo.niveis.map((n: Nivel) => ({
+      ...n,
+      grid: gerarGrid(n.palavras, n.nivel * 2 + 8)
+    }));
+
+    setNiveis(niveisComGrid);
+    setNivelAtual(nivelSelecionado);
+    setPalavrasEncontradas([]);
+    setEtapa('jogo');
+    toast.success(`Começando nível ${nivelSelecionado}!`);
   };
 
   const getCelulaKey = (linha: number, coluna: number) => `${linha}-${coluna}`;
@@ -74,7 +183,6 @@ const CacaPalavrasGame = () => {
 
   const handleMouseEnter = (linha: number, coluna: number) => {
     if (!isSelecting) return;
-    
     const key = getCelulaKey(linha, coluna);
     if (!celulasHighlight.has(key)) {
       setCelulasPath(prev => [...prev, { linha, coluna }]);
@@ -84,61 +192,35 @@ const CacaPalavrasGame = () => {
 
   const handleMouseUp = () => {
     if (!isSelecting) return;
-    
-    // Verificar se formou alguma palavra
-    const palavraFormada = celulasPath
-      .map(({ linha, coluna }) => grid[linha]?.[coluna])
-      .join('');
-    
+    const palavraFormada = celulasPath.map(({ linha, coluna }) => grid[linha]?.[coluna]).join('');
     const palavraInvertida = palavraFormada.split('').reverse().join('');
-    
-    // Verificar se encontrou alguma palavra do nível atual
-    const palavraEncontrada = palavrasNivel.find(
-      p => !palavrasEncontradas.includes(p) && 
-           (p === palavraFormada || p === palavraInvertida)
-    );
+    const palavraEncontrada = palavrasNivel.find(p => !palavrasEncontradas.includes(p) && (p === palavraFormada || p === palavraInvertida));
 
     if (palavraEncontrada) {
       setPalavrasEncontradas([...palavrasEncontradas, palavraEncontrada]);
       toast.success(`✅ Encontrou: ${palavraEncontrada}`);
-
-      // Verificar se completou o nível
       const palavrasDoNivelEncontradas = palavrasEncontradas.filter(p => palavrasNivel.includes(p));
       if (palavrasDoNivelEncontradas.length + 1 === palavrasNivel.length) {
         if (nivelAtual < totalNiveis) {
           setTimeout(() => {
             setNivelAtual(nivelAtual + 1);
             setPalavrasEncontradas([]);
-            toast.success(`🎉 Nível ${nivelAtual} completo! Avançando...`);
+            toast.success(`🎉 Nível ${nivelAtual} completo!`);
           }, 1000);
         } else {
           setTimeout(() => {
-            // Confete ao completar todos os níveis!
-            confetti({
-              particleCount: 100,
-              spread: 70,
-              origin: { y: 0.6 }
-            });
+            confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
             toast.success('🏆 Parabéns! Você completou todos os níveis!');
           }, 1000);
         }
       }
     }
-
     setIsSelecting(false);
     setCelulasPath([]);
     setCelulasHighlight(new Set());
   };
 
   const progressoNivel = (palavrasEncontradas.filter(p => palavrasNivel.includes(p)).length / palavrasNivel.length) * 100;
-
-  const getBadgeColor = (nivel: number) => {
-    if (nivel === 1) return 'bg-green-500';
-    if (nivel === 2) return 'bg-yellow-500';
-    if (nivel === 3) return 'bg-orange-500';
-    if (nivel === 4) return 'bg-red-500';
-    return 'bg-purple-500';
-  };
 
   if (loading) {
     return (
@@ -151,103 +233,73 @@ const CacaPalavrasGame = () => {
     );
   }
 
+  if (etapa === 'selecao') {
+    const jogo = getJogoPredefinido(area, tema);
+    const timelineItens = jogo?.niveis.map((n: Nivel) => ({
+      numero: n.nivel,
+      titulo: `Nível ${n.nivel}`,
+      descricao: `Encontre ${n.palavras.length} termos jurídicos`,
+      icone: ['🟢', '🟡', '🟠', '🔴', '🟣'][n.nivel - 1]
+    })) || [];
+
+    return (
+      <div className="px-3 py-4 max-w-4xl mx-auto pb-20">
+        <Button variant="ghost" size="sm" onClick={() => navigate('/jogos-juridicos')} className="mb-4">
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Voltar
+        </Button>
+        <div className="mb-8 text-center">
+          <h1 className="text-3xl font-bold mb-2">🔍 Caça-Palavras Jurídicas</h1>
+          <p className="text-muted-foreground">Escolha um nível para começar</p>
+        </div>
+        <TemaTimeline itens={timelineItens} onSelect={(item) => iniciarJogo(item.numero)} loading={loading} />
+      </div>
+    );
+  }
+
   return (
     <div className="px-3 py-4 max-w-4xl mx-auto min-h-screen">
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={() => navigate('/jogos-juridicos')}
-        className="mb-4"
-      >
+      <Button variant="ghost" size="sm" onClick={() => setEtapa('selecao')} className="mb-4">
         <ArrowLeft className="w-4 h-4 mr-2" />
         Voltar
       </Button>
 
       <div className="mb-6">
         <h1 className="text-2xl font-bold mb-2">🔍 Caça-Palavras</h1>
-        <p className="text-sm text-muted-foreground">
-          Encontre as palavras escondidas na grade
-        </p>
+        <p className="text-sm text-muted-foreground">Encontre as palavras escondidas</p>
       </div>
 
-      {/* Indicadores de Nível Melhorados */}
       <div className="flex gap-2 mb-4 overflow-x-auto pb-2">
         {niveis.map((nivel) => (
-          <Badge
-            key={nivel.nivel}
-            variant={nivel.nivel === nivelAtual ? 'default' : nivel.nivel < nivelAtual ? 'secondary' : 'outline'}
-            className={`flex-shrink-0 px-4 py-2 text-sm ${
-              nivel.nivel === nivelAtual ? getBadgeColor(nivel.nivel) + ' text-white' : ''
-            }`}
-          >
+          <Badge key={nivel.nivel} variant={nivel.nivel === nivelAtual ? 'default' : nivel.nivel < nivelAtual ? 'secondary' : 'outline'} className={`flex-shrink-0 px-4 py-2 ${nivel.nivel === nivelAtual ? 'bg-green-500 text-white' : ''}`}>
             {nivel.nivel < nivelAtual && <Trophy className="w-3 h-3 mr-1" />}
             Nível {nivel.nivel}
           </Badge>
         ))}
       </div>
 
-      {/* Card de Nível Atual com Progresso Circular */}
-      <Card className="mb-4 border-l-4 border-l-green-500">
+      <Card className="mb-4">
         <CardContent className="p-4">
-          <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center justify-between">
             <div>
               <h2 className="text-lg font-bold">Nível {nivelAtual}</h2>
-              <p className="text-sm text-muted-foreground">
-                {palavrasEncontradas.filter(p => palavrasNivel.includes(p)).length}/{palavrasNivel.length} palavras encontradas
-              </p>
+              <p className="text-sm text-muted-foreground">{palavrasEncontradas.filter(p => palavrasNivel.includes(p)).length}/{palavrasNivel.length} encontradas</p>
             </div>
-            {/* Progresso Circular */}
-            <div className="relative w-16 h-16">
-              <svg className="w-16 h-16 transform -rotate-90">
-                <circle
-                  cx="32"
-                  cy="32"
-                  r="28"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                  fill="none"
-                  className="text-muted"
-                />
-                <circle
-                  cx="32"
-                  cy="32"
-                  r="28"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                  fill="none"
-                  strokeDasharray={2 * Math.PI * 28}
-                  strokeDashoffset={2 * Math.PI * 28 * (1 - progressoNivel / 100)}
-                  className="text-green-500 transition-all duration-500"
-                  strokeLinecap="round"
-                />
-              </svg>
-              <div className="absolute inset-0 flex items-center justify-center">
-                <span className="text-sm font-bold">{Math.round(progressoNivel)}%</span>
-              </div>
-            </div>
+            <div className="text-2xl font-bold">{Math.round(progressoNivel)}%</div>
           </div>
-          <Progress value={progressoNivel} className="h-2" />
+          <Progress value={progressoNivel} className="h-2 mt-2" />
         </CardContent>
       </Card>
 
-      {/* Lista de Palavras com Animação */}
       <Card className="mb-6">
         <CardContent className="p-4">
-          <h3 className="font-semibold mb-3">Palavras para encontrar:</h3>
+          <h3 className="font-semibold mb-3">Palavras:</h3>
           <div className="flex flex-wrap gap-2">
             {palavrasNivel.map((palavra, idx) => {
               const encontrada = palavrasEncontradas.includes(palavra);
               return (
-                <div
-                  key={idx}
-                  className={`px-3 py-1 rounded-full text-sm font-medium transition-all ${
-                    encontrada
-                      ? 'bg-green-500 text-white scale-105 line-through'
-                      : 'bg-muted hover:bg-muted/80'
-                  }`}
-                >
-                  {encontrada && <span className="mr-1">✓</span>}
-                  {palavra}
+                <div key={idx} className={`px-3 py-1 rounded-full text-sm font-medium transition-all ${encontrada ? 'bg-green-500 text-white' : 'bg-muted'}`}>
+                  {encontrada && '✓ '}{palavra}
                 </div>
               );
             })}
@@ -255,45 +307,15 @@ const CacaPalavrasGame = () => {
         </CardContent>
       </Card>
 
-      {/* Grid - Seleção por Arraste */}
       <Card>
         <CardContent className="p-4">
-          <p className="text-xs text-muted-foreground mb-3 text-center">
-            Arraste o dedo ou mouse sobre as letras para selecionar palavras
-          </p>
-          <div 
-            className="grid gap-1 select-none" 
-            style={{ gridTemplateColumns: `repeat(${grid[0]?.length || 12}, minmax(0, 1fr))` }}
-            onMouseLeave={handleMouseUp}
-          >
+          <div className="grid gap-1 select-none" style={{ gridTemplateColumns: `repeat(${grid[0]?.length || 12}, minmax(0, 1fr))` }} onMouseLeave={handleMouseUp}>
             {grid.map((linha, i) =>
               linha.map((letra, j) => {
                 const key = getCelulaKey(i, j);
                 const isHighlighted = celulasHighlight.has(key);
-                
                 return (
-                  <button
-                    key={key}
-                    onMouseDown={() => handleMouseDown(i, j)}
-                    onMouseEnter={() => handleMouseEnter(i, j)}
-                    onMouseUp={handleMouseUp}
-                    onTouchStart={() => handleMouseDown(i, j)}
-                    onTouchMove={(e) => {
-                      const touch = e.touches[0];
-                      const element = document.elementFromPoint(touch.clientX, touch.clientY);
-                      if (element?.getAttribute('data-cell')) {
-                        const [linha, coluna] = element.getAttribute('data-cell')!.split('-').map(Number);
-                        handleMouseEnter(linha, coluna);
-                      }
-                    }}
-                    onTouchEnd={handleMouseUp}
-                    data-cell={key}
-                    className={`aspect-square flex items-center justify-center text-xs md:text-sm font-bold border rounded transition-all ${
-                      isHighlighted
-                        ? 'bg-primary text-primary-foreground scale-110 shadow-lg'
-                        : 'bg-card hover:bg-accent'
-                    }`}
-                  >
+                  <button key={key} onMouseDown={() => handleMouseDown(i, j)} onMouseEnter={() => handleMouseEnter(i, j)} onMouseUp={handleMouseUp} onTouchStart={() => handleMouseDown(i, j)} onTouchEnd={handleMouseUp} data-cell={key} className={`aspect-square flex items-center justify-center text-xs font-bold border rounded transition-all ${isHighlighted ? 'bg-primary text-primary-foreground scale-110' : 'bg-card hover:bg-accent'}`}>
                     {letra}
                   </button>
                 );
@@ -302,19 +324,6 @@ const CacaPalavrasGame = () => {
           </div>
         </CardContent>
       </Card>
-
-      {nivelAtual === totalNiveis && palavrasEncontradas.length === palavrasNivel.length && (
-        <div className="mt-6 text-center">
-          <div className="mb-4">
-            <Trophy className="w-16 h-16 text-yellow-500 mx-auto mb-2 animate-bounce" />
-            <p className="text-xl font-bold">Parabéns! 🎉</p>
-            <p className="text-muted-foreground">Você completou todos os 5 níveis!</p>
-          </div>
-          <Button onClick={() => window.location.reload()} className="w-full">
-            Jogar Novamente
-          </Button>
-        </div>
-      )}
     </div>
   );
 };
