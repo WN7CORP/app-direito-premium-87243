@@ -137,99 +137,199 @@ const ForcaGame = () => {
       </div>;
   }
 
-  // Tela de Seleção de Palavras
+  // Tela de Seleção de Palavras - Timeline Vertical
   if (etapa === 'selecao') {
-    return <div className="px-3 py-4 max-w-4xl mx-auto">
-        
+    const getColorByIndex = (idx: number) => {
+      if (idx < 3) return { bg: 'bg-green-500', text: 'text-green-500', border: 'border-l-green-500' };
+      if (idx < 7) return { bg: 'bg-yellow-500', text: 'text-yellow-500', border: 'border-l-yellow-500' };
+      return { bg: 'bg-red-500', text: 'text-red-500', border: 'border-l-red-500' };
+    };
 
-        <div className="mb-6">
+    return <div className="px-3 py-4 max-w-3xl mx-auto">
+        <Button variant="ghost" size="sm" onClick={() => navigate('/jogos-juridicos')} className="mb-4">
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Voltar
+        </Button>
+
+        <div className="mb-8">
           <h1 className="text-2xl font-bold mb-2">🎯 Escolha uma Palavra</h1>
           <p className="text-sm text-muted-foreground">
-            Selecione uma das 10 palavras para jogar. Dificuldade: {dificuldade}
+            Selecione uma das 10 palavras para jogar • Dificuldade: <span className="font-semibold capitalize">{dificuldade}</span>
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {opcoesPalavras.map((opcao, idx) => <Card key={idx} className="cursor-pointer hover:scale-105 transition-all border-2 hover:border-primary" onClick={() => selecionarPalavra(opcao)}>
-              <CardContent className="p-4">
-                <div className="flex items-start gap-3">
-                  <div className="w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center text-purple-500 font-bold flex-shrink-0">
-                    {idx + 1}
-                  </div>
-                  <div className="flex-1">
-                    <div className="mb-2">
-                      <div className="flex gap-1 mb-2">
-                        {opcao.palavra.split('').map((_, i) => <div key={i} className="w-3 h-4 border-b-2 border-muted" />)}
-                      </div>
-                      <p className="text-xs text-muted-foreground">{opcao.palavra.length} letras</p>
+        {/* Timeline Vertical */}
+        <div className="relative">
+          {/* Linha vertical */}
+          <div className="absolute left-6 top-0 bottom-0 w-0.5 bg-border" />
+
+          <div className="space-y-4">
+            {opcoesPalavras.map((opcao, idx) => {
+              const colors = getColorByIndex(idx);
+              return (
+                <div
+                  key={idx}
+                  className="relative flex gap-4 animate-fade-in"
+                  style={{ animationDelay: `${idx * 0.1}s` }}
+                >
+                  {/* Número com marcador */}
+                  <div className="relative z-10 flex-shrink-0">
+                    <div className={`w-12 h-12 rounded-full ${colors.bg} flex items-center justify-center text-white font-bold text-lg shadow-lg`}>
+                      {idx + 1}
                     </div>
-                    <p className="text-sm mb-2">💡 {opcao.dica}</p>
-                    <p className="text-xs text-muted-foreground">📚 {opcao.categoria}</p>
                   </div>
-                  <Button size="sm" className="flex-shrink-0">
-                    <Play className="w-4 h-4" />
-                  </Button>
+
+                  {/* Card */}
+                  <Card
+                    className={`flex-1 cursor-pointer transition-all border-l-4 ${colors.border} hover:shadow-lg hover:scale-[1.02]`}
+                    onClick={() => selecionarPalavra(opcao)}
+                  >
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between gap-4">
+                        <div className="flex-1 space-y-3">
+                          {/* Tracinhos da palavra */}
+                          <div className="flex items-center gap-2">
+                            <div className="flex gap-1">
+                              {opcao.palavra.split('').map((_, i) => (
+                                <div key={i} className="w-2.5 h-3 border-b-2 border-muted-foreground/50" />
+                              ))}
+                            </div>
+                            <span className="text-xs text-muted-foreground font-medium">
+                              {opcao.palavra.length} letras
+                            </span>
+                          </div>
+
+                          {/* Dica */}
+                          <div className="flex items-start gap-2">
+                            <span className="text-base">💡</span>
+                            <p className="text-sm flex-1">{opcao.dica}</p>
+                          </div>
+
+                          {/* Categoria */}
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm">📚</span>
+                            <p className="text-xs text-muted-foreground">{opcao.categoria}</p>
+                          </div>
+                        </div>
+
+                        {/* Botão Play */}
+                        <Button size="lg" className="flex-shrink-0">
+                          <Play className="w-5 h-5" />
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
                 </div>
-              </CardContent>
-            </Card>)}
+              );
+            })}
+          </div>
         </div>
       </div>;
   }
 
-  // Tela de Jogo
+  // Tela de Jogo - Melhorada
   return <div className="px-3 py-4 max-w-4xl mx-auto">
       <Button variant="ghost" size="sm" onClick={voltarParaSelecao} className="mb-4">
         <ArrowLeft className="w-4 h-4 mr-2" />
         Escolher Outra Palavra
       </Button>
 
-      {/* Status */}
-      <div className="flex justify-between items-center mb-6">
-        <div className="flex gap-1">
-          {Array.from({
-          length: MAX_ERROS
-        }).map((_, idx) => <Heart key={idx} className={`w-6 h-6 ${idx < MAX_ERROS - erros ? 'fill-red-500 text-red-500' : 'fill-gray-300 text-gray-300'}`} />)}
-        </div>
-        <div className="text-sm text-muted-foreground">
-          Erros: {erros}/{MAX_ERROS}
-        </div>
-      </div>
+      {/* Status - Vidas em Destaque */}
+      <Card className="mb-6">
+        <CardContent className="p-4">
+          <div className="flex justify-between items-center">
+            <div className="flex items-center gap-3">
+              <span className="text-sm font-semibold">Vidas:</span>
+              <div className="flex gap-1">
+                {Array.from({ length: MAX_ERROS }).map((_, idx) => (
+                  <Heart
+                    key={idx}
+                    className={`w-7 h-7 transition-all ${
+                      idx < MAX_ERROS - erros
+                        ? 'fill-red-500 text-red-500 animate-pulse'
+                        : 'fill-muted text-muted'
+                    }`}
+                  />
+                ))}
+              </div>
+            </div>
+            <div className="text-lg font-bold">
+              {MAX_ERROS - erros}/{MAX_ERROS}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
-      {/* Forca Visual */}
-      <Card className="mb-6 bg-gradient-to-br from-purple-500/10 to-purple-700/10">
-        <CardContent className="p-8 flex justify-center">
+      {/* Forca Visual - Design Clean */}
+      <Card className="mb-6 border-2">
+        <CardContent className="p-8 flex justify-center bg-muted/30">
           <ForcaVisual erros={erros} />
         </CardContent>
       </Card>
 
-      {/* Botão de Dica */}
-      <div className="mb-4 text-center">
-        <Button onClick={pedirDica} variant="outline" size="sm" disabled={mostrarExemplo || gameOver} className="gap-2">
-          <Lightbulb className="w-4 h-4" />
-          {mostrarExemplo ? 'Dica usada' : 'Pedir dica'}
-        </Button>
-      </div>
+      {/* Dica e Categoria */}
+      {palavraAtual && (
+        <Card className="mb-6 border-l-4 border-l-purple-500">
+          <CardContent className="p-4 space-y-3">
+            <div className="flex items-start gap-3">
+              <span className="text-xl">💡</span>
+              <div className="flex-1">
+                <p className="text-sm text-muted-foreground mb-1">Dica:</p>
+                <p className="text-base font-semibold">{palavraAtual.dica}</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-base">📚</span>
+              <p className="text-xs text-muted-foreground">{palavraAtual.categoria}</p>
+            </div>
+            
+            {/* Botão de Dica Extra */}
+            {!mostrarExemplo && !gameOver && (
+              <Button
+                onClick={pedirDica}
+                variant="secondary"
+                size="sm"
+                className="w-full gap-2"
+              >
+                <Lightbulb className="w-4 h-4" />
+                Revelar Exemplo
+              </Button>
+            )}
 
-      {/* Dica */}
-      {palavraAtual && <div className="mb-6 text-center">
-          <p className="text-sm text-muted-foreground mb-2">💡 Dica:</p>
-          <p className="text-lg font-semibold">{palavraAtual.dica}</p>
-          <p className="text-xs text-muted-foreground mt-1">📚 {palavraAtual.categoria}</p>
-          {mostrarExemplo && <div className="mt-4 p-4 bg-yellow-500/10 rounded-lg border border-yellow-500/30">
-              <p className="text-sm text-yellow-600 dark:text-yellow-400">{palavraAtual.exemplo}</p>
-            </div>}
-        </div>}
+            {/* Exemplo Revelado */}
+            {mostrarExemplo && (
+              <div className="mt-3 p-3 bg-yellow-500/10 rounded-lg border border-yellow-500/30">
+                <p className="text-sm text-yellow-700 dark:text-yellow-400">
+                  {palavraAtual.exemplo}
+                </p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       {/* Palavra */}
-      <div className="flex justify-center mb-8 flex-wrap">
+      <div className="flex justify-center mb-8 flex-wrap gap-2">
         {renderPalavra()}
       </div>
 
-      {/* Teclado */}
+      {/* Teclado - Melhorado */}
       <div className="grid grid-cols-7 gap-2 mb-6">
-        {LETRAS.map(letra => <Button key={letra} onClick={() => escolherLetra(letra)} disabled={letrasEscolhidas.includes(letra) || gameOver} variant={letrasEscolhidas.includes(letra) ? palavraAtual?.palavra.includes(letra) ? 'default' : 'destructive' : 'outline'} className="aspect-square">
-            {letra}
-          </Button>)}
+        {LETRAS.map(letra => {
+          const usado = letrasEscolhidas.includes(letra);
+          const acertou = usado && palavraAtual && normalize(palavraAtual.palavra).includes(letra);
+          return (
+            <Button
+              key={letra}
+              onClick={() => escolherLetra(letra)}
+              disabled={usado || gameOver}
+              variant={usado ? (acertou ? 'default' : 'destructive') : 'outline'}
+              className="aspect-square text-lg font-bold hover:scale-110 transition-transform"
+            >
+              {letra}
+            </Button>
+          );
+        })}
       </div>
 
       {/* Game Over */}

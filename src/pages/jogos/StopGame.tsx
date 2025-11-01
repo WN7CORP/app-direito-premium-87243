@@ -145,36 +145,86 @@ const StopGame = () => {
 
       {jogando && (
         <>
-          {/* Timer e Letra */}
-          <Card className="mb-6 bg-gradient-to-br from-orange-500/10 to-orange-700/10">
-            <CardContent className="p-6 text-center">
-              <div className="text-6xl font-bold mb-2">{letraSorteada}</div>
-              <div className="text-3xl font-bold text-orange-500">{tempo}s</div>
-              <Button onClick={finalizarJogo} variant="outline" size="sm" className="mt-4 gap-2">
+          {/* Timer Circular e Letra */}
+          <Card className="mb-6 border-2 border-orange-500/50">
+            <CardContent className="p-8 text-center">
+              {/* Timer Circular */}
+              <div className="relative inline-flex items-center justify-center mb-4">
+                <svg className="w-32 h-32 transform -rotate-90">
+                  <circle
+                    cx="64"
+                    cy="64"
+                    r="56"
+                    stroke="currentColor"
+                    strokeWidth="8"
+                    fill="none"
+                    className="text-muted"
+                  />
+                  <circle
+                    cx="64"
+                    cy="64"
+                    r="56"
+                    stroke="currentColor"
+                    strokeWidth="8"
+                    fill="none"
+                    strokeDasharray={2 * Math.PI * 56}
+                    strokeDashoffset={2 * Math.PI * 56 * (1 - tempo / TEMPO_JOGO)}
+                    className="text-orange-500 transition-all duration-1000"
+                    strokeLinecap="round"
+                  />
+                </svg>
+                <div className="absolute">
+                  <div className="text-3xl font-bold">{tempo}s</div>
+                </div>
+              </div>
+
+              {/* Letra Sorteada */}
+              <div className="mb-4">
+                <p className="text-sm text-muted-foreground mb-2">Letra:</p>
+                <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-orange-500 text-white text-5xl font-bold shadow-lg">
+                  {letraSorteada}
+                </div>
+              </div>
+
+              <Button onClick={finalizarJogo} variant="outline" size="sm" className="gap-2">
                 <Square className="w-4 h-4" />
-                Parar
+                Parar Jogo
               </Button>
             </CardContent>
           </Card>
 
-          {/* Categorias */}
+          {/* Categorias com Validação Visual */}
           <div className="space-y-3">
-            {categorias.map((categoria, index) => (
-              <Card key={index}>
-                <CardContent className="p-4">
-                  <label className="text-sm font-semibold mb-2 block">
-                    {categoria.nome}
-                  </label>
-                  <Input
-                    placeholder={`Ex: ${categoria.exemplos[0]}`}
-                    value={respostas[`cat-${index}`] || ''}
-                    onChange={(e) => setRespostas({ ...respostas, [`cat-${index}`]: e.target.value })}
-                    className="uppercase"
-                    maxLength={50}
-                  />
-                </CardContent>
-              </Card>
-            ))}
+            {categorias.map((categoria, index) => {
+              const resposta = (respostas[`cat-${index}`] || '').toUpperCase().trim();
+              const valida = resposta && resposta.startsWith(letraSorteada);
+              
+              return (
+                <Card
+                  key={index}
+                  className={`transition-all ${
+                    valida ? 'border-l-4 border-l-green-500' : resposta ? 'border-l-4 border-l-red-500' : ''
+                  }`}
+                >
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <label className="text-sm font-semibold">
+                        {categoria.nome}
+                      </label>
+                      {valida && <span className="text-green-500 text-sm font-bold">✓</span>}
+                      {resposta && !valida && <span className="text-red-500 text-sm font-bold">✗</span>}
+                    </div>
+                    <Input
+                      placeholder={`Ex: ${categoria.exemplos[0]}`}
+                      value={respostas[`cat-${index}`] || ''}
+                      onChange={(e) => setRespostas({ ...respostas, [`cat-${index}`]: e.target.value })}
+                      className={`uppercase ${valida ? 'border-green-500' : ''}`}
+                      maxLength={50}
+                    />
+                  </CardContent>
+                </Card>
+              );
+            })}
           </div>
         </>
       )}

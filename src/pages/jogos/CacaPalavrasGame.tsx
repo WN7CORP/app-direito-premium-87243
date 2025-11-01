@@ -1,12 +1,13 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { ArrowLeft, Trophy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { toast } from "sonner";
+import confetti from "canvas-confetti";
+import { supabase } from "@/integrations/supabase/client";
 
 interface CelulaSelecionada {
   linha: number;
@@ -103,7 +104,7 @@ const CacaPalavrasGame = () => {
 
       // Verificar se completou o nível
       const palavrasDoNivelEncontradas = palavrasEncontradas.filter(p => palavrasNivel.includes(p));
-      if (palavrasDoNivelEncontradas.length === palavrasNivel.length) {
+      if (palavrasDoNivelEncontradas.length + 1 === palavrasNivel.length) {
         if (nivelAtual < totalNiveis) {
           setTimeout(() => {
             setNivelAtual(nivelAtual + 1);
@@ -112,7 +113,13 @@ const CacaPalavrasGame = () => {
           }, 1000);
         } else {
           setTimeout(() => {
-            toast.success('🏆 Parabéns! Você completou todos os 5 níveis!');
+            // Confete ao completar todos os níveis!
+            confetti({
+              particleCount: 100,
+              spread: 70,
+              origin: { y: 0.6 }
+            });
+            toast.success('🏆 Parabéns! Você completou todos os níveis!');
           }, 1000);
         }
       }
@@ -124,6 +131,14 @@ const CacaPalavrasGame = () => {
   };
 
   const progressoNivel = (palavrasEncontradas.filter(p => palavrasNivel.includes(p)).length / palavrasNivel.length) * 100;
+
+  const getBadgeColor = (nivel: number) => {
+    if (nivel === 1) return 'bg-green-500';
+    if (nivel === 2) return 'bg-yellow-500';
+    if (nivel === 3) return 'bg-orange-500';
+    if (nivel === 4) return 'bg-red-500';
+    return 'bg-purple-500';
+  };
 
   if (loading) {
     return (
@@ -150,38 +165,92 @@ const CacaPalavrasGame = () => {
 
       <div className="mb-6">
         <h1 className="text-2xl font-bold mb-2">🔍 Caça-Palavras</h1>
-        <p className="text-sm text-muted-foreground mb-4">
-          {tema}
+        <p className="text-sm text-muted-foreground">
+          Encontre as palavras escondidas na grade
         </p>
-
-        {/* Indicador de Nível */}
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-2">
-            <Trophy className="w-5 h-5 text-primary" />
-            <span className="font-bold text-lg">Nível {nivelAtual} / {totalNiveis}</span>
-          </div>
-          <span className="text-sm text-muted-foreground">
-            {palavrasEncontradas.filter(p => palavrasNivel.includes(p)).length} / {palavrasNivel.length} palavras
-          </span>
-        </div>
-        
-        <Progress value={progressoNivel} className="h-2" />
       </div>
 
-      {/* Lista de Palavras do Nível Atual */}
+      {/* Indicadores de Nível Melhorados */}
+      <div className="flex gap-2 mb-4 overflow-x-auto pb-2">
+        {niveis.map((nivel) => (
+          <Badge
+            key={nivel.nivel}
+            variant={nivel.nivel === nivelAtual ? 'default' : nivel.nivel < nivelAtual ? 'secondary' : 'outline'}
+            className={`flex-shrink-0 px-4 py-2 text-sm ${
+              nivel.nivel === nivelAtual ? getBadgeColor(nivel.nivel) + ' text-white' : ''
+            }`}
+          >
+            {nivel.nivel < nivelAtual && <Trophy className="w-3 h-3 mr-1" />}
+            Nível {nivel.nivel}
+          </Badge>
+        ))}
+      </div>
+
+      {/* Card de Nível Atual com Progresso Circular */}
+      <Card className="mb-4 border-l-4 border-l-green-500">
+        <CardContent className="p-4">
+          <div className="flex items-center justify-between mb-3">
+            <div>
+              <h2 className="text-lg font-bold">Nível {nivelAtual}</h2>
+              <p className="text-sm text-muted-foreground">
+                {palavrasEncontradas.filter(p => palavrasNivel.includes(p)).length}/{palavrasNivel.length} palavras encontradas
+              </p>
+            </div>
+            {/* Progresso Circular */}
+            <div className="relative w-16 h-16">
+              <svg className="w-16 h-16 transform -rotate-90">
+                <circle
+                  cx="32"
+                  cy="32"
+                  r="28"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                  fill="none"
+                  className="text-muted"
+                />
+                <circle
+                  cx="32"
+                  cy="32"
+                  r="28"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                  fill="none"
+                  strokeDasharray={2 * Math.PI * 28}
+                  strokeDashoffset={2 * Math.PI * 28 * (1 - progressoNivel / 100)}
+                  className="text-green-500 transition-all duration-500"
+                  strokeLinecap="round"
+                />
+              </svg>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <span className="text-sm font-bold">{Math.round(progressoNivel)}%</span>
+              </div>
+            </div>
+          </div>
+          <Progress value={progressoNivel} className="h-2" />
+        </CardContent>
+      </Card>
+
+      {/* Lista de Palavras com Animação */}
       <Card className="mb-6">
         <CardContent className="p-4">
-          <h3 className="font-semibold mb-3">Palavras para Encontrar (Nível {nivelAtual}):</h3>
+          <h3 className="font-semibold mb-3">Palavras para encontrar:</h3>
           <div className="flex flex-wrap gap-2">
-            {palavrasNivel.map((palavra, index) => (
-              <Badge
-                key={index}
-                variant={palavrasEncontradas.includes(palavra) ? 'default' : 'outline'}
-                className={palavrasEncontradas.includes(palavra) ? 'line-through' : ''}
-              >
-                {palavra}
-              </Badge>
-            ))}
+            {palavrasNivel.map((palavra, idx) => {
+              const encontrada = palavrasEncontradas.includes(palavra);
+              return (
+                <div
+                  key={idx}
+                  className={`px-3 py-1 rounded-full text-sm font-medium transition-all ${
+                    encontrada
+                      ? 'bg-green-500 text-white scale-105 line-through'
+                      : 'bg-muted hover:bg-muted/80'
+                  }`}
+                >
+                  {encontrada && <span className="mr-1">✓</span>}
+                  {palavra}
+                </div>
+              );
+            })}
           </div>
         </CardContent>
       </Card>

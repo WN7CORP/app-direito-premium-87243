@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { ArrowLeft, Check } from "lucide-react";
+import { ArrowLeft, Check, Lightbulb, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -133,6 +134,42 @@ const CruzadasGame = () => {
     }
   };
 
+  // Calcular progresso
+  const totalPalavras = palavras.length;
+  const palavrasCompletas = palavras.filter(p => {
+    return p.palavra.split('').every((letra, i) => {
+      const linha = p.horizontal ? p.linha : p.linha + i;
+      const coluna = p.horizontal ? p.coluna + i : p.coluna;
+      return respostas[linha]?.[coluna]?.toUpperCase() === letra.toUpperCase();
+    });
+  }).length;
+  const progresso = totalPalavras > 0 ? (palavrasCompletas / totalPalavras) * 100 : 0;
+
+  const limparTudo = () => {
+    const novasRespostas = respostas.map(linha => linha.map(() => ''));
+    setRespostas(novasRespostas);
+    toast.info('Grade limpa!');
+  };
+
+  const darDica = () => {
+    // Encontrar primeira célula vazia e revelar a letra
+    for (const palavra of palavras) {
+      for (let i = 0; i < palavra.palavra.length; i++) {
+        const linha = palavra.horizontal ? palavra.linha : palavra.linha + i;
+        const coluna = palavra.horizontal ? palavra.coluna + i : palavra.coluna;
+        
+        if (respostas[linha]?.[coluna]?.toUpperCase() !== palavra.palavra[i].toUpperCase()) {
+          const novasRespostas = [...respostas];
+          novasRespostas[linha][coluna] = palavra.palavra[i].toUpperCase();
+          setRespostas(novasRespostas);
+          toast.success('💡 Dica revelada!');
+          return;
+        }
+      }
+    }
+    toast.info('Todas as letras já estão corretas!');
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -157,8 +194,37 @@ const CruzadasGame = () => {
       </Button>
 
       <div className="mb-6">
-        <h1 className="text-2xl font-bold mb-2">📝 Palavras Cruzadas</h1>
-        <p className="text-sm text-muted-foreground">{tema}</p>
+        <h1 className="text-2xl font-bold mb-2">🧩 Palavras Cruzadas</h1>
+        <p className="text-sm text-muted-foreground">
+          Preencha as palavras horizontais e verticais
+        </p>
+      </div>
+
+      {/* Barra de Progresso */}
+      <Card className="mb-4">
+        <CardContent className="p-4">
+          <div className="space-y-2">
+            <div className="flex justify-between text-sm">
+              <span className="font-semibold">Progresso:</span>
+              <span className="text-muted-foreground">
+                {palavrasCompletas}/{totalPalavras} palavras
+              </span>
+            </div>
+            <Progress value={progresso} className="h-2" />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Botões de Ação */}
+      <div className="flex gap-2 mb-4">
+        <Button onClick={darDica} variant="outline" size="sm" className="gap-2">
+          <Lightbulb className="w-4 h-4" />
+          Dica
+        </Button>
+        <Button onClick={limparTudo} variant="outline" size="sm" className="gap-2">
+          <Trash2 className="w-4 h-4" />
+          Limpar
+        </Button>
       </div>
 
       <div className="grid lg:grid-cols-[1fr,300px] gap-6">
@@ -208,22 +274,69 @@ const CruzadasGame = () => {
           </CardContent>
         </Card>
 
-        {/* Dicas */}
+        {/* Dicas Organizadas */}
         <div className="space-y-4">
           <Card>
             <CardContent className="p-4">
-              <h3 className="font-bold mb-3">📋 Dicas</h3>
-              <div className="space-y-3 max-h-[500px] overflow-y-auto">
-                {palavras.map((palavra) => (
-                  <div key={palavra.numero} className="text-sm">
-                    <div className="flex items-start gap-2">
-                      <span className="font-bold text-accent flex-shrink-0">
-                        {palavra.numero}. {palavra.horizontal ? '→' : '↓'}
-                      </span>
-                      <p className="text-muted-foreground">{palavra.dica}</p>
-                    </div>
+              <h3 className="font-semibold mb-4">Dicas</h3>
+              <div className="space-y-4 max-h-[500px] overflow-y-auto">
+                {/* Horizontais */}
+                <div>
+                  <h4 className="text-sm font-semibold mb-2 text-blue-600 dark:text-blue-400">
+                    → Horizontais
+                  </h4>
+                  <div className="space-y-2">
+                    {palavras
+                      .filter(p => p.horizontal)
+                      .map((palavra) => {
+                        const completa = palavra.palavra.split('').every((letra, i) => {
+                          const coluna = palavra.coluna + i;
+                          return respostas[palavra.linha]?.[coluna]?.toUpperCase() === letra.toUpperCase();
+                        });
+                        return (
+                          <div
+                            key={palavra.numero}
+                            className={`text-sm p-2 rounded transition-all ${
+                              completa ? 'bg-green-500/20 border border-green-500/50' : 'bg-muted'
+                            }`}
+                          >
+                            <span className="font-bold">{palavra.numero}. </span>
+                            {palavra.dica}
+                            {completa && <span className="ml-2 text-green-600">✓</span>}
+                          </div>
+                        );
+                      })}
                   </div>
-                ))}
+                </div>
+
+                {/* Verticais */}
+                <div>
+                  <h4 className="text-sm font-semibold mb-2 text-purple-600 dark:text-purple-400">
+                    ↓ Verticais
+                  </h4>
+                  <div className="space-y-2">
+                    {palavras
+                      .filter(p => !p.horizontal)
+                      .map((palavra) => {
+                        const completa = palavra.palavra.split('').every((letra, i) => {
+                          const linha = palavra.linha + i;
+                          return respostas[linha]?.[palavra.coluna]?.toUpperCase() === letra.toUpperCase();
+                        });
+                        return (
+                          <div
+                            key={palavra.numero}
+                            className={`text-sm p-2 rounded transition-all ${
+                              completa ? 'bg-green-500/20 border border-green-500/50' : 'bg-muted'
+                            }`}
+                          >
+                            <span className="font-bold">{palavra.numero}. </span>
+                            {palavra.dica}
+                            {completa && <span className="ml-2 text-green-600">✓</span>}
+                          </div>
+                        );
+                      })}
+                  </div>
+                </div>
               </div>
             </CardContent>
           </Card>

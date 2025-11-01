@@ -145,6 +145,7 @@ const Aprender = () => {
       path: "/jogos-juridicos",
       iconBg: "bg-pink-600 shadow-lg shadow-pink-500/50",
       glowColor: "rgb(219, 39, 119)",
+      disponivel: true
     },
     {
       id: "simulacao-juridica",
@@ -154,6 +155,7 @@ const Aprender = () => {
       path: "/simulacao-juridica",
       iconBg: "bg-amber-600 shadow-lg shadow-amber-500/50",
       glowColor: "rgb(217, 119, 6)",
+      disponivel: false
     },
   ];
 
@@ -338,9 +340,19 @@ const Aprender = () => {
             return (
               <Card
                 key={jogo.id}
-                onClick={() => navigate(jogo.path)}
-                className="cursor-pointer hover:scale-105 hover:shadow-2xl hover:-translate-y-1 transition-all border-2 border-transparent hover:border-accent/50 bg-gradient-to-br from-card to-card/80 group shadow-xl overflow-hidden relative animate-fade-in"
+                onClick={() => jogo.disponivel && navigate(jogo.path)}
+                className={`transition-all border-2 border-transparent bg-gradient-to-br from-card to-card/80 group shadow-xl overflow-hidden relative animate-fade-in ${
+                  jogo.disponivel
+                    ? 'cursor-pointer hover:scale-105 hover:shadow-2xl hover:-translate-y-1 hover:border-accent/50'
+                    : 'opacity-60 cursor-not-allowed'
+                }`}
               >
+                {!jogo.disponivel && (
+                  <Badge className="absolute top-2 right-2 bg-yellow-500 z-10">
+                    Em Breve
+                  </Badge>
+                )}
+                
                 {/* Brilho colorido no topo */}
                 <div 
                   className="absolute top-0 left-0 right-0 h-1 opacity-80"
