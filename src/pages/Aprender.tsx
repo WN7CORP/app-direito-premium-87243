@@ -338,16 +338,9 @@ const Aprender = () => {
             return (
               <Card
                 key={jogo.id}
-                className="cursor-not-allowed opacity-60 hover:scale-105 hover:shadow-2xl hover:-translate-y-1 transition-all border-2 border-transparent bg-gradient-to-br from-card to-card/80 group shadow-xl overflow-hidden relative"
+                onClick={() => navigate(jogo.path)}
+                className="cursor-pointer hover:scale-105 hover:shadow-2xl hover:-translate-y-1 transition-all border-2 border-transparent hover:border-accent/50 bg-gradient-to-br from-card to-card/80 group shadow-xl overflow-hidden relative animate-fade-in"
               >
-                {/* Overlay "Em Breve" */}
-                <div className="absolute inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-10 rounded-lg">
-                  <div className="text-center space-y-2">
-                    <p className="text-lg font-bold text-accent">Em Breve</p>
-                    <p className="text-xs text-muted-foreground px-4">Estamos preparando algo incrível</p>
-                  </div>
-                </div>
-
                 {/* Brilho colorido no topo */}
                 <div 
                   className="absolute top-0 left-0 right-0 h-1 opacity-80"
