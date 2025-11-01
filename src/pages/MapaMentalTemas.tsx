@@ -32,8 +32,8 @@ const CORES_AREAS: Record<string, {
     glowColor: "rgb(168, 85, 247)"
   },
   "DIREITO TRIBUTÁRIO": {
-    cor: "bg-teal-600",
-    glowColor: "rgb(20, 184, 166)"
+    cor: "bg-yellow-600",
+    glowColor: "rgb(234, 179, 8)"
   },
   "DIREITO ADMINISTRATIVO": {
     cor: "bg-indigo-600",
