@@ -127,7 +127,7 @@ export default function MapaMentalAreas() {
                       <Brain className="w-8 h-8 text-white" />
                     </div>
 
-                    <h3 className="text-sm font-bold text-foreground mb-2 leading-tight line-clamp-2 min-h-[2.5rem]">
+                    <h3 className="text-xs font-bold text-foreground mb-2 leading-tight line-clamp-2 min-h-[2.5rem]">
                       {areaData.area}
                     </h3>
                     
