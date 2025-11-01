@@ -157,6 +157,8 @@ import PopularMeuBrasil from "./pages/PopularMeuBrasil";
 import IniciandoDireito from "./pages/IniciandoDireito";
 import IniciandoDireitoTemas from "./pages/IniciandoDireitoTemas";
 import IniciandoDireitoAula from "./pages/IniciandoDireitoAula";
+import MapaMentalAreas from "./pages/MapaMentalAreas";
+import MapaMentalTemas from "./pages/MapaMentalTemas";
 
 const queryClient = new QueryClient();
 
@@ -228,6 +230,8 @@ const App = () => {
               <Route path="/aprender/estagios" element={<EstagiosHub />} />
               <Route path="/aprender/estagios/buscar" element={<EstagiosBuscar />} />
               <Route path="/aprender/estagios/blog" element={<EstagiosBlog />} />
+              <Route path="/mapa-mental" element={<MapaMentalAreas />} />
+              <Route path="/mapa-mental/area/:area" element={<MapaMentalTemas />} />
               <Route path="/acesso-desktop" element={<AcessoDesktop />} />
               <Route path="/analisar" element={<Analisar />} />
               <Route path="/analisar/resultado" element={<AnalisarResultado />} />

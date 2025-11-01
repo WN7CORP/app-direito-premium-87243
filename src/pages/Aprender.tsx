@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { GraduationCap, Sparkles, FileText, Calendar, Headphones, Gavel, Gamepad2, FileSearch, BookOpen, Monitor, Video, Home, Search as SearchIcon, Loader2, Newspaper } from "lucide-react";
+import { GraduationCap, Sparkles, FileText, Calendar, Headphones, Gavel, Gamepad2, FileSearch, BookOpen, Monitor, Video, Home, Search as SearchIcon, Loader2, Newspaper, Brain } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -75,6 +75,15 @@ const Aprender = () => {
       path: "/flashcards",
       iconBg: "bg-blue-600 shadow-lg shadow-blue-500/50",
       glowColor: "rgb(37, 99, 235)",
+    },
+    {
+      id: "mapa-mental",
+      titulo: "Mapa Mental",
+      descricao: "Mapas mentais visuais organizados por área do direito",
+      icon: Brain,
+      path: "/mapa-mental",
+      iconBg: "bg-violet-600 shadow-lg shadow-violet-500/50",
+      glowColor: "rgb(124, 58, 237)",
     },
     {
       id: "dicionario",
