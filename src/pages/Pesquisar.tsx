@@ -1,4 +1,4 @@
-import { Search, ChevronRight, BookOpen, PlayCircle, GraduationCap, Layers, Loader2, RefreshCw, Clock, Scale, X } from "lucide-react";
+import { Search, ChevronRight, BookOpen, PlayCircle, GraduationCap, Layers, Loader2, RefreshCw, Clock, Scale, X, Brain } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useState, useEffect, useMemo, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -51,6 +51,13 @@ interface ArtigoResult {
   artigo: string;
 }
 
+interface MapaMentalResult {
+  id: number;
+  tema: string;
+  area: string;
+  sequencia: number;
+}
+
 // Cache em memória para resultados
 const searchCache = new Map<string, any>();
 
@@ -81,13 +88,14 @@ const ensureResultsStructure = (data: any) => ({
   videoaulas: data?.videoaulas || [],
   cursos: data?.cursos || [],
   flashcards: data?.flashcards || [],
-  artigos: data?.artigos || []
+  artigos: data?.artigos || [],
+  mapas_mentais: data?.mapas_mentais || []
 });
 
 const Pesquisar = () => {
   const [searchParams] = useSearchParams();
   const [query, setQuery] = useState(searchParams.get("q") || "");
-  const [results, setResults] = useState<any>({ bibliotecas: [], livros: [], videoaulas: [], cursos: [], flashcards: [], artigos: [] });
+  const [results, setResults] = useState<any>({ bibliotecas: [], livros: [], videoaulas: [], cursos: [], flashcards: [], artigos: [], mapas_mentais: [] });
   const [isSearching, setIsSearching] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
   const [selectedTab, setSelectedTab] = useState("todos");
@@ -123,7 +131,7 @@ const Pesquisar = () => {
       const timer = setTimeout(() => handleSearch(query), 300); // Reduzido de 500ms para 300ms
       return () => clearTimeout(timer);
     } else if (query.length === 0) {
-      setResults({ bibliotecas: [], livros: [], videoaulas: [], cursos: [], flashcards: [], artigos: [] });
+      setResults({ bibliotecas: [], livros: [], videoaulas: [], cursos: [], flashcards: [], artigos: [], mapas_mentais: [] });
       setHasSearched(false);
     }
   }, [query, allCursos, allFlashcards]);
@@ -192,16 +200,20 @@ const Pesquisar = () => {
       setSearchProgress("⚖️ Buscando artigos...");
       const artigosData = await searchArtigos(searchLower);
 
+      setSearchProgress("🧠 Buscando mapas mentais...");
+      const mapasMentaisData = await searchMapasMentais(searchLower);
+
       const resultData = { 
         bibliotecas: bibliotecasData,
         livros: livrosData, 
         videoaulas: videosData, 
         cursos: cursosData, 
         flashcards: flashcardsData,
-        artigos: artigosData
+        artigos: artigosData,
+        mapas_mentais: mapasMentaisData
       };
       
-      const totalResults = bibliotecasData.length + livrosData.length + videosData.length + cursosData.length + flashcardsData.length + artigosData.length;
+      const totalResults = bibliotecasData.length + livrosData.length + videosData.length + cursosData.length + flashcardsData.length + artigosData.length + mapasMentaisData.length;
       
       // Salvar no banco de dados
       setSearchProgress("💾 Salvando resultados...");
@@ -253,6 +265,7 @@ const Pesquisar = () => {
       const cursosData = searchCursosOptimized(termo);
       const flashcardsData = searchFlashcardsOptimized(termo);
       const artigosData = await searchArtigos(termo);
+      const mapasMentaisData = await searchMapasMentais(termo);
       
       const newResults = {
         bibliotecas: bibliotecasData,
@@ -260,10 +273,11 @@ const Pesquisar = () => {
         videoaulas: videosData,
         cursos: cursosData,
         flashcards: flashcardsData,
-        artigos: artigosData
+        artigos: artigosData,
+        mapas_mentais: mapasMentaisData
       };
       
-      const newTotal = bibliotecasData.length + livrosData.length + videosData.length + cursosData.length + flashcardsData.length + artigosData.length;
+      const newTotal = bibliotecasData.length + livrosData.length + videosData.length + cursosData.length + flashcardsData.length + artigosData.length + mapasMentaisData.length;
       
       // Se houver diferença, atualizar
       if (newTotal !== oldTotal) {
@@ -463,13 +477,37 @@ const Pesquisar = () => {
     return allResults.slice(0, 10);
   };
 
+  const searchMapasMentais = async (searchTerm: string): Promise<MapaMentalResult[]> => {
+    try {
+      const { data, error } = await supabase
+        .from('MAPA MENTAL' as any)
+        .select('id, tema, area, sequencia')
+        .or(`tema.ilike.%${searchTerm}%,area.ilike.%${searchTerm}%`)
+        .order('sequencia', { ascending: true })
+        .limit(10);
+      
+      if (error) throw error;
+      
+      return (data || []).map((item: any) => ({
+        id: item.id,
+        tema: item.tema || '',
+        area: item.area || '',
+        sequencia: item.sequencia || 0
+      }));
+    } catch (err) {
+      console.error('Erro ao buscar mapas mentais:', err);
+      return [];
+    }
+  };
+
   const totalResults = 
     (results.bibliotecas?.length || 0) + 
     (results.livros?.length || 0) + 
     (results.videoaulas?.length || 0) + 
     (results.cursos?.length || 0) + 
     (results.flashcards?.length || 0) + 
-    (results.artigos?.length || 0);
+    (results.artigos?.length || 0) +
+    (results.mapas_mentais?.length || 0);
 
   return (
       <div className="px-3 py-4 max-w-4xl mx-auto pb-24">
@@ -576,7 +614,7 @@ const Pesquisar = () => {
           )}
         
         <Tabs value={selectedTab} onValueChange={setSelectedTab}>
-          <TabsList className="w-full grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 mb-6 h-auto gap-1.5 bg-secondary/50 p-2">
+          <TabsList className="w-full grid grid-cols-2 md:grid-cols-3 lg:grid-cols-7 mb-6 h-auto gap-1.5 bg-secondary/50 p-2">
             <TabsTrigger value="todos" className="text-xs flex flex-col items-center gap-1 py-2 px-2">
               <div className="flex items-center gap-1">
                 <span>📊</span>
@@ -618,6 +656,13 @@ const Pesquisar = () => {
                 <Badge variant="secondary" className="h-5 px-1.5 text-[10px]">{results.flashcards?.length || 0}</Badge>
               </div>
               <span className="text-[10px] font-medium">Flashcards</span>
+            </TabsTrigger>
+            <TabsTrigger value="mapas" disabled={!(results.mapas_mentais?.length || 0)} className="text-xs flex flex-col items-center gap-1 py-2 px-2">
+              <div className="flex items-center gap-1">
+                <span>🧠</span>
+                <Badge variant="secondary" className="h-5 px-1.5 text-[10px]">{results.mapas_mentais?.length || 0}</Badge>
+              </div>
+              <span className="text-[10px] font-medium">Mapas</span>
             </TabsTrigger>
           </TabsList>
 
@@ -754,6 +799,33 @@ const Pesquisar = () => {
                 </div>
               </div>
             )}
+
+            {(results.mapas_mentais?.length || 0) > 0 && (
+              <div>
+                <h2 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                  <Brain className="w-5 h-5 text-violet-500" />Mapas Mentais ({results.mapas_mentais.length})
+                </h2>
+                <div className="space-y-2">
+                  {results.mapas_mentais.slice(0, 3).map((item: MapaMentalResult) => (
+                    <button 
+                      key={item.id}
+                      onClick={() => navigate(`/mapa-mental/area/${encodeURIComponent(item.area)}`)}
+                      className="w-full bg-card hover:bg-accent/10 border rounded-lg p-3 text-left transition-all group"
+                    >
+                      <div className="flex gap-3 items-start">
+                        <Brain className="w-5 h-5 text-violet-500 flex-shrink-0 mt-1" />
+                        <div className="flex-1">
+                          <p className="text-xs text-violet-500 mb-1">{item.area}</p>
+                          <h3 className="font-semibold text-sm">{item.tema}</h3>
+                          <p className="text-xs text-muted-foreground">Mapa #{item.sequencia}</p>
+                        </div>
+                        <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-accent flex-shrink-0" />
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </TabsContent>
 
           <TabsContent value="bibliotecas" className="space-y-2">
@@ -843,6 +915,25 @@ const Pesquisar = () => {
                   <div className="flex-1">
                     <p className="text-sm text-purple-500 mb-2 font-medium">{item.codigo} • Artigo {item.numero_artigo}</p>
                     <h3 className="font-bold text-sm line-clamp-3">{item.artigo}</h3>
+                  </div>
+                </div>
+              </button>
+            ))}
+          </TabsContent>
+
+          <TabsContent value="mapas" className="space-y-2">
+            {results.mapas_mentais.map((item: MapaMentalResult) => (
+              <button 
+                key={item.id}
+                onClick={() => navigate(`/mapa-mental/area/${encodeURIComponent(item.area)}`)}
+                className="w-full bg-card hover:bg-accent/10 border rounded-lg p-4 text-left transition-all"
+              >
+                <div className="flex gap-3 items-start">
+                  <Brain className="w-5 h-5 text-violet-500 flex-shrink-0 mt-1" />
+                  <div className="flex-1">
+                    <p className="text-sm text-violet-500 mb-2 font-medium">{item.area}</p>
+                    <h3 className="font-bold text-sm">{item.tema}</h3>
+                    <p className="text-sm text-muted-foreground">Mapa Mental #{item.sequencia}</p>
                   </div>
                 </div>
               </button>
