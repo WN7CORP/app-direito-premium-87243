@@ -320,46 +320,6 @@ const Constituicao = () => {
                   {filteredArticles.length} {filteredArticles.length === 1 ? 'artigo encontrado' : 'artigos encontrados'}
                 </p>
               )}
-              
-              {/* Controles de Texto e Navegação */}
-              <div className="flex items-center justify-center gap-4 py-3 border-t border-border/50 mt-2">
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-muted-foreground">Tamanho:</span>
-                  <Button
-                    onClick={decreaseFontSize}
-                    size="sm"
-                    variant="outline"
-                    className="h-7 w-7 p-0"
-                    disabled={fontSize <= 12}
-                  >
-                    <Minus className="w-3 h-3" />
-                  </Button>
-                  <span className="text-xs font-medium text-foreground min-w-[3rem] text-center">
-                    {fontSize}px
-                  </span>
-                  <Button
-                    onClick={increaseFontSize}
-                    size="sm"
-                    variant="outline"
-                    className="h-7 w-7 p-0"
-                    disabled={fontSize >= 24}
-                  >
-                    <Plus className="w-3 h-3" />
-                  </Button>
-                </div>
-                
-                <div className="h-4 w-px bg-border" />
-                
-                <Button
-                  onClick={scrollToTop}
-                  size="sm"
-                  variant="outline"
-                  className="h-7 gap-1.5"
-                >
-                  <ArrowUp className="w-3 h-3" />
-                  <span className="text-xs">Topo</span>
-                </Button>
-              </div>
             </div>
           </div>
         </div>
@@ -405,8 +365,8 @@ const Constituicao = () => {
       <PerguntaModal isOpen={perguntaModalOpen} onClose={() => setPerguntaModalOpen(false)} artigo={perguntaData.artigo} numeroArtigo={perguntaData.numeroArtigo} />
 
       {/* Content */}
-      <div ref={contentRef} className="px-4 max-w-4xl mx-auto pb-0 overflow-y-auto" style={{ 
-        height: activeTab === 'artigos' ? 'calc(100vh - 184px)' : 'calc(100vh - 60px)' 
+      <div ref={contentRef} className="px-4 max-w-4xl mx-auto pb-24 overflow-y-auto" style={{ 
+        height: activeTab === 'artigos' ? 'calc(100vh - 140px)' : 'calc(100vh - 60px)' 
       }}>
         
         {/* Playlist Tab */}
@@ -514,12 +474,37 @@ const Constituicao = () => {
                       window.open(whatsappUrl, '_blank');
                     }}
                   />
-                </div>
-               </div>;
+               </div>
+              </div>;
       })}
           </>
         )}
       </div>
+
+      {/* Floating Controls - Only visible when content is showing on artigos tab */}
+      {activeTab === 'artigos' && displayedArticles.length > 0 && (
+        <div className="fixed bottom-4 left-1/2 -translate-x-1/2 w-full max-w-[60rem] px-4 flex justify-between z-30 pointer-events-none">
+          {/* Font size controls on the left */}
+          <div className="flex flex-col gap-2 animate-fade-in pointer-events-auto">
+            <button onClick={increaseFontSize} className="bg-accent hover:bg-accent/90 text-accent-foreground w-10 h-10 rounded-full flex items-center justify-center shadow-lg transition-all hover:scale-110">
+              <Plus className="w-4 h-4" />
+            </button>
+            <button onClick={decreaseFontSize} className="bg-accent hover:bg-accent/90 text-accent-foreground w-10 h-10 rounded-full flex items-center justify-center shadow-lg transition-all hover:scale-110">
+              <Minus className="w-4 h-4" />
+            </button>
+            <div className="bg-card border border-border text-foreground text-xs font-medium px-2 py-1.5 rounded-full text-center shadow-lg">
+              {fontSize}px
+            </div>
+          </div>
+
+          {/* Scroll to top button on the right */}
+          <div className="animate-fade-in pointer-events-auto">
+            <button onClick={scrollToTop} className="bg-accent hover:bg-accent/90 text-accent-foreground w-12 h-12 rounded-full flex items-center justify-center shadow-lg transition-all hover:scale-110">
+              <ArrowUp className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+      )}
     </div>;
 };
 export default Constituicao;
