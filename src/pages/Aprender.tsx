@@ -44,10 +44,10 @@ const Aprender = () => {
         }
       });
 
-      // Criar array de áreas únicas com suas capas e contagem, ordenado alfabeticamente
+      // Criar array de áreas únicas com suas capas e contagem, embaralhado aleatoriamente
       const areasUnicas = Array.from(areaMap.entries())
         .map(([area, data]) => ({ area, thumb: data.thumb, count: data.count }))
-        .sort((a, b) => a.area.localeCompare(b.area, 'pt-BR'));
+        .sort(() => Math.random() - 0.5);
 
       setAreasPreview(areasUnicas);
     } catch (error) {
