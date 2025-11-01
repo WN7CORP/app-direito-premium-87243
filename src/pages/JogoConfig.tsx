@@ -106,7 +106,10 @@ const JogoConfig = () => {
   return <div className="px-3 py-4 max-w-4xl mx-auto min-h-screen">
       {/* Header */}
       <div className="mb-6">
-        
+        <Button variant="ghost" size="sm" onClick={voltarEtapa} className="mb-4">
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Voltar
+        </Button>
         
         <h1 className="text-2xl font-bold mb-2">{nomeJogos[tipo || ''] || 'Jogo'}</h1>
         <p className="text-sm text-muted-foreground">
@@ -115,13 +118,67 @@ const JogoConfig = () => {
         </p>
       </div>
 
-      {/* Etapa 1: Escolher Área */}
+      {/* Etapa 1: Escolher Área - Timeline Vertical */}
       {etapa === 'area' && <div>
-          <h2 className="text-lg font-semibold mb-4">📚 Áreas do Direito</h2>
-          {loadingFontes ? <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-              {[1, 2, 3, 4, 5, 6].map(i => <Skeleton key={i} className="h-32 w-full" />)}
-            </div> : <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-              {Object.entries(temasAgrupados).map(([area, temas]) => <AreaCard key={area} area={area} temasCount={temas.length} isSelected={selectedArea === area} onClick={() => selecionarArea(area)} />)}
+          <h2 className="text-lg font-semibold mb-6">📚 Áreas do Direito</h2>
+          {loadingFontes ? <div className="space-y-4">
+              {[1, 2, 3, 4, 5, 6].map(i => <Skeleton key={i} className="h-24 w-full" />)}
+            </div> : <div className="relative">
+              {/* Linha vertical */}
+              <div className="absolute left-6 top-0 bottom-0 w-0.5 bg-border" />
+
+              <div className="space-y-4">
+                {Object.entries(temasAgrupados).map(([area, temas], idx) => {
+                  const getColorByIndex = (index: number) => {
+                    const colors = [
+                      { bg: 'bg-purple-500', border: 'border-l-purple-500', shadow: 'shadow-purple-500/50' },
+                      { bg: 'bg-blue-500', border: 'border-l-blue-500', shadow: 'shadow-blue-500/50' },
+                      { bg: 'bg-green-500', border: 'border-l-green-500', shadow: 'shadow-green-500/50' },
+                      { bg: 'bg-yellow-500', border: 'border-l-yellow-500', shadow: 'shadow-yellow-500/50' },
+                      { bg: 'bg-orange-500', border: 'border-l-orange-500', shadow: 'shadow-orange-500/50' },
+                      { bg: 'bg-red-500', border: 'border-l-red-500', shadow: 'shadow-red-500/50' },
+                      { bg: 'bg-pink-500', border: 'border-l-pink-500', shadow: 'shadow-pink-500/50' },
+                      { bg: 'bg-indigo-500', border: 'border-l-indigo-500', shadow: 'shadow-indigo-500/50' },
+                    ];
+                    return colors[index % colors.length];
+                  };
+                  
+                  const colors = getColorByIndex(idx);
+                  
+                  return (
+                    <div
+                      key={area}
+                      className="relative flex gap-4 animate-fade-in"
+                      style={{ animationDelay: `${idx * 0.1}s` }}
+                    >
+                      {/* Marcador numerado */}
+                      <div className="relative z-10 flex-shrink-0">
+                        <div className={`w-12 h-12 rounded-full ${colors.bg} flex items-center justify-center text-white font-bold text-lg shadow-lg ${colors.shadow}`}>
+                          {idx + 1}
+                        </div>
+                      </div>
+
+                      {/* Card */}
+                      <Card
+                        className={`flex-1 cursor-pointer transition-all border-l-4 ${colors.border} hover:shadow-lg hover:scale-[1.02]`}
+                        onClick={() => selecionarArea(area)}
+                      >
+                        <CardContent className="p-4">
+                          <div className="flex items-center justify-between">
+                            <div className="flex-1">
+                              <h3 className="font-bold text-base mb-1">{area}</h3>
+                              <p className="text-xs text-muted-foreground">
+                                {temas.length} {temas.length === 1 ? 'tema' : 'temas'} disponíveis
+                              </p>
+                            </div>
+                            <div className="text-2xl">📚</div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </div>
+                  );
+                })}
+              </div>
             </div>}
         </div>}
 
@@ -142,21 +199,52 @@ const JogoConfig = () => {
             </div>
           </div>
 
-          {/* Temas */}
+          {/* Temas - Timeline Vertical */}
           <div>
-            <h2 className="text-lg font-semibold mb-3">📖 Selecione o Tema</h2>
-            <div className="grid grid-cols-1 gap-3">
-              {temasAgrupados[selectedArea]?.map((tema) => (
-                <Card 
-                  key={tema} 
-                  className={`cursor-pointer transition-all animate-fade-in ${selectedTema === tema ? 'border-2 border-primary shadow-lg' : 'border hover:border-accent/50'}`} 
-                  onClick={() => selecionarTema(tema)}
-                >
-                  <CardContent className="p-4 h-14 flex items-center">
-                    <p className="font-medium">{tema}</p>
-                  </CardContent>
-                </Card>
-              ))}
+            <h2 className="text-lg font-semibold mb-6">📖 Selecione o Tema</h2>
+            <div className="relative">
+              {/* Linha vertical */}
+              <div className="absolute left-6 top-0 bottom-0 w-0.5 bg-border" />
+
+              <div className="space-y-4">
+                {temasAgrupados[selectedArea]?.map((tema, idx) => {
+                  const getColorByIndex = (index: number) => {
+                    if (index < 3) return { bg: 'bg-green-500', border: 'border-l-green-500', shadow: 'shadow-green-500/50' };
+                    if (index < 6) return { bg: 'bg-yellow-500', border: 'border-l-yellow-500', shadow: 'shadow-yellow-500/50' };
+                    return { bg: 'bg-red-500', border: 'border-l-red-500', shadow: 'shadow-red-500/50' };
+                  };
+                  
+                  const colors = getColorByIndex(idx);
+                  
+                  return (
+                    <div
+                      key={tema}
+                      className="relative flex gap-4 animate-fade-in"
+                      style={{ animationDelay: `${idx * 0.1}s` }}
+                    >
+                      {/* Marcador numerado */}
+                      <div className="relative z-10 flex-shrink-0">
+                        <div className={`w-12 h-12 rounded-full ${colors.bg} flex items-center justify-center text-white font-bold text-lg shadow-lg ${colors.shadow}`}>
+                          {idx + 1}
+                        </div>
+                      </div>
+
+                      {/* Card */}
+                      <Card
+                        className={`flex-1 cursor-pointer transition-all border-l-4 ${colors.border} hover:shadow-lg hover:scale-[1.02] ${selectedTema === tema ? 'ring-2 ring-primary' : ''}`}
+                        onClick={() => selecionarTema(tema)}
+                      >
+                        <CardContent className="p-4">
+                          <div className="flex items-center justify-between">
+                            <p className="font-medium flex-1">{tema}</p>
+                            <div className="text-xl">📖</div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           </div>
         </div>}
