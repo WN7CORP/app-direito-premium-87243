@@ -169,10 +169,10 @@ const Index = () => {
             <Button 
               size="sm"
               onClick={() => navigate('/bibliotecas')}
-              className="bg-primary/70 hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-300 rounded-full px-4 flex items-center gap-1.5"
+              className="bg-primary/70 hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-300 rounded-full px-3 text-xs flex items-center gap-1"
             >
               Ver mais
-              <ArrowRight className="w-3.5 h-3.5" />
+              <ArrowRight className="w-3 h-3" />
             </Button>
           </div>
           
@@ -220,10 +220,10 @@ const Index = () => {
             <Button 
               size="sm"
               onClick={() => navigate('/iniciando-direito')}
-              className="bg-primary/70 hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-300 rounded-full px-4 flex items-center gap-1.5"
+              className="bg-primary/70 hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-300 rounded-full px-3 text-xs flex items-center gap-1"
             >
               Ver mais
-              <ArrowRight className="w-3.5 h-3.5" />
+              <ArrowRight className="w-3 h-3" />
             </Button>
           </div>
           
@@ -239,10 +239,10 @@ const Index = () => {
               <Button 
                 size="sm"
                 onClick={() => navigate('/noticias-juridicas')}
-                className="bg-primary/70 hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-300 rounded-full px-4 flex items-center gap-1.5"
+                className="bg-primary/70 hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-300 rounded-full px-3 text-xs flex items-center gap-1"
               >
                 Ver mais
-                <ArrowRight className="w-3.5 h-3.5" />
+                <ArrowRight className="w-3 h-3" />
               </Button>
             </div>
           </div>
