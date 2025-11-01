@@ -3721,6 +3721,33 @@ export type Database = {
         }
         Relationships: []
       }
+      user_daily_messages: {
+        Row: {
+          created_at: string | null
+          id: string
+          message_count: number
+          message_date: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          message_count?: number
+          message_date?: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          message_count?: number
+          message_date?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_usage_limits: {
         Row: {
           acesso_desktop_solicitado: boolean | null
