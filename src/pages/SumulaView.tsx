@@ -240,7 +240,7 @@ const SumulaView = () => {
         
 
         {/* Search Bar */}
-        <div className="px-4 pb-4 max-w-4xl mx-auto">
+        <div className="px-4 pb-4 max-w-4xl mx-0 my-0">
           <div className="space-y-2">
             <div className="relative animate-fade-in flex gap-2">
               <div className="relative flex-1">
