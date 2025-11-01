@@ -130,7 +130,7 @@ const CamaraDeputados = () => {
           return (
             <Card
               key={func.id}
-              className="cursor-pointer hover:scale-105 hover:shadow-2xl hover:-translate-y-1 transition-all border-2 border-transparent hover:border-accent/50 bg-gradient-to-br from-gray-900/95 to-gray-800/95 group shadow-xl overflow-hidden relative"
+              className="cursor-pointer hover:scale-105 hover:shadow-2xl hover:-translate-y-1 transition-all border-2 border-transparent hover:border-accent/50 bg-card group shadow-xl overflow-hidden relative"
               onClick={() => navigate(func.path)}
             >
               <div 
@@ -145,8 +145,8 @@ const CamaraDeputados = () => {
                 <div className={`flex items-center justify-center w-12 h-12 rounded-full ${func.iconBg} shadow-lg transition-transform group-hover:scale-110 mb-3`}>
                   <Icon className="w-5 h-5 text-white" />
                 </div>
-                <h3 className="font-bold text-base mb-2 text-white">{func.titulo}</h3>
-                <p className="text-xs text-gray-300 line-clamp-2">{func.descricao}</p>
+                <h3 className="font-bold text-base mb-2 text-foreground">{func.titulo}</h3>
+                <p className="text-xs text-muted-foreground line-clamp-2">{func.descricao}</p>
               </CardContent>
             </Card>
           );
