@@ -199,36 +199,39 @@ const Aprender = () => {
               {areasPreview.map((area, idx) => (
                 <div
                   key={idx}
-                  onClick={() => navigate(`/videoaulas/area/${encodeURIComponent(area.area)}`)}
-                  className="flex-shrink-0 w-72 cursor-pointer hover:scale-105 transition-all duration-300 group"
+                  className="flex-shrink-0 w-72"
                 >
-                  <div className="relative aspect-video bg-secondary rounded-xl overflow-hidden border-2 border-border hover:border-accent shadow-lg hover:shadow-2xl transition-all duration-300">
-                    {area.thumb && (
-                      <img
-                        src={area.thumb}
-                        alt={area.area}
-                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                        loading="lazy"
-                      />
-                    )}
-                    {/* Gradient overlay - mais intenso embaixo */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent" />
-                    
-                    {/* Play button overlay */}
-                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                      <div className="bg-red-600 rounded-full p-4 shadow-2xl transform group-hover:scale-110 transition-transform">
-                        <Video className="w-8 h-8 text-white" />
+                  <div className="bg-secondary/30 rounded-xl p-3 transition-all hover:bg-secondary/50">
+                    <div
+                      onClick={() => navigate(`/videoaulas/area/${encodeURIComponent(area.area)}`)}
+                      className="cursor-pointer group"
+                    >
+                      <div className="relative aspect-video bg-secondary rounded-lg overflow-hidden mb-3 shadow-lg">
+                        {area.thumb && (
+                          <img
+                            src={area.thumb}
+                            alt={area.area}
+                            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                            loading="lazy"
+                          />
+                        )}
+                        
+                        {/* Play button overlay */}
+                        <div className="absolute inset-0 bg-black/30 group-hover:bg-black/10 transition-colors flex items-center justify-center">
+                          <div className="bg-red-600 rounded-full p-3 shadow-lg group-hover:scale-110 transition-transform">
+                            <Video className="w-6 h-6 text-white" />
+                          </div>
+                        </div>
                       </div>
-                    </div>
-
-                    {/* Título e contagem no bottom */}
-                    <div className="absolute bottom-0 left-0 right-0 p-4">
-                      <h3 className="font-bold text-white text-base mb-1 drop-shadow-lg line-clamp-2">
-                        {area.area}
-                      </h3>
-                      <p className="text-white/80 text-xs drop-shadow-md">
-                        {area.count} {area.count === 1 ? 'vídeo' : 'vídeos'}
-                      </p>
+                      
+                      <div className="px-1">
+                        <h3 className="font-bold text-foreground text-base mb-1 line-clamp-2">
+                          {area.area}
+                        </h3>
+                        <p className="text-muted-foreground text-xs">
+                          {area.count} {area.count === 1 ? 'vídeo' : 'vídeos'}
+                        </p>
+                      </div>
                     </div>
                   </div>
                 </div>
