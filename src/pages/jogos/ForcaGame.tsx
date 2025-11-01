@@ -8,6 +8,8 @@ import { ForcaVisual } from "@/components/jogos/ForcaVisual";
 import { supabase } from "@/integrations/supabase/client";
 const LETRAS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
 const MAX_ERROS = 6;
+
+const normalize = (s: string) => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase();
 interface PalavraOpcao {
   palavra: string;
   dica: string;
@@ -37,7 +39,8 @@ const ForcaGame = () => {
   }, []);
   useEffect(() => {
     if (palavraAtual && !gameOver && etapa === 'jogo') {
-      const letrasNaPalavra = palavraAtual.palavra.split('');
+      const palavraNormalizada = normalize(palavraAtual.palavra);
+      const letrasNaPalavra = palavraNormalizada.split('');
       const acertou = letrasNaPalavra.every(letra => letrasEscolhidas.includes(letra));
       if (acertou) {
         setVitoria(true);
@@ -97,15 +100,25 @@ const ForcaGame = () => {
   const escolherLetra = (letra: string) => {
     if (gameOver || letrasEscolhidas.includes(letra) || !palavraAtual) return;
     setLetrasEscolhidas([...letrasEscolhidas, letra]);
-    if (!palavraAtual.palavra.includes(letra)) {
+    const palavraNormalizada = normalize(palavraAtual.palavra);
+    if (!palavraNormalizada.includes(letra)) {
       setErros(erros + 1);
     }
   };
   const renderPalavra = () => {
     if (!palavraAtual) return null;
-    return palavraAtual.palavra.split('').map((letra, idx) => <div key={idx} className={`w-10 h-12 border-b-4 flex items-center justify-center text-2xl font-bold mx-1 ${letrasEscolhidas.includes(letra) ? 'border-primary text-primary' : 'border-muted'}`}>
-        {letrasEscolhidas.includes(letra) ? letra : ''}
-      </div>);
+    return palavraAtual.palavra.split('').map((letra, idx) => {
+      const letraNormalizada = normalize(letra);
+      const foiEscolhida = letrasEscolhidas.includes(letraNormalizada);
+      return (
+        <div 
+          key={idx} 
+          className={`w-10 h-12 border-b-4 flex items-center justify-center text-2xl font-bold mx-1 ${foiEscolhida ? 'border-primary text-primary' : 'border-muted'}`}
+        >
+          {foiEscolhida ? letra : ''}
+        </div>
+      );
+    });
   };
   const pedirDica = () => {
     if (mostrarExemplo) {

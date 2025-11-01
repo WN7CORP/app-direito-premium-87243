@@ -69,7 +69,8 @@ export const Layout = ({ children }: LayoutProps) => {
     /\/biblioteca-oab\/\d+/.test(location.pathname) ||
     /\/biblioteca-oratoria\/\d+/.test(location.pathname) ||
     /\/biblioteca-lideranca\/\d+/.test(location.pathname) ||
-    /\/biblioteca-fora-da-toga\/\d+/.test(location.pathname);
+    /\/biblioteca-fora-da-toga\/\d+/.test(location.pathname) ||
+    location.pathname.startsWith("/jogos-juridicos");
   
   // Esconder Header em páginas com header próprio
   const hideHeader = location.pathname === "/professora" || location.pathname === "/chat-professora";

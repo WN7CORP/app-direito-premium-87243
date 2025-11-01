@@ -67,6 +67,25 @@ const JogoConfig = () => {
   };
   const selecionarTema = (tema: string) => {
     setSelectedTema(tema);
+    iniciarJogoComTema(tema);
+  };
+
+  const iniciarJogoComTema = (tema: string) => {
+    if (!selectedArea || !tipo) {
+      toast.error('Erro ao iniciar jogo');
+      return;
+    }
+    
+    const conteudo = `Tema: ${tema} - Área: ${selectedArea}`;
+    navigate(`/jogos-juridicos/${tipo}/jogar`, {
+      state: {
+        area: selectedArea,
+        tema: tema,
+        dificuldade,
+        conteudo,
+        tipo
+      }
+    });
   };
   const voltarEtapa = () => {
     if (etapa === 'selecao-tema') {
@@ -78,31 +97,11 @@ const JogoConfig = () => {
     }
   };
   const iniciarJogo = () => {
-    if (!selectedTema || !selectedArea) {
+    if (!selectedTema) {
       toast.error('Selecione um tema para o jogo');
       return;
     }
-    if (!tipo) {
-      toast.error('Tipo de jogo não identificado');
-      navigate('/jogos-juridicos');
-      return;
-    }
-    const conteudo = `Tema: ${selectedTema} - Área: ${selectedArea}`;
-    console.log('Iniciando jogo:', {
-      tipo,
-      area: selectedArea,
-      tema: selectedTema,
-      dificuldade
-    });
-    navigate(`/jogos-juridicos/${tipo}/jogar`, {
-      state: {
-        area: selectedArea,
-        tema: selectedTema,
-        dificuldade,
-        conteudo,
-        tipo
-      }
-    });
+    iniciarJogoComTema(selectedTema);
   };
   return <div className="px-3 py-4 max-w-4xl mx-auto min-h-screen">
       {/* Header */}
@@ -134,8 +133,8 @@ const JogoConfig = () => {
             <div className="grid grid-cols-3 gap-3">
               {(['facil', 'medio', 'dificil'] as const).map(nivel => <Card key={nivel} className={`cursor-pointer transition-all ${dificuldade === nivel ? 'border-2 border-primary shadow-lg' : 'border-2 border-transparent hover:border-accent/50'}`} onClick={() => setDificuldade(nivel)}>
                   <CardContent className="p-3 text-center">
-                    <div className={`w-8 h-8 mx-auto mb-2 rounded-full flex items-center justify-center ${nivel === 'facil' ? 'bg-green-500/20' : nivel === 'medio' ? 'bg-yellow-500/20' : 'bg-red-500/20'}`}>
-                      <Zap className={`w-4 h-4 ${nivel === 'facil' ? 'text-green-500' : nivel === 'medio' ? 'text-yellow-500' : 'text-red-500'}`} />
+                    <div className="w-8 h-8 mx-auto mb-2 rounded-full flex items-center justify-center bg-muted/20">
+                      <Zap className="w-4 h-4 text-muted-foreground" />
                     </div>
                     <p className="font-semibold capitalize">{nivel}</p>
                   </CardContent>
@@ -143,23 +142,21 @@ const JogoConfig = () => {
             </div>
           </div>
 
-          {/* Temas com estilo de flashcard */}
+          {/* Temas */}
           <div>
             <h2 className="text-lg font-semibold mb-3">📖 Selecione o Tema</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {temasAgrupados[selectedArea]?.map((tema, index) => {
-            // Cores baseadas no índice para variar
-            const cores = ['from-purple-500 to-purple-700', 'from-blue-500 to-blue-700', 'from-green-500 to-green-700', 'from-orange-500 to-orange-700', 'from-pink-500 to-pink-700', 'from-indigo-500 to-indigo-700'];
-            const corGradiente = cores[index % cores.length];
-            return <Card key={tema} className={`cursor-pointer transition-all relative overflow-hidden animate-fade-in ${selectedTema === tema ? 'border-2 border-primary shadow-lg scale-105' : 'border border-border hover:border-accent/50 hover:scale-102'}`} onClick={() => selecionarTema(tema)}>
-                    {/* Borda colorida no topo - estilo flashcard */}
-                    <div className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${corGradiente}`} />
-                    
-                    <CardContent className="p-4 pt-5">
-                      <p className="font-medium">{tema}</p>
-                    </CardContent>
-                  </Card>;
-          })}
+            <div className="grid grid-cols-1 gap-3">
+              {temasAgrupados[selectedArea]?.map((tema) => (
+                <Card 
+                  key={tema} 
+                  className={`cursor-pointer transition-all animate-fade-in ${selectedTema === tema ? 'border-2 border-primary shadow-lg' : 'border hover:border-accent/50'}`} 
+                  onClick={() => selecionarTema(tema)}
+                >
+                  <CardContent className="p-4 h-14 flex items-center">
+                    <p className="font-medium">{tema}</p>
+                  </CardContent>
+                </Card>
+              ))}
             </div>
           </div>
         </div>}
