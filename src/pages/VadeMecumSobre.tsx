@@ -2,22 +2,11 @@ import { useNavigate } from "react-router-dom";
 import { Scale, BookOpen, GraduationCap, Briefcase, Users, ChevronLeft } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-
 const VadeMecumSobre = () => {
   const navigate = useNavigate();
-
-  return (
-    <div className="min-h-screen pb-20 px-4 py-6 max-w-3xl mx-auto">
+  return <div className="min-h-screen pb-20 px-4 py-6 max-w-3xl mx-auto">
       {/* Botão Voltar */}
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={() => navigate(-1)}
-        className="mb-6"
-      >
-        <ChevronLeft className="w-4 h-4 mr-1" />
-        Voltar
-      </Button>
+      
 
       {/* Título Principal */}
       <div className="mb-8">
@@ -125,8 +114,6 @@ const VadeMecumSobre = () => {
           </div>
         </div>
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default VadeMecumSobre;
