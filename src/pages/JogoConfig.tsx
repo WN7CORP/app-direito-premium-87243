@@ -129,21 +129,8 @@ const JogoConfig = () => {
 
               <div className="space-y-4">
                 {Object.entries(temasAgrupados).map(([area, temas], idx) => {
-                  const getColorByIndex = (index: number) => {
-                    const colors = [
-                      { bg: 'bg-purple-500', border: 'border-l-purple-500', shadow: 'shadow-purple-500/50' },
-                      { bg: 'bg-blue-500', border: 'border-l-blue-500', shadow: 'shadow-blue-500/50' },
-                      { bg: 'bg-green-500', border: 'border-l-green-500', shadow: 'shadow-green-500/50' },
-                      { bg: 'bg-yellow-500', border: 'border-l-yellow-500', shadow: 'shadow-yellow-500/50' },
-                      { bg: 'bg-orange-500', border: 'border-l-orange-500', shadow: 'shadow-orange-500/50' },
-                      { bg: 'bg-red-500', border: 'border-l-red-500', shadow: 'shadow-red-500/50' },
-                      { bg: 'bg-pink-500', border: 'border-l-pink-500', shadow: 'shadow-pink-500/50' },
-                      { bg: 'bg-indigo-500', border: 'border-l-indigo-500', shadow: 'shadow-indigo-500/50' },
-                    ];
-                    return colors[index % colors.length];
-                  };
-                  
-                  const colors = getColorByIndex(idx);
+                  // Todas as áreas em roxo
+                  const colors = { bg: 'bg-purple-500/70', border: 'border-l-purple-500/70', shadow: 'shadow-purple-500/30' };
                   
                   return (
                     <div
@@ -171,7 +158,7 @@ const JogoConfig = () => {
                                 {temas.length} {temas.length === 1 ? 'tema' : 'temas'} disponíveis
                               </p>
                             </div>
-                            <div className="text-2xl">📚</div>
+                            <div className="text-2xl">💀</div>
                           </div>
                         </CardContent>
                       </Card>
@@ -209,9 +196,9 @@ const JogoConfig = () => {
               <div className="space-y-4">
                 {temasAgrupados[selectedArea]?.map((tema, idx) => {
                   const getColorByDifficulty = () => {
-                    if (dificuldade === 'facil') return { bg: 'bg-green-500', border: 'border-l-green-500', shadow: 'shadow-green-500/50' };
-                    if (dificuldade === 'medio') return { bg: 'bg-yellow-500', border: 'border-l-yellow-500', shadow: 'shadow-yellow-500/50' };
-                    return { bg: 'bg-red-500', border: 'border-l-red-500', shadow: 'shadow-red-500/50' };
+                    if (dificuldade === 'facil') return { bg: 'bg-green-500/70', border: 'border-l-green-500/70', shadow: 'shadow-green-500/30' };
+                    if (dificuldade === 'medio') return { bg: 'bg-yellow-500/70', border: 'border-l-yellow-500/70', shadow: 'shadow-yellow-500/30' };
+                    return { bg: 'bg-red-500/70', border: 'border-l-red-500/70', shadow: 'shadow-red-500/30' };
                   };
                   
                   const colors = getColorByDifficulty();
@@ -237,7 +224,7 @@ const JogoConfig = () => {
                         <CardContent className="p-4">
                           <div className="flex items-center justify-between">
                             <p className="font-medium flex-1">{tema}</p>
-                            <div className="text-xl">📖</div>
+                            <div className="text-xl">💀</div>
                           </div>
                         </CardContent>
                       </Card>
