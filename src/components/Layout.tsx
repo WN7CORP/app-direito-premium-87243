@@ -63,6 +63,13 @@ export const Layout = ({ children }: LayoutProps) => {
     location.pathname.startsWith("/meu-brasil/jurista/") ||
     location.pathname.startsWith("/iniciando-direito/") ||
     location.pathname.startsWith("/mapa-mental") ||
+    // Esconder em todas as páginas de bibliotecas
+    location.pathname === "/biblioteca-estudos" ||
+    location.pathname === "/biblioteca-classicos" ||
+    location.pathname === "/biblioteca-oab" ||
+    location.pathname === "/biblioteca-oratoria" ||
+    location.pathname === "/biblioteca-lideranca" ||
+    location.pathname === "/biblioteca-fora-da-toga" ||
     // Esconder em páginas de livros específicos (que contêm /número no final)
     /\/biblioteca-estudos\/\d+/.test(location.pathname) ||
     /\/biblioteca-classicos\/\d+/.test(location.pathname) ||
