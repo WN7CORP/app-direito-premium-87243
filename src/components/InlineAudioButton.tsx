@@ -44,23 +44,20 @@ const InlineAudioButton = ({ audioUrl, articleNumber, onPlay }: InlineAudioButto
         audioRef.current.pause();
         setIsPlaying(false);
       } else {
-        setLoading(true);
+        setIsPlaying(true);
         if (onPlay) {
           onPlay(audioRef.current);
         } else {
-          await playNarration(audioRef.current);
+          playNarration(audioRef.current);
         }
-        setIsPlaying(true);
-        setLoading(false);
       }
     } catch (error) {
       console.error('Erro ao reproduzir áudio:', error);
-      setLoading(false);
       setIsPlaying(false);
     }
   };
 
-  const handleCanPlayThrough = () => {
+  const handleLoadedMetadata = () => {
     setLoading(false);
   };
 
@@ -83,7 +80,8 @@ const InlineAudioButton = ({ audioUrl, articleNumber, onPlay }: InlineAudioButto
         src={audioUrl}
         onTimeUpdate={handleTimeUpdate}
         onEnded={handleEnded}
-        onCanPlayThrough={handleCanPlayThrough}
+        onLoadedMetadata={handleLoadedMetadata}
+        preload="auto"
       />
       
       {/* Botão de Narração - maior e com texto branco */}
