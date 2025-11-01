@@ -135,11 +135,13 @@ const VadeMecumTodas = () => {
         <h2 className="text-xl font-bold text-foreground">Poder Legislativo</h2>
         
         <div className="grid grid-cols-2 gap-4">
-          <button
-            onClick={() => navigate("/eleicoes")}
-            className="bg-card rounded-xl p-4 text-left transition-all hover:scale-105 hover:shadow-xl animate-fade-in"
+          <div
+            className="bg-card rounded-xl p-4 text-left opacity-60 cursor-not-allowed animate-fade-in relative"
             style={{ animationDelay: '0.5s', animationFillMode: 'backwards' }}
           >
+            <div className="absolute top-2 right-2 bg-yellow-500 text-white text-[10px] font-semibold px-2 py-0.5 rounded-full">
+              Em breve
+            </div>
             <div className="bg-green-500 rounded-full p-3 w-fit mb-3 shadow-lg">
               <Vote className="w-6 h-6 text-white" />
             </div>
@@ -149,7 +151,7 @@ const VadeMecumTodas = () => {
             <p className="text-muted-foreground text-xs">
               Dados e resultados eleitorais
             </p>
-          </button>
+          </div>
 
           <button
             onClick={() => navigate("/camara-deputados")}
