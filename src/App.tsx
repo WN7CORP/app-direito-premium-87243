@@ -10,8 +10,6 @@ import { AmbientSoundProvider } from "./contexts/AmbientSoundContext";
 import { NarrationPlayerProvider } from "./contexts/NarrationPlayerContext";
 import GlobalAudioPlayer from "./components/GlobalAudioPlayer";
 import AmbientSoundPlayer from "./components/AmbientSoundPlayer";
-import { AvaliarAppModal } from "./components/AvaliarAppModal";
-import { useAppRating } from "./hooks/useAppRating";
 import Index from "./pages/Index";
 import Codigos from "./pages/Codigos";
 import CodigoView from "./pages/CodigoView";
@@ -174,13 +172,6 @@ const ScrollToTop = () => {
 };
 
 const App = () => {
-  const {
-    shouldShowRating,
-    deviceType,
-    handleRated,
-    handlePostpone,
-  } = useAppRating();
-
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
@@ -345,13 +336,6 @@ const App = () => {
               </Routes>
               <GlobalAudioPlayer />
               <AmbientSoundPlayer />
-              <AvaliarAppModal
-                open={shouldShowRating}
-                onOpenChange={() => {}}
-                deviceType={deviceType}
-                onRated={handleRated}
-                onPostpone={handlePostpone}
-              />
             </Layout>
             </AmbientSoundProvider>
           </AudioPlayerProvider>
