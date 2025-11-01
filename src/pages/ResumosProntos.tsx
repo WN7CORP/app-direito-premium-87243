@@ -162,31 +162,51 @@ const ResumosProntos = () => {
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            {areasFiltradas?.map((area) => (
-              <Card
-                key={area.area}
-                className="cursor-pointer hover:shadow-md transition-all hover:border-accent/50 group"
-                onClick={() => setAreaSelecionada(area.area)}
-              >
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 rounded-lg bg-accent/10 group-hover:bg-accent/20 transition-colors">
-                        <BookOpen className="w-5 h-5 text-accent" />
-                      </div>
-                      <div>
-                        <h3 className="font-semibold text-sm">{area.area}</h3>
-                        <p className="text-xs text-muted-foreground">
-                          {area.count} {area.count === 1 ? "resumo" : "resumos"}
-                        </p>
-                      </div>
-                    </div>
-                    <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-accent transition-colors" />
+          <div className="space-y-4">
+            {areasFiltradas?.map((area, idx) => {
+              const colors = { bg: 'bg-purple-500/70', border: 'border-l-purple-500/70', shadow: 'shadow-purple-500/30' };
+              
+              return (
+                <div
+                  key={area.area}
+                  className="relative"
+                  style={{ paddingLeft: '2.5rem' }}
+                >
+                  {/* Número circular */}
+                  <div
+                    className={`absolute left-0 top-1/2 -translate-y-1/2 w-10 h-10 ${colors.bg} rounded-full flex items-center justify-center text-white font-bold text-base z-10 ${colors.shadow} shadow-lg`}
+                  >
+                    {idx + 1}
                   </div>
-                </CardContent>
-              </Card>
-            ))}
+
+                  {/* Linha vertical */}
+                  {idx < (areasFiltradas?.length || 0) - 1 && (
+                    <div
+                      className="absolute left-5 top-1/2 w-0.5 bg-border"
+                      style={{ height: 'calc(100% + 1rem)', transform: 'translateX(-50%)' }}
+                    />
+                  )}
+
+                  {/* Card */}
+                  <Card
+                    className={`cursor-pointer hover:shadow-md transition-all hover:border-accent/50 group border-l-4 ${colors.border}`}
+                    onClick={() => setAreaSelecionada(area.area)}
+                  >
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1">
+                          <h3 className="font-semibold text-sm mb-1">{area.area}</h3>
+                          <p className="text-xs text-muted-foreground">
+                            {area.count} {area.count === 1 ? "resumo" : "resumos"}
+                          </p>
+                        </div>
+                        <div className="text-2xl">📚</div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              );
+            })}
           </div>
         )}
       </div>
@@ -231,37 +251,57 @@ const ResumosProntos = () => {
           ))}
         </div>
       ) : (
-        <div className="space-y-3">
-          {temasFiltrados?.map((tema) => (
-            <Card
-              key={tema.tema}
-              className="cursor-pointer hover:shadow-md transition-all hover:border-accent/50 group"
-              onClick={() =>
-                navigate(
-                  `/resumos-juridicos/prontos/${encodeURIComponent(
-                    areaSelecionada
-                  )}/${encodeURIComponent(tema.tema)}`
-                )
-              }
-            >
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-lg bg-accent/10 group-hover:bg-accent/20 transition-colors">
-                      <FileText className="w-5 h-5 text-accent" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-sm">{tema.tema}</h3>
-                      <p className="text-xs text-muted-foreground">
-                        {tema.count} {tema.count === 1 ? "subtema" : "subtemas"}
-                      </p>
-                    </div>
-                  </div>
-                  <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-accent transition-colors" />
+        <div className="space-y-4">
+          {temasFiltrados?.map((tema, idx) => {
+            const colors = { bg: 'bg-purple-500/70', border: 'border-l-purple-500/70', shadow: 'shadow-purple-500/30' };
+            
+            return (
+              <div
+                key={tema.tema}
+                className="relative"
+                style={{ paddingLeft: '2.5rem' }}
+              >
+                {/* Número circular */}
+                <div
+                  className={`absolute left-0 top-1/2 -translate-y-1/2 w-10 h-10 ${colors.bg} rounded-full flex items-center justify-center text-white font-bold text-base z-10 ${colors.shadow} shadow-lg`}
+                >
+                  {idx + 1}
                 </div>
-              </CardContent>
-            </Card>
-          ))}
+
+                {/* Linha vertical */}
+                {idx < (temasFiltrados?.length || 0) - 1 && (
+                  <div
+                    className="absolute left-5 top-1/2 w-0.5 bg-border"
+                    style={{ height: 'calc(100% + 1rem)', transform: 'translateX(-50%)' }}
+                  />
+                )}
+
+                {/* Card */}
+                <Card
+                  className={`cursor-pointer hover:shadow-md transition-all hover:border-accent/50 group border-l-4 ${colors.border}`}
+                  onClick={() =>
+                    navigate(
+                      `/resumos-juridicos/prontos/${encodeURIComponent(
+                        areaSelecionada
+                      )}/${encodeURIComponent(tema.tema)}`
+                    )
+                  }
+                >
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-sm mb-1">{tema.tema}</h3>
+                        <p className="text-xs text-muted-foreground">
+                          {tema.count} {tema.count === 1 ? "subtema" : "subtemas"}
+                        </p>
+                      </div>
+                      <div className="text-2xl">📖</div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            );
+          })}
         </div>
       )}
     </div>

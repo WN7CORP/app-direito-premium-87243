@@ -6,20 +6,13 @@ const Ferramentas = () => {
 
   const ferramentas = [
     {
-      id: "meu-brasil",
-      titulo: "Meu Brasil",
-      descricao: "História, juristas, casos famosos e instituições brasileiras",
-      icon: MapPin,
-      path: "/meu-brasil",
-      iconColor: "bg-green-500",
-    },
-    {
       id: "assistente-pessoal",
       titulo: "Assistente Pessoal",
       descricao: "Assistente jurídica no WhatsApp para te ajudar no dia a dia",
       icon: MessageCircle,
       path: "/assistente-pessoal",
       iconColor: "bg-green-500",
+      emBreve: false,
     },
     {
       id: "noticias-juridicas",
@@ -28,6 +21,7 @@ const Ferramentas = () => {
       icon: Newspaper,
       path: "/noticias-juridicas",
       iconColor: "bg-red-500",
+      emBreve: false,
     },
     {
       id: "dicionario",
@@ -36,6 +30,7 @@ const Ferramentas = () => {
       icon: Gavel,
       path: "/dicionario",
       iconColor: "bg-gray-500",
+      emBreve: false,
     },
     {
       id: "juriflix",
@@ -44,6 +39,7 @@ const Ferramentas = () => {
       icon: Film,
       path: "/juriflix",
       iconColor: "bg-red-500",
+      emBreve: false,
     },
     {
       id: "ranking-faculdades",
@@ -52,14 +48,16 @@ const Ferramentas = () => {
       icon: GraduationCap,
       path: "/ranking-faculdades",
       iconColor: "bg-gray-600",
+      emBreve: false,
     },
     {
-      id: "advogado",
-      titulo: "Advogado",
+      id: "peticoes",
+      titulo: "Petições",
       descricao: "Modelos e criação de petições com IA",
       icon: Scale,
       path: "/advogado",
       iconColor: "bg-blue-500",
+      emBreve: false,
     },
     {
       id: "analisar",
@@ -68,6 +66,16 @@ const Ferramentas = () => {
       icon: ScanText,
       path: "/analisar",
       iconColor: "bg-amber-500",
+      emBreve: true,
+    },
+    {
+      id: "meu-brasil",
+      titulo: "Meu Brasil",
+      descricao: "História, juristas, casos famosos e instituições brasileiras",
+      icon: MapPin,
+      path: "/meu-brasil",
+      iconColor: "bg-green-500",
+      emBreve: true,
     },
   ];
 
@@ -86,9 +94,19 @@ const Ferramentas = () => {
           return (
             <button
               key={ferramenta.id}
-              onClick={() => navigate(ferramenta.path)}
-              className="bg-card rounded-2xl md:rounded-xl p-5 md:p-4 text-left transition-all hover:scale-105 hover:shadow-xl min-h-[180px] md:min-h-[160px] flex flex-col border border-border shadow-lg"
+              onClick={() => !ferramenta.emBreve && navigate(ferramenta.path)}
+              className={`bg-card rounded-2xl md:rounded-xl p-5 md:p-4 text-left transition-all min-h-[180px] md:min-h-[160px] flex flex-col border border-border shadow-lg relative ${
+                ferramenta.emBreve 
+                  ? 'opacity-60 cursor-not-allowed' 
+                  : 'hover:scale-105 hover:shadow-xl'
+              }`}
+              disabled={ferramenta.emBreve}
             >
+              {ferramenta.emBreve && (
+                <div className="absolute top-2 right-2 bg-yellow-500 text-white text-[10px] font-bold px-2 py-1 rounded-full">
+                  Em Breve
+                </div>
+              )}
               <div className={`${ferramenta.iconColor} rounded-full p-3 md:p-2.5 w-fit mb-4 md:mb-3`}>
                 <Icon className="w-6 h-6 md:w-5 md:h-5 text-white" />
               </div>
