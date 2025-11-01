@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { toast } from "sonner";
 import { ForcaVisual } from "@/components/jogos/ForcaVisual";
 import { supabase } from "@/integrations/supabase/client";
+import useSound from "use-sound";
 const LETRAS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
 const MAX_ERROS = 6;
 
@@ -34,6 +35,10 @@ const ForcaGame = () => {
   const [loading, setLoading] = useState(true);
   const [mostrarExemplo, setMostrarExemplo] = useState(false);
   const [etapa, setEtapa] = useState<'selecao' | 'jogo'>('selecao');
+
+  // Sons
+  const [playCorrect] = useSound('/sounds/correct.mp3', { volume: 0.5 });
+  const [playError] = useSound('/sounds/error.mp3', { volume: 0.5 });
   useEffect(() => {
     carregarJogo();
   }, []);
@@ -181,10 +186,15 @@ const ForcaGame = () => {
   };
   const escolherLetra = (letra: string) => {
     if (gameOver || letrasEscolhidas.includes(letra) || !palavraAtual) return;
+    
     setLetrasEscolhidas([...letrasEscolhidas, letra]);
     const palavraNormalizada = normalize(palavraAtual.palavra);
+    
     if (!palavraNormalizada.includes(letra)) {
       setErros(erros + 1);
+      playError(); // Som de erro
+    } else {
+      playCorrect(); // Som de acerto
     }
   };
   const renderPalavra = () => {
@@ -380,8 +390,8 @@ const ForcaGame = () => {
 
             {/* Exemplo Revelado */}
             {mostrarExemplo && (
-              <div className="mt-3 p-3 bg-yellow-400/20 rounded-lg border border-yellow-400/40">
-                <p className="text-sm text-yellow-800 dark:text-yellow-200 font-medium">
+              <div className="mt-3 p-3 bg-yellow-500 rounded-lg border border-yellow-600">
+                <p className="text-sm text-white font-medium">
                   {palavraAtual.exemplo}
                 </p>
               </div>

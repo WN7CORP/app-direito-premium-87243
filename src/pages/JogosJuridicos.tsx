@@ -8,7 +8,8 @@ const jogos = [{
   icone: "🎯",
   cor: "from-purple-500 to-purple-700",
   iconBg: "bg-purple-600",
-  glowColor: "rgb(147, 51, 234)"
+  glowColor: "rgb(147, 51, 234)",
+  disponivel: true
 }, {
   id: "cruzadas",
   nome: "Palavras Cruzadas",
@@ -16,7 +17,8 @@ const jogos = [{
   icone: "📝",
   cor: "from-green-500 to-green-700",
   iconBg: "bg-green-600",
-  glowColor: "rgb(34, 197, 94)"
+  glowColor: "rgb(34, 197, 94)",
+  disponivel: false
 }, {
   id: "caca_palavras",
   nome: "Caça-Palavras",
@@ -24,7 +26,8 @@ const jogos = [{
   icone: "🔍",
   cor: "from-blue-500 to-blue-700",
   iconBg: "bg-blue-600",
-  glowColor: "rgb(59, 130, 246)"
+  glowColor: "rgb(59, 130, 246)",
+  disponivel: false
 }, {
   id: "stop",
   nome: "Stop Jurídico",
@@ -32,7 +35,8 @@ const jogos = [{
   icone: "⏱️",
   cor: "from-orange-500 to-orange-700",
   iconBg: "bg-orange-600",
-  glowColor: "rgb(249, 115, 22)"
+  glowColor: "rgb(249, 115, 22)",
+  disponivel: false
 }];
 const JogosJuridicos = () => {
   const navigate = useNavigate();
@@ -52,7 +56,11 @@ const JogosJuridicos = () => {
 
       {/* Grid de Jogos */}
       <div className="grid grid-cols-2 lg:grid-cols-2 gap-4">
-        {jogos.map(jogo => <Card key={jogo.id} className="cursor-pointer hover:scale-105 hover:shadow-2xl hover:-translate-y-1 transition-all border-2 border-transparent hover:border-accent/50 bg-gradient-to-br from-card to-card/80 group shadow-xl overflow-hidden relative animate-fade-in" onClick={() => navigate(`/jogos-juridicos/${jogo.id}/config`)}>
+        {jogos.map(jogo => <Card 
+          key={jogo.id} 
+          className={`${jogo.disponivel ? 'cursor-pointer hover:scale-105 hover:shadow-2xl hover:-translate-y-1' : 'cursor-not-allowed opacity-60'} transition-all border-2 border-transparent ${jogo.disponivel ? 'hover:border-accent/50' : ''} bg-gradient-to-br from-card to-card/80 group shadow-xl overflow-hidden relative animate-fade-in`}
+          onClick={() => jogo.disponivel && navigate(`/jogos-juridicos/${jogo.id}/config`)}
+        >
             {/* Brilho colorido no topo */}
             <div className="absolute top-0 left-0 right-0 h-1 opacity-80" style={{
           background: `linear-gradient(90deg, transparent, ${jogo.glowColor}, transparent)`,
@@ -60,11 +68,16 @@ const JogosJuridicos = () => {
         }} />
             
             <CardContent className="p-4 md:p-6 flex flex-col items-center text-center min-h-[180px] md:min-h-[200px] justify-center">
-              <div className={`text-4xl md:text-5xl mb-3 md:mb-4 group-hover:scale-110 transition-transform`}>
+              <div className={`text-4xl md:text-5xl mb-3 md:mb-4 ${jogo.disponivel ? 'group-hover:scale-110' : ''} transition-transform ${!jogo.disponivel ? 'grayscale' : ''}`}>
                 {jogo.icone}
               </div>
               <h3 className="font-bold text-base md:text-lg mb-2 leading-tight">{jogo.nome}</h3>
               <p className="text-xs md:text-sm text-muted-foreground leading-snug">{jogo.descricao}</p>
+              {!jogo.disponivel && (
+                <div className="mt-2 px-3 py-1 bg-yellow-500/20 text-yellow-700 dark:text-yellow-300 rounded-full text-xs font-semibold">
+                  Em breve
+                </div>
+              )}
             </CardContent>
           </Card>)}
       </div>
