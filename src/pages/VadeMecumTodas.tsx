@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { Crown, Gavel, FileText, BookText, Search, Scale, Info, Vote, Landmark } from "lucide-react";
+import { Crown, Gavel, FileText, BookText, Search, Scale, Info, Vote, Landmark, Shield } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Card, CardContent } from "@/components/ui/card";
@@ -27,6 +27,14 @@ const VadeMecumTodas = () => {
       icon: Scale,
       iconBg: "bg-red-500",
       route: "/codigos"
+    },
+    {
+      id: "legislacao-penal",
+      title: "Legislação Penal",
+      description: "LEP, Drogas, Maria da Penha",
+      icon: Shield,
+      iconBg: "bg-red-600",
+      route: "/legislacao-penal-especial"
     },
     {
       id: "estatutos",

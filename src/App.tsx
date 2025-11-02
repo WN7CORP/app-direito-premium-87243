@@ -159,6 +159,9 @@ import IniciandoDireitoTemas from "./pages/IniciandoDireitoTemas";
 import IniciandoDireitoAula from "./pages/IniciandoDireitoAula";
 import MapaMentalAreas from "./pages/MapaMentalAreas";
 import MapaMentalTemas from "./pages/MapaMentalTemas";
+import LegislacaoPenalEspecial from "./pages/LegislacaoPenalEspecial";
+import LepView from "./pages/LepView";
+import JuizadosEspeciaisView from "./pages/JuizadosEspeciaisView";
 
 const queryClient = new QueryClient();
 
@@ -191,6 +194,9 @@ const App = () => {
               <Route path="/vade-mecum/sobre" element={<VadeMecumSobre />} />
               <Route path="/codigos" element={<Codigos />} />
               <Route path="/codigo/:id" element={<CodigoView />} />
+              <Route path="/legislacao-penal-especial" element={<LegislacaoPenalEspecial />} />
+              <Route path="/lei-penal/lep" element={<LepView />} />
+              <Route path="/lei-penal/juizados-especiais" element={<JuizadosEspeciaisView />} />
               <Route path="/video-aula" element={<VideoAula />} />
               <Route path="/cursos" element={<Cursos />} />
               <Route path="/cursos/modulos" element={<CursosModulos />} />
