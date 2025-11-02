@@ -122,10 +122,12 @@ const SumulaView = () => {
       const texto = sumula["Texto da Súmula"]?.toLowerCase();
       const numero = sumula.id?.toString();
 
-      // Busca exata por número
-      if (isNumericSearch && numero === searchLower) return true;
+      // Se for busca numérica, só buscar por número exato
+      if (isNumericSearch) {
+        return numero === searchLower;
+      }
 
-      // Busca textual parcial
+      // Busca textual parcial apenas se não for numérica
       return titulo?.includes(searchLower) || texto?.includes(searchLower);
     });
   }, [sumulas, searchQuery]);
