@@ -71,7 +71,7 @@ const LepView = () => {
   const { data: articles = [], isLoading } = useQuery({
     queryKey: ['lep-articles'],
     queryFn: async () => {
-      const data = await fetchAllRows<Article>(tableName, "id");
+      const data = await fetchAllRows<Article>(tableName, "ordem");
       return data as any as Article[];
     },
     staleTime: 1000 * 60 * 30,

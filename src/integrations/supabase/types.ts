@@ -2903,6 +2903,7 @@ export type Database = {
           id: number
           Narração: string | null
           "Número do Artigo": string | null
+          ordem: number | null
           questoes: Json | null
           termos: Json | null
           termos_aprofundados: Json | null
@@ -2924,6 +2925,7 @@ export type Database = {
           id: number
           Narração?: string | null
           "Número do Artigo"?: string | null
+          ordem?: number | null
           questoes?: Json | null
           termos?: Json | null
           termos_aprofundados?: Json | null
@@ -2945,6 +2947,7 @@ export type Database = {
           id?: number
           Narração?: string | null
           "Número do Artigo"?: string | null
+          ordem?: number | null
           questoes?: Json | null
           termos?: Json | null
           termos_aprofundados?: Json | null
