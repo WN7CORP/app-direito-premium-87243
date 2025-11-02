@@ -57,7 +57,7 @@ const LepView = () => {
   const [perguntaData, setPerguntaData] = useState({ artigo: "", numeroArtigo: "" });
   const [activeTab, setActiveTab] = useState<'artigos' | 'playlist' | 'ranking'>('artigos');
 
-  const tableName = "LEP - Lei 7.210/1984";
+  const tableName = "Lei 7.210 de 1984 - Lei de Execução Penal";
   const codeName = "Lei de Execução Penal";
   const abbreviation = "LEP";
 
@@ -125,7 +125,19 @@ const LepView = () => {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <div className="sticky top-0 z-30">
+      <div className="sticky top-0 z-40 bg-background border-b border-border">
+        <div className="flex items-center gap-3 px-4 py-3 max-w-4xl mx-auto">
+          <button onClick={() => navigate(-1)} className="p-2 hover:bg-secondary rounded-lg transition-colors">
+            <ArrowLeft className="w-5 h-5" />
+          </button>
+          <div>
+            <h1 className="font-bold text-lg">Lei de Execução Penal</h1>
+            <p className="text-xs text-muted-foreground">LEP - Lei 7.210/1984</p>
+          </div>
+        </div>
+      </div>
+
+      <div className="sticky top-[60px] z-30">
         <VadeMecumTabs 
           activeTab={activeTab}
           onTabChange={(tab) => setActiveTab(tab as any)}
@@ -133,7 +145,7 @@ const LepView = () => {
       </div>
 
       {activeTab === 'artigos' && (
-        <div className="sticky top-[60px] bg-background border-b border-border z-20">
+        <div className="sticky top-[72px] bg-background border-b border-border z-20">
           <div className="px-4 pt-4 pb-2 max-w-4xl mx-auto">
             <div className="space-y-2">
               <div className="relative animate-fade-in flex gap-2">
@@ -243,7 +255,38 @@ const LepView = () => {
                       </Button>
                     )}
                   </div>
-                  <div className="prose prose-sm max-w-none" style={{ fontSize: `${fontSize}px` }} dangerouslySetInnerHTML={{ __html: formatTextWithUppercase(article["Artigo"] || "Conteúdo não disponível") }} />
+                  <div className="prose prose-sm max-w-none mb-4" style={{ fontSize: `${fontSize}px` }} dangerouslySetInnerHTML={{ __html: formatTextWithUppercase(article["Artigo"] || "Conteúdo não disponível") }} />
+                  
+                  {article["Número do Artigo"] && (
+                    <div className="flex flex-wrap gap-2 mt-4">
+                      <ArtigoActionsMenu
+                        article={article}
+                        onOpenExplicacao={(tipo) => {
+                          setModalData({ artigo: article["Artigo"] || "", numeroArtigo: article["Número do Artigo"] || "", tipo, nivel: "tecnico" });
+                          setModalOpen(true);
+                        }}
+                        onOpenTermos={() => {
+                          setTermosData({ artigo: article["Artigo"] || "", numeroArtigo: article["Número do Artigo"] || "" });
+                          setTermosModalOpen(true);
+                        }}
+                        onOpenQuestoes={() => {
+                          setQuestoesData({ artigo: article["Artigo"] || "", numeroArtigo: article["Número do Artigo"] || "" });
+                          setQuestoesModalOpen(true);
+                        }}
+                        onGenerateFlashcards={() => handleGenerateFlashcards(article["Artigo"] || "", article["Número do Artigo"] || "")}
+                        onPerguntar={() => {
+                          setPerguntaData({ artigo: article["Artigo"] || "", numeroArtigo: article["Número do Artigo"] || "" });
+                          setPerguntaModalOpen(true);
+                        }}
+                        onShareWhatsApp={() => {
+                          const text = `*LEP - Art. ${article["Número do Artigo"]}*\n\n${article["Artigo"] || ""}`;
+                          const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
+                          window.open(url, '_blank');
+                        }}
+                        loadingFlashcards={loadingFlashcards}
+                      />
+                    </div>
+                  )}
                 </div>
               ))
             )}
