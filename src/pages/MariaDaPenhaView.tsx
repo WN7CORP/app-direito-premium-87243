@@ -22,6 +22,7 @@ import { VadeMecumPlaylist } from "@/components/VadeMecumPlaylist";
 import { VadeMecumRanking } from "@/components/VadeMecumRanking";
 import { ArtigoActionsMenu } from "@/components/ArtigoActionsMenu";
 import { useArticleTracking } from "@/hooks/useArticleTracking";
+import { formatForWhatsApp } from "@/lib/formatWhatsApp";
 
 interface Article {
   id: number;
@@ -225,6 +226,7 @@ const MariaDaPenhaView = () => {
                   article={article}
                   abbreviation={abbreviation}
                   isFirstResult={index === 0}
+                  fontSize={fontSize}
                   onOpenExplicacao={(tipo, nivel) => {
                     setModalData({
                       artigo: article["Artigo"] || "",
@@ -314,6 +316,7 @@ interface ArticleCardProps {
   article: Article;
   abbreviation: string;
   isFirstResult: boolean;
+  fontSize: number;
   onOpenExplicacao: (tipo: "explicacao" | "exemplo", nivel: "tecnico" | "simples") => void;
   onOpenVideoAula: (videoUrl: string) => void;
   onGenerateFlashcards: () => void;
@@ -329,6 +332,7 @@ const ArticleCard = ({
   article,
   abbreviation,
   isFirstResult,
+  fontSize,
   onOpenExplicacao,
   onOpenVideoAula,
   onGenerateFlashcards,
@@ -346,11 +350,16 @@ const ArticleCard = ({
     enabled: !!article["Número do Artigo"]
   });
 
-  // Se não tiver número, é um título/seção
-  if (!article["Número do Artigo"]) {
+  const hasNumber = article["Número do Artigo"] && article["Número do Artigo"].trim() !== "";
+
+  // Se não tem número, renderiza como cabeçalho de seção (igual ao Código Penal)
+  if (!hasNumber) {
     return (
-      <div key={article.id} className="my-6">
-        <h2 className="text-xl font-bold text-accent" dangerouslySetInnerHTML={{ __html: formatTextWithUppercase(article["Artigo"] || "") }} />
+      <div key={article.id} className="text-center mb-4 mt-6 font-serif-content">
+        <div 
+          className="text-sm leading-tight text-muted-foreground/80 whitespace-pre-line" 
+          dangerouslySetInnerHTML={{ __html: formatTextWithUppercase(article["Artigo"] || "") }} 
+        />
       </div>
     );
   }
@@ -358,52 +367,58 @@ const ArticleCard = ({
   const shareOnWhatsApp = () => {
     const numeroArtigo = article["Número do Artigo"];
     const conteudo = article["Artigo"];
-    const mensagem = `📜 *Lei 11.340/2006 - Lei Maria da Penha*\n\n*Art. ${numeroArtigo}*\n\n${conteudo}\n\n_Compartilhado via Vade Mecum Digital_`;
-    const url = `https://wa.me/?text=${encodeURIComponent(mensagem)}`;
-    window.open(url, '_blank');
+    const fullText = `*Art. ${numeroArtigo}*\n\n${conteudo}`;
+    const formattedText = formatForWhatsApp(fullText);
+    const encodedText = encodeURIComponent(formattedText);
+    const whatsappUrl = `https://wa.me/?text=${encodedText}`;
+    window.open(whatsappUrl, '_blank');
   };
 
+  // Se tem número, renderiza como card normal (igual ao Código Penal)
   return (
     <div 
       ref={isFirstResult ? elementRef as any : elementRef} 
       id={`article-${article["Número do Artigo"]}`}
-      className="bg-card rounded-lg p-5 border border-border shadow-sm hover:shadow-md transition-shadow scroll-mt-24"
+      className="relative bg-card/80 backdrop-blur-sm rounded-2xl p-6 mb-6 border border-border/50 hover:border-accent/30 transition-all duration-300 animate-fade-in hover:shadow-lg scroll-mt-4"
     >
-      <div className="flex items-start justify-between gap-3 mb-3">
-        <div className="flex items-center gap-3">
-          <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary/10">
-            <span className="text-sm font-bold text-primary">{article["Número do Artigo"]}</span>
-          </div>
-          <div>
-            <h3 className="font-bold text-lg">Art. {article["Número do Artigo"]}</h3>
-            <p className="text-xs text-muted-foreground">{abbreviation}</p>
-          </div>
-        </div>
-        {article["Narração"] && (
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => onPlayNarration(article["Narração"] || "", `Art. ${article["Número do Artigo"]}`)}
-          >
-            Ouvir
-          </Button>
-        )}
-      </div>
-      
-      <div className="prose prose-sm max-w-none mb-4" dangerouslySetInnerHTML={{ __html: formatTextWithUppercase(article["Artigo"] || "Conteúdo não disponível") }} />
-      
-      <ArtigoActionsMenu
-        article={article}
-        onPlayComment={(audioUrl, title) => onPlayComment(audioUrl, title)}
-        onOpenAula={article["Aula"] ? () => onOpenVideoAula(article["Aula"]!) : undefined}
-        onOpenExplicacao={(tipo) => onOpenExplicacao(tipo, "tecnico")}
-        onGenerateFlashcards={onGenerateFlashcards}
-        onOpenTermos={onOpenTermos}
-        onOpenQuestoes={onOpenQuestoes}
-        onPerguntar={onPerguntar}
-        onShareWhatsApp={shareOnWhatsApp}
-        loadingFlashcards={loadingFlashcards}
+      <CopyButton 
+        text={article["Artigo"] || ""}
+        articleNumber={article["Número do Artigo"] || ""}
+        narrationUrl={article["Narração"] || undefined}
       />
+      
+      {/* Article Header */}
+      <h2 className="text-accent font-bold text-xl md:text-2xl mb-3 animate-scale-in">
+        Art. {article["Número do Artigo"]}
+      </h2>
+
+      {/* Article Content */}
+      <div
+        className="article-content text-foreground/90 mb-6 whitespace-pre-line leading-relaxed font-serif-content"
+        style={{
+          fontSize: `${fontSize}px`,
+          lineHeight: "1.7"
+        }}
+        dangerouslySetInnerHTML={{
+          __html: formatTextWithUppercase(article["Artigo"] || "Conteúdo não disponível")
+        }}
+      />
+
+      {/* Action Menu */}
+      <div className="mb-4 animate-fade-in">
+        <ArtigoActionsMenu
+          article={article}
+          onPlayComment={(audioUrl, title) => onPlayComment(audioUrl, title)}
+          onOpenAula={article["Aula"] ? () => onOpenVideoAula(article["Aula"]!) : undefined}
+          onOpenExplicacao={(tipo) => onOpenExplicacao(tipo, "tecnico")}
+          onGenerateFlashcards={onGenerateFlashcards}
+          onOpenTermos={onOpenTermos}
+          onOpenQuestoes={onOpenQuestoes}
+          onPerguntar={onPerguntar}
+          onShareWhatsApp={shareOnWhatsApp}
+          loadingFlashcards={loadingFlashcards}
+        />
+      </div>
     </div>
   );
 };
