@@ -163,6 +163,7 @@ import LegislacaoPenalEspecial from "./pages/LegislacaoPenalEspecial";
 import LepView from "./pages/LepView";
 import JuizadosEspeciaisView from "./pages/JuizadosEspeciaisView";
 import MariaDaPenhaView from "./pages/MariaDaPenhaView";
+import LeiDrogasView from "./pages/LeiDrogasView";
 
 const queryClient = new QueryClient();
 
@@ -199,6 +200,7 @@ const App = () => {
               <Route path="/lei-penal/lep" element={<LepView />} />
               <Route path="/lei-penal/juizados-especiais" element={<JuizadosEspeciaisView />} />
               <Route path="/lei-penal/maria-da-penha" element={<MariaDaPenhaView />} />
+              <Route path="/lei-penal/lei-drogas" element={<LeiDrogasView />} />
               <Route path="/video-aula" element={<VideoAula />} />
               <Route path="/cursos" element={<Cursos />} />
               <Route path="/cursos/modulos" element={<CursosModulos />} />
