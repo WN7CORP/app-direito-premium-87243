@@ -2691,7 +2691,7 @@ export type Database = {
         }
         Relationships: []
       }
-      "Lei 11.340/2006 - Maria da Penha": {
+      "Lei 11.340 de 2006 - Maria da Penha": {
         Row: {
           Artigo: string | null
           Aula: string | null
@@ -2757,7 +2757,7 @@ export type Database = {
         }
         Relationships: []
       }
-      "Lei 11.343/2006 - Lei de Drogas": {
+      "Lei 11.343 de 2006 - Lei de Drogas": {
         Row: {
           Artigo: string | null
           Aula: string | null
