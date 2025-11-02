@@ -58,7 +58,7 @@ const MariaDaPenhaView = () => {
   const [perguntaData, setPerguntaData] = useState({ artigo: "", numeroArtigo: "" });
   const [activeTab, setActiveTab] = useState<'artigos' | 'playlist' | 'ranking'>('artigos');
 
-  const tableName = "Lei 11.340/2006 - Maria da Penha";
+  const tableName = "Lei 11.340 de 2006 - Maria da Penha";
   const codeName = "Lei Maria da Penha";
   const abbreviation = "LMP";
 
@@ -340,7 +340,7 @@ const ArticleCard = ({
   loadingFlashcards
 }: ArticleCardProps) => {
   const elementRef = useArticleTracking({
-    tableName: "Lei 11.340/2006 - Maria da Penha",
+    tableName: "Lei 11.340 de 2006 - Maria da Penha",
     articleId: article.id,
     numeroArtigo: article["Número do Artigo"] || "",
     enabled: !!article["Número do Artigo"]
