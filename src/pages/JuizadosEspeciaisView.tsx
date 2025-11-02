@@ -181,7 +181,31 @@ const JuizadosEspeciaisView = () => {
       <TermosModal isOpen={termosModalOpen} onClose={() => setTermosModalOpen(false)} artigo={termosData.artigo} numeroArtigo={termosData.numeroArtigo} codigoTabela={tableName} />
       <QuestoesModal isOpen={questoesModalOpen} onClose={() => setQuestoesModalOpen(false)} artigo={questoesData.artigo} numeroArtigo={questoesData.numeroArtigo} />
       <PerguntaModal isOpen={perguntaModalOpen} onClose={() => setPerguntaModalOpen(false)} artigo={perguntaData.artigo} numeroArtigo={perguntaData.numeroArtigo} />
-      <FlashcardViewer flashcards={flashcardsData} isOpen={flashcardsModalOpen} onClose={() => setFlashcardsModalOpen(false)} loading={loadingFlashcards} />
+      
+      {flashcardsModalOpen && (
+        <div className="fixed inset-0 bg-background/95 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-card border border-border rounded-2xl max-w-3xl w-full max-h-[90vh] flex flex-col shadow-2xl">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-border">
+              <h2 className="text-lg font-bold text-accent">Flashcards</h2>
+              <button onClick={() => setFlashcardsModalOpen(false)} className="p-2 hover:bg-secondary rounded-lg">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="flex-1 overflow-y-auto px-6 py-4">
+              {loadingFlashcards ? (
+                <div className="flex items-center justify-center py-12">
+                  <div className="text-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent mx-auto mb-4"></div>
+                    <p className="text-muted-foreground">Gerando flashcards...</p>
+                  </div>
+                </div>
+              ) : (
+                <FlashcardViewer flashcards={flashcardsData} />
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       <div ref={contentRef} className="max-w-4xl mx-auto">
         {activeTab === 'artigos' && (
@@ -192,7 +216,7 @@ const JuizadosEspeciaisView = () => {
               <div className="text-center py-16"><p className="text-muted-foreground">Nenhum artigo encontrado</p></div>
             ) : (
               displayedArticles.map((article, index) => (
-                <div key={article.id} ref={index === 0 ? firstResultRef : null} className="bg-card rounded-lg p-5 border border-border shadow-sm hover:shadow-md transition-shadow">
+                <div key={article.id} ref={index === 0 ? firstResultRef : null} id={`article-${article["Número do Artigo"]}`} className="bg-card rounded-lg p-5 border border-border shadow-sm hover:shadow-md transition-shadow scroll-mt-24">
                   <div className="flex items-start justify-between gap-3 mb-3">
                     <div className="flex items-center gap-3">
                       <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary/10">
@@ -225,19 +249,28 @@ const JuizadosEspeciaisView = () => {
 
         {activeTab === 'playlist' && (
           <div className="p-4">
-            <VadeMecumPlaylist 
-              articles={articlesWithAudio}
-              abbreviation={abbreviation}
-            />
+          <VadeMecumPlaylist 
+            articles={articlesWithAudio} 
+            codigoNome={codeName}
+          />
           </div>
         )}
 
         {activeTab === 'ranking' && (
           <div className="p-4">
-            <VadeMecumRanking 
-              tableName={tableName}
-              codigoNome={codeName}
-            />
+          <VadeMecumRanking 
+            tableName={tableName}
+            codigoNome={codeName}
+            onArticleClick={(numeroArtigo) => {
+              const element = document.getElementById(`article-${numeroArtigo}`);
+              if (element) {
+                setActiveTab('artigos');
+                setTimeout(() => {
+                  element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }, 100);
+              }
+            }}
+          />
           </div>
         )}
       </div>
