@@ -1,24 +1,27 @@
-import { useState, useMemo, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect, useRef, useMemo } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { ArrowLeft, Search, X } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowLeft, Search, Volume2, BookOpen, Video, FileText, HelpCircle, ListChecks, TrendingUp } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+import { fetchAllRows } from "@/lib/fetchAllRows";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
+import InlineAudioButton from "@/components/InlineAudioButton";
+import AudioCommentButton from "@/components/AudioCommentButton";
+import StickyAudioPlayer from "@/components/StickyAudioPlayer";
 import ExplicacaoModal from "@/components/ExplicacaoModal";
 import VideoAulaModal from "@/components/VideoAulaModal";
 import TermosModal from "@/components/TermosModal";
 import QuestoesModal from "@/components/QuestoesModal";
 import PerguntaModal from "@/components/PerguntaModal";
 import { FlashcardViewer } from "@/components/FlashcardViewer";
-import StickyAudioPlayer from "@/components/StickyAudioPlayer";
+import { formatTextWithUppercase } from "@/lib/textFormatter";
+import { CopyButton } from "@/components/CopyButton";
 import { VadeMecumTabs } from "@/components/VadeMecumTabs";
 import { VadeMecumPlaylist } from "@/components/VadeMecumPlaylist";
 import { VadeMecumRanking } from "@/components/VadeMecumRanking";
-import { useArticleTracking } from "@/hooks/useArticleTracking";
 import { ArtigoActionsMenu } from "@/components/ArtigoActionsMenu";
-import { formatForWhatsApp } from "@/lib/formatWhatsApp";
+import { useArticleTracking } from "@/hooks/useArticleTracking";
 
 interface Article {
   id: number;
@@ -31,360 +34,375 @@ interface Article {
 
 const MariaDaPenhaView = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const contentRef = useRef<HTMLDivElement>(null);
+  const firstResultRef = useRef<HTMLDivElement>(null);
+  const [fontSize, setFontSize] = useState(15);
+  const [searchInput, setSearchInput] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
-  const [displayLimit, setDisplayLimit] = useState(10);
-  const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
-  const [showExplicacao, setShowExplicacao] = useState(false);
-  const [showVideoAula, setShowVideoAula] = useState(false);
-  const [showTermos, setShowTermos] = useState(false);
-  const [showQuestoes, setShowQuestoes] = useState(false);
-  const [showPergunta, setShowPergunta] = useState(false);
-  const [showFlashcards, setShowFlashcards] = useState(false);
-  const [currentAudio, setCurrentAudio] = useState<string | null>(null);
-  const [currentArticleNumber, setCurrentArticleNumber] = useState<string>("");
-  const [activeTab, setActiveTab] = useState("artigos");
-  const searchResultRef = useRef<HTMLDivElement>(null);
+  const [displayLimit, setDisplayLimit] = useState(100);
+  const [stickyPlayerOpen, setStickyPlayerOpen] = useState(false);
+  const [currentAudio, setCurrentAudio] = useState({ url: "", title: "", isComment: false });
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalData, setModalData] = useState({ artigo: "", numeroArtigo: "", tipo: "explicacao" as "explicacao" | "exemplo", nivel: "tecnico" as "tecnico" | "simples" });
+  const [videoModalOpen, setVideoModalOpen] = useState(false);
+  const [videoModalData, setVideoModalData] = useState({ videoUrl: "", artigo: "", numeroArtigo: "" });
+  const [flashcardsModalOpen, setFlashcardsModalOpen] = useState(false);
+  const [flashcardsData, setFlashcardsData] = useState<any[]>([]);
+  const [loadingFlashcards, setLoadingFlashcards] = useState(false);
+  const [termosModalOpen, setTermosModalOpen] = useState(false);
+  const [termosData, setTermosData] = useState({ artigo: "", numeroArtigo: "" });
+  const [questoesModalOpen, setQuestoesModalOpen] = useState(false);
+  const [questoesData, setQuestoesData] = useState({ artigo: "", numeroArtigo: "" });
+  const [perguntaModalOpen, setPerguntaModalOpen] = useState(false);
+  const [perguntaData, setPerguntaData] = useState({ artigo: "", numeroArtigo: "" });
+  const [activeTab, setActiveTab] = useState<'artigos' | 'playlist' | 'ranking'>('artigos');
 
-  const { data: articles, isLoading } = useQuery({
-    queryKey: ["maria-da-penha-articles"],
+  const tableName = "Lei 11.340/2006 - Maria da Penha";
+  const codeName = "Lei Maria da Penha";
+  const abbreviation = "LMP";
+
+  useEffect(() => {
+    const artigoParam = searchParams.get('artigo');
+    if (artigoParam) {
+      setSearchQuery(artigoParam);
+    }
+  }, [searchParams]);
+
+  const { data: articles = [], isLoading } = useQuery({
+    queryKey: ['maria-da-penha-articles'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("Lei 11.340/2006 - Maria da Penha")
-        .select("*")
-        .order("id", { ascending: true });
-
-      if (error) throw error;
-      return data as Article[];
+      const data = await fetchAllRows<Article>(tableName, "id");
+      return data as any as Article[];
     },
+    staleTime: 1000 * 60 * 30,
+    gcTime: 1000 * 60 * 60
   });
 
   const filteredArticles = useMemo(() => {
-    if (!articles) return [];
-    if (!searchQuery.trim()) return articles;
-    
-    const query = searchQuery.toLowerCase();
-    return articles.filter(article => 
-      article["Número do Artigo"]?.toLowerCase().includes(query) ||
-      article["Artigo"]?.toLowerCase().includes(query)
-    );
+    if (!searchQuery) return articles;
+    const searchLower = searchQuery.toLowerCase().trim();
+    return articles.filter(article => {
+      const numeroArtigo = (article["Número do Artigo"] || "").toLowerCase().trim();
+      const conteudoArtigo = (article["Artigo"] || "").toLowerCase();
+      return numeroArtigo.includes(searchLower) || conteudoArtigo.includes(searchLower);
+    });
   }, [articles, searchQuery]);
 
-  const displayedArticles = searchQuery.trim() 
-    ? filteredArticles 
-    : filteredArticles.slice(0, displayLimit);
+  const displayedArticles = useMemo(() => {
+    return searchQuery ? filteredArticles : filteredArticles.slice(0, displayLimit);
+  }, [filteredArticles, displayLimit, searchQuery]);
 
   const articlesWithAudio = useMemo(() => {
-    return articles?.filter(article => article["Narração"]) || [];
+    return articles.filter(article => 
+      article["Narração"] && article["Narração"].trim() !== "" &&
+      article["Número do Artigo"] && article["Número do Artigo"].trim() !== ""
+    ) as any[];
   }, [articles]);
 
-  const handleGenerateFlashcards = async (articleNumber: string) => {
+  useEffect(() => {
+    if (searchQuery && filteredArticles.length > 0 && firstResultRef.current) {
+      setTimeout(() => {
+        firstResultRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
+    }
+  }, [searchQuery, filteredArticles]);
+
+  const handleGenerateFlashcards = async (artigo: string, numeroArtigo: string) => {
+    setLoadingFlashcards(true);
     try {
-      const { data, error } = await supabase.functions.invoke("gerar-flashcards", {
-        body: { 
-          tableName: "Lei 11.340/2006 - Maria da Penha",
-          articleNumber 
-        }
+      const response = await supabase.functions.invoke('gerar-flashcards', {
+        body: { content: `Art. ${numeroArtigo}\n${artigo}` }
       });
-      
-      if (error) throw error;
-      return data;
+      if (response.error) throw response.error;
+      setFlashcardsData(response.data.flashcards || []);
+      setFlashcardsModalOpen(true);
     } catch (error) {
-      console.error("Erro ao gerar flashcards:", error);
-      throw error;
+      console.error('Erro ao gerar flashcards:', error);
+    } finally {
+      setLoadingFlashcards(false);
     }
   };
 
-  useEffect(() => {
-    if (searchQuery.trim() && searchResultRef.current) {
-      searchResultRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
-    }
-  }, [searchQuery]);
-
   return (
-    <div className="min-h-screen pb-24">
-      {/* Header */}
-      <div className="sticky top-0 z-30 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
-        <div className="flex items-center gap-3 px-3 py-3">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => navigate("/lei-penal")}
-            className="shrink-0"
-          >
-            <ArrowLeft className="w-5 h-5" />
-          </Button>
-          <div className="min-w-0 flex-1">
-            <h1 className="text-lg font-bold truncate">Lei Maria da Penha</h1>
-            <p className="text-xs text-muted-foreground truncate">Lei 11.340/2006</p>
+    <div className="min-h-screen bg-background text-foreground">
+      <div className="sticky top-0 z-30">
+        <VadeMecumTabs 
+          activeTab={activeTab}
+          onTabChange={(tab) => setActiveTab(tab as any)}
+        />
+      </div>
+
+      {activeTab === 'artigos' && (
+        <div className="sticky top-[60px] bg-background border-b border-border z-20">
+          <div className="px-4 pt-4 pb-2 max-w-4xl mx-auto">
+            <div className="space-y-2">
+              <div className="relative animate-fade-in flex gap-2">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                  <input 
+                    type="text" 
+                    placeholder="Buscar por artigo ou conteúdo..." 
+                    value={searchInput}
+                    onChange={e => setSearchInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        setSearchQuery(searchInput);
+                      }
+                    }}
+                    className="w-full bg-input text-foreground pl-10 pr-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-ring transition-all" 
+                  />
+                </div>
+                <Button onClick={() => setSearchQuery(searchInput)} disabled={!searchInput.trim()} size="lg" className="px-6 shrink-0">
+                  <Search className="w-5 h-5 mr-2" />
+                  Buscar
+                </Button>
+                {searchQuery && (
+                  <Button onClick={() => { setSearchInput(""); setSearchQuery(""); }} variant="outline" size="lg" className="px-4 shrink-0">
+                    <X className="w-5 h-5" />
+                  </Button>
+                )}
+              </div>
+              {searchQuery && (
+                <p className="text-xs text-muted-foreground text-center">
+                  {filteredArticles.length} {filteredArticles.length === 1 ? 'artigo encontrado' : 'artigos encontrados'}
+                </p>
+              )}
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
-      {/* Tabs */}
-      <div className="sticky top-[61px] z-20 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <VadeMecumTabs activeTab={activeTab} onTabChange={setActiveTab} />
-      </div>
+      <StickyAudioPlayer 
+        isOpen={stickyPlayerOpen} 
+        onClose={() => setStickyPlayerOpen(false)} 
+        audioUrl={currentAudio.url} 
+        title={currentAudio.title}
+      />
 
-      {activeTab === "artigos" && (
-        <>
-          {/* Search Bar */}
-          <div className="sticky top-[113px] z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b px-3 py-2">
-            <div className="flex gap-2 max-w-4xl mx-auto">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input
-                  type="text"
-                  placeholder="Buscar artigo..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-              <Button size="icon" variant="outline" onClick={() => setSearchQuery(searchQuery)}>
-                <Search className="w-4 h-4" />
-              </Button>
+      <ExplicacaoModal isOpen={modalOpen} onClose={() => setModalOpen(false)} artigo={modalData.artigo} numeroArtigo={modalData.numeroArtigo} tipo={modalData.tipo} nivel={modalData.nivel} />
+      <VideoAulaModal isOpen={videoModalOpen} onClose={() => setVideoModalOpen(false)} videoUrl={videoModalData.videoUrl} artigo={videoModalData.artigo} numeroArtigo={videoModalData.numeroArtigo} />
+      <TermosModal isOpen={termosModalOpen} onClose={() => setTermosModalOpen(false)} artigo={termosData.artigo} numeroArtigo={termosData.numeroArtigo} codigoTabela={tableName} />
+      <QuestoesModal isOpen={questoesModalOpen} onClose={() => setQuestoesModalOpen(false)} artigo={questoesData.artigo} numeroArtigo={questoesData.numeroArtigo} />
+      <PerguntaModal isOpen={perguntaModalOpen} onClose={() => setPerguntaModalOpen(false)} artigo={perguntaData.artigo} numeroArtigo={perguntaData.numeroArtigo} />
+      
+      {flashcardsModalOpen && (
+        <div className="fixed inset-0 bg-background/95 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-card border border-border rounded-2xl max-w-3xl w-full max-h-[90vh] flex flex-col shadow-2xl">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-border">
+              <h2 className="text-lg font-bold text-accent">Flashcards</h2>
+              <button onClick={() => setFlashcardsModalOpen(false)} className="p-2 hover:bg-secondary rounded-lg">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="flex-1 overflow-y-auto px-6 py-4">
+              {loadingFlashcards ? (
+                <div className="flex items-center justify-center py-12">
+                  <div className="text-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent mx-auto mb-4"></div>
+                    <p className="text-muted-foreground">Gerando flashcards...</p>
+                  </div>
+                </div>
+              ) : (
+                <FlashcardViewer flashcards={flashcardsData} />
+              )}
             </div>
           </div>
+        </div>
+      )}
 
-          {/* Articles List */}
-          <div className="px-3 py-4 max-w-4xl mx-auto">
-            <div className="mb-4">
-              <p className="text-sm text-muted-foreground">
-                {searchQuery.trim() 
-                  ? `${filteredArticles.length} resultado(s) encontrado(s)`
-                  : `${articles?.length || 0} artigos`
-                }
-              </p>
-            </div>
-
-            {isLoading && (
-              <div className="space-y-4">
-                {[1, 2, 3].map((i) => (
-                  <Skeleton key={i} className="h-32 w-full" />
-                ))}
-              </div>
-            )}
-
-            {!isLoading && displayedArticles.length === 0 && (
-              <div className="text-center py-12">
-                <p className="text-muted-foreground">Nenhum artigo encontrado</p>
-              </div>
-            )}
-
-            <div className="space-y-4" ref={searchResultRef}>
-              {displayedArticles.map((article) => (
+      <div ref={contentRef} className="max-w-4xl mx-auto">
+        {activeTab === 'artigos' && (
+          <div className="p-4 space-y-4">
+            {isLoading ? (
+              <div className="space-y-4">{[...Array(5)].map((_, i) => <Skeleton key={i} className="h-32 w-full" />)}</div>
+            ) : displayedArticles.length === 0 ? (
+              <div className="text-center py-16"><p className="text-muted-foreground">Nenhum artigo encontrado</p></div>
+            ) : (
+              displayedArticles.map((article, index) => (
                 <ArticleCard
                   key={article.id}
                   article={article}
-                  onExplicar={() => {
-                    setSelectedArticle(article);
-                    setShowExplicacao(true);
+                  abbreviation={abbreviation}
+                  isFirstResult={index === 0}
+                  onOpenExplicacao={(tipo, nivel) => {
+                    setModalData({
+                      artigo: article["Artigo"] || "",
+                      numeroArtigo: article["Número do Artigo"] || "",
+                      tipo,
+                      nivel
+                    });
+                    setModalOpen(true);
                   }}
-                  onVideoAula={() => {
-                    setSelectedArticle(article);
-                    setShowVideoAula(true);
+                  onOpenVideoAula={(videoUrl) => {
+                    setVideoModalData({
+                      videoUrl,
+                      artigo: article["Artigo"] || "",
+                      numeroArtigo: article["Número do Artigo"] || ""
+                    });
+                    setVideoModalOpen(true);
                   }}
-                  onTermos={() => {
-                    setSelectedArticle(article);
-                    setShowTermos(true);
+                  onGenerateFlashcards={() => handleGenerateFlashcards(article["Artigo"] || "", article["Número do Artigo"] || "")}
+                  onOpenTermos={() => {
+                    setTermosData({
+                      artigo: article["Artigo"] || "",
+                      numeroArtigo: article["Número do Artigo"] || ""
+                    });
+                    setTermosModalOpen(true);
                   }}
-                  onQuestoes={() => {
-                    setSelectedArticle(article);
-                    setShowQuestoes(true);
+                  onOpenQuestoes={() => {
+                    setQuestoesData({
+                      artigo: article["Artigo"] || "",
+                      numeroArtigo: article["Número do Artigo"] || ""
+                    });
+                    setQuestoesModalOpen(true);
                   }}
-                  onPergunta={() => {
-                    setSelectedArticle(article);
-                    setShowPergunta(true);
+                  onPerguntar={() => {
+                    setPerguntaData({
+                      artigo: article["Artigo"] || "",
+                      numeroArtigo: article["Número do Artigo"] || ""
+                    });
+                    setPerguntaModalOpen(true);
                   }}
-                  onFlashcards={() => {
-                    setSelectedArticle(article);
-                    setCurrentArticleNumber(article["Número do Artigo"] || "");
-                    setShowFlashcards(true);
+                  onPlayNarration={(url, title) => {
+                    setCurrentAudio({ url, title, isComment: false });
+                    setStickyPlayerOpen(true);
                   }}
-                  onPlayAudio={(audioUrl) => {
-                    setCurrentAudio(audioUrl);
-                    setCurrentArticleNumber(article["Número do Artigo"] || "");
+                  onPlayComment={(url, title) => {
+                    setCurrentAudio({ url, title, isComment: true });
+                    setStickyPlayerOpen(true);
                   }}
-                  isPlayingAudio={currentAudio === article["Narração"]}
+                  loadingFlashcards={loadingFlashcards}
                 />
-              ))}
-            </div>
-
-            {!searchQuery.trim() && displayedArticles.length < filteredArticles.length && (
-              <div className="text-center mt-6">
-                <Button
-                  onClick={() => setDisplayLimit(prev => prev + 10)}
-                  variant="outline"
-                >
-                  Ver mais artigos
-                </Button>
-              </div>
+              ))
             )}
           </div>
-        </>
-      )}
+        )}
 
-      {activeTab === "playlist" && (
-        <VadeMecumPlaylist
-          articles={articlesWithAudio}
-          codigoNome="Lei Maria da Penha"
-        />
-      )}
+        {activeTab === 'playlist' && (
+          <div className="p-4">
+          <VadeMecumPlaylist 
+            articles={articlesWithAudio} 
+            codigoNome={codeName}
+          />
+          </div>
+        )}
 
-      {activeTab === "ranking" && (
-        <VadeMecumRanking 
-          tableName="Lei 11.340/2006 - Maria da Penha" 
-          codigoNome="Lei Maria da Penha"
-          onArticleClick={(numeroArtigo) => {
-            setSearchQuery(numeroArtigo);
-            setActiveTab("artigos");
-          }}
-        />
-      )}
-
-      {/* Audio Player */}
-      <StickyAudioPlayer
-        isOpen={!!currentAudio}
-        onClose={() => setCurrentAudio(null)}
-        audioUrl={currentAudio || ""}
-        title={currentArticleNumber}
-      />
-
-      {/* Modals */}
-      <ExplicacaoModal
-        isOpen={showExplicacao}
-        onClose={() => setShowExplicacao(false)}
-        artigo={selectedArticle?.["Artigo"] || ""}
-        numeroArtigo={selectedArticle?.["Número do Artigo"] || ""}
-        tipo="explicacao"
-        nivel="tecnico"
-      />
-
-      <VideoAulaModal
-        isOpen={showVideoAula}
-        onClose={() => setShowVideoAula(false)}
-        videoUrl={selectedArticle?.["Aula"] || ""}
-        artigo={selectedArticle?.["Artigo"] || ""}
-        numeroArtigo={selectedArticle?.["Número do Artigo"] || ""}
-      />
-
-      <TermosModal
-        isOpen={showTermos}
-        onClose={() => setShowTermos(false)}
-        artigo={selectedArticle?.["Artigo"] || ""}
-        numeroArtigo={selectedArticle?.["Número do Artigo"] || ""}
-      />
-
-      <QuestoesModal
-        isOpen={showQuestoes}
-        onClose={() => setShowQuestoes(false)}
-        artigo={selectedArticle?.["Artigo"] || ""}
-        numeroArtigo={selectedArticle?.["Número do Artigo"] || ""}
-      />
-
-      <PerguntaModal
-        isOpen={showPergunta}
-        onClose={() => setShowPergunta(false)}
-        artigo={selectedArticle?.["Artigo"] || ""}
-        numeroArtigo={selectedArticle?.["Número do Artigo"] || ""}
-      />
+        {activeTab === 'ranking' && (
+          <div className="p-4">
+          <VadeMecumRanking 
+            tableName={tableName}
+            codigoNome={codeName}
+            onArticleClick={(numeroArtigo) => {
+              const element = document.getElementById(`article-${numeroArtigo}`);
+              if (element) {
+                setActiveTab('artigos');
+                setTimeout(() => {
+                  element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }, 100);
+              }
+            }}
+          />
+          </div>
+        )}
+      </div>
     </div>
   );
 };
 
 interface ArticleCardProps {
   article: Article;
-  onExplicar: () => void;
-  onVideoAula: () => void;
-  onTermos: () => void;
-  onQuestoes: () => void;
-  onPergunta: () => void;
-  onFlashcards: () => void;
-  onPlayAudio: (audioUrl: string) => void;
-  isPlayingAudio: boolean;
+  abbreviation: string;
+  isFirstResult: boolean;
+  onOpenExplicacao: (tipo: "explicacao" | "exemplo", nivel: "tecnico" | "simples") => void;
+  onOpenVideoAula: (videoUrl: string) => void;
+  onGenerateFlashcards: () => void;
+  onOpenTermos: () => void;
+  onOpenQuestoes: () => void;
+  onPerguntar: () => void;
+  onPlayNarration: (url: string, title: string) => void;
+  onPlayComment: (url: string, title: string) => void;
+  loadingFlashcards: boolean;
 }
 
-const ArticleCard = ({ 
-  article, 
-  onExplicar, 
-  onVideoAula, 
-  onTermos, 
-  onQuestoes, 
-  onPergunta,
-  onFlashcards,
-  onPlayAudio,
-  isPlayingAudio
+const ArticleCard = ({
+  article,
+  abbreviation,
+  isFirstResult,
+  onOpenExplicacao,
+  onOpenVideoAula,
+  onGenerateFlashcards,
+  onOpenTermos,
+  onOpenQuestoes,
+  onPerguntar,
+  onPlayNarration,
+  onPlayComment,
+  loadingFlashcards
 }: ArticleCardProps) => {
-  const { elementRef } = useArticleTracking({
+  const elementRef = useArticleTracking({
     tableName: "Lei 11.340/2006 - Maria da Penha",
     articleId: article.id,
     numeroArtigo: article["Número do Artigo"] || "",
-    enabled: true
+    enabled: !!article["Número do Artigo"]
   });
 
-  const articleText = article["Artigo"] || "";
-  const isTitle = !article["Número do Artigo"];
-
-  if (isTitle) {
+  // Se não tiver número, é um título/seção
+  if (!article["Número do Artigo"]) {
     return (
-      <div className="mb-6">
-        <div className="border-l-4 border-primary pl-4 py-2">
-          <h2 className="text-lg font-bold text-primary whitespace-pre-line">
-            {articleText}
-          </h2>
-        </div>
+      <div key={article.id} className="my-6">
+        <h2 className="text-xl font-bold text-accent" dangerouslySetInnerHTML={{ __html: formatTextWithUppercase(article["Artigo"] || "") }} />
       </div>
     );
   }
 
+  const shareOnWhatsApp = () => {
+    const numeroArtigo = article["Número do Artigo"];
+    const conteudo = article["Artigo"];
+    const mensagem = `📜 *Lei 11.340/2006 - Lei Maria da Penha*\n\n*Art. ${numeroArtigo}*\n\n${conteudo}\n\n_Compartilhado via Vade Mecum Digital_`;
+    const url = `https://wa.me/?text=${encodeURIComponent(mensagem)}`;
+    window.open(url, '_blank');
+  };
+
   return (
     <div 
-      ref={elementRef}
-      className="border rounded-lg p-4 bg-card hover:shadow-md transition-shadow"
+      ref={isFirstResult ? elementRef as any : elementRef} 
+      id={`article-${article["Número do Artigo"]}`}
+      className="bg-card rounded-lg p-5 border border-border shadow-sm hover:shadow-md transition-shadow scroll-mt-24"
     >
       <div className="flex items-start justify-between gap-3 mb-3">
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-2">
-            {article["Número do Artigo"] && (
-              <h3 className="font-bold text-primary shrink-0">
-                Art. {article["Número do Artigo"]}
-              </h3>
-            )}
-            {article["Narração"] && (
-              <Button
-                size="sm"
-                variant={isPlayingAudio ? "default" : "ghost"}
-                onClick={() => onPlayAudio(article["Narração"]!)}
-                className="shrink-0"
-              >
-                <Volume2 className="w-4 h-4" />
-              </Button>
-            )}
+        <div className="flex items-center gap-3">
+          <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary/10">
+            <span className="text-sm font-bold text-primary">{article["Número do Artigo"]}</span>
           </div>
-          <p className="text-sm text-muted-foreground whitespace-pre-line">
-            {articleText}
-          </p>
+          <div>
+            <h3 className="font-bold text-lg">Art. {article["Número do Artigo"]}</h3>
+            <p className="text-xs text-muted-foreground">{abbreviation}</p>
+          </div>
         </div>
+        {article["Narração"] && (
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => onPlayNarration(article["Narração"] || "", `Art. ${article["Número do Artigo"]}`)}
+          >
+            Ouvir
+          </Button>
+        )}
       </div>
-
+      
+      <div className="prose prose-sm max-w-none mb-4" dangerouslySetInnerHTML={{ __html: formatTextWithUppercase(article["Artigo"] || "Conteúdo não disponível") }} />
+      
       <ArtigoActionsMenu
         article={article}
-        onOpenExplicacao={(tipo) => onExplicar()}
-        onOpenAula={article["Aula"] ? onVideoAula : undefined}
-        onOpenTermos={onTermos}
-        onOpenQuestoes={onQuestoes}
-        onGenerateFlashcards={onFlashcards}
-        onPerguntar={onPergunta}
-        onShareWhatsApp={() => {
-          const text = formatForWhatsApp(
-            `*Lei Maria da Penha - Lei 11.340/2006*\n\n*Art. ${article["Número do Artigo"]}*\n\n${articleText}`
-          );
-          if (navigator.share) {
-            navigator.share({ text });
-          } else {
-            navigator.clipboard.writeText(text);
-          }
-        }}
+        onPlayComment={(audioUrl, title) => onPlayComment(audioUrl, title)}
+        onOpenAula={article["Aula"] ? () => onOpenVideoAula(article["Aula"]!) : undefined}
+        onOpenExplicacao={(tipo) => onOpenExplicacao(tipo, "tecnico")}
+        onGenerateFlashcards={onGenerateFlashcards}
+        onOpenTermos={onOpenTermos}
+        onOpenQuestoes={onOpenQuestoes}
+        onPerguntar={onPerguntar}
+        onShareWhatsApp={shareOnWhatsApp}
+        loadingFlashcards={loadingFlashcards}
       />
     </div>
   );
