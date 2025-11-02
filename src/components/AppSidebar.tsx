@@ -83,6 +83,21 @@ export const AppSidebar = ({ onClose }: AppSidebarProps = {}) => {
   ];
 
   const faculdadeSections = [
+    { 
+      title: "Professora", 
+      icon: GraduationCap, 
+      path: "/chat-professora",
+      onClick: () => {
+        if (onClose) {
+          // Mobile: navega e fecha sidebar
+          navigate('/chat-professora');
+          onClose();
+        } else {
+          // Desktop: abre modal
+          setProfessoraModalOpen(true);
+        }
+      }
+    },
     { title: "Cursos", icon: GraduationCap, path: "/cursos" },
     { title: "Videoaulas", icon: Video, path: "/videoaulas" },
     { title: "Audioaulas", icon: Headphones, path: "/audioaulas" },
@@ -137,25 +152,6 @@ export const AppSidebar = ({ onClose }: AppSidebarProps = {}) => {
         </button>
       </div>
 
-      {/* Professora - Destaque vermelho */}
-      <div className="px-4 pb-2">
-        <button
-          onClick={() => {
-            if (onClose) {
-              // Mobile: abre o chat do rodapé e fecha a sidebar
-              navigate('/chat-professora');
-              onClose();
-            } else {
-              // Desktop: abre o modal lateral
-              setProfessoraModalOpen(true);
-            }
-          }}
-          className="w-full flex items-center gap-3 px-3 py-3 rounded-lg bg-red-500/10 hover:bg-red-500/20 transition-all text-left border border-red-500/30"
-        >
-          <GraduationCap className="w-5 h-5 text-red-500 animate-pulse" />
-          <span className="text-sm font-medium text-foreground">Professora</span>
-        </button>
-      </div>
 
       <div className="flex-1 overflow-y-auto py-4">
         {/* Leis Section */}
@@ -194,7 +190,7 @@ export const AppSidebar = ({ onClose }: AppSidebarProps = {}) => {
             return (
               <button
                 key={section.path}
-                onClick={() => navigate(section.path)}
+                onClick={() => section.onClick ? section.onClick() : navigate(section.path)}
                 className={cn(
                   "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors text-left",
                   isActive(section.path)
