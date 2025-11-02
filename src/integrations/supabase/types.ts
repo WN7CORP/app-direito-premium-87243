@@ -2889,6 +2889,72 @@ export type Database = {
         }
         Relationships: []
       }
+      "Lei 7.210 de 1984 - Lei de Execução Penal": {
+        Row: {
+          Artigo: string | null
+          Aula: string | null
+          Comentario: string | null
+          exemplo: string | null
+          explicacao_resumido: string | null
+          explicacao_simples_maior16: string | null
+          explicacao_simples_menor16: string | null
+          explicacao_tecnico: string | null
+          flashcards: Json | null
+          id: number
+          Narração: string | null
+          "Número do Artigo": string | null
+          questoes: Json | null
+          termos: Json | null
+          termos_aprofundados: Json | null
+          ultima_atualizacao: string | null
+          ultima_visualizacao: string | null
+          versao_conteudo: number | null
+          visualizacoes: number | null
+        }
+        Insert: {
+          Artigo?: string | null
+          Aula?: string | null
+          Comentario?: string | null
+          exemplo?: string | null
+          explicacao_resumido?: string | null
+          explicacao_simples_maior16?: string | null
+          explicacao_simples_menor16?: string | null
+          explicacao_tecnico?: string | null
+          flashcards?: Json | null
+          id: number
+          Narração?: string | null
+          "Número do Artigo"?: string | null
+          questoes?: Json | null
+          termos?: Json | null
+          termos_aprofundados?: Json | null
+          ultima_atualizacao?: string | null
+          ultima_visualizacao?: string | null
+          versao_conteudo?: number | null
+          visualizacoes?: number | null
+        }
+        Update: {
+          Artigo?: string | null
+          Aula?: string | null
+          Comentario?: string | null
+          exemplo?: string | null
+          explicacao_resumido?: string | null
+          explicacao_simples_maior16?: string | null
+          explicacao_simples_menor16?: string | null
+          explicacao_tecnico?: string | null
+          flashcards?: Json | null
+          id?: number
+          Narração?: string | null
+          "Número do Artigo"?: string | null
+          questoes?: Json | null
+          termos?: Json | null
+          termos_aprofundados?: Json | null
+          ultima_atualizacao?: string | null
+          ultima_visualizacao?: string | null
+          versao_conteudo?: number | null
+          visualizacoes?: number | null
+        }
+        Relationships: []
+      }
       "Lei 8.072/1990 - Crimes Hediondos": {
         Row: {
           Artigo: string | null
@@ -3088,72 +3154,6 @@ export type Database = {
         Relationships: []
       }
       "Lei 9.455/1997 - Tortura": {
-        Row: {
-          Artigo: string | null
-          Aula: string | null
-          Comentario: string | null
-          exemplo: string | null
-          explicacao_resumido: string | null
-          explicacao_simples_maior16: string | null
-          explicacao_simples_menor16: string | null
-          explicacao_tecnico: string | null
-          flashcards: Json | null
-          id: number
-          Narração: string | null
-          "Número do Artigo": string | null
-          questoes: Json | null
-          termos: Json | null
-          termos_aprofundados: Json | null
-          ultima_atualizacao: string | null
-          ultima_visualizacao: string | null
-          versao_conteudo: number | null
-          visualizacoes: number | null
-        }
-        Insert: {
-          Artigo?: string | null
-          Aula?: string | null
-          Comentario?: string | null
-          exemplo?: string | null
-          explicacao_resumido?: string | null
-          explicacao_simples_maior16?: string | null
-          explicacao_simples_menor16?: string | null
-          explicacao_tecnico?: string | null
-          flashcards?: Json | null
-          id: number
-          Narração?: string | null
-          "Número do Artigo"?: string | null
-          questoes?: Json | null
-          termos?: Json | null
-          termos_aprofundados?: Json | null
-          ultima_atualizacao?: string | null
-          ultima_visualizacao?: string | null
-          versao_conteudo?: number | null
-          visualizacoes?: number | null
-        }
-        Update: {
-          Artigo?: string | null
-          Aula?: string | null
-          Comentario?: string | null
-          exemplo?: string | null
-          explicacao_resumido?: string | null
-          explicacao_simples_maior16?: string | null
-          explicacao_simples_menor16?: string | null
-          explicacao_tecnico?: string | null
-          flashcards?: Json | null
-          id?: number
-          Narração?: string | null
-          "Número do Artigo"?: string | null
-          questoes?: Json | null
-          termos?: Json | null
-          termos_aprofundados?: Json | null
-          ultima_atualizacao?: string | null
-          ultima_visualizacao?: string | null
-          versao_conteudo?: number | null
-          visualizacoes?: number | null
-        }
-        Relationships: []
-      }
-      "LEP - Lei 7.210/1984": {
         Row: {
           Artigo: string | null
           Aula: string | null
