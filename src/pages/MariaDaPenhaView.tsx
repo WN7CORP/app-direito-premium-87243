@@ -1,7 +1,8 @@
 import { useState, useMemo, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Search, Volume2, BookOpen, Video, FileText, HelpCircle, ListChecks, Loader2, TrendingUp } from "lucide-react";
+import { ArrowLeft, Search, Volume2, BookOpen, Video, FileText, HelpCircle, ListChecks, TrendingUp } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -16,6 +17,8 @@ import { VadeMecumTabs } from "@/components/VadeMecumTabs";
 import { VadeMecumPlaylist } from "@/components/VadeMecumPlaylist";
 import { VadeMecumRanking } from "@/components/VadeMecumRanking";
 import { useArticleTracking } from "@/hooks/useArticleTracking";
+import { ArtigoActionsMenu } from "@/components/ArtigoActionsMenu";
+import { formatForWhatsApp } from "@/lib/formatWhatsApp";
 
 interface Article {
   id: number;
@@ -27,6 +30,7 @@ interface Article {
 }
 
 const MariaDaPenhaView = () => {
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [displayLimit, setDisplayLimit] = useState(10);
   const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
@@ -98,15 +102,33 @@ const MariaDaPenhaView = () => {
 
   return (
     <div className="min-h-screen pb-24">
+      {/* Header */}
+      <div className="sticky top-0 z-30 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
+        <div className="flex items-center gap-3 px-3 py-3">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => navigate("/lei-penal")}
+            className="shrink-0"
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </Button>
+          <div className="min-w-0 flex-1">
+            <h1 className="text-lg font-bold truncate">Lei Maria da Penha</h1>
+            <p className="text-xs text-muted-foreground truncate">Lei 11.340/2006</p>
+          </div>
+        </div>
+      </div>
+
       {/* Tabs */}
-      <div className="sticky top-0 z-20 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="sticky top-[61px] z-20 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <VadeMecumTabs activeTab={activeTab} onTabChange={setActiveTab} />
       </div>
 
       {activeTab === "artigos" && (
         <>
           {/* Search Bar */}
-          <div className="sticky top-[52px] z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b px-3 py-2">
+          <div className="sticky top-[113px] z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b px-3 py-2">
             <div className="flex gap-2 max-w-4xl mx-auto">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -118,7 +140,7 @@ const MariaDaPenhaView = () => {
                   className="pl-10"
                 />
               </div>
-              <Button size="icon" variant="outline">
+              <Button size="icon" variant="outline" onClick={() => setSearchQuery(searchQuery)}>
                 <Search className="w-4 h-4" />
               </Button>
             </div>
@@ -127,8 +149,12 @@ const MariaDaPenhaView = () => {
           {/* Articles List */}
           <div className="px-3 py-4 max-w-4xl mx-auto">
             <div className="mb-4">
-              <h1 className="text-2xl font-bold">Lei Maria da Penha</h1>
-              <p className="text-sm text-muted-foreground">Lei 11.340/2006 - {articles?.length || 0} artigos</p>
+              <p className="text-sm text-muted-foreground">
+                {searchQuery.trim() 
+                  ? `${filteredArticles.length} resultado(s) encontrado(s)`
+                  : `${articles?.length || 0} artigos`
+                }
+              </p>
             </div>
 
             {isLoading && (
@@ -296,63 +322,70 @@ const ArticleCard = ({
     enabled: true
   });
 
+  const articleText = article["Artigo"] || "";
+  const isTitle = !article["Número do Artigo"];
+
+  if (isTitle) {
+    return (
+      <div className="mb-6">
+        <div className="border-l-4 border-primary pl-4 py-2">
+          <h2 className="text-lg font-bold text-primary whitespace-pre-line">
+            {articleText}
+          </h2>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div 
       ref={elementRef}
       className="border rounded-lg p-4 bg-card hover:shadow-md transition-shadow"
     >
-      <div className="flex items-start justify-between mb-2">
-        <div>
-          <h3 className="font-bold text-primary">{article["Número do Artigo"]}</h3>
+      <div className="flex items-start justify-between gap-3 mb-3">
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 mb-2">
+            {article["Número do Artigo"] && (
+              <h3 className="font-bold text-primary shrink-0">
+                Art. {article["Número do Artigo"]}
+              </h3>
+            )}
+            {article["Narração"] && (
+              <Button
+                size="sm"
+                variant={isPlayingAudio ? "default" : "ghost"}
+                onClick={() => onPlayAudio(article["Narração"]!)}
+                className="shrink-0"
+              >
+                <Volume2 className="w-4 h-4" />
+              </Button>
+            )}
+          </div>
+          <p className="text-sm text-muted-foreground whitespace-pre-line">
+            {articleText}
+          </p>
         </div>
-        {article["Narração"] && (
-          <Button
-            size="sm"
-            variant={isPlayingAudio ? "default" : "ghost"}
-            onClick={() => onPlayAudio(article["Narração"]!)}
-          >
-            <Volume2 className="w-4 h-4" />
-          </Button>
-        )}
       </div>
 
-      <p className="text-sm text-muted-foreground mb-4 whitespace-pre-line">
-        {article["Artigo"]}
-      </p>
-
-      <div className="flex flex-wrap gap-2">
-        <Button size="sm" variant="outline" onClick={onExplicar}>
-          <BookOpen className="w-3 h-3 mr-1" />
-          Explicar
-        </Button>
-        
-        {article["Aula"] && (
-          <Button size="sm" variant="outline" onClick={onVideoAula}>
-            <Video className="w-3 h-3 mr-1" />
-            Videoaula
-          </Button>
-        )}
-
-        <Button size="sm" variant="outline" onClick={onTermos}>
-          <FileText className="w-3 h-3 mr-1" />
-          Termos
-        </Button>
-
-        <Button size="sm" variant="outline" onClick={onQuestoes}>
-          <ListChecks className="w-3 h-3 mr-1" />
-          Questões
-        </Button>
-
-        <Button size="sm" variant="outline" onClick={onFlashcards}>
-          <TrendingUp className="w-3 h-3 mr-1" />
-          Flashcards
-        </Button>
-
-        <Button size="sm" variant="outline" onClick={onPergunta}>
-          <HelpCircle className="w-3 h-3 mr-1" />
-          Perguntar
-        </Button>
-      </div>
+      <ArtigoActionsMenu
+        article={article}
+        onOpenExplicacao={(tipo) => onExplicar()}
+        onOpenAula={article["Aula"] ? onVideoAula : undefined}
+        onOpenTermos={onTermos}
+        onOpenQuestoes={onQuestoes}
+        onGenerateFlashcards={onFlashcards}
+        onPerguntar={onPergunta}
+        onShareWhatsApp={() => {
+          const text = formatForWhatsApp(
+            `*Lei Maria da Penha - Lei 11.340/2006*\n\n*Art. ${article["Número do Artigo"]}*\n\n${articleText}`
+          );
+          if (navigator.share) {
+            navigator.share({ text });
+          } else {
+            navigator.clipboard.writeText(text);
+          }
+        }}
+      />
     </div>
   );
 };
