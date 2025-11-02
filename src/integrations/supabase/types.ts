@@ -1249,7 +1249,7 @@ export type Database = {
         }
         Relationships: []
       }
-      "CLT – Consolidação das Leis do Trabalho": {
+      "CLT - Consolidação das Leis do Trabalho": {
         Row: {
           Artigo: string | null
           Aula: string | null
@@ -1281,7 +1281,7 @@ export type Database = {
           explicacao_simples_menor16?: string | null
           explicacao_tecnico?: string | null
           flashcards?: Json | null
-          id: number
+          id?: number
           Narração?: string | null
           "Número do Artigo"?: string | null
           questoes?: Json | null
@@ -1413,7 +1413,7 @@ export type Database = {
           explicacao_simples_menor16?: string | null
           explicacao_tecnico?: string | null
           flashcards?: Json | null
-          id: number
+          id?: number
           Narração?: string | null
           "Número do Artigo"?: string | null
           questoes?: Json | null
