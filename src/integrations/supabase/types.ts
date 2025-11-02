@@ -2216,7 +2216,7 @@ export type Database = {
           explicacao_simples_menor16?: string | null
           explicacao_tecnico?: string | null
           flashcards?: Json | null
-          id: number
+          id?: number
           Narração?: string | null
           "Número do Artigo"?: string | null
           questoes?: Json | null
