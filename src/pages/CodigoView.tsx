@@ -178,11 +178,14 @@ const CodigoView = () => {
       const numeroArtigo = numeroArtigoRaw.toLowerCase().trim();
       const conteudoArtigo = article["Artigo"]?.toLowerCase() || "";
       
-      // Busca por número (normalizando dígitos para casar "1.020" com "1020")
+      // Busca por número - encontra artigos que começam com o número buscado
       if (isNumericSearch) {
         const numeroDigits = normalizeDigits(numeroArtigo);
-        if (numeroDigits === searchLower) return true;
+        // Busca exata ou números que começam com o termo buscado
+        // Ex: buscar "1020" encontra "1020", "10200", "1020-A", etc.
+        if (numeroDigits.startsWith(searchLower)) return true;
       } else {
+        // Busca textual no número do artigo
         if (numeroArtigo.includes(searchLower)) return true;
       }
       
@@ -194,15 +197,27 @@ const CodigoView = () => {
     return filtered.sort((a, b) => {
       const aNum = (a["Número do Artigo"] || "").toLowerCase().trim();
       const bNum = (b["Número do Artigo"] || "").toLowerCase().trim();
+      const normalizeA = normalizeDigits(aNum);
+      const normalizeB = normalizeDigits(bNum);
+      
+      // Priorizar matches exatos
       const aExato = isNumericSearch
-        ? normalizeDigits(aNum) === searchLower
+        ? normalizeA === searchLower
         : aNum === searchLower;
       const bExato = isNumericSearch
-        ? normalizeDigits(bNum) === searchLower
+        ? normalizeB === searchLower
         : bNum === searchLower;
       
       if (aExato && !bExato) return -1;
       if (!aExato && bExato) return 1;
+      
+      // Se ambos começam com o termo, ordenar numericamente
+      if (isNumericSearch) {
+        const aNumInt = parseInt(normalizeA) || 0;
+        const bNumInt = parseInt(normalizeB) || 0;
+        return aNumInt - bNumInt;
+      }
+      
       return 0;
     });
   }, [articles, searchQuery]);
