@@ -885,7 +885,7 @@ export type Database = {
           explicacao_simples_menor16?: string | null
           explicacao_tecnico?: string | null
           flashcards?: Json | null
-          id: number
+          id?: number
           Narração?: string | null
           "Número do Artigo"?: string | null
           questoes?: Json | null
@@ -2688,6 +2688,30 @@ export type Database = {
           ultima_atualizacao?: string | null
           videos?: Json | null
           votos_count?: number | null
+        }
+        Relationships: []
+      }
+      "MAPA MENTAL": {
+        Row: {
+          area: string | null
+          id: number
+          link: string | null
+          sequencia: string | null
+          tema: string | null
+        }
+        Insert: {
+          area?: string | null
+          id?: number
+          link?: string | null
+          sequencia?: string | null
+          tema?: string | null
+        }
+        Update: {
+          area?: string | null
+          id?: number
+          link?: string | null
+          sequencia?: string | null
+          tema?: string | null
         }
         Relationships: []
       }
