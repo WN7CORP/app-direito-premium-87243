@@ -44,6 +44,24 @@ export type Database = {
         }
         Relationships: []
       }
+      "artigo-editar": {
+        Row: {
+          artigo: string | null
+          id: number
+          link: string | null
+        }
+        Insert: {
+          artigo?: string | null
+          id?: number
+          link?: string | null
+        }
+        Update: {
+          artigo?: string | null
+          id?: number
+          link?: string | null
+        }
+        Relationships: []
+      }
       artigos_visualizacoes: {
         Row: {
           id: string
@@ -646,6 +664,117 @@ export type Database = {
         }
         Relationships: []
       }
+      cache_plp_recentes: {
+        Row: {
+          ano: number
+          autor_principal_foto: string | null
+          autor_principal_id: string | null
+          autor_principal_nome: string | null
+          autor_principal_partido: string | null
+          autor_principal_uf: string | null
+          autores_completos: Json | null
+          data_apresentacao: string | null
+          ementa: string | null
+          id: number
+          id_proposicao: number
+          keywords: Json | null
+          numero: number
+          ordem_cache: number | null
+          orgao_tramitacao: string | null
+          quantidade_votacoes: number | null
+          sigla_tipo: string
+          situacao: string | null
+          status: string | null
+          tema: string | null
+          titulo_gerado_ia: string | null
+          updated_at: string | null
+          url_inteiro_teor: string | null
+        }
+        Insert: {
+          ano: number
+          autor_principal_foto?: string | null
+          autor_principal_id?: string | null
+          autor_principal_nome?: string | null
+          autor_principal_partido?: string | null
+          autor_principal_uf?: string | null
+          autores_completos?: Json | null
+          data_apresentacao?: string | null
+          ementa?: string | null
+          id?: number
+          id_proposicao: number
+          keywords?: Json | null
+          numero: number
+          ordem_cache?: number | null
+          orgao_tramitacao?: string | null
+          quantidade_votacoes?: number | null
+          sigla_tipo: string
+          situacao?: string | null
+          status?: string | null
+          tema?: string | null
+          titulo_gerado_ia?: string | null
+          updated_at?: string | null
+          url_inteiro_teor?: string | null
+        }
+        Update: {
+          ano?: number
+          autor_principal_foto?: string | null
+          autor_principal_id?: string | null
+          autor_principal_nome?: string | null
+          autor_principal_partido?: string | null
+          autor_principal_uf?: string | null
+          autores_completos?: Json | null
+          data_apresentacao?: string | null
+          ementa?: string | null
+          id?: number
+          id_proposicao?: number
+          keywords?: Json | null
+          numero?: number
+          ordem_cache?: number | null
+          orgao_tramitacao?: string | null
+          quantidade_votacoes?: number | null
+          sigla_tipo?: string
+          situacao?: string | null
+          status?: string | null
+          tema?: string | null
+          titulo_gerado_ia?: string | null
+          updated_at?: string | null
+          url_inteiro_teor?: string | null
+        }
+        Relationships: []
+      }
+      cache_proposicoes_progresso: {
+        Row: {
+          created_at: string | null
+          data: string
+          finalizado: boolean | null
+          id: string
+          sigla_tipo: string
+          total_processados: number | null
+          ultima_pagina: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          data: string
+          finalizado?: boolean | null
+          id?: string
+          sigla_tipo: string
+          total_processados?: number | null
+          ultima_pagina?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          data?: string
+          finalizado?: boolean | null
+          id?: string
+          sigla_tipo?: string
+          total_processados?: number | null
+          ultima_pagina?: number | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       cache_proposicoes_recentes: {
         Row: {
           ano: number
@@ -654,13 +783,22 @@ export type Database = {
           autor_principal_nome: string | null
           autor_principal_partido: string | null
           autor_principal_uf: string | null
+          autores_completos: Json | null
           created_at: string | null
           data_apresentacao: string | null
           ementa: string
           id: number
           id_proposicao: number
+          keywords: string[] | null
           numero: number
+          ordem_cache: number | null
+          orgao_tramitacao: string | null
+          quantidade_votacoes: number | null
+          resumo_executivo_ia: string | null
           sigla_tipo: string
+          situacao: string | null
+          status: string | null
+          tema: string | null
           titulo_gerado_ia: string | null
           updated_at: string | null
           url_inteiro_teor: string | null
@@ -673,13 +811,22 @@ export type Database = {
           autor_principal_nome?: string | null
           autor_principal_partido?: string | null
           autor_principal_uf?: string | null
+          autores_completos?: Json | null
           created_at?: string | null
           data_apresentacao?: string | null
           ementa: string
           id?: number
           id_proposicao: number
+          keywords?: string[] | null
           numero: number
+          ordem_cache?: number | null
+          orgao_tramitacao?: string | null
+          quantidade_votacoes?: number | null
+          resumo_executivo_ia?: string | null
           sigla_tipo: string
+          situacao?: string | null
+          status?: string | null
+          tema?: string | null
           titulo_gerado_ia?: string | null
           updated_at?: string | null
           url_inteiro_teor?: string | null
@@ -692,13 +839,22 @@ export type Database = {
           autor_principal_nome?: string | null
           autor_principal_partido?: string | null
           autor_principal_uf?: string | null
+          autores_completos?: Json | null
           created_at?: string | null
           data_apresentacao?: string | null
           ementa?: string
           id?: number
           id_proposicao?: number
+          keywords?: string[] | null
           numero?: number
+          ordem_cache?: number | null
+          orgao_tramitacao?: string | null
+          quantidade_votacoes?: number | null
+          resumo_executivo_ia?: string | null
           sigla_tipo?: string
+          situacao?: string | null
+          status?: string | null
+          tema?: string | null
           titulo_gerado_ia?: string | null
           updated_at?: string | null
           url_inteiro_teor?: string | null
@@ -1447,6 +1603,72 @@ export type Database = {
         }
         Relationships: []
       }
+      "CPM – Código Penal Militar": {
+        Row: {
+          Artigo: string | null
+          Aula: string | null
+          Comentario: string | null
+          exemplo: string | null
+          explicacao_resumido: string | null
+          explicacao_simples_maior16: string | null
+          explicacao_simples_menor16: string | null
+          explicacao_tecnico: string | null
+          flashcards: Json | null
+          id: number
+          Narração: string | null
+          "Número do Artigo": string | null
+          questoes: Json | null
+          termos: Json | null
+          termos_aprofundados: Json | null
+          ultima_atualizacao: string | null
+          ultima_visualizacao: string | null
+          versao_conteudo: number | null
+          visualizacoes: number | null
+        }
+        Insert: {
+          Artigo?: string | null
+          Aula?: string | null
+          Comentario?: string | null
+          exemplo?: string | null
+          explicacao_resumido?: string | null
+          explicacao_simples_maior16?: string | null
+          explicacao_simples_menor16?: string | null
+          explicacao_tecnico?: string | null
+          flashcards?: Json | null
+          id?: number
+          Narração?: string | null
+          "Número do Artigo"?: string | null
+          questoes?: Json | null
+          termos?: Json | null
+          termos_aprofundados?: Json | null
+          ultima_atualizacao?: string | null
+          ultima_visualizacao?: string | null
+          versao_conteudo?: number | null
+          visualizacoes?: number | null
+        }
+        Update: {
+          Artigo?: string | null
+          Aula?: string | null
+          Comentario?: string | null
+          exemplo?: string | null
+          explicacao_resumido?: string | null
+          explicacao_simples_maior16?: string | null
+          explicacao_simples_menor16?: string | null
+          explicacao_tecnico?: string | null
+          flashcards?: Json | null
+          id?: number
+          Narração?: string | null
+          "Número do Artigo"?: string | null
+          questoes?: Json | null
+          termos?: Json | null
+          termos_aprofundados?: Json | null
+          ultima_atualizacao?: string | null
+          ultima_visualizacao?: string | null
+          versao_conteudo?: number | null
+          visualizacoes?: number | null
+        }
+        Relationships: []
+      }
       "CPP – Código de Processo Penal": {
         Row: {
           Artigo: string | null
@@ -1480,6 +1702,72 @@ export type Database = {
           explicacao_tecnico?: string | null
           flashcards?: Json | null
           id: number
+          Narração?: string | null
+          "Número do Artigo"?: string | null
+          questoes?: Json | null
+          termos?: Json | null
+          termos_aprofundados?: Json | null
+          ultima_atualizacao?: string | null
+          ultima_visualizacao?: string | null
+          versao_conteudo?: number | null
+          visualizacoes?: number | null
+        }
+        Update: {
+          Artigo?: string | null
+          Aula?: string | null
+          Comentario?: string | null
+          exemplo?: string | null
+          explicacao_resumido?: string | null
+          explicacao_simples_maior16?: string | null
+          explicacao_simples_menor16?: string | null
+          explicacao_tecnico?: string | null
+          flashcards?: Json | null
+          id?: number
+          Narração?: string | null
+          "Número do Artigo"?: string | null
+          questoes?: Json | null
+          termos?: Json | null
+          termos_aprofundados?: Json | null
+          ultima_atualizacao?: string | null
+          ultima_visualizacao?: string | null
+          versao_conteudo?: number | null
+          visualizacoes?: number | null
+        }
+        Relationships: []
+      }
+      "CPPM – Código de Processo Penal Militar": {
+        Row: {
+          Artigo: string | null
+          Aula: string | null
+          Comentario: string | null
+          exemplo: string | null
+          explicacao_resumido: string | null
+          explicacao_simples_maior16: string | null
+          explicacao_simples_menor16: string | null
+          explicacao_tecnico: string | null
+          flashcards: Json | null
+          id: number
+          Narração: string | null
+          "Número do Artigo": string | null
+          questoes: Json | null
+          termos: Json | null
+          termos_aprofundados: Json | null
+          ultima_atualizacao: string | null
+          ultima_visualizacao: string | null
+          versao_conteudo: number | null
+          visualizacoes: number | null
+        }
+        Insert: {
+          Artigo?: string | null
+          Aula?: string | null
+          Comentario?: string | null
+          exemplo?: string | null
+          explicacao_resumido?: string | null
+          explicacao_simples_maior16?: string | null
+          explicacao_simples_menor16?: string | null
+          explicacao_tecnico?: string | null
+          flashcards?: Json | null
+          id?: number
           Narração?: string | null
           "Número do Artigo"?: string | null
           questoes?: Json | null
@@ -1746,6 +2034,8 @@ export type Database = {
           conteudo: string | null
           conteudo_gerado_em: string | null
           "conteudo-final": string | null
+          descricao_gerada_em: string | null
+          "descricao-aula": string | null
           flashcards: Json | null
           id: number
           ordem: string | null
@@ -1759,6 +2049,8 @@ export type Database = {
           conteudo?: string | null
           conteudo_gerado_em?: string | null
           "conteudo-final"?: string | null
+          descricao_gerada_em?: string | null
+          "descricao-aula"?: string | null
           flashcards?: Json | null
           id?: number
           ordem?: string | null
@@ -1772,6 +2064,8 @@ export type Database = {
           conteudo?: string | null
           conteudo_gerado_em?: string | null
           "conteudo-final"?: string | null
+          descricao_gerada_em?: string | null
+          "descricao-aula"?: string | null
           flashcards?: Json | null
           id?: number
           ordem?: string | null
@@ -1837,6 +2131,96 @@ export type Database = {
           municipio?: string | null
           quantidade?: number
           uf?: string
+        }
+        Relationships: []
+      }
+      "ENUNCIADOS CNJ": {
+        Row: {
+          "Data de Aprovação": string | null
+          flashcards: Json | null
+          id: number
+          Narração: string | null
+          questoes: Json | null
+          termos: Json | null
+          "Texto da Súmula": string | null
+          "Título da Súmula": string | null
+          ultima_atualizacao: string | null
+          ultima_visualizacao: string | null
+          versao_conteudo: number | null
+          visualizacoes: number | null
+        }
+        Insert: {
+          "Data de Aprovação"?: string | null
+          flashcards?: Json | null
+          id: number
+          Narração?: string | null
+          questoes?: Json | null
+          termos?: Json | null
+          "Texto da Súmula"?: string | null
+          "Título da Súmula"?: string | null
+          ultima_atualizacao?: string | null
+          ultima_visualizacao?: string | null
+          versao_conteudo?: number | null
+          visualizacoes?: number | null
+        }
+        Update: {
+          "Data de Aprovação"?: string | null
+          flashcards?: Json | null
+          id?: number
+          Narração?: string | null
+          questoes?: Json | null
+          termos?: Json | null
+          "Texto da Súmula"?: string | null
+          "Título da Súmula"?: string | null
+          ultima_atualizacao?: string | null
+          ultima_visualizacao?: string | null
+          versao_conteudo?: number | null
+          visualizacoes?: number | null
+        }
+        Relationships: []
+      }
+      "ENUNCIADOS CNMP": {
+        Row: {
+          "Data de Aprovação": string | null
+          flashcards: Json | null
+          id: number
+          Narração: string | null
+          questoes: Json | null
+          termos: Json | null
+          "Texto da Súmula": string | null
+          "Título da Súmula": string | null
+          ultima_atualizacao: string | null
+          ultima_visualizacao: string | null
+          versao_conteudo: number | null
+          visualizacoes: number | null
+        }
+        Insert: {
+          "Data de Aprovação"?: string | null
+          flashcards?: Json | null
+          id: number
+          Narração?: string | null
+          questoes?: Json | null
+          termos?: Json | null
+          "Texto da Súmula"?: string | null
+          "Título da Súmula"?: string | null
+          ultima_atualizacao?: string | null
+          ultima_visualizacao?: string | null
+          versao_conteudo?: number | null
+          visualizacoes?: number | null
+        }
+        Update: {
+          "Data de Aprovação"?: string | null
+          flashcards?: Json | null
+          id?: number
+          Narração?: string | null
+          questoes?: Json | null
+          termos?: Json | null
+          "Texto da Súmula"?: string | null
+          "Título da Súmula"?: string | null
+          ultima_atualizacao?: string | null
+          ultima_visualizacao?: string | null
+          versao_conteudo?: number | null
+          visualizacoes?: number | null
         }
         Relationships: []
       }
@@ -2517,6 +2901,8 @@ export type Database = {
       FLASHCARDS: {
         Row: {
           area: string | null
+          "audio-pergunta": string | null
+          "audio-resposta": string | null
           exemplo: string | null
           id: number
           pergunta: string | null
@@ -2525,6 +2911,8 @@ export type Database = {
         }
         Insert: {
           area?: string | null
+          "audio-pergunta"?: string | null
+          "audio-resposta"?: string | null
           exemplo?: string | null
           id: number
           pergunta?: string | null
@@ -2533,6 +2921,8 @@ export type Database = {
         }
         Update: {
           area?: string | null
+          "audio-pergunta"?: string | null
+          "audio-resposta"?: string | null
           exemplo?: string | null
           id?: number
           pergunta?: string | null
@@ -2691,6 +3081,72 @@ export type Database = {
         }
         Relationships: []
       }
+      "LC 101 - LRF": {
+        Row: {
+          Artigo: string | null
+          Aula: string | null
+          Comentario: string | null
+          exemplo: string | null
+          explicacao_resumido: string | null
+          explicacao_simples_maior16: string | null
+          explicacao_simples_menor16: string | null
+          explicacao_tecnico: string | null
+          flashcards: Json | null
+          id: number
+          Narração: string | null
+          "Número do Artigo": string | null
+          questoes: Json | null
+          termos: Json | null
+          termos_aprofundados: Json | null
+          ultima_atualizacao: string | null
+          ultima_visualizacao: string | null
+          versao_conteudo: number | null
+          visualizacoes: number | null
+        }
+        Insert: {
+          Artigo?: string | null
+          Aula?: string | null
+          Comentario?: string | null
+          exemplo?: string | null
+          explicacao_resumido?: string | null
+          explicacao_simples_maior16?: string | null
+          explicacao_simples_menor16?: string | null
+          explicacao_tecnico?: string | null
+          flashcards?: Json | null
+          id?: number
+          Narração?: string | null
+          "Número do Artigo"?: string | null
+          questoes?: Json | null
+          termos?: Json | null
+          termos_aprofundados?: Json | null
+          ultima_atualizacao?: string | null
+          ultima_visualizacao?: string | null
+          versao_conteudo?: number | null
+          visualizacoes?: number | null
+        }
+        Update: {
+          Artigo?: string | null
+          Aula?: string | null
+          Comentario?: string | null
+          exemplo?: string | null
+          explicacao_resumido?: string | null
+          explicacao_simples_maior16?: string | null
+          explicacao_simples_menor16?: string | null
+          explicacao_tecnico?: string | null
+          flashcards?: Json | null
+          id?: number
+          Narração?: string | null
+          "Número do Artigo"?: string | null
+          questoes?: Json | null
+          termos?: Json | null
+          termos_aprofundados?: Json | null
+          ultima_atualizacao?: string | null
+          ultima_visualizacao?: string | null
+          versao_conteudo?: number | null
+          visualizacoes?: number | null
+        }
+        Relationships: []
+      }
       "Lei 11.340 de 2006 - Maria da Penha": {
         Row: {
           Artigo: string | null
@@ -2823,7 +3279,7 @@ export type Database = {
         }
         Relationships: []
       }
-      "Lei 12.850/2013 - Organizações Criminosas": {
+      "Lei 12.850 de 2013 - Organizações Criminosas": {
         Row: {
           Artigo: string | null
           Aula: string | null
@@ -2856,6 +3312,666 @@ export type Database = {
           explicacao_tecnico?: string | null
           flashcards?: Json | null
           id: number
+          Narração?: string | null
+          "Número do Artigo"?: string | null
+          questoes?: Json | null
+          termos?: Json | null
+          termos_aprofundados?: Json | null
+          ultima_atualizacao?: string | null
+          ultima_visualizacao?: string | null
+          versao_conteudo?: number | null
+          visualizacoes?: number | null
+        }
+        Update: {
+          Artigo?: string | null
+          Aula?: string | null
+          Comentario?: string | null
+          exemplo?: string | null
+          explicacao_resumido?: string | null
+          explicacao_simples_maior16?: string | null
+          explicacao_simples_menor16?: string | null
+          explicacao_tecnico?: string | null
+          flashcards?: Json | null
+          id?: number
+          Narração?: string | null
+          "Número do Artigo"?: string | null
+          questoes?: Json | null
+          termos?: Json | null
+          termos_aprofundados?: Json | null
+          ultima_atualizacao?: string | null
+          ultima_visualizacao?: string | null
+          versao_conteudo?: number | null
+          visualizacoes?: number | null
+        }
+        Relationships: []
+      }
+      "LEI 12527 - ACESSO INFORMACAO": {
+        Row: {
+          Artigo: string | null
+          Aula: string | null
+          Comentario: string | null
+          exemplo: string | null
+          explicacao_resumido: string | null
+          explicacao_simples_maior16: string | null
+          explicacao_simples_menor16: string | null
+          explicacao_tecnico: string | null
+          flashcards: Json | null
+          id: number
+          Narração: string | null
+          "Número do Artigo": string | null
+          questoes: Json | null
+          termos: Json | null
+          termos_aprofundados: Json | null
+          ultima_atualizacao: string | null
+          ultima_visualizacao: string | null
+          versao_conteudo: number | null
+          visualizacoes: number | null
+        }
+        Insert: {
+          Artigo?: string | null
+          Aula?: string | null
+          Comentario?: string | null
+          exemplo?: string | null
+          explicacao_resumido?: string | null
+          explicacao_simples_maior16?: string | null
+          explicacao_simples_menor16?: string | null
+          explicacao_tecnico?: string | null
+          flashcards?: Json | null
+          id?: number
+          Narração?: string | null
+          "Número do Artigo"?: string | null
+          questoes?: Json | null
+          termos?: Json | null
+          termos_aprofundados?: Json | null
+          ultima_atualizacao?: string | null
+          ultima_visualizacao?: string | null
+          versao_conteudo?: number | null
+          visualizacoes?: number | null
+        }
+        Update: {
+          Artigo?: string | null
+          Aula?: string | null
+          Comentario?: string | null
+          exemplo?: string | null
+          explicacao_resumido?: string | null
+          explicacao_simples_maior16?: string | null
+          explicacao_simples_menor16?: string | null
+          explicacao_tecnico?: string | null
+          flashcards?: Json | null
+          id?: number
+          Narração?: string | null
+          "Número do Artigo"?: string | null
+          questoes?: Json | null
+          termos?: Json | null
+          termos_aprofundados?: Json | null
+          ultima_atualizacao?: string | null
+          ultima_visualizacao?: string | null
+          versao_conteudo?: number | null
+          visualizacoes?: number | null
+        }
+        Relationships: []
+      }
+      "LEI 12846 - ANTICORRUPCAO": {
+        Row: {
+          Artigo: string | null
+          Aula: string | null
+          Comentario: string | null
+          exemplo: string | null
+          explicacao_resumido: string | null
+          explicacao_simples_maior16: string | null
+          explicacao_simples_menor16: string | null
+          explicacao_tecnico: string | null
+          flashcards: Json | null
+          id: number
+          Narração: string | null
+          "Número do Artigo": string | null
+          questoes: Json | null
+          termos: Json | null
+          termos_aprofundados: Json | null
+          ultima_atualizacao: string | null
+          ultima_visualizacao: string | null
+          versao_conteudo: number | null
+          visualizacoes: number | null
+        }
+        Insert: {
+          Artigo?: string | null
+          Aula?: string | null
+          Comentario?: string | null
+          exemplo?: string | null
+          explicacao_resumido?: string | null
+          explicacao_simples_maior16?: string | null
+          explicacao_simples_menor16?: string | null
+          explicacao_tecnico?: string | null
+          flashcards?: Json | null
+          id?: number
+          Narração?: string | null
+          "Número do Artigo"?: string | null
+          questoes?: Json | null
+          termos?: Json | null
+          termos_aprofundados?: Json | null
+          ultima_atualizacao?: string | null
+          ultima_visualizacao?: string | null
+          versao_conteudo?: number | null
+          visualizacoes?: number | null
+        }
+        Update: {
+          Artigo?: string | null
+          Aula?: string | null
+          Comentario?: string | null
+          exemplo?: string | null
+          explicacao_resumido?: string | null
+          explicacao_simples_maior16?: string | null
+          explicacao_simples_menor16?: string | null
+          explicacao_tecnico?: string | null
+          flashcards?: Json | null
+          id?: number
+          Narração?: string | null
+          "Número do Artigo"?: string | null
+          questoes?: Json | null
+          termos?: Json | null
+          termos_aprofundados?: Json | null
+          ultima_atualizacao?: string | null
+          ultima_visualizacao?: string | null
+          versao_conteudo?: number | null
+          visualizacoes?: number | null
+        }
+        Relationships: []
+      }
+      "Lei 13.869 de 2019 - Abuso de Autoridade": {
+        Row: {
+          Artigo: string | null
+          Aula: string | null
+          Comentario: string | null
+          exemplo: string | null
+          explicacao_resumido: string | null
+          explicacao_simples_maior16: string | null
+          explicacao_simples_menor16: string | null
+          explicacao_tecnico: string | null
+          flashcards: Json | null
+          id: number
+          Narração: string | null
+          "Número do Artigo": string | null
+          questoes: Json | null
+          termos: Json | null
+          termos_aprofundados: Json | null
+          ultima_atualizacao: string | null
+          ultima_visualizacao: string | null
+          versao_conteudo: number | null
+          visualizacoes: number | null
+        }
+        Insert: {
+          Artigo?: string | null
+          Aula?: string | null
+          Comentario?: string | null
+          exemplo?: string | null
+          explicacao_resumido?: string | null
+          explicacao_simples_maior16?: string | null
+          explicacao_simples_menor16?: string | null
+          explicacao_tecnico?: string | null
+          flashcards?: Json | null
+          id?: number
+          Narração?: string | null
+          "Número do Artigo"?: string | null
+          questoes?: Json | null
+          termos?: Json | null
+          termos_aprofundados?: Json | null
+          ultima_atualizacao?: string | null
+          ultima_visualizacao?: string | null
+          versao_conteudo?: number | null
+          visualizacoes?: number | null
+        }
+        Update: {
+          Artigo?: string | null
+          Aula?: string | null
+          Comentario?: string | null
+          exemplo?: string | null
+          explicacao_resumido?: string | null
+          explicacao_simples_maior16?: string | null
+          explicacao_simples_menor16?: string | null
+          explicacao_tecnico?: string | null
+          flashcards?: Json | null
+          id?: number
+          Narração?: string | null
+          "Número do Artigo"?: string | null
+          questoes?: Json | null
+          termos?: Json | null
+          termos_aprofundados?: Json | null
+          ultima_atualizacao?: string | null
+          ultima_visualizacao?: string | null
+          versao_conteudo?: number | null
+          visualizacoes?: number | null
+        }
+        Relationships: []
+      }
+      "Lei 13.964 de 2019 - Pacote Anticrime": {
+        Row: {
+          Artigo: string | null
+          Aula: string | null
+          Comentario: string | null
+          exemplo: string | null
+          explicacao_resumido: string | null
+          explicacao_simples_maior16: string | null
+          explicacao_simples_menor16: string | null
+          explicacao_tecnico: string | null
+          flashcards: Json | null
+          id: number
+          Narração: string | null
+          "Número do Artigo": string | null
+          questoes: Json | null
+          termos: Json | null
+          termos_aprofundados: Json | null
+          ultima_atualizacao: string | null
+          ultima_visualizacao: string | null
+          versao_conteudo: number | null
+          visualizacoes: number | null
+        }
+        Insert: {
+          Artigo?: string | null
+          Aula?: string | null
+          Comentario?: string | null
+          exemplo?: string | null
+          explicacao_resumido?: string | null
+          explicacao_simples_maior16?: string | null
+          explicacao_simples_menor16?: string | null
+          explicacao_tecnico?: string | null
+          flashcards?: Json | null
+          id?: number
+          Narração?: string | null
+          "Número do Artigo"?: string | null
+          questoes?: Json | null
+          termos?: Json | null
+          termos_aprofundados?: Json | null
+          ultima_atualizacao?: string | null
+          ultima_visualizacao?: string | null
+          versao_conteudo?: number | null
+          visualizacoes?: number | null
+        }
+        Update: {
+          Artigo?: string | null
+          Aula?: string | null
+          Comentario?: string | null
+          exemplo?: string | null
+          explicacao_resumido?: string | null
+          explicacao_simples_maior16?: string | null
+          explicacao_simples_menor16?: string | null
+          explicacao_tecnico?: string | null
+          flashcards?: Json | null
+          id?: number
+          Narração?: string | null
+          "Número do Artigo"?: string | null
+          questoes?: Json | null
+          termos?: Json | null
+          termos_aprofundados?: Json | null
+          ultima_atualizacao?: string | null
+          ultima_visualizacao?: string | null
+          versao_conteudo?: number | null
+          visualizacoes?: number | null
+        }
+        Relationships: []
+      }
+      "LEI 13140 - MEDIACAO": {
+        Row: {
+          Artigo: string | null
+          Aula: string | null
+          Comentario: string | null
+          exemplo: string | null
+          explicacao_resumido: string | null
+          explicacao_simples_maior16: string | null
+          explicacao_simples_menor16: string | null
+          explicacao_tecnico: string | null
+          flashcards: Json | null
+          id: number
+          Narração: string | null
+          "Número do Artigo": string | null
+          questoes: Json | null
+          termos: Json | null
+          termos_aprofundados: Json | null
+          ultima_atualizacao: string | null
+          ultima_visualizacao: string | null
+          versao_conteudo: number | null
+          visualizacoes: number | null
+        }
+        Insert: {
+          Artigo?: string | null
+          Aula?: string | null
+          Comentario?: string | null
+          exemplo?: string | null
+          explicacao_resumido?: string | null
+          explicacao_simples_maior16?: string | null
+          explicacao_simples_menor16?: string | null
+          explicacao_tecnico?: string | null
+          flashcards?: Json | null
+          id?: number
+          Narração?: string | null
+          "Número do Artigo"?: string | null
+          questoes?: Json | null
+          termos?: Json | null
+          termos_aprofundados?: Json | null
+          ultima_atualizacao?: string | null
+          ultima_visualizacao?: string | null
+          versao_conteudo?: number | null
+          visualizacoes?: number | null
+        }
+        Update: {
+          Artigo?: string | null
+          Aula?: string | null
+          Comentario?: string | null
+          exemplo?: string | null
+          explicacao_resumido?: string | null
+          explicacao_simples_maior16?: string | null
+          explicacao_simples_menor16?: string | null
+          explicacao_tecnico?: string | null
+          flashcards?: Json | null
+          id?: number
+          Narração?: string | null
+          "Número do Artigo"?: string | null
+          questoes?: Json | null
+          termos?: Json | null
+          termos_aprofundados?: Json | null
+          ultima_atualizacao?: string | null
+          ultima_visualizacao?: string | null
+          versao_conteudo?: number | null
+          visualizacoes?: number | null
+        }
+        Relationships: []
+      }
+      "LEI 13709 - LGPD": {
+        Row: {
+          Artigo: string | null
+          Aula: string | null
+          Comentario: string | null
+          exemplo: string | null
+          explicacao_resumido: string | null
+          explicacao_simples_maior16: string | null
+          explicacao_simples_menor16: string | null
+          explicacao_tecnico: string | null
+          flashcards: Json | null
+          id: number
+          Narração: string | null
+          "Número do Artigo": string | null
+          questoes: Json | null
+          termos: Json | null
+          termos_aprofundados: Json | null
+          ultima_atualizacao: string | null
+          ultima_visualizacao: string | null
+          versao_conteudo: number | null
+          visualizacoes: number | null
+        }
+        Insert: {
+          Artigo?: string | null
+          Aula?: string | null
+          Comentario?: string | null
+          exemplo?: string | null
+          explicacao_resumido?: string | null
+          explicacao_simples_maior16?: string | null
+          explicacao_simples_menor16?: string | null
+          explicacao_tecnico?: string | null
+          flashcards?: Json | null
+          id?: number
+          Narração?: string | null
+          "Número do Artigo"?: string | null
+          questoes?: Json | null
+          termos?: Json | null
+          termos_aprofundados?: Json | null
+          ultima_atualizacao?: string | null
+          ultima_visualizacao?: string | null
+          versao_conteudo?: number | null
+          visualizacoes?: number | null
+        }
+        Update: {
+          Artigo?: string | null
+          Aula?: string | null
+          Comentario?: string | null
+          exemplo?: string | null
+          explicacao_resumido?: string | null
+          explicacao_simples_maior16?: string | null
+          explicacao_simples_menor16?: string | null
+          explicacao_tecnico?: string | null
+          flashcards?: Json | null
+          id?: number
+          Narração?: string | null
+          "Número do Artigo"?: string | null
+          questoes?: Json | null
+          termos?: Json | null
+          termos_aprofundados?: Json | null
+          ultima_atualizacao?: string | null
+          ultima_visualizacao?: string | null
+          versao_conteudo?: number | null
+          visualizacoes?: number | null
+        }
+        Relationships: []
+      }
+      "Lei 14.197 de 2021 - Crimes Contra o Estado Democrático": {
+        Row: {
+          Artigo: string | null
+          Aula: string | null
+          Comentario: string | null
+          exemplo: string | null
+          explicacao_resumido: string | null
+          explicacao_simples_maior16: string | null
+          explicacao_simples_menor16: string | null
+          explicacao_tecnico: string | null
+          flashcards: Json | null
+          id: number
+          Narração: string | null
+          "Número do Artigo": string | null
+          questoes: Json | null
+          termos: Json | null
+          termos_aprofundados: Json | null
+          ultima_atualizacao: string | null
+          ultima_visualizacao: string | null
+          versao_conteudo: number | null
+          visualizacoes: number | null
+        }
+        Insert: {
+          Artigo?: string | null
+          Aula?: string | null
+          Comentario?: string | null
+          exemplo?: string | null
+          explicacao_resumido?: string | null
+          explicacao_simples_maior16?: string | null
+          explicacao_simples_menor16?: string | null
+          explicacao_tecnico?: string | null
+          flashcards?: Json | null
+          id?: number
+          Narração?: string | null
+          "Número do Artigo"?: string | null
+          questoes?: Json | null
+          termos?: Json | null
+          termos_aprofundados?: Json | null
+          ultima_atualizacao?: string | null
+          ultima_visualizacao?: string | null
+          versao_conteudo?: number | null
+          visualizacoes?: number | null
+        }
+        Update: {
+          Artigo?: string | null
+          Aula?: string | null
+          Comentario?: string | null
+          exemplo?: string | null
+          explicacao_resumido?: string | null
+          explicacao_simples_maior16?: string | null
+          explicacao_simples_menor16?: string | null
+          explicacao_tecnico?: string | null
+          flashcards?: Json | null
+          id?: number
+          Narração?: string | null
+          "Número do Artigo"?: string | null
+          questoes?: Json | null
+          termos?: Json | null
+          termos_aprofundados?: Json | null
+          ultima_atualizacao?: string | null
+          ultima_visualizacao?: string | null
+          versao_conteudo?: number | null
+          visualizacoes?: number | null
+        }
+        Relationships: []
+      }
+      "LEI 14133 - LICITACOES": {
+        Row: {
+          Artigo: string | null
+          Aula: string | null
+          Comentario: string | null
+          exemplo: string | null
+          explicacao_resumido: string | null
+          explicacao_simples_maior16: string | null
+          explicacao_simples_menor16: string | null
+          explicacao_tecnico: string | null
+          flashcards: Json | null
+          id: number
+          Narração: string | null
+          "Número do Artigo": string | null
+          questoes: Json | null
+          termos: Json | null
+          termos_aprofundados: Json | null
+          ultima_atualizacao: string | null
+          ultima_visualizacao: string | null
+          versao_conteudo: number | null
+          visualizacoes: number | null
+        }
+        Insert: {
+          Artigo?: string | null
+          Aula?: string | null
+          Comentario?: string | null
+          exemplo?: string | null
+          explicacao_resumido?: string | null
+          explicacao_simples_maior16?: string | null
+          explicacao_simples_menor16?: string | null
+          explicacao_tecnico?: string | null
+          flashcards?: Json | null
+          id?: number
+          Narração?: string | null
+          "Número do Artigo"?: string | null
+          questoes?: Json | null
+          termos?: Json | null
+          termos_aprofundados?: Json | null
+          ultima_atualizacao?: string | null
+          ultima_visualizacao?: string | null
+          versao_conteudo?: number | null
+          visualizacoes?: number | null
+        }
+        Update: {
+          Artigo?: string | null
+          Aula?: string | null
+          Comentario?: string | null
+          exemplo?: string | null
+          explicacao_resumido?: string | null
+          explicacao_simples_maior16?: string | null
+          explicacao_simples_menor16?: string | null
+          explicacao_tecnico?: string | null
+          flashcards?: Json | null
+          id?: number
+          Narração?: string | null
+          "Número do Artigo"?: string | null
+          questoes?: Json | null
+          termos?: Json | null
+          termos_aprofundados?: Json | null
+          ultima_atualizacao?: string | null
+          ultima_visualizacao?: string | null
+          versao_conteudo?: number | null
+          visualizacoes?: number | null
+        }
+        Relationships: []
+      }
+      "LEI 4717 - ACAO POPULAR": {
+        Row: {
+          Artigo: string | null
+          Aula: string | null
+          Comentario: string | null
+          exemplo: string | null
+          explicacao_resumido: string | null
+          explicacao_simples_maior16: string | null
+          explicacao_simples_menor16: string | null
+          explicacao_tecnico: string | null
+          flashcards: Json | null
+          id: number
+          Narração: string | null
+          "Número do Artigo": string | null
+          questoes: Json | null
+          termos: Json | null
+          termos_aprofundados: Json | null
+          ultima_atualizacao: string | null
+          ultima_visualizacao: string | null
+          versao_conteudo: number | null
+          visualizacoes: number | null
+        }
+        Insert: {
+          Artigo?: string | null
+          Aula?: string | null
+          Comentario?: string | null
+          exemplo?: string | null
+          explicacao_resumido?: string | null
+          explicacao_simples_maior16?: string | null
+          explicacao_simples_menor16?: string | null
+          explicacao_tecnico?: string | null
+          flashcards?: Json | null
+          id?: number
+          Narração?: string | null
+          "Número do Artigo"?: string | null
+          questoes?: Json | null
+          termos?: Json | null
+          termos_aprofundados?: Json | null
+          ultima_atualizacao?: string | null
+          ultima_visualizacao?: string | null
+          versao_conteudo?: number | null
+          visualizacoes?: number | null
+        }
+        Update: {
+          Artigo?: string | null
+          Aula?: string | null
+          Comentario?: string | null
+          exemplo?: string | null
+          explicacao_resumido?: string | null
+          explicacao_simples_maior16?: string | null
+          explicacao_simples_menor16?: string | null
+          explicacao_tecnico?: string | null
+          flashcards?: Json | null
+          id?: number
+          Narração?: string | null
+          "Número do Artigo"?: string | null
+          questoes?: Json | null
+          termos?: Json | null
+          termos_aprofundados?: Json | null
+          ultima_atualizacao?: string | null
+          ultima_visualizacao?: string | null
+          versao_conteudo?: number | null
+          visualizacoes?: number | null
+        }
+        Relationships: []
+      }
+      "LEI 6015 - REGISTROS PUBLICOS": {
+        Row: {
+          Artigo: string | null
+          Aula: string | null
+          Comentario: string | null
+          exemplo: string | null
+          explicacao_resumido: string | null
+          explicacao_simples_maior16: string | null
+          explicacao_simples_menor16: string | null
+          explicacao_tecnico: string | null
+          flashcards: Json | null
+          id: number
+          Narração: string | null
+          "Número do Artigo": string | null
+          questoes: Json | null
+          termos: Json | null
+          termos_aprofundados: Json | null
+          ultima_atualizacao: string | null
+          ultima_visualizacao: string | null
+          versao_conteudo: number | null
+          visualizacoes: number | null
+        }
+        Insert: {
+          Artigo?: string | null
+          Aula?: string | null
+          Comentario?: string | null
+          exemplo?: string | null
+          explicacao_resumido?: string | null
+          explicacao_simples_maior16?: string | null
+          explicacao_simples_menor16?: string | null
+          explicacao_tecnico?: string | null
+          flashcards?: Json | null
+          id?: number
           Narração?: string | null
           "Número do Artigo"?: string | null
           questoes?: Json | null
@@ -2922,28 +4038,6 @@ export type Database = {
           explicacao_simples_menor16?: string | null
           explicacao_tecnico?: string | null
           flashcards?: Json | null
-          id: number
-          Narração?: string | null
-          "Número do Artigo"?: string | null
-          ordem?: number | null
-          questoes?: Json | null
-          termos?: Json | null
-          termos_aprofundados?: Json | null
-          ultima_atualizacao?: string | null
-          ultima_visualizacao?: string | null
-          versao_conteudo?: number | null
-          visualizacoes?: number | null
-        }
-        Update: {
-          Artigo?: string | null
-          Aula?: string | null
-          Comentario?: string | null
-          exemplo?: string | null
-          explicacao_resumido?: string | null
-          explicacao_simples_maior16?: string | null
-          explicacao_simples_menor16?: string | null
-          explicacao_tecnico?: string | null
-          flashcards?: Json | null
           id?: number
           Narração?: string | null
           "Número do Artigo"?: string | null
@@ -2956,9 +4050,97 @@ export type Database = {
           versao_conteudo?: number | null
           visualizacoes?: number | null
         }
+        Update: {
+          Artigo?: string | null
+          Aula?: string | null
+          Comentario?: string | null
+          exemplo?: string | null
+          explicacao_resumido?: string | null
+          explicacao_simples_maior16?: string | null
+          explicacao_simples_menor16?: string | null
+          explicacao_tecnico?: string | null
+          flashcards?: Json | null
+          id?: number
+          Narração?: string | null
+          "Número do Artigo"?: string | null
+          ordem?: number | null
+          questoes?: Json | null
+          termos?: Json | null
+          termos_aprofundados?: Json | null
+          ultima_atualizacao?: string | null
+          ultima_visualizacao?: string | null
+          versao_conteudo?: number | null
+          visualizacoes?: number | null
+        }
         Relationships: []
       }
-      "Lei 8.072/1990 - Crimes Hediondos": {
+      "LEI 7347 - ACAO CIVIL PUBLICA": {
+        Row: {
+          Artigo: string | null
+          Aula: string | null
+          Comentario: string | null
+          exemplo: string | null
+          explicacao_resumido: string | null
+          explicacao_simples_maior16: string | null
+          explicacao_simples_menor16: string | null
+          explicacao_tecnico: string | null
+          flashcards: Json | null
+          id: number
+          Narração: string | null
+          "Número do Artigo": string | null
+          questoes: Json | null
+          termos: Json | null
+          termos_aprofundados: Json | null
+          ultima_atualizacao: string | null
+          ultima_visualizacao: string | null
+          versao_conteudo: number | null
+          visualizacoes: number | null
+        }
+        Insert: {
+          Artigo?: string | null
+          Aula?: string | null
+          Comentario?: string | null
+          exemplo?: string | null
+          explicacao_resumido?: string | null
+          explicacao_simples_maior16?: string | null
+          explicacao_simples_menor16?: string | null
+          explicacao_tecnico?: string | null
+          flashcards?: Json | null
+          id?: number
+          Narração?: string | null
+          "Número do Artigo"?: string | null
+          questoes?: Json | null
+          termos?: Json | null
+          termos_aprofundados?: Json | null
+          ultima_atualizacao?: string | null
+          ultima_visualizacao?: string | null
+          versao_conteudo?: number | null
+          visualizacoes?: number | null
+        }
+        Update: {
+          Artigo?: string | null
+          Aula?: string | null
+          Comentario?: string | null
+          exemplo?: string | null
+          explicacao_resumido?: string | null
+          explicacao_simples_maior16?: string | null
+          explicacao_simples_menor16?: string | null
+          explicacao_tecnico?: string | null
+          flashcards?: Json | null
+          id?: number
+          Narração?: string | null
+          "Número do Artigo"?: string | null
+          questoes?: Json | null
+          termos?: Json | null
+          termos_aprofundados?: Json | null
+          ultima_atualizacao?: string | null
+          ultima_visualizacao?: string | null
+          versao_conteudo?: number | null
+          visualizacoes?: number | null
+        }
+        Relationships: []
+      }
+      "Lei 8.072 de 1990 - Crimes Hediondos": {
         Row: {
           Artigo: string | null
           Aula: string | null
@@ -3024,7 +4206,205 @@ export type Database = {
         }
         Relationships: []
       }
-      "Lei 9.099/1995 - Juizados Especiais": {
+      "LEI 8212 - Custeio": {
+        Row: {
+          Artigo: string | null
+          Aula: string | null
+          Comentario: string | null
+          exemplo: string | null
+          explicacao_resumido: string | null
+          explicacao_simples_maior16: string | null
+          explicacao_simples_menor16: string | null
+          explicacao_tecnico: string | null
+          flashcards: Json | null
+          id: number
+          Narração: string | null
+          "Número do Artigo": string | null
+          questoes: Json | null
+          termos: Json | null
+          termos_aprofundados: Json | null
+          ultima_atualizacao: string | null
+          ultima_visualizacao: string | null
+          versao_conteudo: number | null
+          visualizacoes: number | null
+        }
+        Insert: {
+          Artigo?: string | null
+          Aula?: string | null
+          Comentario?: string | null
+          exemplo?: string | null
+          explicacao_resumido?: string | null
+          explicacao_simples_maior16?: string | null
+          explicacao_simples_menor16?: string | null
+          explicacao_tecnico?: string | null
+          flashcards?: Json | null
+          id?: never
+          Narração?: string | null
+          "Número do Artigo"?: string | null
+          questoes?: Json | null
+          termos?: Json | null
+          termos_aprofundados?: Json | null
+          ultima_atualizacao?: string | null
+          ultima_visualizacao?: string | null
+          versao_conteudo?: number | null
+          visualizacoes?: number | null
+        }
+        Update: {
+          Artigo?: string | null
+          Aula?: string | null
+          Comentario?: string | null
+          exemplo?: string | null
+          explicacao_resumido?: string | null
+          explicacao_simples_maior16?: string | null
+          explicacao_simples_menor16?: string | null
+          explicacao_tecnico?: string | null
+          flashcards?: Json | null
+          id?: never
+          Narração?: string | null
+          "Número do Artigo"?: string | null
+          questoes?: Json | null
+          termos?: Json | null
+          termos_aprofundados?: Json | null
+          ultima_atualizacao?: string | null
+          ultima_visualizacao?: string | null
+          versao_conteudo?: number | null
+          visualizacoes?: number | null
+        }
+        Relationships: []
+      }
+      "LEI 8213 - Benefícios": {
+        Row: {
+          Artigo: string | null
+          Aula: string | null
+          Comentario: string | null
+          exemplo: string | null
+          explicacao_resumido: string | null
+          explicacao_simples_maior16: string | null
+          explicacao_simples_menor16: string | null
+          explicacao_tecnico: string | null
+          flashcards: Json | null
+          id: number
+          Narração: string | null
+          "Número do Artigo": string | null
+          questoes: Json | null
+          termos: Json | null
+          termos_aprofundados: Json | null
+          ultima_atualizacao: string | null
+          ultima_visualizacao: string | null
+          versao_conteudo: number | null
+          visualizacoes: number | null
+        }
+        Insert: {
+          Artigo?: string | null
+          Aula?: string | null
+          Comentario?: string | null
+          exemplo?: string | null
+          explicacao_resumido?: string | null
+          explicacao_simples_maior16?: string | null
+          explicacao_simples_menor16?: string | null
+          explicacao_tecnico?: string | null
+          flashcards?: Json | null
+          id?: never
+          Narração?: string | null
+          "Número do Artigo"?: string | null
+          questoes?: Json | null
+          termos?: Json | null
+          termos_aprofundados?: Json | null
+          ultima_atualizacao?: string | null
+          ultima_visualizacao?: string | null
+          versao_conteudo?: number | null
+          visualizacoes?: number | null
+        }
+        Update: {
+          Artigo?: string | null
+          Aula?: string | null
+          Comentario?: string | null
+          exemplo?: string | null
+          explicacao_resumido?: string | null
+          explicacao_simples_maior16?: string | null
+          explicacao_simples_menor16?: string | null
+          explicacao_tecnico?: string | null
+          flashcards?: Json | null
+          id?: never
+          Narração?: string | null
+          "Número do Artigo"?: string | null
+          questoes?: Json | null
+          termos?: Json | null
+          termos_aprofundados?: Json | null
+          ultima_atualizacao?: string | null
+          ultima_visualizacao?: string | null
+          versao_conteudo?: number | null
+          visualizacoes?: number | null
+        }
+        Relationships: []
+      }
+      "LEI 8429 - IMPROBIDADE": {
+        Row: {
+          Artigo: string | null
+          Aula: string | null
+          Comentario: string | null
+          exemplo: string | null
+          explicacao_resumido: string | null
+          explicacao_simples_maior16: string | null
+          explicacao_simples_menor16: string | null
+          explicacao_tecnico: string | null
+          flashcards: Json | null
+          id: number
+          Narração: string | null
+          "Número do Artigo": string | null
+          questoes: Json | null
+          termos: Json | null
+          termos_aprofundados: Json | null
+          ultima_atualizacao: string | null
+          ultima_visualizacao: string | null
+          versao_conteudo: number | null
+          visualizacoes: number | null
+        }
+        Insert: {
+          Artigo?: string | null
+          Aula?: string | null
+          Comentario?: string | null
+          exemplo?: string | null
+          explicacao_resumido?: string | null
+          explicacao_simples_maior16?: string | null
+          explicacao_simples_menor16?: string | null
+          explicacao_tecnico?: string | null
+          flashcards?: Json | null
+          id?: number
+          Narração?: string | null
+          "Número do Artigo"?: string | null
+          questoes?: Json | null
+          termos?: Json | null
+          termos_aprofundados?: Json | null
+          ultima_atualizacao?: string | null
+          ultima_visualizacao?: string | null
+          versao_conteudo?: number | null
+          visualizacoes?: number | null
+        }
+        Update: {
+          Artigo?: string | null
+          Aula?: string | null
+          Comentario?: string | null
+          exemplo?: string | null
+          explicacao_resumido?: string | null
+          explicacao_simples_maior16?: string | null
+          explicacao_simples_menor16?: string | null
+          explicacao_tecnico?: string | null
+          flashcards?: Json | null
+          id?: number
+          Narração?: string | null
+          "Número do Artigo"?: string | null
+          questoes?: Json | null
+          termos?: Json | null
+          termos_aprofundados?: Json | null
+          ultima_atualizacao?: string | null
+          ultima_visualizacao?: string | null
+          versao_conteudo?: number | null
+          visualizacoes?: number | null
+        }
+        Relationships: []
+      }
+      "Lei 9.099 de 1995 - Juizados Especiais": {
         Row: {
           Artigo: string | null
           Aula: string | null
@@ -3090,7 +4470,7 @@ export type Database = {
         }
         Relationships: []
       }
-      "Lei 9.296/1996 - Interceptação Telefônica": {
+      "Lei 9.296 de 1996 - Interceptação Telefônica": {
         Row: {
           Artigo: string | null
           Aula: string | null
@@ -3156,7 +4536,7 @@ export type Database = {
         }
         Relationships: []
       }
-      "Lei 9.455/1997 - Tortura": {
+      "Lei 9.455 de 1997 - Tortura": {
         Row: {
           Artigo: string | null
           Aula: string | null
@@ -3210,6 +4590,384 @@ export type Database = {
           explicacao_tecnico?: string | null
           flashcards?: Json | null
           id?: number
+          Narração?: string | null
+          "Número do Artigo"?: string | null
+          questoes?: Json | null
+          termos?: Json | null
+          termos_aprofundados?: Json | null
+          ultima_atualizacao?: string | null
+          ultima_visualizacao?: string | null
+          versao_conteudo?: number | null
+          visualizacoes?: number | null
+        }
+        Relationships: []
+      }
+      "LEI 9099 - JUIZADOS CIVEIS": {
+        Row: {
+          Artigo: string | null
+          Aula: string | null
+          Comentario: string | null
+          exemplo: string | null
+          explicacao_resumido: string | null
+          explicacao_simples_maior16: string | null
+          explicacao_simples_menor16: string | null
+          explicacao_tecnico: string | null
+          flashcards: Json | null
+          id: number
+          Narração: string | null
+          "Número do Artigo": string | null
+          questoes: Json | null
+          termos: Json | null
+          termos_aprofundados: Json | null
+          ultima_atualizacao: string | null
+          ultima_visualizacao: string | null
+          versao_conteudo: number | null
+          visualizacoes: number | null
+        }
+        Insert: {
+          Artigo?: string | null
+          Aula?: string | null
+          Comentario?: string | null
+          exemplo?: string | null
+          explicacao_resumido?: string | null
+          explicacao_simples_maior16?: string | null
+          explicacao_simples_menor16?: string | null
+          explicacao_tecnico?: string | null
+          flashcards?: Json | null
+          id?: number
+          Narração?: string | null
+          "Número do Artigo"?: string | null
+          questoes?: Json | null
+          termos?: Json | null
+          termos_aprofundados?: Json | null
+          ultima_atualizacao?: string | null
+          ultima_visualizacao?: string | null
+          versao_conteudo?: number | null
+          visualizacoes?: number | null
+        }
+        Update: {
+          Artigo?: string | null
+          Aula?: string | null
+          Comentario?: string | null
+          exemplo?: string | null
+          explicacao_resumido?: string | null
+          explicacao_simples_maior16?: string | null
+          explicacao_simples_menor16?: string | null
+          explicacao_tecnico?: string | null
+          flashcards?: Json | null
+          id?: number
+          Narração?: string | null
+          "Número do Artigo"?: string | null
+          questoes?: Json | null
+          termos?: Json | null
+          termos_aprofundados?: Json | null
+          ultima_atualizacao?: string | null
+          ultima_visualizacao?: string | null
+          versao_conteudo?: number | null
+          visualizacoes?: number | null
+        }
+        Relationships: []
+      }
+      "LEI 9430 - LEGISLACAO TRIBUTARIA": {
+        Row: {
+          Artigo: string | null
+          Aula: string | null
+          Comentario: string | null
+          exemplo: string | null
+          explicacao_resumido: string | null
+          explicacao_simples_maior16: string | null
+          explicacao_simples_menor16: string | null
+          explicacao_tecnico: string | null
+          flashcards: Json | null
+          id: number
+          Narração: string | null
+          "Número do Artigo": string | null
+          questoes: Json | null
+          termos: Json | null
+          termos_aprofundados: Json | null
+          ultima_atualizacao: string | null
+          ultima_visualizacao: string | null
+          versao_conteudo: number | null
+          visualizacoes: number | null
+        }
+        Insert: {
+          Artigo?: string | null
+          Aula?: string | null
+          Comentario?: string | null
+          exemplo?: string | null
+          explicacao_resumido?: string | null
+          explicacao_simples_maior16?: string | null
+          explicacao_simples_menor16?: string | null
+          explicacao_tecnico?: string | null
+          flashcards?: Json | null
+          id?: number
+          Narração?: string | null
+          "Número do Artigo"?: string | null
+          questoes?: Json | null
+          termos?: Json | null
+          termos_aprofundados?: Json | null
+          ultima_atualizacao?: string | null
+          ultima_visualizacao?: string | null
+          versao_conteudo?: number | null
+          visualizacoes?: number | null
+        }
+        Update: {
+          Artigo?: string | null
+          Aula?: string | null
+          Comentario?: string | null
+          exemplo?: string | null
+          explicacao_resumido?: string | null
+          explicacao_simples_maior16?: string | null
+          explicacao_simples_menor16?: string | null
+          explicacao_tecnico?: string | null
+          flashcards?: Json | null
+          id?: number
+          Narração?: string | null
+          "Número do Artigo"?: string | null
+          questoes?: Json | null
+          termos?: Json | null
+          termos_aprofundados?: Json | null
+          ultima_atualizacao?: string | null
+          ultima_visualizacao?: string | null
+          versao_conteudo?: number | null
+          visualizacoes?: number | null
+        }
+        Relationships: []
+      }
+      "LEI 9784 - PROCESSO ADMINISTRATIVO": {
+        Row: {
+          Artigo: string | null
+          Aula: string | null
+          Comentario: string | null
+          exemplo: string | null
+          explicacao_resumido: string | null
+          explicacao_simples_maior16: string | null
+          explicacao_simples_menor16: string | null
+          explicacao_tecnico: string | null
+          flashcards: Json | null
+          id: number
+          Narração: string | null
+          "Número do Artigo": string | null
+          questoes: Json | null
+          termos: Json | null
+          termos_aprofundados: Json | null
+          ultima_atualizacao: string | null
+          ultima_visualizacao: string | null
+          versao_conteudo: number | null
+          visualizacoes: number | null
+        }
+        Insert: {
+          Artigo?: string | null
+          Aula?: string | null
+          Comentario?: string | null
+          exemplo?: string | null
+          explicacao_resumido?: string | null
+          explicacao_simples_maior16?: string | null
+          explicacao_simples_menor16?: string | null
+          explicacao_tecnico?: string | null
+          flashcards?: Json | null
+          id?: number
+          Narração?: string | null
+          "Número do Artigo"?: string | null
+          questoes?: Json | null
+          termos?: Json | null
+          termos_aprofundados?: Json | null
+          ultima_atualizacao?: string | null
+          ultima_visualizacao?: string | null
+          versao_conteudo?: number | null
+          visualizacoes?: number | null
+        }
+        Update: {
+          Artigo?: string | null
+          Aula?: string | null
+          Comentario?: string | null
+          exemplo?: string | null
+          explicacao_resumido?: string | null
+          explicacao_simples_maior16?: string | null
+          explicacao_simples_menor16?: string | null
+          explicacao_tecnico?: string | null
+          flashcards?: Json | null
+          id?: number
+          Narração?: string | null
+          "Número do Artigo"?: string | null
+          questoes?: Json | null
+          termos?: Json | null
+          termos_aprofundados?: Json | null
+          ultima_atualizacao?: string | null
+          ultima_visualizacao?: string | null
+          versao_conteudo?: number | null
+          visualizacoes?: number | null
+        }
+        Relationships: []
+      }
+      "LEI 9868 - ADI E ADC": {
+        Row: {
+          Artigo: string | null
+          Aula: string | null
+          Comentario: string | null
+          exemplo: string | null
+          explicacao_resumido: string | null
+          explicacao_simples_maior16: string | null
+          explicacao_simples_menor16: string | null
+          explicacao_tecnico: string | null
+          flashcards: Json | null
+          id: number
+          Narração: string | null
+          "Número do Artigo": string | null
+          questoes: Json | null
+          termos: Json | null
+          termos_aprofundados: Json | null
+          ultima_atualizacao: string | null
+          ultima_visualizacao: string | null
+          versao_conteudo: number | null
+          visualizacoes: number | null
+        }
+        Insert: {
+          Artigo?: string | null
+          Aula?: string | null
+          Comentario?: string | null
+          exemplo?: string | null
+          explicacao_resumido?: string | null
+          explicacao_simples_maior16?: string | null
+          explicacao_simples_menor16?: string | null
+          explicacao_tecnico?: string | null
+          flashcards?: Json | null
+          id?: number
+          Narração?: string | null
+          "Número do Artigo"?: string | null
+          questoes?: Json | null
+          termos?: Json | null
+          termos_aprofundados?: Json | null
+          ultima_atualizacao?: string | null
+          ultima_visualizacao?: string | null
+          versao_conteudo?: number | null
+          visualizacoes?: number | null
+        }
+        Update: {
+          Artigo?: string | null
+          Aula?: string | null
+          Comentario?: string | null
+          exemplo?: string | null
+          explicacao_resumido?: string | null
+          explicacao_simples_maior16?: string | null
+          explicacao_simples_menor16?: string | null
+          explicacao_tecnico?: string | null
+          flashcards?: Json | null
+          id?: number
+          Narração?: string | null
+          "Número do Artigo"?: string | null
+          questoes?: Json | null
+          termos?: Json | null
+          termos_aprofundados?: Json | null
+          ultima_atualizacao?: string | null
+          ultima_visualizacao?: string | null
+          versao_conteudo?: number | null
+          visualizacoes?: number | null
+        }
+        Relationships: []
+      }
+      LEI6015_backup_import: {
+        Row: {
+          Artigo: string | null
+          id: number | null
+          "Número do Artigo": string | null
+        }
+        Insert: {
+          Artigo?: string | null
+          id?: number | null
+          "Número do Artigo"?: string | null
+        }
+        Update: {
+          Artigo?: string | null
+          id?: number | null
+          "Número do Artigo"?: string | null
+        }
+        Relationships: []
+      }
+      leis_ordinarias: {
+        Row: {
+          ativo: boolean
+          created_at: string
+          descricao: string | null
+          id: number
+          nome_lei: string
+          numero_lei: string
+          ordem: number
+        }
+        Insert: {
+          ativo?: boolean
+          created_at?: string
+          descricao?: string | null
+          id?: number
+          nome_lei: string
+          numero_lei: string
+          ordem?: number
+        }
+        Update: {
+          ativo?: boolean
+          created_at?: string
+          descricao?: string | null
+          id?: number
+          nome_lei?: string
+          numero_lei?: string
+          ordem?: number
+        }
+        Relationships: []
+      }
+      "LLD - Lei de Lavagem de Dinheiro": {
+        Row: {
+          Artigo: string | null
+          Aula: string | null
+          Comentario: string | null
+          exemplo: string | null
+          explicacao_resumido: string | null
+          explicacao_simples_maior16: string | null
+          explicacao_simples_menor16: string | null
+          explicacao_tecnico: string | null
+          flashcards: Json | null
+          id: number
+          Narração: string | null
+          "Número do Artigo": string | null
+          questoes: Json | null
+          termos: Json | null
+          termos_aprofundados: Json | null
+          ultima_atualizacao: string | null
+          ultima_visualizacao: string | null
+          versao_conteudo: number | null
+          visualizacoes: number | null
+        }
+        Insert: {
+          Artigo?: string | null
+          Aula?: string | null
+          Comentario?: string | null
+          exemplo?: string | null
+          explicacao_resumido?: string | null
+          explicacao_simples_maior16?: string | null
+          explicacao_simples_menor16?: string | null
+          explicacao_tecnico?: string | null
+          flashcards?: Json | null
+          id?: never
+          Narração?: string | null
+          "Número do Artigo"?: string | null
+          questoes?: Json | null
+          termos?: Json | null
+          termos_aprofundados?: Json | null
+          ultima_atualizacao?: string | null
+          ultima_visualizacao?: string | null
+          versao_conteudo?: number | null
+          visualizacoes?: number | null
+        }
+        Update: {
+          Artigo?: string | null
+          Aula?: string | null
+          Comentario?: string | null
+          exemplo?: string | null
+          explicacao_resumido?: string | null
+          explicacao_simples_maior16?: string | null
+          explicacao_simples_menor16?: string | null
+          explicacao_tecnico?: string | null
+          flashcards?: Json | null
+          id?: never
           Narração?: string | null
           "Número do Artigo"?: string | null
           questoes?: Json | null
@@ -3528,6 +5286,42 @@ export type Database = {
         }
         Relationships: []
       }
+      novidades_vade_mecum: {
+        Row: {
+          categoria: string
+          created_at: string | null
+          data_publicacao: string
+          descricao: string
+          id: number
+          link_referencia: string | null
+          nome_lei: string
+          ordem: number
+          titulo: string
+        }
+        Insert: {
+          categoria: string
+          created_at?: string | null
+          data_publicacao: string
+          descricao: string
+          id?: never
+          link_referencia?: string | null
+          nome_lei: string
+          ordem?: number
+          titulo: string
+        }
+        Update: {
+          categoria?: string
+          created_at?: string | null
+          data_publicacao?: string
+          descricao?: string
+          id?: never
+          link_referencia?: string | null
+          nome_lei?: string
+          ordem?: number
+          titulo?: string
+        }
+        Relationships: []
+      }
       PETIÇÃO: {
         Row: {
           id: number
@@ -3600,6 +5394,132 @@ export type Database = {
           payment_id?: string | null
           status?: string | null
           user_ip?: string
+        }
+        Relationships: []
+      }
+      QUESTOES_GERADAS: {
+        Row: {
+          acertos: number | null
+          alternativa_a: string
+          alternativa_b: string
+          alternativa_c: string
+          alternativa_d: string
+          aprovada: boolean | null
+          area: string
+          comentario: string
+          created_at: string | null
+          enunciado: string
+          erros: number | null
+          gerada_em: string | null
+          id: number
+          modelo_ia: string | null
+          reportada: number | null
+          resposta_correta: string
+          subtema: string | null
+          taxa_acerto: number | null
+          tema: string
+          updated_at: string | null
+          versao_geracao: number | null
+          vezes_respondida: number | null
+        }
+        Insert: {
+          acertos?: number | null
+          alternativa_a: string
+          alternativa_b: string
+          alternativa_c: string
+          alternativa_d: string
+          aprovada?: boolean | null
+          area: string
+          comentario: string
+          created_at?: string | null
+          enunciado: string
+          erros?: number | null
+          gerada_em?: string | null
+          id?: number
+          modelo_ia?: string | null
+          reportada?: number | null
+          resposta_correta: string
+          subtema?: string | null
+          taxa_acerto?: number | null
+          tema: string
+          updated_at?: string | null
+          versao_geracao?: number | null
+          vezes_respondida?: number | null
+        }
+        Update: {
+          acertos?: number | null
+          alternativa_a?: string
+          alternativa_b?: string
+          alternativa_c?: string
+          alternativa_d?: string
+          aprovada?: boolean | null
+          area?: string
+          comentario?: string
+          created_at?: string | null
+          enunciado?: string
+          erros?: number | null
+          gerada_em?: string | null
+          id?: number
+          modelo_ia?: string | null
+          reportada?: number | null
+          resposta_correta?: string
+          subtema?: string | null
+          taxa_acerto?: number | null
+          tema?: string
+          updated_at?: string | null
+          versao_geracao?: number | null
+          vezes_respondida?: number | null
+        }
+        Relationships: []
+      }
+      QUESTOES_LOTE: {
+        Row: {
+          areas_selecionadas: string[]
+          concluido_em: string | null
+          created_at: string | null
+          custo_estimado_usd: number | null
+          id: number
+          iniciado_em: string | null
+          log_erros: Json | null
+          progresso_percentual: number | null
+          questoes_por_tema: number | null
+          status: string | null
+          tempo_total_minutos: number | null
+          tokens_gastos: number | null
+          total_questoes_geradas: number | null
+          total_resumos_processados: number | null
+        }
+        Insert: {
+          areas_selecionadas: string[]
+          concluido_em?: string | null
+          created_at?: string | null
+          custo_estimado_usd?: number | null
+          id?: number
+          iniciado_em?: string | null
+          log_erros?: Json | null
+          progresso_percentual?: number | null
+          questoes_por_tema?: number | null
+          status?: string | null
+          tempo_total_minutos?: number | null
+          tokens_gastos?: number | null
+          total_questoes_geradas?: number | null
+          total_resumos_processados?: number | null
+        }
+        Update: {
+          areas_selecionadas?: string[]
+          concluido_em?: string | null
+          created_at?: string | null
+          custo_estimado_usd?: number | null
+          id?: number
+          iniciado_em?: string | null
+          log_erros?: Json | null
+          progresso_percentual?: number | null
+          questoes_por_tema?: number | null
+          status?: string | null
+          tempo_total_minutos?: number | null
+          tokens_gastos?: number | null
+          total_questoes_geradas?: number | null
+          total_resumos_processados?: number | null
         }
         Relationships: []
       }
@@ -4210,6 +6130,63 @@ export type Database = {
         }
         Relationships: []
       }
+      "SIMULADO-TJSP": {
+        Row: {
+          alternativa_a: string
+          alternativa_b: string
+          alternativa_c: string
+          alternativa_d: string
+          alternativa_e: string
+          alternativas_narradas: string | null
+          ano: number
+          area: string
+          comentario: string | null
+          created_at: string | null
+          enunciado: string
+          id: number
+          numero_questao: number
+          prova: string
+          questao_narrada: string | null
+          resposta: string
+        }
+        Insert: {
+          alternativa_a: string
+          alternativa_b: string
+          alternativa_c: string
+          alternativa_d: string
+          alternativa_e: string
+          alternativas_narradas?: string | null
+          ano: number
+          area: string
+          comentario?: string | null
+          created_at?: string | null
+          enunciado: string
+          id?: number
+          numero_questao: number
+          prova: string
+          questao_narrada?: string | null
+          resposta: string
+        }
+        Update: {
+          alternativa_a?: string
+          alternativa_b?: string
+          alternativa_c?: string
+          alternativa_d?: string
+          alternativa_e?: string
+          alternativas_narradas?: string | null
+          ano?: number
+          area?: string
+          comentario?: string | null
+          created_at?: string | null
+          enunciado?: string
+          id?: number
+          numero_questao?: number
+          prova?: string
+          questao_narrada?: string | null
+          resposta?: string
+        }
+        Relationships: []
+      }
       "SOM AMBIENTE": {
         Row: {
           id: number
@@ -4228,7 +6205,7 @@ export type Database = {
         }
         Relationships: []
       }
-      SUMULAS: {
+      "SUMULAS STF": {
         Row: {
           "Data de Aprovação": string | null
           id: number | null
@@ -4249,6 +6226,231 @@ export type Database = {
           Narração?: string | null
           "Texto da Súmula"?: string | null
           "Título da Súmula"?: string | null
+        }
+        Relationships: []
+      }
+      "SUMULAS STJ": {
+        Row: {
+          "Data de Aprovação": string | null
+          flashcards: Json | null
+          id: number
+          Narração: string | null
+          questoes: Json | null
+          termos: Json | null
+          "Texto da Súmula": string | null
+          "Título da Súmula": string | null
+          ultima_atualizacao: string | null
+          ultima_visualizacao: string | null
+          versao_conteudo: number | null
+          visualizacoes: number | null
+        }
+        Insert: {
+          "Data de Aprovação"?: string | null
+          flashcards?: Json | null
+          id: number
+          Narração?: string | null
+          questoes?: Json | null
+          termos?: Json | null
+          "Texto da Súmula"?: string | null
+          "Título da Súmula"?: string | null
+          ultima_atualizacao?: string | null
+          ultima_visualizacao?: string | null
+          versao_conteudo?: number | null
+          visualizacoes?: number | null
+        }
+        Update: {
+          "Data de Aprovação"?: string | null
+          flashcards?: Json | null
+          id?: number
+          Narração?: string | null
+          questoes?: Json | null
+          termos?: Json | null
+          "Texto da Súmula"?: string | null
+          "Título da Súmula"?: string | null
+          ultima_atualizacao?: string | null
+          ultima_visualizacao?: string | null
+          versao_conteudo?: number | null
+          visualizacoes?: number | null
+        }
+        Relationships: []
+      }
+      "SUMULAS STM": {
+        Row: {
+          "Data de Aprovação": string | null
+          flashcards: Json | null
+          id: number
+          Narração: string | null
+          questoes: Json | null
+          termos: Json | null
+          "Texto da Súmula": string | null
+          "Título da Súmula": string | null
+          ultima_atualizacao: string | null
+          ultima_visualizacao: string | null
+          versao_conteudo: number | null
+          visualizacoes: number | null
+        }
+        Insert: {
+          "Data de Aprovação"?: string | null
+          flashcards?: Json | null
+          id: number
+          Narração?: string | null
+          questoes?: Json | null
+          termos?: Json | null
+          "Texto da Súmula"?: string | null
+          "Título da Súmula"?: string | null
+          ultima_atualizacao?: string | null
+          ultima_visualizacao?: string | null
+          versao_conteudo?: number | null
+          visualizacoes?: number | null
+        }
+        Update: {
+          "Data de Aprovação"?: string | null
+          flashcards?: Json | null
+          id?: number
+          Narração?: string | null
+          questoes?: Json | null
+          termos?: Json | null
+          "Texto da Súmula"?: string | null
+          "Título da Súmula"?: string | null
+          ultima_atualizacao?: string | null
+          ultima_visualizacao?: string | null
+          versao_conteudo?: number | null
+          visualizacoes?: number | null
+        }
+        Relationships: []
+      }
+      "SUMULAS TCU": {
+        Row: {
+          "Data de Aprovação": string | null
+          flashcards: Json | null
+          id: number
+          Narração: string | null
+          questoes: Json | null
+          termos: Json | null
+          "Texto da Súmula": string | null
+          "Título da Súmula": string | null
+          ultima_atualizacao: string | null
+          ultima_visualizacao: string | null
+          versao_conteudo: number | null
+          visualizacoes: number | null
+        }
+        Insert: {
+          "Data de Aprovação"?: string | null
+          flashcards?: Json | null
+          id: number
+          Narração?: string | null
+          questoes?: Json | null
+          termos?: Json | null
+          "Texto da Súmula"?: string | null
+          "Título da Súmula"?: string | null
+          ultima_atualizacao?: string | null
+          ultima_visualizacao?: string | null
+          versao_conteudo?: number | null
+          visualizacoes?: number | null
+        }
+        Update: {
+          "Data de Aprovação"?: string | null
+          flashcards?: Json | null
+          id?: number
+          Narração?: string | null
+          questoes?: Json | null
+          termos?: Json | null
+          "Texto da Súmula"?: string | null
+          "Título da Súmula"?: string | null
+          ultima_atualizacao?: string | null
+          ultima_visualizacao?: string | null
+          versao_conteudo?: number | null
+          visualizacoes?: number | null
+        }
+        Relationships: []
+      }
+      "SUMULAS TSE": {
+        Row: {
+          "Data de Aprovação": string | null
+          flashcards: Json | null
+          id: number
+          Narração: string | null
+          questoes: Json | null
+          termos: Json | null
+          "Texto da Súmula": string | null
+          "Título da Súmula": string | null
+          ultima_atualizacao: string | null
+          ultima_visualizacao: string | null
+          versao_conteudo: number | null
+          visualizacoes: number | null
+        }
+        Insert: {
+          "Data de Aprovação"?: string | null
+          flashcards?: Json | null
+          id: number
+          Narração?: string | null
+          questoes?: Json | null
+          termos?: Json | null
+          "Texto da Súmula"?: string | null
+          "Título da Súmula"?: string | null
+          ultima_atualizacao?: string | null
+          ultima_visualizacao?: string | null
+          versao_conteudo?: number | null
+          visualizacoes?: number | null
+        }
+        Update: {
+          "Data de Aprovação"?: string | null
+          flashcards?: Json | null
+          id?: number
+          Narração?: string | null
+          questoes?: Json | null
+          termos?: Json | null
+          "Texto da Súmula"?: string | null
+          "Título da Súmula"?: string | null
+          ultima_atualizacao?: string | null
+          ultima_visualizacao?: string | null
+          versao_conteudo?: number | null
+          visualizacoes?: number | null
+        }
+        Relationships: []
+      }
+      "SUMULAS TST": {
+        Row: {
+          "Data de Aprovação": string | null
+          flashcards: Json | null
+          id: number
+          Narração: string | null
+          questoes: Json | null
+          termos: Json | null
+          "Texto da Súmula": string | null
+          "Título da Súmula": string | null
+          ultima_atualizacao: string | null
+          ultima_visualizacao: string | null
+          versao_conteudo: number | null
+          visualizacoes: number | null
+        }
+        Insert: {
+          "Data de Aprovação"?: string | null
+          flashcards?: Json | null
+          id: number
+          Narração?: string | null
+          questoes?: Json | null
+          termos?: Json | null
+          "Texto da Súmula"?: string | null
+          "Título da Súmula"?: string | null
+          ultima_atualizacao?: string | null
+          ultima_visualizacao?: string | null
+          versao_conteudo?: number | null
+          visualizacoes?: number | null
+        }
+        Update: {
+          "Data de Aprovação"?: string | null
+          flashcards?: Json | null
+          id?: number
+          Narração?: string | null
+          questoes?: Json | null
+          termos?: Json | null
+          "Texto da Súmula"?: string | null
+          "Título da Súmula"?: string | null
+          ultima_atualizacao?: string | null
+          ultima_visualizacao?: string | null
+          versao_conteudo?: number | null
+          visualizacoes?: number | null
         }
         Relationships: []
       }
@@ -4273,6 +6475,24 @@ export type Database = {
           Narração?: string | null
           "Texto da Súmula"?: string | null
           "Título da Súmula"?: string | null
+        }
+        Relationships: []
+      }
+      "TABELA PARA EDITAR": {
+        Row: {
+          Artigo: string | null
+          id: number
+          "Número do Artigo": string | null
+        }
+        Insert: {
+          Artigo?: string | null
+          id?: number
+          "Número do Artigo"?: string | null
+        }
+        Update: {
+          Artigo?: string | null
+          id?: number
+          "Número do Artigo"?: string | null
         }
         Relationships: []
       }
@@ -4360,6 +6580,33 @@ export type Database = {
           ultimo_reset?: string | null
           updated_at?: string | null
           user_ip?: string
+        }
+        Relationships: []
+      }
+      usuarios_premium: {
+        Row: {
+          created_at: string | null
+          data_ativacao: string | null
+          id: string
+          status_premium: boolean | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          data_ativacao?: string | null
+          id?: string
+          status_premium?: boolean | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          data_ativacao?: string | null
+          id?: string
+          status_premium?: boolean | null
+          updated_at?: string | null
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -4490,7 +6737,15 @@ export type Database = {
           tema: string
         }[]
       }
+      incrementar_stats_questao: {
+        Args: { p_correta: boolean; p_questao_id: number }
+        Returns: undefined
+      }
       reset_daily_limits: { Args: never; Returns: undefined }
+      verificar_status_premium: {
+        Args: { p_user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       feature_type:
