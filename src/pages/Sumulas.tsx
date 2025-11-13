@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { Scale } from "lucide-react";
+import { Scale, Gavel, Briefcase, Vote, Shield, FileCheck, FileText, Building2 } from "lucide-react";
 
 const Sumulas = () => {
   const navigate = useNavigate();
@@ -7,15 +7,66 @@ const Sumulas = () => {
   const sumulas = [
     {
       id: "vinculantes",
-      title: "Súmulas Vinculantes",
-      description: "Súmulas Vinculantes do STF",
-      icon: Scale
+      title: "Súmulas Vinculantes STF",
+      description: "Efeito vinculante obrigatório para todos os tribunais",
+      icon: Scale,
+      available: true
     },
     {
-      id: "sumulas",
-      title: "Súmulas",
-      description: "Súmulas do STF e STJ",
-      icon: Scale
+      id: "stf",
+      title: "STF",
+      description: "Súmulas do Supremo Tribunal Federal",
+      icon: Gavel,
+      available: true
+    },
+    {
+      id: "stj",
+      title: "STJ",
+      description: "Súmulas do Superior Tribunal de Justiça",
+      icon: Gavel,
+      available: true
+    },
+    {
+      id: "tst",
+      title: "TST",
+      description: "Súmulas trabalhistas e relações de trabalho",
+      icon: Briefcase,
+      available: false
+    },
+    {
+      id: "tse",
+      title: "TSE",
+      description: "Súmulas eleitorais e direito eleitoral",
+      icon: Vote,
+      available: false
+    },
+    {
+      id: "tcu",
+      title: "TCU",
+      description: "Súmulas de controle e fiscalização de contas públicas",
+      icon: FileCheck,
+      available: false
+    },
+    {
+      id: "stm",
+      title: "STM",
+      description: "Súmulas de justiça militar",
+      icon: Shield,
+      available: false
+    },
+    {
+      id: "cnmp",
+      title: "CNMP",
+      description: "Enunciados sobre atuação do Ministério Público",
+      icon: FileText,
+      available: false
+    },
+    {
+      id: "cnj",
+      title: "CNJ",
+      description: "Enunciados sobre organização judiciária",
+      icon: Building2,
+      available: false
     }
   ];
 
@@ -30,7 +81,7 @@ const Sumulas = () => {
           <div>
             <h1 className="text-xl md:text-2xl font-bold">Súmulas</h1>
             <p className="text-sm text-muted-foreground">
-              Acesse as súmulas do STF e STJ
+              Acesse súmulas de tribunais superiores e enunciados
             </p>
           </div>
         </div>
@@ -40,6 +91,26 @@ const Sumulas = () => {
       <div className="grid grid-cols-2 gap-3">
         {sumulas.map((sumula) => {
           const Icon = sumula.icon;
+          
+          if (!sumula.available) {
+            return (
+              <div
+                key={sumula.id}
+                className="bg-card/50 border-2 border-dashed border-border/50 rounded-xl overflow-hidden relative opacity-60 cursor-not-allowed"
+              >
+                <div className="p-4 flex flex-col items-center text-center min-h-[140px] justify-center">
+                  <div className="bg-muted/50 rounded-full p-3 mb-2">
+                    <Icon className="w-6 h-6 text-muted-foreground" />
+                  </div>
+                  <h3 className="font-bold text-base mb-1 text-muted-foreground">{sumula.title}</h3>
+                  <div className="mt-2 px-3 py-1 bg-primary/20 rounded-full">
+                    <p className="text-xs font-semibold text-primary">Em Breve</p>
+                  </div>
+                </div>
+              </div>
+            );
+          }
+          
           return (
             <button
               key={sumula.id}

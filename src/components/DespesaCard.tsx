@@ -10,11 +10,18 @@ interface DespesaCardProps {
     dataDocumento: string;
     urlDocumento?: string;
   };
+  index?: number;
 }
 
-export const DespesaCard = ({ despesa }: DespesaCardProps) => {
+export const DespesaCard = ({ despesa, index = 0 }: DespesaCardProps) => {
   return (
-    <Card className="bg-gradient-to-br from-gray-900/95 to-gray-800/95 border-2 border-gray-700 hover:border-amber-500/50 transition-all">
+    <Card 
+      className="bg-gradient-to-br from-gray-900/95 to-gray-800/95 border-2 border-gray-700 hover:border-amber-500/50 transition-all animate-fade-in"
+      style={{
+        animationDelay: `${index * 0.08}s`,
+        animationFillMode: 'backwards'
+      }}
+    >
       <CardContent className="p-4">
         <div className="flex gap-4 items-start">
           <div className="w-12 h-12 rounded-lg bg-amber-600/20 flex items-center justify-center flex-shrink-0">

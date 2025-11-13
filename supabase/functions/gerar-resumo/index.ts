@@ -152,32 +152,99 @@ serve(async (req) => {
     // Preparar prompt e mensagens para o resumo (com níveis)
     const nivelEscolhido = (nivel === "resumido" || nivel === "super_resumido") ? nivel : "detalhado";
 
-    const promptTexto = `Você é um especialista em criar resumos jurídicos estruturados.
+    let promptTexto = "";
+    
+    if (nivelEscolhido === "super_resumido") {
+      promptTexto = `Você é um especialista em criar resumos jurídicos SUPER RESUMIDOS.
 
-NÍVEL DE DETALHE: ${nivelEscolhido.toUpperCase()}
+NÍVEL: SUPER RESUMIDO - MÁXIMA CONCISÃO
 
 CONTEÚDO A RESUMIR:
 ${textoParaResumir}
 
-INSTRUÇÕES DE FORMATAÇÃO (Markdown):
-- Use cabeçalhos (# ## ###), negrito (**texto**), listas e emojis profissionais
-- Se "detalhado": 2-3 parágrafos por tópico, textos de 3-5 linhas
-- Se "resumido": 1 parágrafo por tópico, textos de 2-3 linhas
-- Se "super_resumido": 4-6 bullets diretos com 10-15 palavras cada
-- Cite artigos/leis quando aplicável
+INSTRUÇÕES OBRIGATÓRIAS:
+- Crie APENAS 4-6 bullets com os pontos MAIS IMPORTANTES
+- Cada bullet deve ter NO MÁXIMO 10-15 palavras
+- Use linguagem direta e objetiva
+- Inclua emojis relevantes em cada bullet
+- NÃO crie parágrafos, APENAS bullets
+- Cite artigos/leis APENAS quando essencial
 
-ESTRUTURA SUGERIDA:
+FORMATO EXATO:
+# 📄 Resumo Jurídico
+
+• [Emoji] [Ponto principal 1 em 10-15 palavras]
+• [Emoji] [Ponto principal 2 em 10-15 palavras]
+• [Emoji] [Ponto principal 3 em 10-15 palavras]
+• [Emoji] [Ponto principal 4 em 10-15 palavras]`;
+
+    } else if (nivelEscolhido === "resumido") {
+      promptTexto = `Você é um especialista em criar resumos jurídicos RESUMIDOS.
+
+NÍVEL: RESUMIDO - EQUILÍBRIO ENTRE CONCISÃO E INFORMAÇÃO
+
+CONTEÚDO A RESUMIR:
+${textoParaResumir}
+
+INSTRUÇÕES OBRIGATÓRIAS:
+- Crie 1 parágrafo por tópico principal (máximo 4-5 tópicos)
+- Cada parágrafo deve ter 2-3 linhas (40-60 palavras)
+- Use negrito (**texto**) para destacar termos-chave
+- Inclua emojis profissionais nos cabeçalhos
+- Cite artigos/leis quando relevante
+- Seja objetivo e direto
+
+ESTRUTURA OBRIGATÓRIA:
 # 📄 Resumo Jurídico
 
 ## 🎯 Visão Geral
+[1 parágrafo de 2-3 linhas]
 
 ## 📋 Pontos Principais
+[1 parágrafo de 2-3 linhas]
 
 ## ⚖️ Fundamentos Legais
+[1 parágrafo de 2-3 linhas]
+
+## 📌 Conclusão
+[1 parágrafo de 2-3 linhas]`;
+
+    } else {
+      // Detalhado
+      promptTexto = `Você é um especialista em criar resumos jurídicos DETALHADOS e COMPLETOS.
+
+NÍVEL: DETALHADO - ANÁLISE APROFUNDADA
+
+CONTEÚDO A RESUMIR:
+${textoParaResumir}
+
+INSTRUÇÕES OBRIGATÓRIAS:
+- Crie 2-3 parágrafos COMPLETOS por tópico principal
+- Cada parágrafo deve ter 3-5 linhas (60-100 palavras)
+- Desenvolva cada conceito com profundidade
+- Use negrito (**texto**), listas e citações quando apropriado
+- Inclua emojis profissionais nos cabeçalhos
+- Cite artigos/leis com contexto e explicação
+- Explique termos técnicos quando necessário
+
+ESTRUTURA OBRIGATÓRIA:
+# 📄 Resumo Jurídico Detalhado
+
+## 🎯 Visão Geral
+[2-3 parágrafos de 3-5 linhas cada, apresentando o contexto geral]
+
+## 📋 Pontos Principais
+[2-3 parágrafos de 3-5 linhas cada, desenvolvendo os pontos essenciais]
+
+## ⚖️ Fundamentos Legais
+[2-3 parágrafos de 3-5 linhas cada, explicando a base legal]
 
 ## 🔍 Conceitos-Chave
+[2-3 parágrafos de 3-5 linhas cada, detalhando conceitos importantes]
 
-## 📌 Conclusão`;
+## 📌 Conclusão
+[2-3 parágrafos de 3-5 linhas cada, sintetizando e concluindo]`;
+    }
 
     let messages: any[] = [];
     if (tipo === "imagem" && ((textoParaResumir?.trim().length || 0) < 50) && arquivo && base64Data && mimeType) {

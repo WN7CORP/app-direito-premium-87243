@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { BookOpen, Search, ExternalLink } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { sortArticles } from "@/lib/articleSorter";
 
 const EleicoesLegislacao = () => {
   const [busca, setBusca] = useState("");

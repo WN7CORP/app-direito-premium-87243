@@ -33,10 +33,12 @@ const SimulacaoArtigos = () => {
 
   const buscarArtigos = async () => {
     try {
+      // Busca com limit de 1000 artigos (suficiente para simulações)
       const { data, error } = await (supabase as any)
         .from(tabelaVadeMecum)
         .select('id, "Número do Artigo", Artigo')
-        .order('id');
+        .order('id')
+        .limit(1000);
 
       if (error) throw error;
       setArtigos(data || []);

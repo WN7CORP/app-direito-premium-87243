@@ -17,16 +17,21 @@ interface EventoCardProps {
     situacao?: string;
   };
   onClick?: () => void;
+  index?: number;
 }
 
-export const EventoCard = ({ evento, onClick }: EventoCardProps) => {
+export const EventoCard = ({ evento, onClick, index = 0 }: EventoCardProps) => {
   const dataInicio = evento.dataHoraInicio ? new Date(evento.dataHoraInicio) : null;
   const orgao = evento.orgaos?.[0];
   
   return (
     <Card
-      className="cursor-pointer hover:scale-105 hover:shadow-xl transition-all border-2 border-transparent hover:border-cyan-500/50 bg-gradient-to-br from-gray-900/95 to-gray-800/95"
+      className="cursor-pointer hover:scale-105 hover:shadow-xl transition-all border-2 border-transparent hover:border-cyan-500/50 bg-gradient-to-br from-gray-900/95 to-gray-800/95 animate-fade-in"
       onClick={onClick}
+      style={{
+        animationDelay: `${index * 0.08}s`,
+        animationFillMode: 'backwards'
+      }}
     >
       <CardContent className="p-4">
         <div className="flex gap-4 items-start">

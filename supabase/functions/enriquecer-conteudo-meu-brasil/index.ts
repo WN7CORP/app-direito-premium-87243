@@ -20,7 +20,7 @@ Deno.serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const lovableApiKey = Deno.env.get('LOVABLE_API_KEY')!;
+    const DIREITO_PREMIUM_API_KEY = Deno.env.get('DIREITO_PREMIUM_API_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     const { tipo, nome, conteudo_original, contexto } = await req.json() as EnriquecerRequest;
@@ -161,30 +161,36 @@ Retorne APENAS um JSON válido (sem markdown, sem \`\`\`json) com esta estrutura
 
     const prompt = prompts[tipo];
 
-    // Chamar Lovable AI (Gemini)
-    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${lovableApiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'google/gemini-2.0-flash',
-        messages: [
-          { role: 'user', content: prompt }
-        ],
-        temperature: 0.7,
-      }),
-    });
+    // Chamar API direta do Gemini
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${DIREITO_PREMIUM_API_KEY}`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          contents: [{
+            parts: [{
+              text: prompt
+            }]
+          }],
+          generationConfig: {
+            temperature: 0.7,
+            maxOutputTokens: 2000,
+          }
+        })
+      }
+    );
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('Erro Lovable AI:', response.status, errorText);
+      console.error('Erro API Gemini:', response.status, errorText);
       throw new Error(`Erro ao enriquecer conteúdo: ${response.status}`);
     }
 
     const data = await response.json();
-    const conteudoMelhorado = data.choices[0].message.content;
+    const conteudoMelhorado = data.candidates?.[0]?.content?.parts?.[0]?.text;
 
     // Tentar fazer parse do JSON
     let conteudoJson;

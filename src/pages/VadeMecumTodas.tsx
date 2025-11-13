@@ -1,10 +1,12 @@
 import { useNavigate } from "react-router-dom";
-import { Crown, Gavel, FileText, BookText, Search, Scale, Info, Vote, Landmark, Shield } from "lucide-react";
+import { Crown, Gavel, FileText, BookText, Search, Scale, Info, Vote, Landmark, Shield, HandCoins, ScrollText } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import ProposicoesRecentesCarousel from "@/components/ProposicoesRecentesCarousel";
+import ProposicoesPlpCarousel from "@/components/ProposicoesPlpCarousel";
+import LeisOrdinariasCarousel from "@/components/LeisOrdinariasCarousel";
 
 const VadeMecumTodas = () => {
   const navigate = useNavigate();
@@ -43,6 +45,14 @@ const VadeMecumTodas = () => {
       icon: Gavel,
       iconBg: "bg-purple-500",
       route: "/estatutos"
+    },
+    {
+      id: "previdenciario",
+      title: "Previdenciário",
+      description: "Leis de Benefícios e Custeio",
+      icon: HandCoins,
+      iconBg: "bg-emerald-500",
+      route: "/previdenciario"
     },
     {
       id: "sumulas",
@@ -131,9 +141,19 @@ const VadeMecumTodas = () => {
         })}
       </div>
 
-      {/* Projetos de Lei Recentes - Grid 2 por linha */}
+      {/* Leis Ordinárias - Carrossel */}
+      <div className="animate-fade-in" style={{ animationDelay: '0.3s', animationFillMode: 'backwards' }}>
+        <LeisOrdinariasCarousel />
+      </div>
+
+      {/* Projetos de Lei Recentes (PL) */}
       <div className="animate-fade-in" style={{ animationDelay: '0.4s', animationFillMode: 'backwards' }}>
         <ProposicoesRecentesCarousel />
+      </div>
+
+      {/* Leis Complementares Recentes (PLP) */}
+      <div className="animate-fade-in" style={{ animationDelay: '0.45s', animationFillMode: 'backwards' }}>
+        <ProposicoesPlpCarousel />
       </div>
 
       {/* Seção Poder Legislativo */}

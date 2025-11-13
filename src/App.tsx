@@ -23,6 +23,9 @@ import Estatutos from "./pages/Estatutos";
 import EstatutoView from "./pages/EstatutoView";
 import Sumulas from "./pages/Sumulas";
 import SumulaView from "./pages/SumulaView";
+import Previdenciario from "./pages/Previdenciario";
+import LeiPrevidenciariaBeneficios from "./pages/LeiPrevidenciariaBeneficios";
+import LeiPrevidenciariaCusteio from "./pages/LeiPrevidenciariaCusteio";
 import Pesquisar from "./pages/Pesquisar";
 import ChatProfessora from "./pages/ChatProfessora";
 import AulaInterativa from "./pages/AulaInterativa";
@@ -154,6 +157,11 @@ import MeuBrasilCasos from "./pages/MeuBrasilCasos";
 import MeuBrasilArtigo from "./pages/MeuBrasilArtigo";
 import MeuBrasilBusca from "./pages/MeuBrasilBusca";
 import PopularMeuBrasil from "./pages/PopularMeuBrasil";
+import PopularSumulasSTJ from "./pages/PopularSumulasSTJ";
+import PopularCPM from "./pages/PopularCPM";
+import PopularCPMManual from "./pages/PopularCPMManual";
+import SimuladosTJSP from "./pages/SimuladosTJSP";
+import PopularSimuladoTJSP from "./pages/PopularSimuladoTJSP";
 import IniciandoDireito from "./pages/IniciandoDireito";
 import IniciandoDireitoTemas from "./pages/IniciandoDireitoTemas";
 import IniciandoDireitoAula from "./pages/IniciandoDireitoAula";
@@ -164,6 +172,32 @@ import LepView from "./pages/LepView";
 import JuizadosEspeciaisView from "./pages/JuizadosEspeciaisView";
 import MariaDaPenhaView from "./pages/MariaDaPenhaView";
 import LeiDrogasView from "./pages/LeiDrogasView";
+import OrganizacoesCriminosasView from "./pages/OrganizacoesCriminosasView";
+import LeiPenalLavagemDinheiro from "./pages/LeiPenalLavagemDinheiro";
+import InterceptacaoTelefonicaView from "./pages/InterceptacaoTelefonicaView";
+import CrimesHediondosView from "./pages/CrimesHediondosView";
+import TorturaView from "./pages/TorturaView";
+import CrimesDemocraticosView from "./pages/CrimesDemocraticosView";
+import AbusoAutoridadeView from "./pages/AbusoAutoridadeView";
+import PacoteAnticrimeView from "./pages/PacoteAnticrimeView";
+import LeisOrdinarias from "./pages/LeisOrdinarias";
+import LeiImprobidadeView from "./pages/LeiImprobidadeView";
+import LeiLicitacoesView from "./pages/LeiLicitacoesView";
+import LeiAcaoCivilPublicaView from "./pages/LeiAcaoCivilPublicaView";
+import LeiLGPDView from "./pages/LeiLGPDView";
+import LeiLRFView from "./pages/LeiLRFView";
+import LeiProcessoAdministrativoView from "./pages/LeiProcessoAdministrativoView";
+import LeiAcessoInformacaoView from "./pages/LeiAcessoInformacaoView";
+import LeiLegislacaoTributariaView from "./pages/LeiLegislacaoTributariaView";
+import LeiRegistrosPublicosView from "./pages/LeiRegistrosPublicosView";
+import LeiJuizadosCiveisView from "./pages/LeiJuizadosCiveisView";
+import LeiAcaoPopularView from "./pages/LeiAcaoPopularView";
+import LeiAnticorrupcaoView from "./pages/LeiAnticorrupcaoView";
+import LeiMediacaoView from "./pages/LeiMediacaoView";
+import LeiADIADCView from "./pages/LeiADIADCView";
+import QuestoesFaculdade from "./pages/QuestoesFaculdade";
+import QuizFaculdade from "./pages/QuizFaculdade";
+import GerarQuestoesAdmin from "./pages/admin/GerarQuestoesAdmin";
 
 const queryClient = new QueryClient();
 
@@ -201,7 +235,33 @@ const App = () => {
               <Route path="/lei-penal/juizados-especiais" element={<JuizadosEspeciaisView />} />
               <Route path="/lei-penal/maria-da-penha" element={<MariaDaPenhaView />} />
               <Route path="/lei-penal/lei-drogas" element={<LeiDrogasView />} />
-              <Route path="/video-aula" element={<VideoAula />} />
+              <Route path="/lei-penal/organizacoes-criminosas" element={<OrganizacoesCriminosasView />} />
+              <Route path="/lei-penal/lavagem-dinheiro" element={<LeiPenalLavagemDinheiro />} />
+              <Route path="/lei-penal/interceptacao-telefonica" element={<InterceptacaoTelefonicaView />} />
+              <Route path="/lei-penal/crimes-hediondos" element={<CrimesHediondosView />} />
+              <Route path="/lei-penal/tortura" element={<TorturaView />} />
+              <Route path="/lei-penal/crimes-democraticos" element={<CrimesDemocraticosView />} />
+            <Route path="/lei-penal/abuso-autoridade" element={<AbusoAutoridadeView />} />
+            <Route path="/lei-penal/pacote-anticrime" element={<PacoteAnticrimeView />} />
+            
+            {/* Leis Ordinárias */}
+            <Route path="/leis-ordinarias" element={<LeisOrdinarias />} />
+            <Route path="/leis-ordinarias/improbidade" element={<LeiImprobidadeView />} />
+            <Route path="/leis-ordinarias/licitacoes" element={<LeiLicitacoesView />} />
+            <Route path="/leis-ordinarias/acao-civil-publica" element={<LeiAcaoCivilPublicaView />} />
+            <Route path="/leis-ordinarias/lgpd" element={<LeiLGPDView />} />
+            <Route path="/leis-ordinarias/lrf" element={<LeiLRFView />} />
+            <Route path="/leis-ordinarias/processo-administrativo" element={<LeiProcessoAdministrativoView />} />
+            <Route path="/leis-ordinarias/acesso-informacao" element={<LeiAcessoInformacaoView />} />
+            <Route path="/leis-ordinarias/legislacao-tributaria" element={<LeiLegislacaoTributariaView />} />
+            <Route path="/leis-ordinarias/registros-publicos" element={<LeiRegistrosPublicosView />} />
+            <Route path="/leis-ordinarias/juizados-civeis" element={<LeiJuizadosCiveisView />} />
+            <Route path="/leis-ordinarias/acao-popular" element={<LeiAcaoPopularView />} />
+            <Route path="/leis-ordinarias/anticorrupcao" element={<LeiAnticorrupcaoView />} />
+            <Route path="/leis-ordinarias/mediacao" element={<LeiMediacaoView />} />
+            <Route path="/leis-ordinarias/adi-adc" element={<LeiADIADCView />} />
+            
+            <Route path="/video-aula" element={<VideoAula />} />
               <Route path="/cursos" element={<Cursos />} />
               <Route path="/cursos/modulos" element={<CursosModulos />} />
               <Route path="/cursos/aulas" element={<CursosAulas />} />
@@ -209,9 +269,15 @@ const App = () => {
               <Route path="/constituicao" element={<Constituicao />} />
               <Route path="/estatutos" element={<Estatutos />} />
               <Route path="/estatuto/:id" element={<EstatutoView />} />
-              <Route path="/sumulas" element={<Sumulas />} />
-              <Route path="/sumula/:id" element={<SumulaView />} />
-              <Route path="/pesquisar" element={<Pesquisar />} />
+            <Route path="/sumulas" element={<Sumulas />} />
+            <Route path="/sumula/:id" element={<SumulaView />} />
+            
+            {/* Previdenciário */}
+            <Route path="/previdenciario" element={<Previdenciario />} />
+            <Route path="/lei-previdenciaria/beneficios" element={<LeiPrevidenciariaBeneficios />} />
+            <Route path="/lei-previdenciaria/custeio" element={<LeiPrevidenciariaCusteio />} />
+            
+            <Route path="/pesquisar" element={<Pesquisar />} />
               <Route path="/chat-professora" element={<ChatProfessora />} />
               <Route path="/aula-interativa" element={<AulaInterativa />} />
               <Route path="/ferramentas" element={<Ferramentas />} />
@@ -234,6 +300,9 @@ const App = () => {
               <Route path="/aprender/estagios" element={<EstagiosHub />} />
               <Route path="/aprender/estagios/buscar" element={<EstagiosBuscar />} />
               <Route path="/aprender/estagios/blog" element={<EstagiosBlog />} />
+              <Route path="/faculdade/questoes" element={<QuestoesFaculdade />} />
+              <Route path="/faculdade/questoes/quiz" element={<QuizFaculdade />} />
+              <Route path="/admin/gerar-questoes" element={<GerarQuestoesAdmin />} />
               <Route path="/mapa-mental" element={<MapaMentalAreas />} />
               <Route path="/mapa-mental/area/:area" element={<MapaMentalTemas />} />
               <Route path="/acesso-desktop" element={<AcessoDesktop />} />
@@ -325,6 +394,11 @@ const App = () => {
               <Route path="/meu-brasil/sistema/:titulo" element={<MeuBrasilArtigo />} />
               <Route path="/meu-brasil/caso/:titulo" element={<MeuBrasilArtigo />} />
               <Route path="/popular-meu-brasil" element={<PopularMeuBrasil />} />
+              <Route path="/popular-sumulas-stj" element={<PopularSumulasSTJ />} />
+              <Route path="/popular-cpm" element={<PopularCPM />} />
+              <Route path="/popular-cpm-manual" element={<PopularCPMManual />} />
+            <Route path="/simulados/tjsp" element={<SimuladosTJSP />} />
+            <Route path="/popular-simulado-tjsp" element={<PopularSimuladoTJSP />} />
               <Route path="/iniciando-direito" element={<IniciandoDireito />} />
               <Route path="/iniciando-direito/:area" element={<IniciandoDireitoTemas />} />
               <Route path="/iniciando-direito/:area/:tema" element={<IniciandoDireitoAula />} />

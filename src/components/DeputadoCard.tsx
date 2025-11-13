@@ -11,13 +11,18 @@ interface DeputadoCardProps {
     email?: string;
   };
   onClick?: () => void;
+  index?: number;
 }
 
-export const DeputadoCard = ({ deputado, onClick }: DeputadoCardProps) => {
+export const DeputadoCard = ({ deputado, onClick, index = 0 }: DeputadoCardProps) => {
   return (
     <Card
-      className="cursor-pointer hover:scale-105 hover:shadow-xl transition-all border-2 border-transparent hover:border-green-500/50 bg-gradient-to-br from-gray-900/95 to-gray-800/95"
+      className="cursor-pointer hover:scale-105 hover:shadow-xl transition-all border-2 border-transparent hover:border-green-500/50 bg-gradient-to-br from-gray-900/95 to-gray-800/95 animate-fade-in"
       onClick={onClick}
+      style={{
+        animationDelay: `${index * 0.08}s`,
+        animationFillMode: 'backwards'
+      }}
     >
       <CardContent className="p-4">
         <div className="flex gap-4 items-start">

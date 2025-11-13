@@ -1,14 +1,12 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
-import { ArrowLeft, Search, Plus, Minus, Lightbulb, BookOpen, Bookmark, BookMarked, FileQuestion, Share2, MessageCircle, X } from "lucide-react";
+import { ArrowLeft, Plus, Minus, ArrowUp } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { fetchAllRows } from "@/lib/fetchAllRows";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import InlineAudioButton from "@/components/InlineAudioButton";
-import AudioCommentButton from "@/components/AudioCommentButton";
 import StickyAudioPlayer from "@/components/StickyAudioPlayer";
 import ExplicacaoModal from "@/components/ExplicacaoModal";
 import VideoAulaModal from "@/components/VideoAulaModal";
@@ -16,6 +14,13 @@ import TermosModal from "@/components/TermosModal";
 import QuestoesModal from "@/components/QuestoesModal";
 import { FlashcardViewer } from "@/components/FlashcardViewer";
 import { formatTextWithUppercase } from "@/lib/textFormatter";
+import { BuscaCompacta } from "@/components/BuscaCompacta";
+import { SumulaActionsMenu } from "@/components/SumulaActionsMenu";
+import { VadeMecumTabs } from "@/components/VadeMecumTabs";
+import { VadeMecumPlaylist } from "@/components/VadeMecumPlaylist";
+import { VadeMecumRanking } from "@/components/VadeMecumRanking";
+import { useIndexedDBCache } from "@/hooks/useIndexedDBCache";
+import { SumulaCard } from "@/components/SumulaCard";
 interface Sumula {
   id: number;
   "Título da Súmula": string | null;
@@ -25,18 +30,33 @@ interface Sumula {
 }
 const SumulaView = () => {
   const navigate = useNavigate();
-  const {
-    id
-  } = useParams();
+  const { id } = useParams();
   const [searchParams] = useSearchParams();
   const contentRef = useRef<HTMLDivElement>(null);
   const firstResultRef = useRef<HTMLDivElement>(null);
   const [fontSize, setFontSize] = useState(15);
   const [searchInput, setSearchInput] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
-  const {
-    toast
-  } = useToast();
+  const [viewMode, setViewMode] = useState<'lista' | 'expandido'>('expandido');
+  const [activeTab, setActiveTab] = useState<'artigos' | 'playlist' | 'ranking'>('artigos');
+  const { toast } = useToast();
+
+  // Get table name
+  const tableMap: { [key: string]: string } = {
+    'vinculantes': 'SUMULAS VINCULANTES',
+    'stf': 'SUMULAS STF',
+    'stj': 'SUMULAS STJ',
+    'tst': 'SUMULAS TST',
+    'tse': 'SUMULAS TSE',
+    'stm': 'SUMULAS STM',
+    'tcu': 'SUMULAS TCU',
+    'cnmp': 'ENUNCIADOS CNMP',
+    'cnj': 'ENUNCIADOS CNJ'
+  };
+  const tableName = tableMap[id as string] || '';
+
+  // IndexedDB Cache
+  const { cachedData, saveToCache, isLoadingCache } = useIndexedDBCache<Sumula>(tableName);
 
   // Auto-search based on URL parameter
   useEffect(() => {
@@ -81,35 +101,45 @@ const SumulaView = () => {
   const categoryNames: {
     [key: string]: string;
   } = {
-    vinculantes: "Súmulas Vinculantes",
-    sumulas: "Súmulas"
+    vinculantes: "Súmulas Vinculantes STF",
+    stf: "Súmulas STF",
+    stj: "Súmulas STJ",
+    tst: "Súmulas TST",
+    tse: "Súmulas TSE",
+    stm: "Súmulas STM",
+    tcu: "Súmulas TCU",
+    cnmp: "Enunciados CNMP",
+    cnj: "Enunciados CNJ"
   };
   const categoryName = categoryNames[id as string] || "Súmulas";
 
-  // Fetch sumulas with React Query for caching
-  const {
-    data: sumulas = [],
-    isLoading
-  } = useQuery({
-    queryKey: ['sumulas-v2', id],
+  // Fetch sumulas with React Query + IndexedDB cache
+  const { data: sumulas = [], isLoading } = useQuery({
+    queryKey: ['sumulas-v3', id],
     queryFn: async () => {
-      const tableMap: {
-        [key: string]: string;
-      } = {
-        'vinculantes': 'SUMULAS VINCULANTES',
-        'sumulas': 'SUMULAS'
-      };
-      const tableName = tableMap[id as string];
+      // Usar cache primeiro se disponível
+      if (cachedData && cachedData.length > 0) {
+        return cachedData;
+      }
+
       if (!tableName) {
         console.error("Tabela não encontrada para categoria:", id);
         return [];
       }
+
       const data = await fetchAllRows<Sumula>(tableName, "id");
-      return data as any as Sumula[];
+      const typedData = data as any as Sumula[];
+      
+      // Salvar em cache
+      if (typedData.length > 0) {
+        await saveToCache(typedData);
+      }
+      
+      return typedData;
     },
-    staleTime: 1000 * 60 * 30,
-    // Cache válido por 30 minutos
-    gcTime: 1000 * 60 * 60 // Manter em cache por 1 hora
+    staleTime: Infinity, // Cache nunca expira (atualiza só manualmente)
+    gcTime: 1000 * 60 * 60 * 24, // 24h
+    enabled: !isLoadingCache // Só buscar depois de verificar cache
   });
 
   // Filter and limit sumulas with useMemo
@@ -135,6 +165,12 @@ const SumulaView = () => {
     return searchQuery ? filteredSumulas : filteredSumulas.slice(0, displayLimit);
   }, [filteredSumulas, displayLimit, searchQuery]);
 
+  // Filtrar súmulas com áudio para playlist
+  const sumulasComAudio = useMemo(() => 
+    sumulas.filter(s => s["Narração"]), 
+    [sumulas]
+  );
+
   // Auto-scroll to first result when searching
   useEffect(() => {
     if (searchQuery && filteredSumulas.length > 0 && firstResultRef.current) {
@@ -156,8 +192,8 @@ const SumulaView = () => {
         const scrollTop = element.scrollTop;
         const scrollHeight = element.scrollHeight;
         const clientHeight = element.clientHeight;
-        if (scrollTop + clientHeight >= scrollHeight - 500 && displayLimit < filteredSumulas.length) {
-          setDisplayLimit(prev => Math.min(prev + 30, filteredSumulas.length));
+        if (scrollTop + clientHeight >= scrollHeight - 400 && displayLimit < filteredSumulas.length) {
+          setDisplayLimit(prev => Math.min(prev + 50, filteredSumulas.length));
         }
       };
       element.addEventListener('scroll', handleScroll);
@@ -169,6 +205,12 @@ const SumulaView = () => {
   };
   const decreaseFontSize = () => {
     if (fontSize > 12) setFontSize(fontSize - 2);
+  };
+  const scrollToTop = () => {
+    contentRef.current?.scrollTo({
+      top: 0,
+      behavior: "smooth"
+    });
   };
   const handlePlayComment = (audioUrl: string, title: string) => {
     setCurrentAudio({
@@ -205,12 +247,16 @@ const SumulaView = () => {
     }
   };
   const handleShare = async (sumula: Sumula) => {
-    const text = `Súmula ${sumula.id}\n\n${sumula["Texto da Súmula"]}`;
+    const tipoTexto = id === 'cnmp' || id === 'cnj' ? 'Enunciado' : 'Súmula';
+    const titulo = `${tipoTexto} ${sumula.id}`;
+    const texto = sumula["Texto da Súmula"];
+    const fullText = `${titulo}\n\n${texto}`;
+    
     if (navigator.share) {
       try {
         await navigator.share({
-          title: `Súmula ${sumula.id}`,
-          text: text
+          title: titulo,
+          text: fullText
         });
       } catch (error) {
         console.error('Erro ao compartilhar:', error);
@@ -218,7 +264,7 @@ const SumulaView = () => {
     } else {
       // Fallback: copiar para clipboard
       try {
-        await navigator.clipboard.writeText(text);
+        await navigator.clipboard.writeText(fullText);
         toast({
           title: "Copiado!",
           description: "Texto copiado para a área de transferência"
@@ -233,46 +279,24 @@ const SumulaView = () => {
     }
   };
   const handleAskQuestion = (sumula: Sumula) => {
-    const text = `Súmula ${sumula.id}: ${sumula["Texto da Súmula"]}`;
+    const tipoTexto = id === 'cnmp' || id === 'cnj' ? 'Enunciado' : 'Súmula';
+    const text = `${tipoTexto} ${sumula.id}: ${sumula["Texto da Súmula"]}`;
     navigate(`/professora?contexto=${encodeURIComponent(text)}`);
   };
   return <div className="min-h-screen bg-background text-foreground">
-      {/* Header */}
-      <div className="sticky top-0 bg-background border-b border-border z-20">
-        
-
-        {/* Search Bar */}
-        <div className="px-4 pb-4 max-w-4xl mx-0 my-0">
-          <div className="space-y-2">
-            <div className="relative animate-fade-in flex gap-2">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-                <input type="text" placeholder="Buscar por número ou conteúdo..." value={searchInput} onChange={e => setSearchInput(e.target.value)} onKeyDown={e => {
-                if (e.key === 'Enter') {
-                  setSearchQuery(searchInput);
-                }
-              }} className="w-full bg-input text-foreground pl-10 pr-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-ring transition-all" />
-              </div>
-              
-              <Button onClick={() => setSearchQuery(searchInput)} disabled={!searchInput.trim()} size="lg" className="px-6 shrink-0">
-                <Search className="w-5 h-5 mr-2" />
-                Buscar
-              </Button>
-              
-              {searchQuery && <Button onClick={() => {
-              setSearchInput("");
-              setSearchQuery("");
-            }} variant="outline" size="lg" className="px-4 shrink-0">
-                  <X className="w-5 h-5" />
-                </Button>}
-            </div>
-            
-            {searchQuery && <p className="text-xs text-muted-foreground text-center">
-                {filteredSumulas.length} {filteredSumulas.length === 1 ? 'súmula encontrada' : 'súmulas encontradas'}
-              </p>}
-          </div>
-        </div>
-      </div>
+      {/* Search Bar */}
+      <BuscaCompacta
+        value={searchInput}
+        onChange={setSearchInput}
+        onSearch={() => setSearchQuery(searchInput)}
+        onClear={() => {
+          setSearchInput("");
+          setSearchQuery("");
+        }}
+        viewMode={viewMode}
+        onViewModeChange={setViewMode}
+        resultCount={filteredSumulas.length}
+      />
 
       {/* Sticky Audio Player for Comments */}
       <StickyAudioPlayer isOpen={stickyPlayerOpen} onClose={() => setStickyPlayerOpen(false)} audioUrl={currentAudio.url} title={currentAudio.title} />
@@ -304,103 +328,120 @@ const SumulaView = () => {
           </div>
         </div>}
 
-      {/* Content */}
-      <div ref={contentRef} className="px-4 max-w-4xl mx-auto py-0 overflow-y-auto h-[calc(100vh-116px)]">
-        {/* Sumulas */}
-        {isLoading ? <div className="space-y-6">
-            {[1, 2, 3].map(i => <div key={i} className="bg-card rounded-2xl p-6 border border-border">
-                <Skeleton className="h-8 w-32 mb-3" />
-                <Skeleton className="h-6 w-48 mb-4" />
-                <Skeleton className="h-24 w-full" />
-              </div>)}
-          </div> : displayedSumulas.length === 0 ? <div className="text-center text-muted-foreground py-12">
-            {searchQuery ? "Nenhuma súmula encontrada para sua busca." : "Nenhuma súmula disponível."}
-          </div> : displayedSumulas.map((sumula, index) => {
-        // Destacar súmula se for resultado de busca
-        const isHighlighted = searchQuery && sumula.id?.toString() === searchQuery.trim();
-        return <div key={sumula.id} ref={index === 0 && searchQuery ? firstResultRef : null} className={`bg-card rounded-2xl p-6 mb-6 border transition-all animate-fade-in hover:shadow-lg scroll-mt-4 ${isHighlighted ? 'border-primary shadow-lg shadow-primary/20 ring-2 ring-primary/20' : 'border-border hover:border-border/60 hover:shadow-primary/10'}`} style={{
-          animationDelay: `${index * 0.05}s`,
-          animationFillMode: 'backwards'
-        }}>
-                {/* Sumula Header */}
-                <h2 className="text-accent font-bold text-xl md:text-2xl mb-3 animate-scale-in">
-                  Súmula {sumula.id}
-                </h2>
+      {/* Content com Tabs */}
+      <div ref={contentRef} className="overflow-y-auto h-[calc(100vh-180px)]">
+        {/* Tab: Artigos */}
+        {activeTab === 'artigos' && (
+          <div className="px-4 max-w-4xl mx-auto py-4">
+            {isLoading || isLoadingCache ? (
+              <div className="space-y-6">
+                {[1, 2, 3].map(i => (
+                  <div key={i} className="bg-card rounded-2xl p-6 border border-border">
+                    <Skeleton className="h-8 w-32 mb-3" />
+                    <Skeleton className="h-6 w-48 mb-4" />
+                    <Skeleton className="h-24 w-full" />
+                  </div>
+                ))}
+              </div>
+            ) : displayedSumulas.length === 0 ? (
+              <div className="text-center text-muted-foreground py-12">
+                {searchQuery 
+                  ? `Nenhum${id === 'cnmp' || id === 'cnj' ? ' enunciado encontrado' : 'a súmula encontrada'} para sua busca.` 
+                  : `Nenhum${id === 'cnmp' || id === 'cnj' ? ' enunciado disponível' : 'a súmula disponível'}.`}
+              </div>
+            ) : (
+              displayedSumulas.map((sumula, index) => {
+                const isHighlighted = searchQuery && sumula.id?.toString() === searchQuery.trim();
+                
+                return (
+                  <SumulaCard
+                    key={sumula.id}
+                    sumula={sumula}
+                    index={index}
+                    isHighlighted={isHighlighted}
+                    isFirstResult={index === 0 && !!searchQuery}
+                    firstResultRef={firstResultRef}
+                    fontSize={fontSize}
+                    categoryName={categoryName}
+                    isCNMPorCNJ={id === 'cnmp' || id === 'cnj'}
+                    tableName={tableName}
+                    onOpenExplicacao={handleOpenExplicacao}
+                    onGenerateFlashcards={handleGenerateFlashcards}
+                    onOpenTermos={(artigo, numeroArtigo) => {
+                      setTermosData({ artigo, numeroArtigo });
+                      setTermosModalOpen(true);
+                    }}
+                    onOpenQuestoes={(artigo, numeroArtigo) => {
+                      setQuestoesData({ artigo, numeroArtigo });
+                      setQuestoesModalOpen(true);
+                    }}
+                    onShare={handleShare}
+                    onPerguntar={handleAskQuestion}
+                    loadingFlashcards={loadingFlashcards}
+                  />
+                );
+              })
+            )}
+          </div>
+        )}
 
-                {/* Sumula Content */}
-                <div className="article-content text-foreground/90 mb-4 whitespace-pre-line leading-relaxed font-serif-content" style={{
-            fontSize: `${fontSize}px`,
-            lineHeight: "1.7"
-          }} dangerouslySetInnerHTML={{
-            __html: formatTextWithUppercase(sumula["Texto da Súmula"] || "Texto não disponível")
-          }} />
+        {/* Tab: Playlist */}
+        {activeTab === 'playlist' && (
+          <div className="p-4">
+            <VadeMecumPlaylist 
+              articles={sumulasComAudio.map(s => ({
+                id: s.id,
+                "Número do Artigo": s.id?.toString() || "",
+                "Artigo": s["Texto da Súmula"] || "",
+                "Narração": s["Narração"] || ""
+              }))}
+              codigoNome={categoryName}
+            />
+          </div>
+        )}
 
-                {/* Data de Aprovação */}
-                {sumula["Data de Aprovação"] && <p className="text-sm text-muted-foreground mb-6">
-                    Aprovada em: {sumula["Data de Aprovação"]}
-                  </p>}
-
-                {/* Action Buttons */}
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mb-4">
-                  {sumula["Narração"] && <InlineAudioButton audioUrl={sumula["Narração"]!} articleNumber={sumula.id?.toString() || ""} />}
-                  
-                  <button onClick={() => handleOpenExplicacao(sumula["Texto da Súmula"]!, sumula.id?.toString() || "", "explicacao")} className="flex items-center justify-center gap-2 bg-secondary/50 hover:bg-secondary border border-border/50 hover:border-border text-foreground px-4 py-2.5 rounded-lg transition-all text-sm font-medium hover:scale-105 animate-fade-in">
-                    <Lightbulb className="w-4 h-4" />
-                    Explicar
-                  </button>
-                  <button onClick={() => handleOpenExplicacao(sumula["Texto da Súmula"]!, sumula.id?.toString() || "", "exemplo")} className="flex items-center justify-center gap-2 bg-secondary/50 hover:bg-secondary border border-border/50 hover:border-border text-foreground px-4 py-2.5 rounded-lg transition-all text-sm font-medium hover:scale-105 animate-fade-in">
-                    <BookOpen className="w-4 h-4" />
-                    Exemplo
-                  </button>
-                  <button onClick={() => handleGenerateFlashcards(sumula["Texto da Súmula"]!, sumula.id?.toString() || "")} disabled={loadingFlashcards} className="flex items-center justify-center gap-2 bg-secondary/50 hover:bg-secondary border border-border/50 hover:border-border text-foreground px-4 py-2.5 rounded-lg transition-all text-sm font-medium hover:scale-105 animate-fade-in disabled:opacity-50">
-                    <Bookmark className="w-4 h-4" />
-                    {loadingFlashcards ? "Gerando..." : "Flashcards"}
-                  </button>
-                  <button onClick={() => {
-              setTermosData({
-                artigo: sumula["Texto da Súmula"]!,
-                numeroArtigo: sumula.id?.toString() || ""
-              });
-              setTermosModalOpen(true);
-            }} className="flex items-center justify-center gap-2 bg-secondary/50 hover:bg-secondary border border-border/50 hover:border-border text-foreground px-4 py-2.5 rounded-lg transition-all text-sm font-medium hover:scale-105 animate-fade-in">
-                    <BookMarked className="w-4 h-4" />
-                    Termos
-                  </button>
-                  <button onClick={() => {
-              setQuestoesData({
-                artigo: sumula["Texto da Súmula"]!,
-                numeroArtigo: sumula.id?.toString() || ""
-              });
-              setQuestoesModalOpen(true);
-            }} className="flex items-center justify-center gap-2 bg-secondary/50 hover:bg-secondary border border-border/50 hover:border-border text-foreground px-4 py-2.5 rounded-lg transition-all text-sm font-medium hover:scale-105 animate-fade-in">
-                    <FileQuestion className="w-4 h-4" />
-                    Questões
-                  </button>
-                  <button onClick={() => handleShare(sumula)} className="flex items-center justify-center gap-2 bg-secondary/50 hover:bg-secondary border border-border/50 hover:border-border text-foreground px-4 py-2.5 rounded-lg transition-all text-sm font-medium hover:scale-105 animate-fade-in">
-                    <Share2 className="w-4 h-4" />
-                    Compartilhar
-                  </button>
-                  <button onClick={() => handleAskQuestion(sumula)} className="flex items-center justify-center gap-2 bg-secondary/50 hover:bg-secondary border border-border/50 hover:border-border text-foreground px-4 py-2.5 rounded-lg transition-all text-sm font-medium hover:scale-105 animate-fade-in">
-                    <MessageCircle className="w-4 h-4" />
-                    Perguntar
-                  </button>
-                </div>
-              </div>;
-      })}
+        {/* Tab: Ranking (Em Alta) */}
+        {activeTab === 'ranking' && (
+          <div className="p-4">
+            <VadeMecumRanking 
+              tableName={tableName}
+              codigoNome={categoryName}
+              onArticleClick={(numeroArtigo) => {
+                setSearchQuery(numeroArtigo);
+                setSearchInput(numeroArtigo);
+                setActiveTab('artigos');
+              }}
+            />
+          </div>
+        )}
       </div>
 
+      {/* Tabs Navigation */}
+      <VadeMecumTabs 
+        activeTab={activeTab} 
+        onTabChange={(tab) => setActiveTab(tab as any)}
+      />
+
       {/* Floating Font Size Controls */}
-      <div className="fixed bottom-4 left-4 flex flex-col gap-2 z-30 animate-fade-in">
-        <button onClick={increaseFontSize} className="bg-accent hover:bg-accent/90 text-accent-foreground w-10 h-10 rounded-full flex items-center justify-center shadow-lg transition-all hover:scale-110">
+      <div className="fixed bottom-28 left-4 flex flex-col gap-2 z-40 animate-fade-in">
+        <Button onClick={increaseFontSize} size="icon" className="rounded-full bg-[hsl(45,93%,58%)] hover:bg-[hsl(45,93%,58%)]/90 text-black shadow-lg">
           <Plus className="w-4 h-4" />
-        </button>
-        <button onClick={decreaseFontSize} className="bg-accent hover:bg-accent/90 text-accent-foreground w-10 h-10 rounded-full flex items-center justify-center shadow-lg transition-all hover:scale-110">
+        </Button>
+        <Button onClick={decreaseFontSize} size="icon" className="rounded-full bg-[hsl(45,93%,58%)] hover:bg-[hsl(45,93%,58%)]/90 text-black shadow-lg">
           <Minus className="w-4 h-4" />
-        </button>
+        </Button>
         <div className="bg-card border border-border text-foreground text-xs font-medium px-2 py-1.5 rounded-full text-center shadow-lg">
           {fontSize}px
         </div>
       </div>
+
+      <Button
+        onClick={scrollToTop}
+        size="icon"
+        className="fixed bottom-28 right-4 rounded-full bg-[hsl(45,93%,58%)] hover:bg-[hsl(45,93%,58%)]/90 text-black z-40 shadow-lg"
+      >
+        <ArrowUp className="w-5 h-5" />
+      </Button>
     </div>;
 };
 export default SumulaView;

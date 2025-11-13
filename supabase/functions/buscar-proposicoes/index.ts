@@ -11,15 +11,29 @@ serve(async (req) => {
   }
 
   try {
-    const { siglaTipo, numero, ano, keywords, idDeputadoAutor } = await req.json();
+    const { siglaTipo, numero, ano, mes, keywords, idDeputadoAutor } = await req.json();
     
-    console.log('Buscando proposições com filtros:', { siglaTipo, numero, ano, keywords });
+    console.log('Buscando proposições com filtros:', { siglaTipo, numero, ano, mes, keywords });
 
     // Construir URL com parâmetros
     const params = new URLSearchParams();
     if (siglaTipo) params.append('siglaTipo', siglaTipo);
     if (numero) params.append('numero', numero);
-    if (ano) params.append('ano', ano.toString());
+    
+    // Se tiver mês e ano, usar dataInicio e dataFim ao invés de ano
+    if (mes && ano) {
+      const mesNum = parseInt(mes);
+      const anoNum = parseInt(ano);
+      const dataInicio = new Date(anoNum, mesNum - 1, 1).toISOString().split('T')[0];
+      const ultimoDia = new Date(anoNum, mesNum, 0).getDate();
+      const dataFim = new Date(anoNum, mesNum - 1, ultimoDia).toISOString().split('T')[0];
+      params.append('dataInicio', dataInicio);
+      params.append('dataFim', dataFim);
+      console.log(`📅 Filtrando por período: ${dataInicio} a ${dataFim}`);
+    } else if (ano) {
+      params.append('ano', ano.toString());
+    }
+    
     if (keywords) params.append('keywords', keywords);
     if (idDeputadoAutor) params.append('idDeputadoAutor', idDeputadoAutor.toString());
     params.append('ordem', 'DESC');

@@ -1,9 +1,9 @@
 import { useEffect, useState, useRef } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, ChevronLeft, ChevronRight, Sparkles, BookOpen, Brain, ClipboardCheck, ArrowUp } from "lucide-react";
+import { ArrowLeft, ChevronLeft, ChevronRight, Sparkles, BookOpen, Brain, ClipboardCheck, ArrowUp, Home } from "lucide-react";
 import { toast } from "sonner";
 import { useCursosCache } from "@/hooks/useCursosCache";
 import ReactMarkdown from "react-markdown";
@@ -12,6 +12,7 @@ import { ContentGenerationLoader } from "@/components/ContentGenerationLoader";
 import { FlashcardViewer } from "@/components/FlashcardViewer";
 import { QuizViewer } from "@/components/QuizViewer";
 import { AulaTransitionCard } from "@/components/aula/AulaTransitionCard";
+import { AulaIntroCard } from "@/components/aula/AulaIntroCard";
 import { useDeviceType } from "@/hooks/use-device-type";
 interface AulaData {
   tema: string;
@@ -19,6 +20,8 @@ interface AulaData {
   'aula-link': string;
   conteudo: string;
   'conteudo-final': string | null;
+  'descricao-aula': string | null;
+  'descricao_gerada_em': string | null;
   flashcards: Array<{
     pergunta: string;
     resposta: string;
@@ -55,6 +58,8 @@ export default function IniciandoDireitoAula() {
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [mostrarTransicao, setMostrarTransicao] = useState(false);
   const [proximaAulaInfo, setProximaAulaInfo] = useState<{ numero: number; tema: string } | null>(null);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const aulaIniciada = searchParams.get('iniciada') === 'true';
   const conteudoRef = useRef<HTMLDivElement>(null);
   const { cursos, loading: cursosLoading, invalidateCache } = useCursosCache();
   const { isDesktop } = useDeviceType();
@@ -69,6 +74,11 @@ export default function IniciandoDireitoAula() {
       );
       if (aulaEncontrada) {
         setAula(aulaEncontrada as any);
+        
+        // Gerar descrição se não existir
+        if (!aulaEncontrada['descricao-aula']) {
+          gerarDescricao(aulaEncontrada);
+        }
       }
       setLoading(false);
       
@@ -79,6 +89,39 @@ export default function IniciandoDireitoAula() {
       setTodasAulas(temasArea);
     }
   }, [cursosLoading, cursos, areaDecoded, temaDecoded]);
+
+  const gerarDescricao = async (aulaData: any) => {
+    try {
+      console.log('Gerando descrição para:', aulaData.tema);
+      const { data, error } = await supabase.functions.invoke('gerar-descricao-aula', {
+        body: {
+          tema: aulaData.tema,
+          conteudo_base: aulaData.conteudo,
+          area: areaDecoded,
+          aula_link: aulaData['aula-link']
+        }
+      });
+
+      if (error) {
+        console.warn('Descrição não pôde ser gerada, usando fallback:', error.message);
+        return;
+      }
+      
+      if (data?.descricao) {
+        // Atualizar estado local
+        setAula((prev: any) => prev ? {
+          ...prev,
+          'descricao-aula': data.descricao,
+          'descricao_gerada_em': new Date().toISOString()
+        } : null);
+        
+        // Invalidar cache para próxima vez
+        invalidateCache();
+      }
+    } catch (error) {
+      console.warn('Descrição não pôde ser gerada, usando fallback');
+    }
+  };
   useEffect(() => {
     const handleScroll = () => {
       const scrollTop = window.scrollY || document.documentElement.scrollTop;
@@ -194,6 +237,23 @@ export default function IniciandoDireitoAula() {
   const indiceAtual = todasAulas.findIndex(a => a.tema === temaDecoded);
   const temProxima = indiceAtual < todasAulas.length - 1;
   const temAnterior = indiceAtual > 0;
+  
+  // Mostrar tela de introdução se a aula não foi iniciada
+  if (!aulaIniciada) {
+    return (
+      <>
+        <AulaIntroCard
+          area={areaDecoded}
+          aulaNumero={aula.ordem}
+          aulaTema={temaDecoded}
+          aulaDescricao={aula['descricao-aula'] || aula.conteudo?.substring(0, 150) + '...'}
+          capaUrl={(aula as any)['capa-aula']}
+          onIniciar={() => setSearchParams({ iniciada: 'true' })}
+        />
+      </>
+    );
+  }
+  
   return <div className="min-h-screen bg-gradient-to-br from-background via-card to-background pb-0">
       {/* Header */}
       <div className="bg-card border-b border-border sticky top-0 z-10">
@@ -303,19 +363,27 @@ export default function IniciandoDireitoAula() {
         {!isDesktop && (
           <div className="fixed bottom-0 left-0 right-0 bg-card border-t border-border z-40">
             <div className="max-w-5xl mx-auto px-4 py-3">
-              <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center justify-between gap-2">
                 <Button onClick={navegarAulaAnterior} disabled={!temAnterior} variant="outline" className="flex-1">
-                  <ChevronLeft className="w-4 h-4 mr-2" />
-                  Aula Anterior
+                  <ChevronLeft className="w-4 h-4 mr-1" />
+                  Anterior
+                </Button>
+
+                <Button 
+                  onClick={() => navigate('/iniciando-direito')} 
+                  className="px-3 bg-destructive hover:bg-destructive/90 text-destructive-foreground"
+                >
+                  <Home className="w-4 h-4" />
                 </Button>
 
                 <Button 
                   onClick={navegarProximaAula} 
                   disabled={!temProxima} 
-                  className="flex-1 bg-primary/70 hover:bg-primary/80"
+                  variant="outline"
+                  className="flex-1"
                 >
-                  Próxima Aula
-                  <ChevronRight className="w-4 h-4 ml-2" />
+                  Próxima
+                  <ChevronRight className="w-4 h-4 ml-1" />
                 </Button>
               </div>
             </div>

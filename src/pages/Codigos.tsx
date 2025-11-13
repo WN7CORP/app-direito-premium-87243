@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { Scale, Gavel, FileText, Sword, Briefcase, Shield, DollarSign, Droplets, Plane, Radio, Building2, Mountain, BookOpen, Car, Search, TrendingUp } from "lucide-react";
+import { Scale, Gavel, FileText, Sword, Briefcase, Shield, DollarSign, Droplets, Plane, Radio, Building2, Mountain, BookOpen, Car, Search, TrendingUp, Siren } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -35,10 +35,10 @@ const Codigos = () => {
     title: "Código de Processo Civil",
     description: "Lei 13.105/2015",
     icon: FileText,
-    borderColor: "border-l-[hsl(262,83%,58%)]",
-    iconBg: "bg-[hsl(262,83%,58%)]/10",
-    iconColor: "text-[hsl(262,83%,58%)]",
-    shadowColor: "hover:shadow-[hsl(262,83%,58%)]/10"
+    borderColor: "border-l-[hsl(217,91%,60%)]",
+    iconBg: "bg-[hsl(217,91%,60%)]/10",
+    iconColor: "text-[hsl(217,91%,60%)]",
+    shadowColor: "hover:shadow-[hsl(217,91%,60%)]/10"
   }, {
     id: "cpp",
     abbr: "CPP",
@@ -149,6 +149,26 @@ const Codigos = () => {
     iconBg: "bg-[hsl(66,70%,54%)]/10",
     iconColor: "text-[hsl(66,70%,54%)]",
     shadowColor: "hover:shadow-[hsl(66,70%,54%)]/10"
+  }, {
+    id: "cpm",
+    abbr: "CPM",
+    title: "Código Penal Militar",
+    description: "Decreto-Lei 1.001/1969",
+    icon: Shield,
+    borderColor: "border-l-[hsl(15,86%,53%)]",
+    iconBg: "bg-[hsl(15,86%,53%)]/10",
+    iconColor: "text-[hsl(15,86%,53%)]",
+    shadowColor: "hover:shadow-[hsl(15,86%,53%)]/10"
+  }, {
+    id: "cppm",
+    abbr: "CPPM",
+    title: "Código de Processo Penal Militar",
+    description: "Decreto-Lei 1.002/1969",
+    icon: Siren,
+    borderColor: "border-l-[hsl(345,82%,48%)]",
+    iconBg: "bg-[hsl(345,82%,48%)]/10",
+    iconColor: "text-[hsl(345,82%,48%)]",
+    shadowColor: "hover:shadow-[hsl(345,82%,48%)]/10"
   }];
 
   const filteredCodes = useMemo(() => {
@@ -157,7 +177,8 @@ const Codigos = () => {
     const query = searchQuery.toLowerCase();
     return codes.filter(code => 
       code.abbr.toLowerCase().includes(query) || 
-      code.title.toLowerCase().includes(query)
+      code.title.toLowerCase().includes(query) ||
+      code.description.toLowerCase().includes(query)
     );
   }, [searchQuery]);
 
@@ -166,7 +187,7 @@ const Codigos = () => {
     const colorMap: Record<string, string> = {
       "cc": "hsl(217,91%,60%)",     // Azul
       "cp": "hsl(24,95%,53%)",      // Laranja
-      "cpc": "hsl(142,76%,36%)",    // Verde
+      "cpc": "hsl(217,91%,60%)",    // Azul (mesmo do CC)
       "cpp": "hsl(271,76%,53%)",    // Roxo
       "clt": "hsl(43,96%,56%)",     // Amarelo
       "cdc": "hsl(160,84%,39%)",    // Verde água
@@ -177,7 +198,9 @@ const Codigos = () => {
       "cba": "hsl(199,89%,48%)",    // Azul celeste
       "cbt": "hsl(258,90%,66%)",    // Violeta
       "ccom": "hsl(160,84%,39%)",   // Verde água
-      "cdm": "hsl(66,70%,54%)"      // Amarelo esverdeado
+      "cdm": "hsl(66,70%,54%)",     // Amarelo esverdeado
+      "cpm": "hsl(15,86%,53%)",     // Vermelho militar
+      "cppm": "hsl(345,82%,48%)"    // Vermelho escuro
     };
     return colorMap[id] || "hsl(217,91%,60%)";
   };
@@ -204,7 +227,7 @@ const Codigos = () => {
         <CardContent className="p-4">
           <div className="flex gap-2">
             <Input
-              placeholder="Buscar por abreviação ou nome..."
+              placeholder="Buscar por sigla, nome ou número..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="text-base"
@@ -255,8 +278,11 @@ const Codigos = () => {
                       <Icon className={`w-6 h-6 ${code.iconColor}`} />
                     </div>
                     <h3 className="font-bold text-base mb-1">{code.abbr}</h3>
-                    <p className="text-xs text-muted-foreground line-clamp-2">
+                    <p className="text-xs font-semibold text-muted-foreground mb-1">
                       {code.title}
+                    </p>
+                    <p className="text-[10px] font-medium" style={{ color: getGlowColor(code.id) }}>
+                      {code.description}
                     </p>
                   </CardContent>
                 </Card>

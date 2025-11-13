@@ -11,6 +11,11 @@ export const BottomNav = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const isActive = (path: string) => location.pathname === path;
+  
+  // Esconder menu nas páginas de flashcards
+  if (location.pathname.includes('/flashcards/estudar')) {
+    return null;
+  }
 
   const navItems = [
     {

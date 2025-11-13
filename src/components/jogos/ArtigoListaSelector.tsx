@@ -18,6 +18,7 @@ const TABELAS_CODIGO = [
   { nome: 'CTN - Código Tributário Nacional', tabela: 'CTN – Código Tributário Nacional' },
   { nome: 'ECA - Estatuto da Criança e do Adolescente', tabela: 'ESTATUTO - ECA' },
   { nome: 'CLT - Consolidação das Leis do Trabalho', tabela: 'CLT – Consolidação das Leis do Trabalho' },
+  { nome: 'Lei de Improbidade Administrativa', tabela: 'LEI 8429 - IMPROBIDADE' },
 ];
 
 export const ArtigoListaSelector = ({ onArtigoSelecionado }: ArtigoListaSelectorProps) => {

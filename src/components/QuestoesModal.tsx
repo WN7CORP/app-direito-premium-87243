@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { X, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -33,9 +33,28 @@ const QuestoesModal = ({ isOpen, onClose, artigo, numeroArtigo, codigoTabela = '
     
     setLoading(true);
     setProgress(0);
-    setProgressMessage("Iniciando...");
+    setProgressMessage("Verificando cache...");
     setQuestions([]);
     setHasGenerated(true);
+    
+    // Verificar cache primeiro
+    try {
+      const { data: cached, error: cacheError } = await supabase
+        .from(codigoTabela as any)
+        .select('questoes')
+        .eq('Número do Artigo', numeroArtigo)
+        .maybeSingle();
+      
+      if (!cacheError && cached && 'questoes' in cached && cached.questoes && Array.isArray(cached.questoes) && cached.questoes.length > 0) {
+        console.log('✅ Questões encontradas no cache');
+        setQuestions(cached.questoes);
+        setProgress(100);
+        setLoading(false);
+        return;
+      }
+    } catch (cacheError) {
+      console.log('⚠️ Erro ao verificar cache, gerando novo:', cacheError);
+    }
     
     let progressInterval: number | undefined;
     let currentProgress = 0;
@@ -134,6 +153,15 @@ const QuestoesModal = ({ isOpen, onClose, artigo, numeroArtigo, codigoTabela = '
     setLoading(false);
     onClose();
   };
+
+  // Reset quando artigo mudar
+  useEffect(() => {
+    if (isOpen) {
+      setHasGenerated(false);
+      setQuestions([]);
+      setProgress(0);
+    }
+  }, [numeroArtigo, isOpen]);
 
   if (!isOpen) return null;
 

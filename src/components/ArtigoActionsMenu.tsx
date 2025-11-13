@@ -1,5 +1,4 @@
 import { 
-  Volume2, 
   MessageSquare, 
   GraduationCap, 
   Lightbulb, 
@@ -8,16 +7,18 @@ import {
   BookMarked, 
   FileQuestion, 
   Sparkles,
-  ChevronDown,
-  Share2
+  Share2,
+  X
 } from "lucide-react";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
-import { Button } from "@/components/ui/button";
 import { useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 
 interface Article {
   "Número do Artigo": string | null;
@@ -29,6 +30,7 @@ interface Article {
 
 interface ArtigoActionsMenuProps {
   article: Article;
+  codigoNome: string;
   onPlayNarration?: (audioUrl: string) => void;
   onPlayComment?: (audioUrl: string, title: string) => void;
   onOpenAula?: () => void;
@@ -37,13 +39,13 @@ interface ArtigoActionsMenuProps {
   onOpenTermos?: () => void;
   onOpenQuestoes?: () => void;
   onPerguntar?: () => void;
-  onShareWhatsApp?: () => void;
   loadingFlashcards?: boolean;
   isCommentPlaying?: boolean;
 }
 
 export const ArtigoActionsMenu = ({
   article,
+  codigoNome,
   onPlayNarration,
   onPlayComment,
   onOpenAula,
@@ -52,141 +54,130 @@ export const ArtigoActionsMenu = ({
   onOpenTermos,
   onOpenQuestoes,
   onPerguntar,
-  onShareWhatsApp,
   loadingFlashcards = false,
   isCommentPlaying = false,
 }: ArtigoActionsMenuProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const hasAula = article["Aula"];
+  const hasComentario = article["Comentario"];
+
+  const handleShareWhatsApp = () => {
+    const numeroArtigo = article["Número do Artigo"];
+    const conteudo = article["Artigo"];
+    
+    if (!numeroArtigo || !conteudo) return;
+    
+    // Remover emojis do texto principal
+    const textoLimpo = conteudo.replace(/[\u{1F300}-\u{1F9FF}]/gu, '').trim();
+    
+    // Apenas emoji no topo indicando o artigo
+    const fullText = `📜 ${codigoNome} - Art. ${numeroArtigo}\n\n${textoLimpo}`;
+    const encodedText = encodeURIComponent(fullText);
+    const whatsappUrl = `https://wa.me/?text=${encodedText}`;
+    window.open(whatsappUrl, '_blank');
+  };
+
+  const handleAction = (action: () => void) => {
+    action();
+    setIsOpen(false);
+  };
+
+  const recursos = [
+    {
+      icon: Lightbulb,
+      label: "Explicar",
+      description: "Explicação detalhada do artigo",
+      action: () => onOpenExplicacao?.("explicacao"),
+      show: !!onOpenExplicacao
+    },
+    {
+      icon: BookOpen,
+      label: "Exemplo",
+      description: "Veja exemplos práticos de aplicação",
+      action: () => onOpenExplicacao?.("exemplo"),
+      show: !!onOpenExplicacao
+    },
+    {
+      icon: BookMarked,
+      label: "Termos",
+      description: "Glossário com termos técnicos",
+      action: onOpenTermos,
+      show: !!onOpenTermos
+    },
+    {
+      icon: FileQuestion,
+      label: "Questões",
+      description: "Pratique com questões sobre o artigo",
+      action: onOpenQuestoes,
+      show: !!onOpenQuestoes
+    },
+    {
+      icon: Bookmark,
+      label: "Flashcards",
+      description: loadingFlashcards ? "Gerando flashcards..." : "Crie flashcards para memorização",
+      action: onGenerateFlashcards,
+      show: !!onGenerateFlashcards,
+      disabled: loadingFlashcards
+    },
+    {
+      icon: MessageSquare,
+      label: "Perguntar",
+      description: "Tire suas dúvidas com a IA",
+      action: onPerguntar,
+      show: !!onPerguntar
+    }
+  ].filter(item => item.show);
 
   return (
-    <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-      <CollapsibleTrigger asChild>
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <DialogTrigger asChild>
         <Button 
+          className="w-full bg-gradient-to-r from-[hsl(45,93%,58%)]/10 to-[hsl(45,93%,58%)]/20 hover:from-[hsl(45,93%,58%)]/20 hover:to-[hsl(45,93%,58%)]/30 text-foreground border-[hsl(45,93%,58%)]/40 font-semibold transition-all shadow-md hover:shadow-lg hover:scale-[1.02]"
           variant="outline"
-          className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-accent/10 to-accent/20 hover:from-accent/20 hover:to-accent/30 text-foreground border-accent/40 font-semibold transition-all shadow-md hover:shadow-lg data-[state=open]:shadow-xl data-[state=open]:border-accent/60"
         >
-          <Sparkles className="w-5 h-5 text-accent-foreground" />
-          <span className="text-base">Recursos do Artigo</span>
-          <ChevronDown className={`w-5 h-5 ml-auto transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
+          <Sparkles className="w-4 h-4 mr-2" />
+          <span className="text-sm">Recursos do Artigo</span>
         </Button>
-      </CollapsibleTrigger>
+      </DialogTrigger>
       
-      <CollapsibleContent className="overflow-hidden transition-all duration-300">
-        <div className="pt-4 grid grid-cols-2 gap-3 animate-fade-in">
-          {/* Explicar */}
-          {onOpenExplicacao && (
-            <button
-              onClick={() => onOpenExplicacao("explicacao")}
-              className="flex flex-col items-center justify-center gap-2 px-4 py-4 bg-gradient-to-br from-yellow-500/10 to-yellow-600/20 hover:from-yellow-500/20 hover:to-yellow-600/30 text-foreground rounded-xl transition-all duration-200 text-sm font-semibold hover:scale-105 animate-fade-in border border-yellow-500/30 shadow-sm hover:shadow-md"
-              style={{ animationDelay: '0ms' }}
-            >
-              <Lightbulb className="w-6 h-6 text-yellow-600" />
-              <span>Explicar</span>
-            </button>
-          )}
-
-          {/* Exemplo */}
-          {onOpenExplicacao && (
-            <button
-              onClick={() => onOpenExplicacao("exemplo")}
-              className="flex flex-col items-center justify-center gap-2 px-4 py-4 bg-gradient-to-br from-blue-500/10 to-blue-600/20 hover:from-blue-500/20 hover:to-blue-600/30 text-foreground rounded-xl transition-all duration-200 text-sm font-semibold hover:scale-105 animate-fade-in border border-blue-500/30 shadow-sm hover:shadow-md"
-              style={{ animationDelay: '30ms' }}
-            >
-              <BookOpen className="w-6 h-6 text-blue-600" />
-              <span>Exemplo</span>
-            </button>
-          )}
-
-          {/* Termos */}
-          {onOpenTermos && (
-            <button
-              onClick={onOpenTermos}
-              className="flex flex-col items-center justify-center gap-2 px-4 py-4 bg-gradient-to-br from-purple-500/10 to-purple-600/20 hover:from-purple-500/20 hover:to-purple-600/30 text-foreground rounded-xl transition-all duration-200 text-sm font-semibold hover:scale-105 animate-fade-in border border-purple-500/30 shadow-sm hover:shadow-md"
-              style={{ animationDelay: '60ms' }}
-            >
-              <BookMarked className="w-6 h-6 text-purple-600" />
-              <span>Termos</span>
-            </button>
-          )}
-
-          {/* Questões */}
-          {onOpenQuestoes && (
-            <button
-              onClick={onOpenQuestoes}
-              className="flex flex-col items-center justify-center gap-2 px-4 py-4 bg-gradient-to-br from-green-500/10 to-green-600/20 hover:from-green-500/20 hover:to-green-600/30 text-foreground rounded-xl transition-all duration-200 text-sm font-semibold hover:scale-105 animate-fade-in border border-green-500/30 shadow-sm hover:shadow-md"
-              style={{ animationDelay: '90ms' }}
-            >
-              <FileQuestion className="w-6 h-6 text-green-600" />
-              <span>Questões</span>
-            </button>
-          )}
-
-          {/* Flashcards */}
-          {onGenerateFlashcards && (
-            <button
-              onClick={onGenerateFlashcards}
-              disabled={loadingFlashcards}
-              className="flex flex-col items-center justify-center gap-2 px-4 py-4 bg-gradient-to-br from-pink-500/10 to-pink-600/20 hover:from-pink-500/20 hover:to-pink-600/30 text-foreground rounded-xl transition-all duration-200 text-sm font-semibold hover:scale-105 animate-fade-in border border-pink-500/30 shadow-sm hover:shadow-md disabled:opacity-50 disabled:hover:scale-100"
-              style={{ animationDelay: '120ms' }}
-            >
-              <Bookmark className="w-6 h-6 text-pink-600" />
-              <span>{loadingFlashcards ? "Gerando..." : "Flashcards"}</span>
-            </button>
-          )}
-
-          {/* Comentário */}
-          {article["Comentario"] && onPlayComment && (
-            <button
-              onClick={() => onPlayComment(
-                article["Comentario"]!,
-                `Comentário - Art. ${article["Número do Artigo"]}`
-              )}
-              className="flex flex-col items-center justify-center gap-2 px-4 py-4 bg-gradient-to-br from-cyan-500/10 to-cyan-600/20 hover:from-cyan-500/20 hover:to-cyan-600/30 text-foreground rounded-xl transition-all duration-200 text-sm font-semibold hover:scale-105 animate-fade-in border border-cyan-500/30 shadow-sm hover:shadow-md"
-              style={{ animationDelay: '150ms' }}
-            >
-              <MessageSquare className="w-6 h-6 text-cyan-600" />
-              <span>Comentário</span>
-            </button>
-          )}
-
-          {/* Aula (se disponível) */}
-          {hasAula && onOpenAula && (
-            <button
-              onClick={onOpenAula}
-              className="flex flex-col items-center justify-center gap-2 px-4 py-4 bg-gradient-to-br from-indigo-500/10 to-indigo-600/20 hover:from-indigo-500/20 hover:to-indigo-600/30 text-foreground rounded-xl transition-all duration-200 text-sm font-semibold hover:scale-105 animate-fade-in border border-indigo-500/30 shadow-sm hover:shadow-md"
-              style={{ animationDelay: '180ms' }}
-            >
-              <GraduationCap className="w-6 h-6 text-indigo-600" />
-              <span>Aula</span>
-            </button>
-          )}
-
-          {/* Perguntar */}
-          {onPerguntar && (
-            <button
-              onClick={onPerguntar}
-              className="flex flex-col items-center justify-center gap-2 px-4 py-4 bg-gradient-to-br from-orange-500/10 to-orange-600/20 hover:from-orange-500/20 hover:to-orange-600/30 text-foreground rounded-xl transition-all duration-200 text-sm font-semibold hover:scale-105 animate-fade-in border border-orange-500/30 shadow-sm hover:shadow-md"
-              style={{ animationDelay: '210ms' }}
-            >
-              <MessageSquare className="w-6 h-6 text-orange-600" />
-              <span>Perguntar</span>
-            </button>
-          )}
-
-          {/* WhatsApp - último */}
-          {onShareWhatsApp && (
-            <button
-              onClick={onShareWhatsApp}
-              className="flex flex-col items-center justify-center gap-2 px-4 py-4 bg-gradient-to-br from-emerald-500/10 to-emerald-600/20 hover:from-emerald-500/20 hover:to-emerald-600/30 text-foreground rounded-xl transition-all duration-200 text-sm font-semibold hover:scale-105 animate-fade-in border border-emerald-500/30 shadow-sm hover:shadow-md"
-              style={{ animationDelay: '240ms' }}
-            >
-              <Share2 className="w-6 h-6 text-emerald-600" />
-              <span>WhatsApp</span>
-            </button>
-          )}
+      <DialogContent className="sm:max-w-[450px] animate-scale-in max-h-[80vh] overflow-y-auto">
+        <DialogHeader className="relative pr-8">
+          <DialogTitle className="flex items-start gap-2 text-lg leading-tight">
+            <Sparkles className="w-5 h-5 text-[hsl(45,93%,58%)] mt-0.5 flex-shrink-0" />
+            <div>
+              <div className="font-semibold">Recursos do Art. {article["Número do Artigo"]}</div>
+              <div className="text-sm font-normal text-muted-foreground mt-0.5">{codigoNome}</div>
+            </div>
+          </DialogTitle>
+          <button
+            onClick={() => setIsOpen(false)}
+            className="absolute right-0 top-0 rounded-full p-1.5 hover:bg-accent/20 transition-colors"
+          >
+            <X className="w-5 h-5 text-muted-foreground" />
+          </button>
+        </DialogHeader>
+        
+        {/* Lista vertical de recursos */}
+        <div className="space-y-2 py-4">
+          {recursos.map((recurso, index) => {
+            const Icon = recurso.icon;
+            return (
+              <button
+                key={index}
+                onClick={() => recurso.action && handleAction(recurso.action)}
+                disabled={recurso.disabled}
+                className="action-button w-full flex items-start gap-3 px-4 py-3 bg-gradient-to-r from-[hsl(45,93%,58%)]/10 to-[hsl(45,93%,58%)]/20 hover:from-[hsl(45,93%,58%)]/20 hover:to-[hsl(45,93%,58%)]/30 text-foreground rounded-xl transition-all duration-200 hover:scale-[1.02] border border-[hsl(45,93%,58%)]/40 shadow-sm hover:shadow-md disabled:opacity-50 disabled:hover:scale-100 text-left"
+              >
+                <Icon className="w-5 h-5 text-[hsl(45,93%,58%)] mt-0.5 flex-shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <div className="font-semibold text-sm text-foreground">{recurso.label}</div>
+                  <div className="text-xs text-muted-foreground mt-0.5">{recurso.description}</div>
+                </div>
+              </button>
+            );
+          })}
         </div>
-      </CollapsibleContent>
-    </Collapsible>
+      </DialogContent>
+    </Dialog>
   );
 };

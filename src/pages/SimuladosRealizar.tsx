@@ -30,6 +30,7 @@ interface Questao {
   alternativaB: string;
   alternativaC: string;
   alternativaD: string;
+  alternativaE?: string;
   resposta: string;
   comentario: string;
   numeroQuestao: number;
@@ -80,9 +81,43 @@ const SimuladosRealizar = () => {
       .padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
   };
 
+  // Detectar origem TJSP via URL
+  const origemTJSP = searchParams.get("origem") === "tjsp";
+  const areaFiltro = searchParams.get("area");
+
   const { data: questoes, isLoading } = useQuery({
-    queryKey: ["simulado-questoes", exame, ano, areas, quantidade],
+    queryKey: ["simulado-questoes", exame, ano, areas, quantidade, origemTJSP, areaFiltro],
     queryFn: async () => {
+      // Se for TJSP, buscar da tabela SIMULADO-TJSP
+      if (origemTJSP) {
+        let query = supabase.from("SIMULADO-TJSP").select("*");
+        
+        if (areaFiltro) {
+          query = query.eq('area', areaFiltro);
+        }
+        
+        const { data, error } = await query;
+        if (error) throw error;
+        
+        // Mapear para formato compatível (com 5 alternativas)
+        return data.map((q: any) => ({
+          id: q.id,
+          area: q.area || "N/A",
+          enunciado: q.enunciado || "",
+          alternativaA: q.alternativa_a || "",
+          alternativaB: q.alternativa_b || "",
+          alternativaC: q.alternativa_c || "",
+          alternativaD: q.alternativa_d || "",
+          alternativaE: q.alternativa_e || "",
+          resposta: q.resposta || "",
+          comentario: q.comentario || "",
+          numeroQuestao: q.numero_questao || 0,
+          questaoNarrada: q.questao_narrada || null,
+          alternativasNarradas: q.alternativas_narradas || null,
+        }));
+      }
+
+      // Lógica existente para OAB
       let query = supabase.from("SIMULADO-OAB" as any).select("*");
 
       if (exame && ano) {
@@ -336,14 +371,19 @@ const SimuladosRealizar = () => {
   }
 
   const progresso = ((currentIndex + 1) / questoes.length) * 100;
+  
+  // Suporte para 5 alternativas (TJSP) ou 4 (OAB)
+  const questaoAtual = questoes[currentIndex];
+  const tem5Alternativas = 'alternativaE' in questaoAtual && questaoAtual.alternativaE;
+  
   const alternativas = [
-    { letra: "A", texto: questoes[currentIndex].alternativaA },
-    { letra: "B", texto: questoes[currentIndex].alternativaB },
-    { letra: "C", texto: questoes[currentIndex].alternativaC },
-    { letra: "D", texto: questoes[currentIndex].alternativaD },
+    { letra: "A", texto: questaoAtual.alternativaA },
+    { letra: "B", texto: questaoAtual.alternativaB },
+    { letra: "C", texto: questaoAtual.alternativaC },
+    { letra: "D", texto: questaoAtual.alternativaD },
+    ...(tem5Alternativas ? [{ letra: "E", texto: questaoAtual.alternativaE }] : []),
   ];
 
-  const questaoAtual = questoes[currentIndex];
   const isQuestaoAnulada = questaoAtual.resposta?.toLowerCase() === 'anulada';
 
   return (

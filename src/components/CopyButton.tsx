@@ -66,46 +66,44 @@ export const CopyButton = ({ text, articleNumber, narrationUrl }: CopyButtonProp
     setLoading(false);
   };
 
+  if (!narrationUrl) return null;
+
   return (
-    <div className="absolute top-4 right-4 z-10">
-      {narrationUrl && (
-        <>
-          <audio 
-            ref={audioRef} 
-            src={narrationUrl} 
-            onTimeUpdate={handleTimeUpdate}
-            onEnded={handleEnded}
-            onCanPlayThrough={handleCanPlayThrough}
-            preload="auto"
+    <>
+      <audio 
+        ref={audioRef} 
+        src={narrationUrl} 
+        onTimeUpdate={handleTimeUpdate}
+        onEnded={handleEnded}
+        onCanPlayThrough={handleCanPlayThrough}
+        preload="auto"
+      />
+      <button
+        onClick={handlePlayNarration}
+        disabled={loading}
+        className="relative flex items-center gap-1.5 px-3 py-2 rounded-lg transition-all border text-xs font-medium hover:scale-105 bg-accent/20 hover:bg-accent/30 border-accent/30 text-foreground overflow-hidden group"
+        title={isPlaying ? "Pausar Narração" : "Ouvir Narração"}
+      >
+        {/* Barra de progresso por dentro */}
+        {isPlaying && (
+          <div 
+            className="absolute inset-0 bg-accent/10 transition-all duration-200 ease-linear"
+            style={{ width: `${progress}%` }}
           />
-          <button
-            onClick={handlePlayNarration}
-            disabled={loading}
-            className="relative flex items-center gap-2 px-3.5 py-2.5 rounded-lg transition-all border text-sm font-medium hover:scale-105 bg-accent/20 hover:bg-accent/30 border-accent/30 text-foreground overflow-hidden group"
-            title={isPlaying ? "Pausar Narração" : "Ouvir Narração"}
-          >
-            {/* Barra de progresso por dentro */}
-            {isPlaying && (
-              <div 
-                className="absolute inset-0 bg-accent/10 transition-all duration-200 ease-linear"
-                style={{ width: `${progress}%` }}
-              />
-            )}
-            
-            {/* Conteúdo */}
-            <div className="relative z-10 flex items-center gap-2">
-              {loading ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : isPlaying ? (
-                <AudioWaveAnimation />
-              ) : (
-                <Volume2 className="w-4 h-4" />
-              )}
-              <span>{isPlaying ? "Pausar" : "Narração"}</span>
-            </div>
-          </button>
-        </>
-      )}
-    </div>
+        )}
+        
+        {/* Conteúdo */}
+        <div className="relative z-10 flex items-center gap-1.5">
+          {loading ? (
+            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+          ) : isPlaying ? (
+            <AudioWaveAnimation />
+          ) : (
+            <Volume2 className="w-3.5 h-3.5" />
+          )}
+          <span>{isPlaying ? "Pausar" : "Narração"}</span>
+        </div>
+      </button>
+    </>
   );
 };

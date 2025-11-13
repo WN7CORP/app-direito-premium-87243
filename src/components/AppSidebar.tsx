@@ -76,6 +76,11 @@ export const AppSidebar = ({ onClose }: AppSidebarProps = {}) => {
       path: "/estatutos",
     },
     {
+      title: "Lei Penal Especial",
+      icon: Shield,
+      path: "/legislacao-penal-especial",
+    },
+    {
       title: "Súmulas",
       icon: Scale,
       path: "/sumulas",

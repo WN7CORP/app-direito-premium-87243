@@ -48,6 +48,7 @@ export const Layout = ({ children }: LayoutProps) => {
     location.pathname.startsWith("/estatuto/") ||
     location.pathname === "/sumulas" ||
     location.pathname.startsWith("/sumula/") ||
+    location.pathname.startsWith("/lei-penal/") ||
     location.pathname === "/simulados/realizar" ||
     location.pathname === "/simulados/personalizado" ||
     location.pathname.includes("/simulacao-juridica/avatar") ||
@@ -78,7 +79,8 @@ export const Layout = ({ children }: LayoutProps) => {
     /\/biblioteca-oratoria\/\d+/.test(location.pathname) ||
     /\/biblioteca-lideranca\/\d+/.test(location.pathname) ||
     /\/biblioteca-fora-da-toga\/\d+/.test(location.pathname) ||
-    location.pathname.startsWith("/jogos-juridicos");
+    location.pathname.startsWith("/jogos-juridicos") ||
+    location.pathname.startsWith("/camara-deputados");
   
   // Esconder Header em páginas com header próprio
   const hideHeader = location.pathname === "/professora" || location.pathname === "/chat-professora";

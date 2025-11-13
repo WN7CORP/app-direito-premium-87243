@@ -1,188 +1,10 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.74.0';
+import { BLOCOS_BASE, EXTENSAO_CONFIG } from './prompt-templates.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, accept',
-};
-
-// ========== BLOCOS MODULARES REUTILIZÁVEIS ==========
-const BLOCOS_BASE = {
-  vozDescomplicada: `
-🗣️ TOM DE VOZ - DESCOMPLICADO:
-- Fale como se estivesse mandando áudio no WhatsApp
-- Use "você", "a gente", "tipo assim", "sacou?"
-- Seja empática, acolhedora e animada (mas natural)
-- Parágrafos curtos: máximo 3 linhas cada
-
-❌ LINGUAGEM PROIBIDA:
-- ZERO juridiquês: "outrossim", "destarte", "ex vi", "ad hoc"
-- Termos técnicos sem tradução para linguagem cotidiana
-
-✅ LINGUAGEM PERMITIDA:
-- Palavras do dia a dia que TODO MUNDO conhece
-- Gírias leves: "tipo", "sacou?", "tá ligado?", "na real"
-- Analogias com: Netflix, WhatsApp, Instagram, futebol, comida, namoro
-- Emojis pontuais para ajudar na didática (⚖️, 💡, 📚, ⚠️, 💭)
-`,
-
-  vozTecnica: `
-🗣️ TOM DE VOZ - TÉCNICO:
-- Tom formal, organizado e analítico, mas humano (não frio)
-- Terminologia jurídica precisa e rigorosa
-- Citações de doutrina, jurisprudência e legislação
-- Parágrafos de até 350 caracteres cada
-
-✅ LINGUAGEM TÉCNICA:
-- Vocabulário jurídico correto
-- Referências normativas completas: Art. X, §Y, Lei Z/ANO
-- Citações de autores: "Segundo [Autor], [conceito]"
-- Rigor conceitual e fundamentação doutrinária
-- Emojis pontuais apenas em títulos (⚖️, 📚, 🔍)
-`,
-
-  regrasFormatacao: `
-📐 REGRAS CRÍTICAS DE FORMATAÇÃO:
-
-⚠️ ESPAÇAMENTO É FUNDAMENTAL:
-✅ 2 linhas vazias (\\n\\n\\n\\n) entre seções principais (##)
-✅ 1 linha vazia (\\n\\n) entre parágrafos
-✅ 1 linha vazia antes e depois de títulos
-✅ 1 linha vazia antes e depois de todos os cards/componentes
-✅ Títulos principais em negrito + emoji
-✅ JSON em UMA LINHA sem quebras internas
-
-🚫 NUNCA:
-❌ Começar com "Em suma", "Inicialmente", "Destarte"
-❌ Repetir ideias entre seções
-❌ Usar frases acima de 120 caracteres (modo descomplicado)
-❌ Citar artigos sem explicar sentido prático
-`,
-
-  componentesDescomplicado: `
-📦 COMPONENTES VISUAIS OBRIGATÓRIOS (Modo Descomplicado):
-
-Use PELO MENOS 2-3 em TODA resposta:
-
-[DICA DE OURO 💎]
-Macetes, estratégias de memorização, dicas que facilitam muito
-[/DICA DE OURO]
-
-[SACOU? 💡]
-Resumo do conceito em uma frase simples e direta
-[/SACOU?]
-
-[FICA LIGADO! ⚠️]
-Erros comuns, pegadinhas, coisas que confundem
-[/FICA LIGADO!]
-
-⚠️ FORMATO CORRETO:
-✅ [DICA DE OURO 💎]\\nConteúdo aqui\\n[/DICA DE OURO]
-✅ [SACOU? 💡]\\nConteúdo aqui\\n[/SACOU?]
-✅ [FICA LIGADO! ⚠️]\\nConteúdo aqui\\n[/FICA LIGADO!]
-
-❌ ERRADO: [DICA DE OURO💎] (sem espaço antes do emoji)
-`,
-
-  componentesTecnico: `
-📦 COMPONENTES VISUAIS OBRIGATÓRIOS (Modo Técnico):
-
-[IMPORTANTE]
-Conceitos fundamentais que não podem ser esquecidos
-[/IMPORTANTE]
-
-[ATENÇÃO]
-Exceções, casos especiais, pontos que geram confusão
-[/ATENÇÃO]
-
-[NOTA]
-Informações complementares, atualizações legislativas
-[/NOTA]
-
-[DICA]
-Estratégias de estudo e aplicação prática
-[/DICA]
-`,
-
-  questoesClicaveis: `
-📌 QUESTÕES CLICÁVEIS (OBRIGATÓRIO ao final):
-
-[QUESTOES_CLICAVEIS]
-["Pergunta específica 1 sobre o tema?","Pergunta específica 2?","Pergunta específica 3?"]
-[/QUESTOES_CLICAVEIS]
-
-⚠️ As perguntas devem ser:
-- Específicas sobre o conteúdo explicado
-- Direcionadas para aprofundamento natural
-- Formuladas como continuação lógica do tema
-`
-};
-
-// ========== TABELA DE EXTENSÃO POR MODO E NÍVEL ==========
-const EXTENSAO_CONFIG: any = {
-  descomplicado: {
-    basic: { 
-      palavras: [450, 600], 
-      caracteres: [2500, 3200],
-      tokens: 1000
-    },
-    deep: { 
-      palavras: [950, 1350], 
-      caracteres: [5500, 7500],
-      tokens: 2500
-    },
-    complete: { 
-      palavras: [1500, 2000], 
-      caracteres: [8500, 11000],
-      tokens: 3500
-    }
-  },
-  tecnico: {
-    basic: { 
-      palavras: [220, 310], 
-      caracteres: [1400, 1900],
-      tokens: 800
-    },
-    deep: { 
-      palavras: [800, 1200], 
-      caracteres: [5000, 7000],
-      tokens: 2200
-    },
-    complete: { 
-      palavras: [1400, 2000], 
-      caracteres: [8500, 11000],
-      tokens: 3500
-    }
-  },
-  lesson: {
-    basic: { 
-      palavras: [1200, 1600], 
-      caracteres: [7000, 9000],
-      tokens: 2800
-    },
-    deep: { 
-      palavras: [2000, 2600], 
-      caracteres: [11000, 14000],
-      tokens: 4500
-    },
-    complete: { 
-      palavras: [3000, 3500], 
-      caracteres: [16000, 20000],
-      tokens: 6500
-    }
-  },
-  recommendation: {
-    basic: { 
-      palavras: [250, 350], 
-      caracteres: [1600, 2200],
-      tokens: 900
-    },
-    complete: { 
-      palavras: [500, 700], 
-      caracteres: [3000, 4500],
-      tokens: 1500
-    }
-  }
 };
 
 serve(async (request) => {
@@ -190,11 +12,19 @@ serve(async (request) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  const startTime = Date.now();
+
   try {
     const { messages, files, mode, extractedText, deepMode = false, responseLevel = 'complete', linguagemMode = 'descomplicado' }: any = await request.json();
-    console.log('🎓 Chat Professora - Mensagens recebidas:', messages?.length);
-    console.log('📎 Arquivos anexados:', files?.length || 0);
-    console.log('🔍 Modo:', mode);
+    
+    console.log('📥 Requisição recebida:', {
+      mode,
+      messagesCount: messages?.length,
+      filesCount: files?.length || 0,
+      hasVademecumKey: !!Deno.env.get('VADEMECUM_API_KEY'),
+      hasLovableKey: !!Deno.env.get('LOVABLE_API_KEY'),
+      hasServiceRole: !!Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
+    });
     
     // Detectar se é ação pós-análise (usuário clicou em "Resumir", "Explicar", etc.)
     const lastUserMessage = messages[messages.length - 1]?.content || '';
@@ -202,9 +32,6 @@ serve(async (request) => {
     
     // Se é ação pós-análise, não usar modo de análise inicial
     const isAnalyzeMode = mode === 'analyze' && !isPostAnalysisAction;
-    
-    console.log('🔄 Ação pós-análise?', isPostAnalysisAction);
-    console.log('📋 Modo de análise inicial?', isAnalyzeMode);
     
     const DIREITO_PREMIUM_API_KEY = Deno.env.get('DIREITO_PREMIUM_API_KEY') || 
                                      Deno.env.get('DIREITO_PREMIUM_API_KEY_RESERVA');
@@ -218,8 +45,6 @@ serve(async (request) => {
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
       );
     }
-
-    console.log('✅ Usando Gemini 2.0 Flash com DIREITO_PREMIUM_API_KEY');
     
     // Detectar se há imagem ou PDF anexado
     const hasImageOrPdf = files && files.length > 0;
@@ -271,7 +96,6 @@ serve(async (request) => {
         let tabelaBusca = null;
         if (codigoMatch) {
           const codigo = codigoMatch[0].toUpperCase();
-          // Mapear para nome da tabela
           const mapaCodigos: any = {
             'CP': 'CP - Código Penal',
             'CÓDIGO PENAL': 'CP - Código Penal',
@@ -348,7 +172,6 @@ serve(async (request) => {
           contextoExtra += "\n\n🎓 CONTEÚDO DE CURSOS RELACIONADO:\n\n";
           cursosRelacionados.forEach((curso: any) => {
             contextoExtra += `**${curso.tema}** (${curso.area})\n`;
-            // Pegar apenas os primeiros 500 caracteres do conteúdo
             const preview = curso.conteudo?.substring(0, 500) || '';
             if (preview) {
               contextoExtra += `${preview}...\n\n`;
@@ -361,19 +184,6 @@ serve(async (request) => {
       }
 
       return contextoExtra;
-    }
-
-    // Contexto dos artigos detectados
-    let artigosContext = "";
-    if (extractedText) {
-      const artigos = await detectArtigos(extractedText);
-      if (artigos.length > 0) {
-        artigosContext = artigos.map(artigo => `- ${artigo.texto}`).join("\n");
-      } else {
-        artigosContext = "Nenhum artigo encontrado no texto base.";
-      }
-    } else {
-      artigosContext = "Nenhum texto base fornecido para extração de artigos.";
     }
 
     const fileAnalysisPrefix = files && files.length > 0
@@ -393,85 +203,10 @@ serve(async (request) => {
     }
     
     // Instruções FORTES para análise automática de imagem/PDF
-    if (isAnalyzeMode && hasImageOrPdf) {
-      const isImage = files[0].type.includes('image');
-      const fileType = isImage ? 'IMAGEM' : 'PDF';
-      
-      cfContext += `\n\n🚨 TAREFA CRÍTICA: ANÁLISE DE ${fileType}\n\n`;
-      
-      if (isImage) {
-        cfContext += `📸 VOCÊ ESTÁ VENDO UMA IMAGEM VISUAL - INSTRUÇÕES OBRIGATÓRIAS:\n\n`;
-        cfContext += `1. OLHE a imagem que está sendo enviada em formato base64\n`;
-        cfContext += `2. TRANSCREVA literalmente TODO texto visível:\n`;
-        cfContext += `   - Texto manuscrito ou impresso\n`;
-        cfContext += `   - Títulos, subtítulos, numeração\n`;
-        cfContext += `   - Questões completas com alternativas\n`;
-        cfContext += `   - Anotações ou destaques\n\n`;
-        cfContext += `3. DESCREVA o tipo de material:\n`;
-        cfContext += `   - É caderno, livro, apostila, tela de computador?\n`;
-        cfContext += `   - Qual a qualidade: nítido, borrado, parcial?\n`;
-        cfContext += `   - Há elementos visuais (diagramas, tabelas)?\n\n`;
-        cfContext += `⚠️ SE A IMAGEM ESTIVER ILEGÍVEL:\n`;
-        cfContext += `Diga EXATAMENTE: "A imagem está borrada/escura/cortada. Por favor, envie uma foto mais clara com boa iluminação e enquadramento completo."\n\n`;
-        cfContext += `🚫 PROIBIÇÕES ABSOLUTAS:\n`;
-        cfContext += `❌ NÃO invente conteúdo que não está visível\n`;
-        cfContext += `❌ NÃO dê explicações genéricas sem transcrever\n`;
-        cfContext += `❌ NÃO presuma temas sem ler o texto literal\n\n`;
-      } else {
-        cfContext += `📄 VOCÊ RECEBEU TEXTO EXTRAÍDO DE PDF (até 50 páginas):\n\n`;
-        cfContext += `1. LEIA o texto extraído com atenção total\n`;
-        cfContext += `2. CITE trechos LITERAIS entre aspas\n`;
-        cfContext += `3. IDENTIFIQUE:\n`;
-        cfContext += `   - Artigos de lei mencionados\n`;
-        cfContext += `   - Conceitos jurídicos presentes\n`;
-        cfContext += `   - Questões ou casos práticos\n`;
-        cfContext += `   - Autores ou doutrinas citadas\n\n`;
-        cfContext += `⚠️ SE O PDF ESTIVER VAZIO/CORROMPIDO:\n`;
-        cfContext += `Diga: "O PDF parece vazio ou não pôde ser lido. Tente um arquivo diferente ou envie como imagem."\n\n`;
-      }
-      
-      cfContext += `✅ ESTRUTURA OBRIGATÓRIA DA RESPOSTA:\n\n`;
-      cfContext += `**🔍 1. TRANSCRIÇÃO LITERAL** (PRIMEIRO):\n`;
-      if (isImage) {
-        cfContext += `"📸 Na imagem, vejo [TIPO DE MATERIAL]. O texto diz:\n\n`;
-        cfContext += `'[COPIAR TEXTO EXATAMENTE COMO ESTÁ ESCRITO]'\n\n`;
-        cfContext += `A imagem está [nítida/borrada/parcial]."\n\n`;
-      } else {
-        cfContext += `"📄 O documento contém:\n\n`;
-        cfContext += `'[COPIAR TRECHOS PRINCIPAIS DO TEXTO EXTRAÍDO]'\n\n`;
-        cfContext += `Total de páginas processadas: [X]."\n\n`;
-      }
-      
-      
-      cfContext += `**📚 2. TEMA PRINCIPAL:**\n`;
-      cfContext += `"**Tema principal:** [Descreva em 1 frase o assunto central do material]\n\n`;
-      cfContext += `**Como posso te ajudar com este material?**\n\n`;
-      cfContext += `[ACAO_BUTTONS]\n`;
-      cfContext += `Resumir|Explicar detalhadamente|Gerar questões\n`;
-      cfContext += `[/ACAO_BUTTONS]\n\n`;
-      cfContext += `✅ TOM: SEMPRE sério, objetivo e profissional.\n`;
-      cfContext += `❌ NÃO use tom descomplicado/informal nesta análise inicial.\n\n`;
-      
-    } else if (hasImageOrPdf && !isAnalyzeMode) {
-      const isImage = files[0].type.includes('image');
-      cfContext += `\n\n🔍 ${isImage ? 'IMAGEM' : 'PDF'} ANEXADO:\n`;
-      cfContext += `- TRANSCREVA o conteúdo literal antes de explicar\n`;
-      cfContext += `- CITE trechos específicos entre aspas\n`;
-      cfContext += `- Use linguagem ${linguagemMode === 'descomplicado' ? 'descomplicada' : 'técnica'}\n`;
-      cfContext += `- AO FINAL: sugestões de perguntas sobre o conteúdo\n\n`;
-      cfContext += `[QUESTOES_CLICAVEIS]\n["Pergunta 1?","Pergunta 2?","Pergunta 3?"]\n[/QUESTOES_CLICAVEIS]\n\n`;
-    }
-
-    // Construir o prompt do sistema
-    // Adicionar contexto dos arquivos, se houver
-    // Adicionar contexto customizado, se houver
-
-    
     // Preparar o prompt do sistema baseado no modo e nível de resposta
     let systemPrompt = '';
     
     if (isAnalyzeMode) {
-      // Modo de análise inicial: SEMPRE sério, objetivo e profissional
       systemPrompt = `Você é uma Professora de Direito analisando material de forma objetiva.
 
 🚨 MODO: ANÁLISE INICIAL SÉRIA E PROFISSIONAL
@@ -499,551 +234,382 @@ OBJETIVO: Criar uma aula completa e aprofundada sobre o tema solicitado.
 
 NUNCA USE DIAGRAMAS - Use apenas texto formatado e componentes visuais.
 
-📐 REGRAS CRÍTICAS DE FORMATAÇÃO (SIGA RIGOROSAMENTE):
-
-⚠️ ESPAÇAMENTO É FUNDAMENTAL! O sistema precisa de separação visual clara.
-
-✅ SEMPRE 2 linhas vazias (\\n\\n\\n\\n) entre seções principais
-✅ SEMPRE 1 linha vazia (\\n\\n) entre parágrafos
-✅ SEMPRE 1 linha vazia antes e depois de títulos
-✅ SEMPRE 1 linha vazia antes e depois de todos os cards/componentes
-✅ Parágrafos curtos: máximo 3-4 linhas cada
-✅ Títulos principais em negrito + emoji
-✅ JSON em UMA LINHA sem quebras internas
-
-🎯 EXEMPLO DE FORMATAÇÃO PERFEITA:
-
-"# 📚 Prescrição vs Decadência\\n\\n\\n\\nA prescrição e a decadência são institutos que extinguem direitos pelo decurso do tempo.\\n\\nAmbos têm naturezas distintas e consequências diferentes.\\n\\n\\n\\n[IMPORTANTE]\\nPrescrição atinge a pretensão (ação). Decadência atinge o próprio direito.\\n[/IMPORTANTE]\\n\\n\\n\\n## 💡 Conceitos Fundamentais\\n\\n\\n\\n[COMPARAÇÃO: Prescrição vs Decadência]\\n{\\"cards\\":[{\\"title\\":\\"Prescrição\\",\\"description\\":\\"Extingue a pretensão de exigir o direito em juízo. Prazo pode ser interrompido ou suspenso. Atinge direitos patrimoniais disponíveis.\\",\\"example\\":\\"Exemplo: Cobrança de dívida prescreve em 5 anos (Art. 206, §5º, CC).\\",\\"icon\\":\\"⏳\\"},{\\"title\\":\\"Decadência\\",\\"description\\":\\"Extingue o próprio direito material. Prazo não se interrompe nem se suspende. Pode ser legal ou convencional.\\",\\"example\\":\\"Exemplo: Anulação de negócio jurídico por erro decai em 4 anos (Art. 178, CC).\\",\\"icon\\":\\"⌛\\"}]}\\n[/COMPARAÇÃO]\\n\\n\\n\\n[DICA]\\nMacete: PreScrição = PreTensão. Decadência = Direito cai.\\n[/DICA]"
+${BLOCOS_BASE.regrasFormatacao}
 
 COMPONENTES VISUAIS OBRIGATÓRIOS:
 
-1. **CARDS DE DESTAQUE** (Use liberalmente, pelo menos 3-4 por resposta):
-   
-   [ATENÇÃO]
-   Informações que exigem cuidado especial ou podem gerar confusão
-   [/ATENÇÃO]
-   
-   [IMPORTANTE]
-   Conceitos fundamentais que não podem ser esquecidos
-   [/IMPORTANTE]
-   
-   [DICA]
-   Estratégias de estudo, memorização ou aplicação prática
-   [/DICA]
-   
-   [NOTA]
-   Informações complementares relevantes ou curiosidades jurídicas
-   [/NOTA]
+[IMPORTANTE], [ATENÇÃO], [DICA], [NOTA]
 
-2. **COMPARAÇÕES EM CARROSSEL** (Use SEMPRE que houver 2+ conceitos relacionados):
-   
-   [COMPARAÇÃO: Título Descritivo]
-   {\\"cards\\":[{\\"title\\":\\"Conceito A\\",\\"description\\":\\"Explicação completa (3-4 linhas)\\",\\"example\\":\\"Exemplo: Situação concreta\\",\\"icon\\":\\"📜\\"},{\\"title\\":\\"Conceito B\\",\\"description\\":\\"Explicação completa (3-4 linhas)\\",\\"example\\":\\"Exemplo: Situação concreta\\",\\"icon\\":\\"⚖️\\"}]}
-   [/COMPARAÇÃO]
-
-3. **CASOS PRÁTICOS EM CARROSSEL** (OBRIGATÓRIO: 3-4 casos flip-card):
-   
-   [CASOS_PRATICOS]
-   {\\"cases\\":[{\\"title\\":\\"Caso 1: Título Descritivo\\",\\"scenario\\":\\"Descrição detalhada da situação concreta com todos os fatos relevantes para análise jurídica.\\",\\"analysis\\":\\"Análise jurídica completa: institutos aplicáveis, raciocínio legal, conexões doutrinárias.\\",\\"solution\\":\\"Solução fundamentada com base legal clara e conclusão objetiva.\\",\\"legalBasis\\":[\\"Art. 155, CP\\",\\"Art. 157, CP\\"],\\"icon\\":\\"⚖️\\"},{\\"title\\":\\"Caso 2: Outro Título\\",\\"scenario\\":\\"Situação diferente...\\",\\"analysis\\":\\"Análise...\\",\\"solution\\":\\"Solução...\\",\\"legalBasis\\":[\\"Art. X\\"],\\"icon\\":\\"💼\\"}]}
-   [/CASOS_PRATICOS]
-
-4. **QUESTÕES CLICÁVEIS** (OBRIGATÓRIO: 3-4 perguntas para aprofundamento):
-   
-   [QUESTOES_CLICAVEIS]
-   [\\"Qual a diferença entre prescrição e decadência no Direito Civil?\\",\\"Como aplicar a prescrição em casos de responsabilidade contratual?\\",\\"Quais são os prazos prescricionais mais importantes?\\"]
-   [/QUESTOES_CLICAVEIS]
-
-ESTRUTURA OBRIGATÓRIA DA AULA:
-
-# Título Principal
-
-## 📖 Introdução Contextual\\n\\n
-- Apresente o tema de forma envolvente (2-3 parágrafos)
-- Explique a relevância prática e teórica\\n\\n
-
-[IMPORTANTE]
-Destaque por que este tema é fundamental
-[/IMPORTANTE]\\n\\n\\n\\n
-
-## 💡 Conceitos Fundamentais\\n\\n
-
-[COMPARAÇÃO: Conceitos Essenciais]
-{\\"cards\\":[3-4 cards comparando os conceitos principais]}
-[/COMPARAÇÃO]\\n\\n\\n\\n
-
-## 🔍 Análise Aprofundada\\n\\n
-
-### Doutrina\\n\\n
-- Explique a doutrina majoritária\\n\\n
-
-[NOTA]
-Informação doutrinária relevante
-[/NOTA]\\n\\n\\n\\n
-
-## 📝 Casos Práticos\\n\\n
+[COMPARAÇÃO: Título Descritivo]
+{\\"cards\\":[{\\"title\\":\\"Conceito A\\",\\"description\\":\\"Explicação completa\\",\\"example\\":\\"Exemplo\\",\\"icon\\":\\"📜\\"}]}
+[/COMPARAÇÃO]
 
 [CASOS_PRATICOS]
-{\\"cases\\":[3-4 casos práticos em formato flip-card]}
-[/CASOS_PRATICOS]\\n\\n\\n\\n
-
-## 💭 Questões para Aprofundamento\\n\\n
+{\\"cases\\":[{\\"title\\":\\"Caso 1\\",\\"scenario\\":\\"Descrição\\",\\"analysis\\":\\"Análise\\",\\"solution\\":\\"Solução\\",\\"legalBasis\\":[\\"Art. X\\"],\\"icon\\":\\"⚖️\\"}]}
+[/CASOS_PRATICOS]
 
 [QUESTOES_CLICAVEIS]
-[\\"Pergunta 1\\",\\"Pergunta 2\\",\\"Pergunta 3\\"]
+[\\"Pergunta 1?\\",\\"Pergunta 2?\\",\\"Pergunta 3?\\\"]
 [/QUESTOES_CLICAVEIS]
 
 ⚠️ EXTENSÃO OBRIGATÓRIA - NÍVEL: ${responseLevel}
-- basic: Mínimo 1200 palavras, 3-4 cards, 1-2 comparações, 3 casos práticos
-- deep: Mínimo 2000 palavras, 4-5 cards, 2-3 comparações, 4 casos práticos  
-- complete: Mínimo 3000 palavras, 5-7 cards, 3+ comparações, 4 casos práticos
+- basic: Mínimo ${EXTENSAO_CONFIG.lesson.basic.palavras[0]} palavras
+- deep: Mínimo ${EXTENSAO_CONFIG.lesson.deep.palavras[0]} palavras  
+- complete: Mínimo ${EXTENSAO_CONFIG.lesson.complete.palavras[0]} palavras
 
-🚫 NUNCA CORTE OU RESUMA - Desenvolva TODOS os subtópicos em profundidade
-✅ SEMPRE inclua múltiplos exemplos para cada conceito
-✅ SEMPRE detalhe ao máximo cada seção
-
-Transforme temas jurídicos complexos em conteúdo didático, visual e memorável.${cfContext || ''}`;
+${cfContext || ''}`;
     } else if (mode === 'recommendation') {
-      systemPrompt = `Você é a Professora Jurídica, uma assistente de estudos especializada em direito brasileiro.
+      systemPrompt = `Você é a Professora Jurídica, assistente de estudos especializada em direito brasileiro.
 
 MODO: Recomendação de Conteúdo
 OBJETIVO: Recomendar materiais de estudo relevantes e personalizados.
 
-ESTRUTURA DA RESPOSTA:
-
-# Sugestões de Conteúdo
-
-## 1. Artigos Essenciais
-- [Título do Artigo 1](link_para_artigo_1)
-- [Título do Artigo 2](link_para_artigo_2)
-
-## 2. Jurisprudência Relevante
-- [Número do Processo 1](link_para_jurisprudencia_1)
-- [Número do Processo 2](link_para_jurisprudencia_2)
-
-## 3. Livros e Manuais
-- [Título do Livro 1](link_para_livro_1)
-- [Título do Livro 2](link_para_livro_2)
-
-## 4. Videoaulas
-- [Título da Videoaula 1](link_para_videoaula_1)
-- [Título da Videoaula 2](link_para_videoaula_2)
-
-## 5. Mapas Mentais
-- [Título do Mapa Mental 1](link_para_mapa_mental_1)
-- [Título do Mapa Mental 2](link_para_mapa_mental_2)
-
-## 6. Questões de Concurso
-- [Enunciado da Questão 1](link_para_questao_1)
-- [Enunciado da Questão 2](link_para_questao_2)
-
-## 7. Notícias e Artigos de Opinião
-- [Título da Notícia 1](link_para_noticia_1)
-- [Título da Notícia 2](link_para_noticia_2)
-
-## 8. Legislação Comentada
-- [Artigo Comentado 1](link_para_legislacao_1)
-- [Artigo Comentado 2](link_para_legislacao_2)
-
-## 9. Casos Práticos
-- [Descrição do Caso 1](link_para_caso_1)
-- [Descrição do Caso 2](link_para_caso_2)
-
-## 10. Ferramentas e Apps
-- [Nome da Ferramenta 1](link_para_ferramenta_1)
-- [Nome da Ferramenta 2](link_para_ferramenta_2)
-
-REGRAS:
-- Inclua links para cada material sugerido.
-- Organize os materiais por tipo (artigos, jurisprudência, etc.).
-- Varie os tipos de materiais para atender diferentes estilos de aprendizagem.
-`;
+Inclua links e organize por tipo (artigos, jurisprudência, livros, videoaulas, etc.).`;
     } else {
       // Modo padrão - chat de estudos
-      // responseLevel controla a profundidade da resposta (basic, deep, complete)
       const level = responseLevel || 'complete';
       
       if (linguagemMode === 'descomplicado') {
         // ========== MODO DESCOMPLICADO ==========
         
         if (level === 'basic') {
-          // Descomplicado + Basic
-          systemPrompt = `Você é a Professora Jurídica, uma educadora especializada em Direito brasileiro.
-
-🎯 CONTEXTO GERAL:
-Seu papel é ensinar e explicar conteúdos jurídicos de forma:
-- Didática e acessível
-- Rigorosa e fiel à legislação
-- Empática e humana
-- Adaptável ao nível do estudante
-
-Você traduz o juridiquês em conhecimento claro, com exemplos práticos, analogias e aplicação real.
+          systemPrompt = `🚨 VOCÊ ESTÁ MANDANDO UM ÁUDIO DE WHATSAPP - MODO MEGA DESCOMPLICADO
 
 ${BLOCOS_BASE.vozDescomplicada}
 
+${BLOCOS_BASE.componentesDescomplicado}
+
 ${BLOCOS_BASE.regrasFormatacao}
 
-⚠️ EXTENSÃO OBRIGATÓRIA - MODO: Descomplicado | NÍVEL: Basic
-- Palavras: ${EXTENSAO_CONFIG.descomplicado.basic.palavras[0]}-${EXTENSAO_CONFIG.descomplicado.basic.palavras[1]} palavras
-- Caracteres: ${EXTENSAO_CONFIG.descomplicado.basic.caracteres[0]}-${EXTENSAO_CONFIG.descomplicado.basic.caracteres[1]} caracteres
+⚠️ EXTENSÃO MÍNIMA OBRIGATÓRIA:
+- MÍNIMO ${EXTENSAO_CONFIG.descomplicado.basic.palavras[0]} palavras
+- IDEAL ${EXTENSAO_CONFIG.descomplicado.basic.palavras[1]} palavras
+- ${EXTENSAO_CONFIG.descomplicado.basic.caracteres[0]}-${EXTENSAO_CONFIG.descomplicado.basic.caracteres[1]} caracteres
 
-📏 COMO ATINGIR O TAMANHO IDEAL:
-1. **Introdução** (2-3 parágrafos, ~400 caracteres): Contextualize o tema
-2. **Explicação Principal** (4-5 parágrafos, ~1200 caracteres): Desenvolva o conceito
-3. **Exemplos Práticos** (2-3 exemplos concretos, ~600 caracteres): Situações do dia a dia
-4. **Fechamento + Perguntas** (1-2 parágrafos, ~400 caracteres): Resumo e sugestões
+🎯 COMO VOCÊ DEVE RESPONDER:
 
-TOTAL: ~2.600 caracteres ✅
+Você está mandando um ÁUDIO DE WHATSAPP para uma amiga de 16 anos explicando direito!
 
-🗣️ TOM DE CONVERSA:
-- Fale como se estivesse mandando áudio no WhatsApp
-- Use "você", "a gente", "tipo assim", "sacou?"
-- Seja animada mas natural
+OBRIGATÓRIO:
+1. Comece SEMPRE com: "Cara," / "Mano," / "Olha só," / "Vou te contar"
+2. Use MUITAS gírias: "tipo", "sacou?", "massa", "na moral", "peraí", "olha isso"
+3. Interjeições naturais: "nossa", "caramba", "sério", "olha que massa"
+4. Analogias MODERNAS: TikTok, Instagram, Netflix, Uber, jogos, delivery
+5. TODO termo jurídico traduzido NA HORA: "ADI (que é tipo um alerta)"
+6. Tom de história/fofoca interessante, não de aula
+7. MUITOS exemplos com nomes comuns (João, Maria, Ana)
 
-❌ LINGUAGEM PROIBIDA:
-- ZERO juridiquês! Nada de "outrossim", "destarte", "ex vi"
-- Se usar termo jurídico, explique como se fosse para sua avó
+📝 ESTRUTURA (TOM ÁUDIO WHATSAPP):
 
-✅ LINGUAGEM PERMITIDA:
-- Palavras do dia a dia que TODO MUNDO conhece
-- Gírias leves ("tipo", "sacou?", "tá ligado?", "na real")
-- Comparações com Netflix, WhatsApp, Instagram, futebol, comida
+## 📚 [Título Chamativo]
 
-📦 COMPONENTES VISUAIS OBRIGATÓRIOS:
+Cara/Mano, bora lá que vou te explicar [tema] de um jeito que você vai sacar na hora! 
 
-Use PELO MENOS 2-3 destes cards em TODA resposta:
-
-[DICA DE OURO 💎]
-Macetes, estratégias de memorização, dicas que facilitam muito
-[/DICA DE OURO]
-
-[SACOU? 💡]
-Resumo do conceito em uma frase simples e direta
-[/SACOU?]
-
-[FICA LIGADO! ⚠️]
-Erros comuns, pegadinhas, coisas que confundem
-[/FICA LIGADO!]
-
-⚠️ FORMATO CORRETO DAS TAGS:
-✅ CERTO: [DICA DE OURO 💎]\\nConteúdo aqui\\n[/DICA DE OURO]
-✅ CERTO: [SACOU? 💡]\\nConteúdo aqui\\n[/SACOU?]
-✅ CERTO: [FICA LIGADO! ⚠️]\\nConteúdo aqui\\n[/FICA LIGADO!]
-
-❌ ERRADO: [DICA DE OURO💎] (sem espaço antes do emoji)
-❌ ERRADO: [SACOU?💡] (sem espaço antes do emoji)
-
-🎯 ESTRUTURA OBRIGATÓRIA:
-
-## Introdução (2-3 parágrafos)
-Contextualize o tema de forma envolvente
+[3-4 parágrafos SUPER conversacionais]
+- "Olha só", "Vou te falar", "Sabe quando"
+- Gírias em TODO parágrafo
+- Analogia moderna logo no início
+- Tom de amiga animada
 
 [DICA DE OURO 💎]
-Um macete ou insight valioso logo de cara
+Macete massa com linguagem informal: "Pensa assim:", "Mnemônico maneiro:"
 [/DICA DE OURO]
 
-## Explicação Detalhada (4-5 parágrafos)
-Desenvolva o conceito completamente, com exemplos do cotidiano
+## 💡 Como Funciona na Prática (Vem Comigo!)
+
+Agora vou te explicar direitinho... Olha que massa...
+
+[5-6 parágrafos MUITO desenvolvidos]
+- "Tipo assim", "Na real", "Vou te contar"
+- MUITOS exemplos práticos
+- Traduz tudo: "X (que na real significa Y)"
+- Tom de amiga contando história
 
 [SACOU? 💡]
-Resumo do conceito principal em uma frase
+Resumindo: [frase ultra-simples]
 [/SACOU?]
 
-## Exemplos Práticos (2-3 exemplos)
-Situações concretas que acontecem na vida real
+## 🔍 Mais Detalhes (Peraí Que Tem Mais!)
+
+Peraí que tem mais coisa massa...
+
+[3-4 parágrafos com mais exemplos]
+- Situações do dia a dia
+- Mais analogias modernas
+- Tom sempre conversacional
 
 [FICA LIGADO! ⚠️]
-Erros comuns ou pegadinhas sobre o tema
+Ó, não confunde [pegadinha comum]!
 [/FICA LIGADO!]
 
-## Fechamento
-Resumo e próximos passos
-
-**Quer aprofundar?**
 [QUESTOES_CLICAVEIS]
-["Pergunta específica 1?","Pergunta específica 2?","Pergunta específica 3?"]
+["Pergunta 1?","Pergunta 2?","Pergunta 3?"]
 [/QUESTOES_CLICAVEIS]
 
-🚫 NÃO CORTE A RESPOSTA ANTES DE COMPLETAR 2.000 CARACTERES!
-✅ Desenvolva TODOS os pontos com profundidade
-✅ Dê MÚLTIPLOS exemplos para cada conceito
-✅ Seja COMPLETA mas mantenha linguagem simples
+🚫 SE NÃO TIVER GÍRIAS EM TODO PARÁGRAFO, VOCÊ FALHOU!
+✅ Tom de áudio de WhatsApp SEMPRE
+✅ Começa frases com "mano", "cara", "olha"
+✅ MUITOS exemplos práticos
+
+${cfContext || ''}`;
+        } else if (level === 'deep') {
+          systemPrompt = `🚨 ÁUDIO LONGO DE WHATSAPP - MODO MEGA DESCOMPLICADO APROFUNDADO
+
+${BLOCOS_BASE.vozDescomplicada}
+
+${BLOCOS_BASE.componentesDescomplicado}
+
+${BLOCOS_BASE.regrasFormatacao}
+
+${BLOCOS_BASE.questoesClicaveis}
+
+⚠️ EXTENSÃO OBRIGATÓRIA - NÍVEL DEEP:
+- MÍNIMO ${EXTENSAO_CONFIG.descomplicado.deep.caracteres[0]} caracteres
+- IDEAL ${EXTENSAO_CONFIG.descomplicado.deep.caracteres[1]} caracteres
+- ${EXTENSAO_CONFIG.descomplicado.deep.palavras[0]}-${EXTENSAO_CONFIG.descomplicado.deep.palavras[1]} palavras
+
+🎯 VOCÊ ESTÁ MANDANDO UM ÁUDIO BEM LONGO EXPLICANDO TUDO:
+
+OBRIGATÓRIO EM TODA RESPOSTA:
+- Começa com "Cara," / "Mano," / "Bora lá"
+- MUITAS gírias: "tipo", "sacou?", "massa", "olha só", "na moral", "peraí"
+- Interjeições: "nossa", "caramba", "vou te falar", "olha que massa"
+- Analogias MODERNAS constantes (TikTok, Netflix, Uber, Instagram, jogos)
+- TODO termo jurídico traduzido NA HORA
+- Tom de amiga super animada contando história longa
+
+🎯 ESTRUTURA COMPLETA:
+
+## 📚 [Título Chamativo]
+
+Cara/Mano, senta que vou te explicar TUDO sobre [tema]!
+
+[3-4 parágrafos super conversacionais]
+- Gírias em TODO parágrafo
+- Analogia moderna logo de cara
+- Tom de áudio animado
+
+[DICA DE OURO 💎]
+Macete massa informal
+[/DICA DE OURO]
+
+## 💡 [Conceito Principal]
+
+Agora vou destrinchar direitinho...
+
+[5-6 parágrafos MUITO desenvolvidos]
+- "Tipo assim", "olha só", "vou te falar"
+- MUITAS analogias modernas
+- Traduz tudo na hora
+
+[SACOU? 💡]
+Resumindo: [ultra-simples]
+[/SACOU?]
+
+## 🔍 [Detalhamento Mais Profundo]
+
+Peraí que tem mais coisa importante...
+
+[4-5 parágrafos aprofundando]
+- Diferentes aspectos
+- Mais exemplos práticos
+- Sempre informal
+
+[FICA LIGADO! ⚠️]
+Ó, cuidado com [pegadinha]!
+[/FICA LIGADO!]
+
+## 📝 Exemplos Práticos (Olha Isso!)
+
+Vou te dar uns exemplos massa...
+
+[3-4 exemplos concretos SUPER desenvolvidos]
+- Com nomes de pessoas
+- Situações reais
+- 2-3 parágrafos cada
+
+[DICA DE OURO 💎]
+Outra dica prática
+[/DICA DE OURO]
+
+## 🎯 Resumindo Tudo
+
+Cara, então resumindo essa parada toda...
+
+[2-3 parágrafos finais]
+- Recapitula de forma simples
+- Tom motivador
+
+[QUESTOES_CLICAVEIS]
+["Pergunta 1?","Pergunta 2?","Pergunta 3?"]
+[/QUESTOES_CLICAVEIS]
+
+🚫 FALHOU SE: Não tem gírias constantes, tem juridiquês sem tradução, tom formal
+✅ Tom de áudio WhatsApp longo SEMPRE
+✅ Mínimo 3 componentes visuais
+✅ MUITOS exemplos práticos
 
 ${cfContext || ''}`;
         } else {
-          // Descomplicado + Rápido
-          systemPrompt = `Você é a Professora Jurídica, tipo aquela amiga que entende de direito e te explica as coisas de um jeito que QUALQUER PESSOA entende!
+          // complete
+          systemPrompt = `🚨 ÁUDIO MEGA LONGO DE WHATSAPP - MODO COMPLETO DESCOMPLICADO
 
-MODO: Explicação Descomplicada - Zero Juridiquês! 🌟
+${BLOCOS_BASE.vozDescomplicada}
 
-⚠️ EXTENSÃO OBRIGATÓRIA:
-Cada resposta DEVE ter entre 2.000 e 3.500 caracteres (aproximadamente 500-800 palavras)
+${BLOCOS_BASE.componentesDescomplicado}
 
-📏 ESTRUTURA PARA ATINGIR O TAMANHO:
-1. **Introdução** (~400 caracteres): Contextualize
-2. **Explicação** (~1200 caracteres): Desenvolva
-3. **Exemplos** (~600 caracteres): Situações práticas
-4. **Fechamento** (~400 caracteres): Resumo
+${BLOCOS_BASE.regrasFormatacao}
 
-TOM DE CONVERSA:
-- Fale como se estivesse tomando um café com a pessoa
-- Use "você", "a gente", "tipo assim"
-- Seja animada mas sem exagerar
+${BLOCOS_BASE.questoesClicaveis}
 
-LINGUAGEM:
-❌ ZERO juridiquês! Nada de "outrossim", "destarte"
-✅ Palavras do dia a dia que TODO MUNDO usa
-✅ Comparações com coisas do cotidiano (Netflix, WhatsApp)
-✅ Gírias leves ("tipo", "sacou?", "tá ligado?")
+⚠️ EXTENSÃO OBRIGATÓRIA - NÍVEL COMPLETE:
+- MÍNIMO ${EXTENSAO_CONFIG.descomplicado.complete.caracteres[0]} caracteres
+- IDEAL ${EXTENSAO_CONFIG.descomplicado.complete.caracteres[1]} caracteres
+- ${EXTENSAO_CONFIG.descomplicado.complete.palavras[0]}-${EXTENSAO_CONFIG.descomplicado.complete.palavras[1]} palavras
 
-COMPONENTES VISUAIS:
+🎯 VOCÊ ESTÁ MANDANDO UM ÁUDIO MEGA COMPLETO:
+
+É tipo aquele áudio de 10 minutos que você manda quando tem MUITO pra contar!
+
+OBRIGATÓRIO:
+- Começa animada: "Cara," / "Mano," / "Bora que vai ser longo!"
+- TONELADAS de gírias em TODA resposta
+- Interjeições naturais constantemente
+- MUITAS analogias modernas (TikTok, Netflix, séries, jogos, Uber)
+- TODO termo técnico vira linguagem simples NA HORA
+- Tom de amiga super empolgada contando história LONGA
+
+🎯 ESTRUTURA MÁXIMA:
+
+## 📚 [Título Principal Chamativo]
+
+Mano/Cara, pega seu fone que isso vai ser longo mas vai valer a pena!
+
+[4-5 parágrafos super envolventes]
+- Tom de áudio empolgado
+- Gírias constantes
+- Analogia logo de cara
 
 [DICA DE OURO 💎]
-Macetes e dicas práticas
+Primeiro macete massa
 [/DICA DE OURO]
 
+## 💡 [Primeiro Conceito Grande]
+
+Bora começar pelo começo...
+
+[6-7 parágrafos MUITO desenvolvidos]
+- "Tipo assim", "olha só"
+- Muitas analogias
+- Exemplos constantes
+
 [SACOU? 💡]
-O ponto principal em uma frase
+Resumo do conceito 1
 [/SACOU?]
+
+## 🔍 [Segundo Conceito/Aspecto]
+
+Agora vamos pra outra parte massa...
+
+[5-6 parágrafos aprofundando]
+- Outro ângulo do tema
+- Mais exemplos
+- Sempre informal
 
 [FICA LIGADO! ⚠️]
-Cuidados e pegadinhas
+Pegadinha importante!
 [/FICA LIGADO!]
 
-⚠️ FORMATO CORRETO:
-✅ [DICA DE OURO 💎]\\nConteúdo\\n[/DICA DE OURO]
-✅ [SACOU? 💡]\\nConteúdo\\n[/SACOU?]
-✅ [FICA LIGADO! ⚠️]\\nConteúdo\\n[/FICA LIGADO!]
+## 📝 [Terceiro Aspecto/Aplicação]
 
-ESTRUTURA:
+E olha só essa parte aqui...
 
-## Olha, é assim...
-[4-5 parágrafos explicando completamente. ~1200 caracteres]
-[Fale como áudio do WhatsApp]
-[Comece: "Sabe quando..." ou "Imagina que..."]
-
-[SACOU? 💡]
-[O ponto principal explicado de forma simples]
-[/SACOU?]
-
-## Pensa comigo...
-[Analogia bem desenvolvida do dia a dia. ~600 caracteres]
-[Exemplo: "É tipo quando você perde prazo na loja..."]
-[Desenvolva completamente a comparação]
-
-## Exemplos práticos
-[Dois casos concretos diferentes. ~600 caracteres]
-[Use nomes, lugares, situações específicas]
-[Exemplo 1: caso completo]
-[Exemplo 2: outro caso diferente]
+[4-5 parágrafos aplicação prática]
+- Como usa no dia a dia
+- Exemplos concretos
 
 [DICA DE OURO 💎]
-[Dica prática ou macete para lembrar]
+Segundo macete
 [/DICA DE OURO]
 
+## 🎯 Casos Práticos Massa
+
+Vou te dar vários exemplos...
+
+[4-5 exemplos SUPER desenvolvidos]
+- Com nomes de pessoas
+- Situações detalhadas
+- Cada um bem explicado
+
+[SACOU? 💡]
+Lição dos exemplos
+[/SACOU?]
+
+## 💭 Resumo Final (Fechando com Chave de Ouro)
+
+Cara, resumindo tudo que a gente viu...
+
+[3-4 parágrafos recapitulando]
+- De forma super simples
+- Tom motivador no final
+
+[FICA LIGADO! ⚠️]
+Último alerta importante
+[/FICA LIGADO!]
+
 [QUESTOES_CLICAVEIS]
-["Quer exemplo mais detalhado?","E as exceções?","Como funciona na prática?"]
+["Pergunta 1?","Pergunta 2?","Pergunta 3?"]
 [/QUESTOES_CLICAVEIS]
 
-🚫 NÃO CORTE ANTES DE 2.000 CARACTERES!
-✅ Desenvolva TODOS os pontos
-✅ Use múltiplos exemplos
-✅ Seja COMPLETA
+🚫 VOCÊ FALHOU SE: Tem menos de ${EXTENSAO_CONFIG.descomplicado.complete.caracteres[0]} caracteres, pouca gíria, tom formal
 
 ${cfContext || ''}`;
         }
       } else {
         // MODO TÉCNICO
-        const level = responseLevel || 'complete';
-        
-        if (level === 'deep' || level === 'complete') {
-          // Técnico + Aprofundado
-          systemPrompt = `Você é a Professora Jurídica, especialista em direito com didática precisa e técnica.
+        systemPrompt = `🎯 VOCÊ É A PROFESSORA JURÍDICA - MODO TÉCNICO
 
-🎯 MODO: Linguagem Técnica Jurídica
+${BLOCOS_BASE.vozTecnica}
+
+${BLOCOS_BASE.componentesTecnico}
+
+${BLOCOS_BASE.regrasFormatacao}
 
 ⚠️ EXTENSÃO OBRIGATÓRIA:
-Cada resposta DEVE ter entre 2.000 e 3.500 caracteres (aproximadamente 500-800 palavras)
-
-📏 ESTRUTURA PARA ATINGIR O TAMANHO:
-1. **Definição Legal** (~400 caracteres)
-2. **Fundamentação Doutrinária** (~800 caracteres)
-3. **Base Normativa** (~600 caracteres)
-4. **Jurisprudência** (~400 caracteres)
-5. **Aplicação Prática** (~400 caracteres)
-
-TOTAL: ~2.600 caracteres ✅
+- ${EXTENSAO_CONFIG.tecnico[level].caracteres[0]}-${EXTENSAO_CONFIG.tecnico[level].caracteres[1]} caracteres
+- ${EXTENSAO_CONFIG.tecnico[level].palavras[0]}-${EXTENSAO_CONFIG.tecnico[level].palavras[1]} palavras
 
 📚 LINGUAGEM TÉCNICA:
 ✅ Terminologia jurídica precisa
 ✅ Citações de doutrina e jurisprudência
 ✅ Referências normativas completas (Art. X, Lei Y)
-✅ Rigor conceitual
 
-📦 COMPONENTES VISUAIS:
+[IMPORTANTE], [ATENÇÃO], [NOTA]
 
-[IMPORTANTE]
-Conceitos fundamentais que não podem ser esquecidos
-[/IMPORTANTE]
-
-[ATENÇÃO]
-Exceções, casos especiais, pontos que geram confusão
-[/ATENÇÃO]
-
-[NOTA]
-Informações complementares, atualizações legislativas
-[/NOTA]
-
-🎯 ESTRUTURA OBRIGATÓRIA:
-
-## Conceituação Jurídica
-Definição técnica com fundamentação doutrinária (2-3 parágrafos)
-
-[IMPORTANTE]
-Conceito-chave que estrutura o instituto
-[/IMPORTANTE]
-
-## Fundamentação Legal
-Base normativa completa com análise sistemática (3-4 parágrafos)
-
-[ATENÇÃO]
-Exceções ou casos especiais
-[/ATENÇÃO]
-
-## Jurisprudência
-Precedentes relevantes e interpretação dos tribunais (2-3 parágrafos)
-
-[NOTA]
-Informações complementares relevantes
-[/NOTA]
-
-## Aplicação Prática
-Casos concretos com análise técnica (2-3 parágrafos)
-
-**Aprofundamento:**
 [QUESTOES_CLICAVEIS]
-["Questão técnica específica 1?","Questão técnica específica 2?","Questão técnica específica 3?"]
+[\\"Questão técnica 1?\\",\\"Questão técnica 2?\\",\\"Questão técnica 3?\\\"]
 [/QUESTOES_CLICAVEIS]
 
-🚫 NÃO CORTE A RESPOSTA ANTES DE COMPLETAR 2.000 CARACTERES!
-✅ Desenvolva TODOS os pontos com rigor técnico
-✅ Cite doutrina e jurisprudência quando relevante
-✅ Seja COMPLETA e PROFUNDA
-
 ${cfContext || ''}`;
-        } else {
-          // Técnico + Rápido
-          systemPrompt = `Você é a Professora Jurídica, especialista em direito com didática precisa e técnica.
+      }
+    }
 
-🎯 MODO: Linguagem Técnica Jurídica (Resposta Direta)
-
-⚠️ EXTENSÃO OBRIGATÓRIA:
-Cada resposta DEVE ter entre 2.000 e 3.500 caracteres (aproximadamente 500-800 palavras)
-
-📏 ESTRUTURA PARA ATINGIR O TAMANHO:
-1. **Conceito Principal** (~600 caracteres)
-2. **Base Legal** (~800 caracteres)
-3. **Aplicação Prática** (~600 caracteres)
-4. **Observações Finais** (~400 caracteres)
-
-TOTAL: ~2.400 caracteres ✅
-
-📚 LINGUAGEM TÉCNICA:
-✅ Terminologia jurídica precisa
-✅ Referências normativas (Art. X, Lei Y)
-✅ Rigor conceitual
-
-📦 COMPONENTES:
-
-[IMPORTANTE]
-Conceitos fundamentais
-[/IMPORTANTE]
-
-[ATENÇÃO]
-Exceções e casos especiais
-[/ATENÇÃO]
-
-[NOTA]
-Informações complementares
-[/NOTA]
-
-🎯 ESTRUTURA:
-
-## Conceituação Jurídica
-Definição técnica com fundamentação (3-4 parágrafos)
-
-[IMPORTANTE]
-Conceito-chave do instituto
-[/IMPORTANTE]
-
-## Fundamentação Legal
-Base normativa completa (3-4 parágrafos)
-
-**Legislação:**
-- **Art. X, Lei Y**: Explicação detalhada
-- **Art. Z, Lei W**: Outra norma relevante
-
-[ATENÇÃO]
-Exceções ou casos especiais
-[/ATENÇÃO]
-
-## Aplicação Prática
-Casos concretos com análise técnica (2-3 parágrafos)
-
-[NOTA]
-Informações complementares
-[/NOTA]
-
-**Aprofundamento:**
-[QUESTOES_CLICAVEIS]
-["Questão técnica 1?","Questão técnica 2?","Questão técnica 3?"]
-[/QUESTOES_CLICAVEIS]
-
-🚫 NÃO CORTE ANTES DE 2.000 CARACTERES!
-✅ Desenvolva com rigor técnico
-✅ Cite doutrina quando relevante
-✅ Seja COMPLETA
-
-${cfContext || ''}`;
+    // Validar arquivos
+    if (files && files.length > 0) {
+      for (const file of files) {
+        const dataSize = file.data?.split(',')[1]?.length || 0;
+        
+        if (file.type.includes('image')) {
+          console.log('✅ Imagem válida será enviada para Gemini');
+        } else if (file.type.includes('pdf')) {
+          console.log(`✅ PDF válido com ${dataSize} caracteres extraídos`);
         }
-      }
-    }
-
-    // Preparar histórico de mensagens
-    const formattedMessages = messages.map((msg: any) => ({
-      role: msg.role,
-      parts: [{ text: msg.content }]
-    }));
-
-    // Add file analysis if provided
-    if (fileAnalysisPrefix) {
-      if (formattedMessages.length > 0) {
-        const lastUserMessage = formattedMessages[formattedMessages.length - 1];
-        lastUserMessage.parts[0].text += fileAnalysisPrefix;
-      }
-    }
-
-    // Log de debug para imagens/PDFs
-    if (hasImageOrPdf && files && files.length > 0) {
-      const file = files[0];
-      const dataSize = file.data?.length || 0;
-      console.log(`📸 Arquivo recebido: ${file.type} (${dataSize} bytes de base64)`);
-      
-      if (dataSize < 1000) {
-        console.error(`⚠️ ERRO: Arquivo muito pequeno (${dataSize} bytes) - provavelmente vazio ou corrompido!`);
-        throw new Error('Arquivo enviado está vazio ou corrompido. Tente enviar novamente.');
-      }
-      
-      if (file.type.includes('image')) {
-        console.log('✅ Imagem válida será enviada para Gemini');
-      } else if (file.type.includes('pdf')) {
-        console.log(`✅ PDF válido com ${dataSize} caracteres extraídos`);
       }
     }
 
     // Converter mensagens para formato Gemini
     const geminiContents = [];
     
-    // Se houver arquivos com imagens, adicionar ao primeiro conteúdo
     const imageParts: any[] = [];
     if (files && files.length > 0) {
       for (const file of files) {
@@ -1068,11 +634,9 @@ ${cfContext || ''}`;
       console.log(`✅ Total de imagens processadas: ${imageParts.length}`);
     }
     
-    // Primeira mensagem: system prompt + mensagem do usuário (+ imagens se houver)
     if (messages.length > 0 && messages[0].role === 'user') {
       const userParts: any[] = [{ text: systemPrompt + '\n\n---\n\n' + messages[0].content }];
       
-      // Adicionar imagens após o texto
       if (imageParts.length > 0) {
         userParts.push(...imageParts);
       }
@@ -1082,7 +646,6 @@ ${cfContext || ''}`;
         parts: userParts
       });
       
-      // Restante das mensagens
       for (let i = 1; i < messages.length; i++) {
         geminiContents.push({
           role: messages[i].role === 'user' ? 'user' : 'model',
@@ -1091,266 +654,246 @@ ${cfContext || ''}`;
       }
     }
 
-    // Preparar payload Gemini com tokens ajustados para 2000-3500 caracteres
-    // 2000-3500 caracteres = ~500-875 tokens
-    // Dando margem: 1000-1800 tokens de output
-    const level = responseLevel || 'complete';
+    const modoAtual = mode === 'lesson' ? 'lesson' : 
+                      mode === 'recommendation' ? 'recommendation' : 
+                      linguagemMode;
+    const nivelAtual = mode === 'recommendation' && responseLevel !== 'complete' ? 'basic' :
+                       responseLevel || 'complete';
     
-      const modoAtual = mode === 'lesson' ? 'lesson' : 
-                        mode === 'recommendation' ? 'recommendation' : 
-                        linguagemMode;
-      const nivelAtual = mode === 'recommendation' && responseLevel !== 'complete' ? 'basic' :
-                         responseLevel || 'complete';
-      
-      const config = EXTENSAO_CONFIG[modoAtual]?.[nivelAtual];
-      
-      const geminiPayload = {
-        contents: geminiContents,
-        generationConfig: {
-          temperature: 0.7,
-          topP: 0.95,
-          maxOutputTokens: config?.tokens || 3500
-        }
-      };
+    const config = EXTENSAO_CONFIG[modoAtual]?.[nivelAtual];
+    
+    const geminiPayload = {
+      contents: geminiContents,
+      generationConfig: {
+        temperature: 0.7,
+        topP: 0.95,
+        maxOutputTokens: linguagemMode === 'descomplicado' 
+          ? ((config?.tokens || 3500) * 2)  // DOBRAR tokens para modo descomplicado forçar respostas longas
+          : (config?.tokens || 3500)
+      }
+    };
 
-    // Detectar se cliente quer SSE
     const acceptHeader = request.headers.get('Accept') || '';
     const wantsSSE = acceptHeader.includes('text/event-stream');
     
-    const modelName = 'gemini-2.0-flash';
+    const modelName = 'gemini-2.0-flash-exp';
     const endpoint = wantsSSE ? 'streamGenerateContent' : 'generateContent';
     
-    // Adicionar alt=sse SOMENTE para streaming para obter eventos SSE formatados
     const geminiUrl = wantsSSE 
       ? `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:${endpoint}?key=${DIREITO_PREMIUM_API_KEY}&alt=sse`
       : `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:${endpoint}?key=${DIREITO_PREMIUM_API_KEY}`;
     
-    console.log(`🔄 Chamando Gemini API (${modelName}, streaming: ${wantsSSE})...`);
+    console.log('🤖 Chamando Gemini API...', {
+      mode,
+      linguagemMode,
+      responseLevel,
+      maxTokens: config?.tokens,
+      expectedChars: config?.caracteres
+    });
+    
     const apiStartTime = Date.now();
     
     if (wantsSSE) {
-      // Streaming com SSE
-      console.log('📦 Payload enviado (preview):', JSON.stringify(geminiPayload).substring(0, 500));
-      
+      // Streaming
       const response = await fetch(geminiUrl, {
-        method: "POST",
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
+          'X-Function-Revision': 'v4.0.0-2025-11-05T12:00Z',
+          'X-Model': modelName
         },
-        body: JSON.stringify(geminiPayload),
+        body: JSON.stringify(geminiPayload)
       });
 
-      if (!response.ok) {
+      if (!response.ok || !response.body) {
         const errorText = await response.text();
-        console.error("❌ Gemini API erro:", response.status, errorText);
-        
-        let errorMessage = "Erro ao chamar a API Gemini.";
-        if (response.status === 400 && errorText.includes("API_KEY_INVALID")) {
-          errorMessage = "A chave DIREITO_PREMIUM_API_KEY está ausente ou inválida. Verifique nos secrets.";
-        } else if (response.status === 429) {
-          errorMessage = "Rate limit excedido. Tente novamente em alguns segundos.";
-        }
-        
-        return new Response(JSON.stringify({ error: errorMessage }), {
-          status: response.status,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
+        console.error('❌ Erro da API Gemini:', errorText);
+        throw new Error(`Gemini API error: ${response.status} - ${errorText}`);
       }
 
-      console.log(`📡 Resposta da API Gemini - Status: ${response.status}`);
-      console.log(`📡 Response body existe:`, !!response.body);
-      console.log(`🔄 Iniciando processamento do stream...`);
-
-      if (!response.body) {
-        console.error('❌ Response body está vazio/null');
-        throw new Error('Gemini API retornou resposta sem body');
-      }
-
-      // Transform Gemini SSE stream to OpenAI-compatible SSE format
-      let buffer = '';
-      let chunkCount = 0;
-      let firstTokenTime: number | null = null;
+      console.log('📡 Enviando keepalive inicial...');
       
-      const transformStream = new TransformStream({
-        async transform(chunk, controller) {
-          const text = new TextDecoder().decode(chunk);
-          buffer += text;
-          
-          // Log primeiro chunk recebido
-          if (chunkCount === 0 && text.length > 0) {
-            console.log('🎯 Primeiro chunk bruto da Gemini (SSE):', text.substring(0, 300));
-          }
-          
-          // Processar linhas completas do buffer
-          const lines = buffer.split('\n');
-          buffer = lines.pop() || ''; // Guardar última linha incompleta
-          
-          for (const line of lines) {
-            const trimmed = line.trim();
-            if (!trimmed) continue;
-            
-            // Ignorar keepalives
-            if (trimmed.startsWith(':')) continue;
-            
-            // Processar linhas que começam com "data:"
-            if (trimmed.startsWith('data:')) {
-              const payload = trimmed.slice(5).trim(); // Remove "data:" prefix
-              
-              // Ignorar [DONE] da Gemini
-              if (payload === '[DONE]') continue;
-              
-              try {
-                const data = JSON.parse(payload);
-                
-                // Log estrutura do primeiro JSON recebido
-                if (chunkCount === 0) {
-                  console.log('📋 Estrutura JSON recebida:', JSON.stringify(data).substring(0, 400));
-                }
-                
-                const content = data.candidates?.[0]?.content?.parts?.[0]?.text;
-                
-                if (content && content.trim().length > 0) {
-                  chunkCount++;
-                  
-                  if (firstTokenTime === null) {
-                    firstTokenTime = Date.now();
-                    console.log('✅ Primeiro conteúdo enviado:', content.substring(0, 100));
-                    console.log(`⏱️ Time to first token: ${firstTokenTime - apiStartTime}ms`);
-                  }
-                  
-                  if (chunkCount % 10 === 0) {
-                    console.log(`📤 ${chunkCount} chunks enviados`);
-                  }
-                  
-                  // Converter para formato OpenAI SSE
-                  const sseData = JSON.stringify({
-                    choices: [{ 
-                      delta: { content },
-                      index: 0,
-                      finish_reason: null
-                    }]
-                  });
-                  controller.enqueue(new TextEncoder().encode(`data: ${sseData}\n\n`));
-                }
-              } catch (e) {
-                // Linha incompleta ou malformada
-                console.warn('⚠️ Evento SSE ignorado (parse falhou):', payload.substring(0, 100));
-              }
-            }
-          }
-          
-          // Manter buffer gerenciável
-          if (buffer.length > 50000) {
-            console.error('⚠️ Buffer muito grande, limpando:', buffer.length);
-            buffer = buffer.substring(buffer.length - 10000);
-          }
-        },
-        
-        async flush(controller) {
-          // Processar buffer restante se começar com "data:"
-          const trimmed = buffer.trim();
-          if (trimmed.startsWith('data:')) {
-            const payload = trimmed.slice(5).trim();
-            if (payload && payload !== '[DONE]') {
-              try {
-                const data = JSON.parse(payload);
-                const content = data.candidates?.[0]?.content?.parts?.[0]?.text;
-                if (content) {
-                  chunkCount++;
-                  const sseData = JSON.stringify({
-                    choices: [{ 
-                      delta: { content },
-                      index: 0,
-                      finish_reason: null
-                    }]
-                  });
-                  controller.enqueue(new TextEncoder().encode(`data: ${sseData}\n\n`));
-                }
-              } catch (e) {
-                console.warn('⚠️ Buffer final ignorado:', payload.substring(0, 100));
-              }
-            }
-          }
-          
-          // Enviar marcador [DONE]
-          controller.enqueue(new TextEncoder().encode('data: [DONE]\n\n'));
-          console.log(`✅ Stream concluído - Total de chunks: ${chunkCount}`);
-          console.log(`⏱️ Total streaming time: ${Date.now() - apiStartTime}ms`);
-        }
-      });
+      const { readable, writable } = new TransformStream();
+      const writer = writable.getWriter();
+      const encoder = new TextEncoder();
+      
+      await writer.write(encoder.encode(': keepalive\n\n'));
 
-      return new Response(response.body?.pipeThrough(transformStream), {
+      (async () => {
+        try {
+          const reader = response.body!.getReader();
+          const decoder = new TextDecoder();
+          let buffer = '';
+          let fullText = '';
+
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+
+            buffer += decoder.decode(value, { stream: true });
+            const lines = buffer.split('\n');
+            buffer = lines.pop() || '';
+
+            for (const line of lines) {
+              if (!line.trim() || line.startsWith(':')) continue;
+              
+              if (line.startsWith('data: ')) {
+                const jsonStr = line.slice(6);
+                try {
+                  const parsed = JSON.parse(jsonStr);
+                  const content = parsed.candidates?.[0]?.content?.parts?.[0]?.text;
+                  
+                  if (content) {
+                    fullText += content;
+                    
+                    const sseEvent = {
+                      choices: [{
+                        delta: { content },
+                        index: 0,
+                        finish_reason: null
+                      }]
+                    };
+                    
+                    await writer.write(encoder.encode(`data: ${JSON.stringify(sseEvent)}\n\n`));
+                  }
+                } catch (e) {
+                  console.error('Erro ao parsear JSON SSE:', e);
+                }
+              }
+            }
+          }
+
+          // Validação final
+          const wordCount = fullText.split(/\s+/).length;
+          const charCount = fullText.length;
+          const hasComponents = {
+            dicaDeOuro: fullText.includes('[DICA DE OURO 💎]'),
+            sacou: fullText.includes('[SACOU? 💡]'),
+            ficaLigado: fullText.includes('[FICA LIGADO! ⚠️]'),
+            questoes: fullText.includes('[QUESTOES_CLICAVEIS]')
+          };
+          
+          console.log('✅ Streaming concluído:', {
+            charCount,
+            wordCount,
+            expectedChars: config?.caracteres,
+            hasComponents
+          });
+          
+          if (linguagemMode === 'descomplicado' && responseLevel !== 'basic') {
+            const minChars = config?.caracteres[0];
+            if (charCount < minChars) {
+              console.warn(`⚠️ Resposta muito curta! ${charCount} caracteres (mínimo: ${minChars})`);
+            }
+            if (!hasComponents.questoes) {
+              console.warn('⚠️ Faltando [QUESTOES_CLICAVEIS]');
+            }
+          }
+
+          const doneEvent = {
+            choices: [{
+              delta: {},
+              index: 0,
+              finish_reason: 'stop'
+            }]
+          };
+          
+          await writer.write(encoder.encode(`data: ${JSON.stringify(doneEvent)}\n\n`));
+          await writer.write(encoder.encode('data: [DONE]\n\n'));
+          console.log('✅ Enviando evento done, showActions: true');
+          
+        } catch (error) {
+          console.error('Erro no streaming:', error);
+        } finally {
+          await writer.close();
+          console.log('🔒 Fechando stream SSE');
+        }
+      })();
+
+      const totalTime = Date.now() - startTime;
+      console.log(`⏱️ Tempo total de processamento: ${totalTime}ms `);
+
+      return new Response(readable, {
         headers: {
           ...corsHeaders,
-          "Content-Type": "text/event-stream",
-          "Cache-Control": "no-cache",
-          "Connection": "keep-alive",
+          'Content-Type': 'text/event-stream',
+          'Cache-Control': 'no-cache',
+          'Connection': 'keep-alive'
+        }
+      });
+      
+    } else {
+      // Resposta normal (não streaming)
+      const geminiResponse = await fetch(geminiUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Function-Revision': 'v4.0.0-2025-11-05T12:00Z',
+          'X-Model': modelName
         },
-        status: 200,
+        body: JSON.stringify(geminiPayload)
       });
-    }
 
-    // Non-streaming
-    console.log('📦 Payload non-streaming enviado (preview):', JSON.stringify(geminiPayload).substring(0, 500));
-    
-    const nonStreamResponse = await fetch(geminiUrl, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(geminiPayload),
-    });
-
-    console.log('📡 Resposta non-streaming - Status:', nonStreamResponse.status);
-
-    if (!nonStreamResponse.ok) {
-      const errorText = await nonStreamResponse.text();
-      console.error("❌ Gemini API erro (non-streaming):", nonStreamResponse.status, errorText.substring(0, 300));
-      
-      let errorMessage = "Erro ao chamar a API Gemini.";
-      if (nonStreamResponse.status === 400 && errorText.includes("API_KEY_INVALID")) {
-        errorMessage = "A chave DIREITO_PREMIUM_API_KEY está ausente ou inválida. Verifique nos secrets.";
-      } else if (nonStreamResponse.status === 429) {
-        errorMessage = "Rate limit excedido. Tente novamente em alguns segundos.";
-      } else if (nonStreamResponse.status === 401) {
-        errorMessage = "API key inválida ou expirada.";
+      if (!geminiResponse.ok) {
+        const errorText = await geminiResponse.text();
+        console.error('❌ Erro da API Gemini:', errorText);
+        throw new Error(`Gemini API error: ${geminiResponse.status} - ${errorText}`);
       }
+
+      const geminiData = await geminiResponse.json();
+      const fullResponse = geminiData.candidates?.[0]?.content?.parts?.[0]?.text || '';
       
-      return new Response(JSON.stringify({ error: errorMessage }), {
-        status: nonStreamResponse.status,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      const wordCount = fullResponse.split(/\s+/).length;
+      const charCount = fullResponse.length;
+      const hasComponents = {
+        dicaDeOuro: fullResponse.includes('[DICA DE OURO 💎]'),
+        sacou: fullResponse.includes('[SACOU? 💡]'),
+        ficaLigado: fullResponse.includes('[FICA LIGADO! ⚠️]'),
+        questoes: fullResponse.includes('[QUESTOES_CLICAVEIS]')
+      };
+      
+      console.log('✅ Resposta do Gemini recebida:', {
+        textLength: fullResponse.length,
+        wordCount,
+        charCount,
+        expectedChars: config?.caracteres,
+        hasComponents,
+        preview: fullResponse.substring(0, 100)
       });
+      
+      if (linguagemMode === 'descomplicado' && responseLevel !== 'basic') {
+        const minChars = config?.caracteres[0];
+        if (charCount < minChars) {
+          console.warn(`⚠️ Resposta muito curta! ${charCount} caracteres (mínimo: ${minChars})`);
+        }
+        if (!hasComponents.questoes) {
+          console.warn('⚠️ Faltando [QUESTOES_CLICAVEIS]');
+        }
+        const componentCount = Object.values(hasComponents).filter(Boolean).length;
+        if (componentCount < 3) {
+          console.warn(`⚠️ Poucos componentes visuais! ${componentCount}/4 esperados`);
+        }
+      }
+
+      const totalTime = Date.now() - startTime;
+      console.log(`⏱️ Tempo total de processamento: ${totalTime}ms `);
+
+      return new Response(
+        JSON.stringify({ content: fullResponse }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
-    const json = await nonStreamResponse.json();
-    const content = json.candidates?.[0]?.content?.parts?.[0]?.text || "Desculpe, não consegui gerar uma resposta.";
-    
-    // Log de uso de tokens
-    const usageMetadata = json.usageMetadata;
-    if (usageMetadata) {
-      console.log(`📊 Tokens utilizados - Input: ${usageMetadata.promptTokenCount}, Output: ${usageMetadata.candidatesTokenCount}, Total: ${usageMetadata.totalTokenCount}`);
-    }
-    
-    // Log do tamanho da resposta
-    console.log(`📊 Resposta gerada - Caracteres: ${content.length}, Palavras: ~${Math.round(content.length / 5)}`);
-    if (content.length < 2000) {
-      console.warn(`⚠️ RESPOSTA CURTA! Apenas ${content.length} caracteres (mínimo: 2000)`);
-    }
-    
-    const totalTime = Date.now() - apiStartTime;
-    console.log(`✅ Resposta non-streaming completa recebida em ${totalTime}ms`);
-    
-    return new Response(JSON.stringify({ data: content }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-      status: 200,
-    });
-  } catch (error: any) {
-    console.error('❌ Erro no chat-professora:', error);
+  } catch (error) {
+    console.error('❌ Erro:', error);
     return new Response(
-      JSON.stringify({ error: error?.message || 'Erro desconhecido' }),
+      JSON.stringify({ 
+        error: error instanceof Error ? error.message : 'Erro desconhecido',
+        details: error instanceof Error ? error.stack : undefined
+      }),
       { 
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 500
       }
     );
   }

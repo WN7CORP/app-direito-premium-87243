@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { X, Loader2, ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -43,9 +43,28 @@ const TermosModal = ({ isOpen, onClose, artigo, numeroArtigo, codigoTabela = 'CP
     
     setLoading(true);
     setProgress(0);
-    setProgressMessage("Iniciando...");
+    setProgressMessage("Verificando cache...");
     setTermos([]);
     setHasGenerated(true);
+    
+    // Verificar cache primeiro
+    try {
+      const { data: cached, error: cacheError } = await supabase
+        .from(codigoTabela as any)
+        .select('termos')
+        .eq('Número do Artigo', numeroArtigo)
+        .maybeSingle();
+      
+      if (!cacheError && cached && 'termos' in cached && cached.termos && Array.isArray(cached.termos) && cached.termos.length > 0) {
+        console.log('✅ Termos encontrados no cache');
+        setTermos(cached.termos);
+        setProgress(100);
+        setLoading(false);
+        return;
+      }
+    } catch (cacheError) {
+      console.log('⚠️ Erro ao verificar cache, gerando novo:', cacheError);
+    }
     
     let progressInterval: number | undefined;
     let currentProgress = 0;
@@ -203,6 +222,17 @@ const TermosModal = ({ isOpen, onClose, artigo, numeroArtigo, codigoTabela = 'CP
     setAprofundamentos({});
     onClose();
   };
+
+  // Reset quando artigo mudar
+  useEffect(() => {
+    if (isOpen) {
+      setHasGenerated(false);
+      setTermos([]);
+      setProgress(0);
+      setExpandedTermo(null);
+      setAprofundamentos({});
+    }
+  }, [numeroArtigo, isOpen]);
 
   if (!isOpen) return null;
 

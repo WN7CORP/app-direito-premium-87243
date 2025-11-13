@@ -5,6 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { fetchAllRows } from "@/lib/fetchAllRows";
 import { Skeleton } from "@/components/ui/skeleton";
+import { sortArticles } from "@/lib/articleSorter";
 import { Button } from "@/components/ui/button";
 import InlineAudioButton from "@/components/InlineAudioButton";
 import AudioCommentButton from "@/components/AudioCommentButton";
@@ -22,6 +23,9 @@ import { VadeMecumPlaylist } from "@/components/VadeMecumPlaylist";
 import { VadeMecumRanking } from "@/components/VadeMecumRanking";
 import { ArtigoActionsMenu } from "@/components/ArtigoActionsMenu";
 import { formatForWhatsApp } from "@/lib/formatWhatsApp";
+import { useArticleTracking } from "@/hooks/useArticleTracking";
+import { BuscaCompacta } from "@/components/BuscaCompacta";
+import { ArtigoListaCompacta } from "@/components/ArtigoListaCompacta";
 
 interface Article {
   id: number;
@@ -41,6 +45,7 @@ const EstatutoView = () => {
   const [fontSize, setFontSize] = useState(15);
   const [searchInput, setSearchInput] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
+  const [viewMode, setViewMode] = useState<'lista' | 'expandido'>('expandido');
 
   useEffect(() => {
     const artigoParam = searchParams.get('artigo');
@@ -95,6 +100,20 @@ const EstatutoView = () => {
 
   const estatutoName = estatutoNames[id as string] || "Estatuto";
   const abbreviation = id?.toUpperCase() || "";
+  
+  // Mapeamento de códigos para edge function
+  const codigoMap: { [key: string]: string } = {
+    'cidade': 'cidade',
+    'desarmamento': 'desarmamento',
+    'eca': 'eca',
+    'idoso': 'idoso',
+    'igualdade-racial': 'racial',
+    'oab': 'oab',
+    'pessoa-deficiencia': 'pcd',
+    'torcedor': 'torcedor'
+  };
+  
+  const codigoEstatuto = codigoMap[id as string] || id || '';
   
   const tableMap: { [key: string]: string } = {
     'cidade': 'ESTATUTO - CIDADE',
@@ -221,8 +240,8 @@ const EstatutoView = () => {
         const scrollTop = element.scrollTop;
         const scrollHeight = element.scrollHeight;
         const clientHeight = element.clientHeight;
-        if (scrollTop + clientHeight >= scrollHeight - 500 && displayLimit < filteredArticles.length) {
-          setDisplayLimit(prev => Math.min(prev + 30, filteredArticles.length));
+        if (scrollTop + clientHeight >= scrollHeight - 400 && displayLimit < filteredArticles.length) {
+          setDisplayLimit(prev => Math.min(prev + 50, filteredArticles.length));
         }
       };
       element.addEventListener('scroll', handleScroll);
@@ -303,70 +322,27 @@ const EstatutoView = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-screen bg-background text-foreground pb-24">
       {/* Tabs */}
-      <div className="sticky top-0 z-30">
-        <VadeMecumTabs 
-          activeTab={activeTab}
-          onTabChange={(tab) => setActiveTab(tab as any)}
-        />
-      </div>
+      <VadeMecumTabs 
+        activeTab={activeTab}
+        onTabChange={(tab) => setActiveTab(tab as any)}
+      />
 
       {/* Search Bar - only show on artigos tab */}
       {activeTab === 'artigos' && (
-        <div className="sticky top-[60px] bg-background border-b border-border z-20">
-          <div className="px-4 pt-4 pb-2 max-w-4xl mx-auto">
-            <div className="space-y-2">
-              <div className="relative animate-fade-in flex gap-2">
-                <div className="relative flex-1">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-                  <input 
-                    type="text" 
-                    placeholder="Buscar por artigo ou conteúdo..." 
-                    value={searchInput}
-                    onChange={e => setSearchInput(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        setSearchQuery(searchInput);
-                      }
-                    }}
-                    className="w-full bg-input text-foreground pl-10 pr-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-ring transition-all" 
-                  />
-                </div>
-                
-                <Button
-                  onClick={() => setSearchQuery(searchInput)}
-                  disabled={!searchInput.trim()}
-                  size="lg"
-                  className="px-6 shrink-0"
-                >
-                  <Search className="w-5 h-5 mr-2" />
-                  Buscar
-                </Button>
-                
-                {searchQuery && (
-                  <Button
-                    onClick={() => {
-                      setSearchInput("");
-                      setSearchQuery("");
-                    }}
-                    variant="outline"
-                    size="lg"
-                    className="px-4 shrink-0"
-                  >
-                    <X className="w-5 h-5" />
-                  </Button>
-                )}
-              </div>
-              
-              {searchQuery && (
-                <p className="text-xs text-muted-foreground text-center">
-                  {filteredArticles.length} {filteredArticles.length === 1 ? 'artigo encontrado' : 'artigos encontrados'}
-                </p>
-              )}
-            </div>
-          </div>
-        </div>
+        <BuscaCompacta
+          value={searchInput}
+          onChange={setSearchInput}
+          onSearch={() => setSearchQuery(searchInput)}
+          onClear={() => {
+            setSearchInput("");
+            setSearchQuery("");
+          }}
+          viewMode={viewMode}
+          onViewModeChange={setViewMode}
+          resultCount={filteredArticles.length}
+        />
       )}
 
       <StickyAudioPlayer 
@@ -383,6 +359,8 @@ const EstatutoView = () => {
         numeroArtigo={modalData.numeroArtigo}
         tipo={modalData.tipo}
         nivel={modalData.nivel}
+        codigo={codigoEstatuto}
+        codigoTabela={tableName}
       />
 
       <VideoAulaModal
@@ -398,6 +376,7 @@ const EstatutoView = () => {
         onClose={() => setTermosModalOpen(false)}
         artigo={termosData.artigo}
         numeroArtigo={termosData.numeroArtigo}
+        codigoTabela={tableName}
       />
 
       <QuestoesModal
@@ -446,7 +425,15 @@ const EstatutoView = () => {
           <VadeMecumRanking 
             tableName={tableName}
             codigoNome={estatutoName}
-            onArticleClick={handleArticleClick}
+            onArticleClick={(numeroArtigo) => {
+              const element = document.getElementById(`article-${numeroArtigo}`);
+              if (element) {
+                setActiveTab('artigos');
+                setTimeout(() => {
+                  element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }, 100);
+              }
+            }}
           />
         )}
 
@@ -490,85 +477,34 @@ const EstatutoView = () => {
               );
             }
 
-            const isHighlighted = searchQuery && article["Número do Artigo"]?.toLowerCase().trim() === searchQuery.toLowerCase().trim();
-
             return (
-              <div
+              <ArticleCard
                 key={article.id}
-                ref={index === 0 && searchQuery ? firstResultRef : null}
-                className={`relative bg-card/80 backdrop-blur-sm rounded-2xl p-6 mb-6 border transition-all duration-300 animate-fade-in hover:shadow-lg scroll-mt-4 ${
-                  isHighlighted 
-                    ? 'border-accent shadow-lg shadow-accent/20 ring-2 ring-accent/20' 
-                    : 'border-border/50 hover:border-accent/30 hover:shadow-accent/5'
-                }`}
-                style={{
-                  animationDelay: `${index * 0.05}s`,
-                  animationFillMode: 'backwards'
+                article={article}
+                index={index}
+                searchQuery={searchQuery}
+                fontSize={fontSize}
+                firstResultRef={index === 0 && searchQuery ? firstResultRef : null}
+                tableName={tableName}
+                onPlayComment={handlePlayComment}
+                onOpenAula={handleOpenAula}
+                onOpenExplicacao={handleOpenExplicacao}
+                onGenerateFlashcards={handleGenerateFlashcards}
+                onOpenTermos={(artigo, numeroArtigo) => {
+                  setTermosData({ artigo, numeroArtigo });
+                  setTermosModalOpen(true);
                 }}
-              >
-                {/* Narration Button */}
-                <CopyButton 
-                  text={article["Artigo"] || ""}
-                  articleNumber={article["Número do Artigo"] || ""}
-                  narrationUrl={article["Narração"] || undefined}
-                />
-                
-                <h2 className="text-accent font-bold text-xl md:text-2xl mb-3 animate-scale-in">
-                  Art. {article["Número do Artigo"]}
-                </h2>
-
-                <div 
-                  className="article-content text-foreground/90 mb-6 whitespace-pre-line leading-relaxed font-serif-content" 
-                  style={{
-                    fontSize: `${fontSize}px`,
-                    lineHeight: "1.7"
-                  }}
-                  dangerouslySetInnerHTML={{
-                    __html: formatArticleContent(article["Artigo"] || "Conteúdo não disponível")
-                  }}
-                />
-
-                {/* Action Menu */}
-                <div className="animate-fade-in">
-                  <ArtigoActionsMenu
-                    article={article}
-                    onPlayComment={handlePlayComment}
-                    onOpenAula={() => handleOpenAula(article)}
-                    onOpenExplicacao={(tipo) => handleOpenExplicacao(article["Artigo"] || "", article["Número do Artigo"] || "", tipo)}
-                    onGenerateFlashcards={() => handleGenerateFlashcards(article["Artigo"] || "", article["Número do Artigo"] || "")}
-                    onOpenTermos={() => {
-                      setTermosData({
-                        artigo: article["Artigo"] || "",
-                        numeroArtigo: article["Número do Artigo"] || ""
-                      });
-                      setTermosModalOpen(true);
-                    }}
-                    onOpenQuestoes={() => {
-                      setQuestoesData({
-                        artigo: article["Artigo"] || "",
-                        numeroArtigo: article["Número do Artigo"] || ""
-                      });
-                      setQuestoesModalOpen(true);
-                    }}
-                    onPerguntar={() => {
-                      setPerguntaData({ 
-                        artigo: article["Artigo"] || "", 
-                        numeroArtigo: article["Número do Artigo"] || "" 
-                      });
-                      setPerguntaModalOpen(true);
-                    }}
-                    onShareWhatsApp={() => {
-                      const fullText = `*Art. ${article["Número do Artigo"]}*\n\n${article["Artigo"]}`;
-                      const formattedText = formatForWhatsApp(fullText);
-                      const encodedText = encodeURIComponent(formattedText);
-                      const whatsappUrl = `https://wa.me/?text=${encodedText}`;
-                      window.open(whatsappUrl, '_blank');
-                    }}
-                    loadingFlashcards={loadingFlashcards}
-                    isCommentPlaying={currentAudio.url === article["Comentario"] && stickyPlayerOpen}
-                  />
-                </div>
-              </div>
+                onOpenQuestoes={(artigo, numeroArtigo) => {
+                  setQuestoesData({ artigo, numeroArtigo });
+                  setQuestoesModalOpen(true);
+                }}
+                onPerguntar={(artigo, numeroArtigo) => {
+                  setPerguntaData({ artigo, numeroArtigo });
+                  setPerguntaModalOpen(true);
+                }}
+                loadingFlashcards={loadingFlashcards}
+                isCommentPlaying={currentAudio.url === article["Comentario"] && stickyPlayerOpen}
+              />
             );
           })
         )}
@@ -577,22 +513,145 @@ const EstatutoView = () => {
       </div>
 
       {/* Floating Controls */}
-      <div className="fixed bottom-4 left-4 flex flex-col gap-2 z-30 animate-fade-in">
-        <button onClick={increaseFontSize} className="bg-accent hover:bg-accent/90 text-accent-foreground w-10 h-10 rounded-full flex items-center justify-center shadow-lg transition-all hover:scale-110">
+      <div className="fixed bottom-28 left-4 flex flex-col gap-2 z-30 animate-fade-in">
+        <Button onClick={increaseFontSize} size="icon" className="rounded-full bg-[hsl(45,93%,58%)] hover:bg-[hsl(45,93%,58%)]/90 text-black shadow-lg">
           <Plus className="w-4 h-4" />
-        </button>
-        <button onClick={decreaseFontSize} className="bg-accent hover:bg-accent/90 text-accent-foreground w-10 h-10 rounded-full flex items-center justify-center shadow-lg transition-all hover:scale-110">
+        </Button>
+        <Button onClick={decreaseFontSize} size="icon" className="rounded-full bg-[hsl(45,93%,58%)] hover:bg-[hsl(45,93%,58%)]/90 text-black shadow-lg">
           <Minus className="w-4 h-4" />
-        </button>
+        </Button>
         <div className="bg-card border border-border text-foreground text-xs font-medium px-2 py-1.5 rounded-full text-center shadow-lg">
           {fontSize}px
         </div>
       </div>
 
-      <div className="fixed bottom-4 right-4 z-30 animate-fade-in">
-        <button onClick={scrollToTop} className="bg-accent hover:bg-accent/90 text-accent-foreground w-12 h-12 rounded-full flex items-center justify-center shadow-lg transition-all hover:scale-110">
-          <ArrowUp className="w-5 h-5" />
-        </button>
+      <Button
+        onClick={scrollToTop}
+        size="icon"
+        className="fixed bottom-[8.5rem] right-4 rounded-full bg-[hsl(45,93%,58%)] hover:bg-[hsl(45,93%,58%)]/90 text-black z-30 shadow-lg"
+      >
+        <ArrowUp className="w-5 h-5" />
+      </Button>
+    </div>
+  );
+};
+
+// ArticleCard Component
+interface ArticleCardProps {
+  article: Article;
+  index: number;
+  searchQuery: string;
+  fontSize: number;
+  firstResultRef: React.RefObject<HTMLDivElement> | null;
+  tableName: string;
+  onPlayComment: (audioUrl: string, title: string) => void;
+  onOpenAula: (article: Article) => void;
+  onOpenExplicacao: (artigo: string, numeroArtigo: string, tipo: "explicacao" | "exemplo", nivel?: "tecnico" | "simples") => void;
+  onGenerateFlashcards: (artigo: string, numeroArtigo: string) => void;
+  onOpenTermos: (artigo: string, numeroArtigo: string) => void;
+  onOpenQuestoes: (artigo: string, numeroArtigo: string) => void;
+  onPerguntar: (artigo: string, numeroArtigo: string) => void;
+  loadingFlashcards: boolean;
+  isCommentPlaying: boolean;
+}
+
+const ArticleCard = ({
+  article,
+  index,
+  searchQuery,
+  fontSize,
+  firstResultRef,
+  tableName,
+  onPlayComment,
+  onOpenAula,
+  onOpenExplicacao,
+  onGenerateFlashcards,
+  onOpenTermos,
+  onOpenQuestoes,
+  onPerguntar,
+  loadingFlashcards,
+  isCommentPlaying
+}: ArticleCardProps) => {
+  const { elementRef } = useArticleTracking({
+    tableName,
+    articleId: article.id,
+    numeroArtigo: article["Número do Artigo"] || "",
+    enabled: true
+  });
+
+  const isHighlighted = searchQuery && article["Número do Artigo"]?.toLowerCase().trim() === searchQuery.toLowerCase().trim();
+
+  const formatArticleContent = (content: string) => {
+    return formatTextWithUppercase(content || "Conteúdo não disponível");
+  };
+
+  const shareOnWhatsApp = () => {
+    const fullText = `*Art. ${article["Número do Artigo"]}*\n\n${article["Artigo"]}`;
+    const formattedText = formatForWhatsApp(fullText);
+    const encodedText = encodeURIComponent(formattedText);
+    const whatsappUrl = `https://wa.me/?text=${encodedText}`;
+    window.open(whatsappUrl, '_blank');
+  };
+
+  return (
+    <div
+      ref={(el) => {
+        if (elementRef) {
+          (elementRef as any).current = el;
+        }
+        if (firstResultRef) {
+          (firstResultRef as any).current = el;
+        }
+      }}
+      id={`article-${article["Número do Artigo"]}`}
+      className={`relative bg-card/80 backdrop-blur-sm rounded-2xl p-6 mb-6 border transition-all duration-300 animate-fade-in hover:shadow-lg scroll-mt-4 ${
+        isHighlighted 
+          ? 'border-[hsl(45,93%,58%)] shadow-lg shadow-[hsl(45,93%,58%)]/20 ring-2 ring-[hsl(45,93%,58%)]/20' 
+          : 'border-border/50 hover:border-[hsl(45,93%,58%)]/30 hover:shadow-[hsl(45,93%,58%)]/5'
+      }`}
+      style={{
+        animationDelay: `${index * 0.05}s`,
+        animationFillMode: 'backwards'
+      }}
+    >
+      <div className="flex justify-between items-start mb-3">
+        <h2 className="text-accent font-bold text-xl md:text-2xl animate-scale-in">
+          Art. {article["Número do Artigo"]}
+        </h2>
+        <div className="flex gap-2">
+          <CopyButton 
+            text={article["Artigo"] || ""}
+            articleNumber={article["Número do Artigo"] || ""}
+            narrationUrl={article["Narração"] || undefined}
+          />
+        </div>
+      </div>
+
+      <div 
+        className="article-content text-foreground/90 mb-6 whitespace-pre-line leading-relaxed font-serif-content" 
+        style={{
+          fontSize: `${fontSize}px`,
+          lineHeight: "1.7"
+        }}
+        dangerouslySetInnerHTML={{
+          __html: formatArticleContent(article["Artigo"] || "Conteúdo não disponível")
+        }}
+      />
+
+      <div className="animate-fade-in">
+        <ArtigoActionsMenu
+          article={article}
+          codigoNome="Estatuto do Idoso"
+          onPlayComment={onPlayComment}
+          onOpenAula={() => onOpenAula(article)}
+          onOpenExplicacao={(tipo) => onOpenExplicacao(article["Artigo"] || "", article["Número do Artigo"] || "", tipo)}
+          onGenerateFlashcards={() => onGenerateFlashcards(article["Artigo"] || "", article["Número do Artigo"] || "")}
+          onOpenTermos={() => onOpenTermos(article["Artigo"] || "", article["Número do Artigo"] || "")}
+          onOpenQuestoes={() => onOpenQuestoes(article["Artigo"] || "", article["Número do Artigo"] || "")}
+          onPerguntar={() => onPerguntar(article["Artigo"] || "", article["Número do Artigo"] || "")}
+          loadingFlashcards={loadingFlashcards}
+          isCommentPlaying={isCommentPlaying}
+        />
       </div>
     </div>
   );

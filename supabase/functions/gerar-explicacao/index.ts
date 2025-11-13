@@ -13,6 +13,7 @@ serve(async (req) => {
 
   try {
     const { artigo, tipo, nivel, faixaEtaria, codigo, numeroArtigo } = await req.json();
+    
     const DIREITO_PREMIUM_API_KEY = Deno.env.get('DIREITO_PREMIUM_API_KEY');
     const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
@@ -22,7 +23,7 @@ serve(async (req) => {
     }
     
     console.log('🚀 Iniciando geração - Tipo:', tipo, '- Nível:', nivel, '- Faixa Etária:', faixaEtaria || 'N/A');
-    console.log('✅ API Key configurada:', DIREITO_PREMIUM_API_KEY.substring(0, 8) + '...');
+    console.log('✅ DIREITO_PREMIUM_API_KEY configurada:', DIREITO_PREMIUM_API_KEY.substring(0, 8) + '...');
 
     // Importar createClient do Supabase
     const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2.75.1');
@@ -30,6 +31,7 @@ serve(async (req) => {
 
     // Mapeamento COMPLETO universal de códigos para tabelas - Cache Universal Sprint 3
     const tableMap: { [key: string]: string } = {
+      'cp': 'CP - Código Penal',
       'cpp': 'CP - Código Penal',
       'cc': 'CC - Código Civil',
       'cf': 'CF - Constituição Federal',
@@ -52,7 +54,14 @@ serve(async (req) => {
       'igualdade-racial': 'ESTATUTO - IGUALDADE RACIAL',
       'racial': 'ESTATUTO - IGUALDADE RACIAL',
       'cidade': 'ESTATUTO - CIDADE',
-      'torcedor': 'ESTATUTO - TORCEDOR'
+      'torcedor': 'ESTATUTO - TORCEDOR',
+      'lep': 'Lei 7.210 de 1984 - Lei de Execução Penal',
+      'lmp': 'Lei 11.340 de 2006 - Maria da Penha',
+      'jec': 'Lei 9.099 de 1995 - Juizados Especiais',
+      'ld': 'Lei 11.343 de 2006 - Lei de Drogas',
+      'ch': 'Lei 8.072 de 1990 - Crimes Hediondos',
+      'it': 'Lei 9.296 de 1996 - Interceptação Telefônica',
+      'oc': 'Lei 12.850 de 2013 - Organizações Criminosas'
     };
 
     // Determinar o nome da coluna baseado no tipo e faixa etária
@@ -654,8 +663,13 @@ REGRAS CRÍTICAS:
     
     const prompt = prompts[promptKey] || prompts.explicacao_tecnico;
 
+    // Chamada NÃO-STREAM para evitar 400 com endpoint de stream
+    const maxTokens = nivel === 'tecnico' ? 4096 : (nivel === 'resumido' ? 2000 : 3000);
+    const modelName = 'gemini-2.0-flash';
+    console.log(`🤖 Usando modelo: ${modelName}`);
+    
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:streamGenerateContent?key=${DIREITO_PREMIUM_API_KEY}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${DIREITO_PREMIUM_API_KEY}`,
       {
         method: 'POST',
         headers: {
@@ -663,17 +677,13 @@ REGRAS CRÍTICAS:
         },
         body: JSON.stringify({
           contents: [{
-            parts: [{
-              text: prompt
-            }]
+            parts: [{ text: prompt }]
           }],
           generationConfig: {
-            temperature: 0.2, // Mais determinístico para melhor qualidade - Sprint 2
-            maxOutputTokens: nivel === 'tecnico' ? 8000 : nivel === 'resumido' ? 2000 : 3000,
-            topP: 0.8,
-            topK: 40
+            temperature: 0.2,
+            maxOutputTokens: maxTokens
           }
-        }),
+        })
       }
     );
     
@@ -681,132 +691,67 @@ REGRAS CRÍTICAS:
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('❌ Erro da API:', response.status, errorText);
-      throw new Error(`Erro da API Gemini: ${response.status}`);
+      console.error(`❌ Erro da API (modelo: ${modelName}):`, response.status, errorText);
+      throw new Error(`Erro da API de IA: ${response.status}`);
     }
 
-    // Transform Gemini stream to SSE format
-    console.log('🔄 Iniciando processamento do stream...');
-    let buffer = '';
-    let totalContentSent = 0;
-    let fullContent = '';
-    const transformStream = new TransformStream({
-      async transform(chunk, controller) {
-        const text = new TextDecoder().decode(chunk);
-        buffer += text;
-        
-        // Try to extract complete JSON objects from buffer
-        let startIdx = 0;
-        while (startIdx < buffer.length) {
-          // Find start of JSON object
-          const objStart = buffer.indexOf('{', startIdx);
-          if (objStart === -1) break;
-          
-          // Try to find matching closing brace
-          let braceCount = 0;
-          let objEnd = -1;
-          for (let i = objStart; i < buffer.length; i++) {
-            if (buffer[i] === '{') braceCount++;
-            if (buffer[i] === '}') {
-              braceCount--;
-              if (braceCount === 0) {
-                objEnd = i + 1;
-                break;
-              }
-            }
-          }
-          
-          // If we found a complete JSON object
-          if (objEnd !== -1) {
-            const jsonStr = buffer.substring(objStart, objEnd);
-            try {
-              const data = JSON.parse(jsonStr);
-              const content = data.candidates?.[0]?.content?.parts?.[0]?.text;
-              
-              if (content && content.trim().length > 0) {
-                fullContent += content;
-                totalContentSent++;
-                if (totalContentSent === 1) {
-                  console.log('✅ Primeiro conteúdo enviado:', content.substring(0, 100));
-                }
-                if (totalContentSent % 10 === 0) {
-                  console.log(`📤 ${totalContentSent} chunks enviados`);
-                }
-                const sseData = JSON.stringify({
-                  choices: [{ delta: { content } }]
-                });
-                controller.enqueue(new TextEncoder().encode(`data: ${sseData}\n\n`));
-              }
-            } catch (e) {
-              console.error('❌ Erro ao parsear JSON:', e);
-            }
-            
-            // Remove processed part from buffer
-            buffer = buffer.substring(objEnd);
-            startIdx = 0;
-          } else {
-            // No complete object found, wait for more data
-            break;
-          }
-        }
-        
-        // Keep buffer manageable
-        if (buffer.length > 50000) {
-          console.error('⚠️ Buffer muito grande, limpando:', buffer.length);
-          buffer = buffer.substring(buffer.length - 10000);
-        }
-      },
-      
-      async flush(controller) {
-        // Send [DONE] marker
-        controller.enqueue(new TextEncoder().encode('data: [DONE]\n\n'));
-        console.log('✅ Stream finalizado - Total de chunks:', totalContentSent);
-        
-        // Limitar conteúdo a 8000 caracteres se exceder
-        let contentToSave = fullContent;
-        if (contentToSave.length > 8000) {
-          console.log(`⚠️ Conteúdo excedeu 8000 caracteres (${contentToSave.length}), truncando...`);
-          // Cortar em 8000 e procurar último parágrafo completo
-          contentToSave = contentToSave.substring(0, 8000);
-          const lastParagraph = contentToSave.lastIndexOf('\n\n');
-          if (lastParagraph > 7500) {
-            contentToSave = contentToSave.substring(0, lastParagraph);
-          }
-          console.log(`✂️ Conteúdo truncado para ${contentToSave.length} caracteres`);
-        }
-        
-        // Salvar no banco após streaming completo (funciona para TODOS os códigos)
-        if (tableName && numeroArtigo && contentToSave.trim().length > 100) {
-          try {
-            console.log(`💾 Tentando salvar cache: tabela="${tableName}", numeroArtigo="${numeroArtigo}", coluna="${coluna}", tamanho=${contentToSave.length}`);
-            
-            const { data: updateResult, error: updateError } = await supabase
-              .from(tableName)
-              .update({ 
-                [coluna]: contentToSave,
-                ultima_atualizacao: new Date().toISOString()
-              })
-              .eq('Número do Artigo', numeroArtigo)
-              .select();
-            
-            if (updateError) {
-              console.error('❌ Erro ao salvar cache:', updateError);
-            } else if (updateResult && updateResult.length > 0) {
-              console.log(`✅ Cache salvo com sucesso [${tableName}] - ${updateResult.length} registro(s) atualizado(s)`);
-              console.log(`📊 Próximos requests usarão cache (0 tokens)`);
-            } else {
-              console.log(`⚠️ Update executado mas nenhum registro foi atualizado. Verifique se o artigo existe na tabela.`);
-            }
-          } catch (e) {
-            console.error('❌ Exceção ao salvar no banco:', e);
-          }
+    const json = await response.json();
+    const fullText = json.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    if (!fullText) {
+      throw new Error('Resposta vazia do modelo');
+    }
+
+    // Salvar no banco (cache) antes do streaming
+    let contentToSave = fullText;
+    if (contentToSave.length > 8000) {
+      contentToSave = contentToSave.substring(0, 8000);
+      const lastParagraph = contentToSave.lastIndexOf('\n\n');
+      if (lastParagraph > 7500) {
+        contentToSave = contentToSave.substring(0, lastParagraph);
+      }
+    }
+
+    if (tableName && numeroArtigo && contentToSave.trim().length > 100) {
+      try {
+        const { data: updateResult, error: updateError } = await supabase
+          .from(tableName)
+          .update({ 
+            [coluna]: contentToSave,
+            ultima_atualizacao: new Date().toISOString()
+          })
+          .eq('Número do Artigo', numeroArtigo)
+          .select();
+
+        if (updateError) {
+          console.error('❌ Erro ao salvar cache:', updateError);
+        } else if (updateResult && updateResult.length > 0) {
+          console.log(`✅ Cache salvo com sucesso [${tableName}]`);
         } else {
-          console.log(`⚠️ Não foi possível salvar cache - tableName="${tableName}", numeroArtigo="${numeroArtigo}", tamanhoConteudo=${contentToSave.trim().length}`);
+          console.log('⚠️ Nenhum registro atualizado ao salvar cache');
         }
+      } catch (e) {
+        console.error('❌ Exceção ao salvar no banco:', e);
+      }
+    } else {
+      console.log('⚠️ Cache não salvo: condições não atendidas');
+    }
+
+    // Converter resposta em SSE (em pedaços) para UX consistente
+    const encoder = new TextEncoder();
+    const stream = new ReadableStream<Uint8Array>({
+      start(controller) {
+        const chunkSize = 1200;
+        for (let i = 0; i < fullText.length; i += chunkSize) {
+          const piece = fullText.slice(i, i + chunkSize);
+          const sseData = JSON.stringify({ choices: [{ delta: { content: piece } }] });
+          controller.enqueue(encoder.encode(`data: ${sseData}\n\n`));
+        }
+        controller.enqueue(encoder.encode('data: [DONE]\n\n'));
+        controller.close();
       }
     });
 
-    return new Response(response.body?.pipeThrough(transformStream), {
+    return new Response(stream, {
       headers: { 
         ...corsHeaders, 
         'Content-Type': 'text/event-stream',

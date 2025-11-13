@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ArrowLeft, Download, Share2, BookOpen, Loader2, Copy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -17,6 +17,8 @@ interface ExplicacaoModalProps {
   numeroArtigo: string;
   tipo: "explicacao" | "exemplo";
   nivel?: "tecnico" | "simples";
+  codigo?: string;
+  codigoTabela?: string;
 }
 
 const ExplicacaoModal = ({
@@ -25,7 +27,9 @@ const ExplicacaoModal = ({
   artigo,
   numeroArtigo,
   tipo,
-  nivel = "tecnico"
+  nivel = "tecnico",
+  codigo = "cpp",
+  codigoTabela
 }: ExplicacaoModalProps) => {
   const [conteudo, setConteudo] = useState("");
   const [loading, setLoading] = useState(false);
@@ -73,7 +77,7 @@ const ExplicacaoModal = ({
     try {
       startProgressAnimation();
       
-      const response = await fetch(`https://izspjvegxdfgkgibpyst.supabase.co/functions/v1/gerar-explicacao`, {
+      const response = await fetch(`https://izspjvegxdfgkgibpyst.supabase.co/functions/v1/gerar-explicacao-v2`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -84,13 +88,54 @@ const ExplicacaoModal = ({
           tipo,
           nivel: nivelSelecionado,
           faixaEtaria,
-          codigo: 'cpp',
+          codigo: codigo,
           numeroArtigo: numeroArtigo
         })
       });
 
-      if (!response.ok || !response.body) {
+      // Log headers de revisão para debugging
+      const revision = response.headers.get('X-Function-Revision');
+      const model = response.headers.get('X-Model');
+      if (revision || model) {
+        console.log('📍 Endpoint:', 'gerar-explicacao-v2');
+        console.log('📍 Revisão:', revision || 'N/A');
+        console.log('📍 Modelo:', model || 'N/A');
+      }
+
+      if (!response.ok) {
+        // Tentar ler o corpo como JSON para obter detalhes do erro
+        const contentType = response.headers.get('Content-Type');
+        if (contentType?.includes('application/json')) {
+          const errorData = await response.json();
+          console.error('❌ Erro do servidor:', errorData);
+          
+          // Mostrar erro mais específico para 402 e 429
+          if (response.status === 402) {
+            toast({
+              title: "Sem créditos disponíveis",
+              description: errorData.message || "Por favor, adicione créditos à sua conta Lovable AI.",
+              variant: "destructive"
+            });
+          } else if (response.status === 429) {
+            toast({
+              title: "Limite de requisições excedido",
+              description: errorData.message || "Aguarde alguns instantes antes de tentar novamente.",
+              variant: "destructive"
+            });
+          } else {
+            toast({
+              title: "Erro ao gerar conteúdo",
+              description: `${errorData.provider || 'Servidor'}: ${errorData.message || 'Erro desconhecido'}`,
+              variant: "destructive"
+            });
+          }
+          throw new Error(errorData.error || 'Falha na requisição');
+        }
         throw new Error('Falha na requisição');
+      }
+
+      if (!response.body) {
+        throw new Error('Corpo da resposta vazio');
       }
 
       const reader = response.body.getReader();
@@ -208,6 +253,16 @@ const ExplicacaoModal = ({
     setRetryCount(0);
     onClose();
   };
+
+  // Reset quando artigo mudar
+  useEffect(() => {
+    setConteudo("");
+    setProgress(0);
+    setShowLevelSelection(true);
+    setShowAgeSelection(false);
+    setHasValidContent(false);
+    setRetryCount(0);
+  }, [numeroArtigo, tipo]);
 
   const handleSuperFacilClick = () => {
     setShowLevelSelection(false);

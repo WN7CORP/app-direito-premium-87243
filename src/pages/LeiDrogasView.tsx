@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { ArrowLeft, Search, X } from "lucide-react";
+import { ArrowLeft, Search, X, Plus, Minus, ArrowUp } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { fetchAllRows } from "@/lib/fetchAllRows";
+import { fetchAllRows, fetchInitialRows } from "@/lib/fetchAllRows";
 import { Skeleton } from "@/components/ui/skeleton";
+import { sortArticles } from "@/lib/articleSorter";
 import { Button } from "@/components/ui/button";
 import InlineAudioButton from "@/components/InlineAudioButton";
 import AudioCommentButton from "@/components/AudioCommentButton";
@@ -23,6 +24,7 @@ import { VadeMecumRanking } from "@/components/VadeMecumRanking";
 import { ArtigoActionsMenu } from "@/components/ArtigoActionsMenu";
 import { useArticleTracking } from "@/hooks/useArticleTracking";
 import { formatForWhatsApp } from "@/lib/formatWhatsApp";
+import { useIndexedDBCache } from "@/hooks/useIndexedDBCache";
 
 interface Article {
   id: number;
@@ -41,7 +43,7 @@ const LeiDrogasView = () => {
   const [fontSize, setFontSize] = useState(15);
   const [searchInput, setSearchInput] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
-  const [displayLimit, setDisplayLimit] = useState(100);
+  const [displayLimit, setDisplayLimit] = useState(500);
   const [stickyPlayerOpen, setStickyPlayerOpen] = useState(false);
   const [currentAudio, setCurrentAudio] = useState({ url: "", title: "", isComment: false });
   const [modalOpen, setModalOpen] = useState(false);
@@ -58,6 +60,7 @@ const LeiDrogasView = () => {
   const [perguntaModalOpen, setPerguntaModalOpen] = useState(false);
   const [perguntaData, setPerguntaData] = useState({ artigo: "", numeroArtigo: "" });
   const [activeTab, setActiveTab] = useState<'artigos' | 'playlist' | 'ranking'>('artigos');
+  const [showScrollTop, setShowScrollTop] = useState(false);
 
   const tableName = "Lei 11.343 de 2006 - Lei de Drogas";
   const codeName = "Lei de Drogas";
@@ -70,14 +73,42 @@ const LeiDrogasView = () => {
     }
   }, [searchParams]);
 
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowScrollTop(window.scrollY > 300);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  const increaseFontSize = () => {
+    if (fontSize < 24) setFontSize(fontSize + 2);
+  };
+
+  const decreaseFontSize = () => {
+    if (fontSize > 12) setFontSize(fontSize - 2);
+  };
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const { cachedData, isLoadingCache, saveToCache } = useIndexedDBCache<Article>(tableName);
+
   const { data: articles = [], isLoading } = useQuery({
-    queryKey: ['lei-drogas-articles'],
+    queryKey: ['lei-drogas-articles-v3'],
     queryFn: async () => {
-      const data = await fetchAllRows<Article>(tableName, "id");
-      return data as any as Article[];
+      if (cachedData?.length) return cachedData;
+      const initialData = await fetchInitialRows<Article>(tableName, 100, "id");
+      setTimeout(async () => {
+        const fullData = await fetchAllRows<Article>(tableName, "id");
+        await saveToCache(fullData);
+      }, 100);
+      return initialData as any as Article[];
     },
-    staleTime: 1000 * 60 * 30,
-    gcTime: 1000 * 60 * 60
+    enabled: !isLoadingCache,
+    staleTime: Infinity,
+    gcTime: 1000 * 60 * 60 * 24
   });
 
   const filteredArticles = useMemo(() => {
@@ -126,13 +157,11 @@ const LeiDrogasView = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <div className="sticky top-0 z-30">
-        <VadeMecumTabs 
-          activeTab={activeTab}
-          onTabChange={(tab) => setActiveTab(tab as any)}
-        />
-      </div>
+    <div className="min-h-screen bg-background text-foreground pb-24">
+      <VadeMecumTabs 
+        activeTab={activeTab}
+        onTabChange={(tab) => setActiveTab(tab as any)}
+      />
 
       {activeTab === 'artigos' && (
         <div className="sticky top-[60px] bg-background border-b border-border z-20">
@@ -181,7 +210,7 @@ const LeiDrogasView = () => {
         title={currentAudio.title}
       />
 
-      <ExplicacaoModal isOpen={modalOpen} onClose={() => setModalOpen(false)} artigo={modalData.artigo} numeroArtigo={modalData.numeroArtigo} tipo={modalData.tipo} nivel={modalData.nivel} />
+      <ExplicacaoModal isOpen={modalOpen} onClose={() => setModalOpen(false)} artigo={modalData.artigo} numeroArtigo={modalData.numeroArtigo} tipo={modalData.tipo} nivel={modalData.nivel} codigo="ld" codigoTabela={tableName} />
       <VideoAulaModal isOpen={videoModalOpen} onClose={() => setVideoModalOpen(false)} videoUrl={videoModalData.videoUrl} artigo={videoModalData.artigo} numeroArtigo={videoModalData.numeroArtigo} />
       <TermosModal isOpen={termosModalOpen} onClose={() => setTermosModalOpen(false)} artigo={termosData.artigo} numeroArtigo={termosData.numeroArtigo} codigoTabela={tableName} />
       <QuestoesModal isOpen={questoesModalOpen} onClose={() => setQuestoesModalOpen(false)} artigo={questoesData.artigo} numeroArtigo={questoesData.numeroArtigo} />
@@ -308,6 +337,27 @@ const LeiDrogasView = () => {
           </div>
         )}
       </div>
+
+      {/* Floating Controls */}
+      <div className="fixed bottom-28 left-4 flex flex-col gap-2 z-30 animate-fade-in">
+        <button onClick={increaseFontSize} className="bg-accent hover:bg-accent/90 text-accent-foreground w-10 h-10 rounded-full flex items-center justify-center shadow-lg transition-all hover:scale-110">
+          <Plus className="w-4 h-4" />
+        </button>
+        <button onClick={decreaseFontSize} className="bg-accent hover:bg-accent/90 text-accent-foreground w-10 h-10 rounded-full flex items-center justify-center shadow-lg transition-all hover:scale-110">
+          <Minus className="w-4 h-4" />
+        </button>
+        <div className="bg-card border border-border text-foreground text-xs font-medium px-2 py-1.5 rounded-full text-center shadow-lg">
+          {fontSize}px
+        </div>
+      </div>
+
+      {showScrollTop && (
+        <div className="fixed bottom-[8.5rem] right-4 z-30 animate-fade-in">
+          <button onClick={scrollToTop} className="bg-accent hover:bg-accent/90 text-accent-foreground w-12 h-12 rounded-full flex items-center justify-center shadow-lg transition-all hover:scale-110">
+            <ArrowUp className="w-5 h-5" />
+          </button>
+        </div>
+      )}
     </div>
   );
 };
@@ -381,18 +431,20 @@ const ArticleCard = ({
       id={`article-${article["Número do Artigo"]}`}
       className="relative bg-card/80 backdrop-blur-sm rounded-2xl p-6 mb-6 border border-border/50 hover:border-accent/30 transition-all duration-300 animate-fade-in hover:shadow-lg scroll-mt-4"
     >
-      <CopyButton 
-        text={article["Artigo"] || ""}
-        articleNumber={article["Número do Artigo"] || ""}
-        narrationUrl={article["Narração"] || undefined}
-      />
+      <div className="flex justify-between items-start mb-3">
+        <h2 className="text-accent font-bold text-xl md:text-2xl animate-scale-in">
+          Art. {article["Número do Artigo"]}
+        </h2>
+        <div className="flex gap-2">
+          <CopyButton 
+            text={article["Artigo"] || ""}
+            articleNumber={article["Número do Artigo"] || ""}
+            narrationUrl={article["Narração"] || undefined}
+          />
+        </div>
+      </div>
       
       {/* Article Header */}
-      <h2 className="text-accent font-bold text-xl md:text-2xl mb-3 animate-scale-in">
-        Art. {article["Número do Artigo"]}
-      </h2>
-
-      {/* Article Content */}
       <div
         className="article-content text-foreground/90 mb-6 whitespace-pre-line leading-relaxed font-serif-content"
         style={{
@@ -408,6 +460,7 @@ const ArticleCard = ({
       <div className="mb-4 animate-fade-in">
         <ArtigoActionsMenu
           article={article}
+          codigoNome="Lei de Drogas"
           onPlayComment={(audioUrl, title) => onPlayComment(audioUrl, title)}
           onOpenAula={article["Aula"] ? () => onOpenVideoAula(article["Aula"]!) : undefined}
           onOpenExplicacao={(tipo) => onOpenExplicacao(tipo, "tecnico")}
@@ -415,7 +468,6 @@ const ArticleCard = ({
           onOpenTermos={onOpenTermos}
           onOpenQuestoes={onOpenQuestoes}
           onPerguntar={onPerguntar}
-          onShareWhatsApp={shareOnWhatsApp}
           loadingFlashcards={loadingFlashcards}
         />
       </div>

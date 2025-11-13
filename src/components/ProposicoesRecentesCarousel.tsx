@@ -17,13 +17,19 @@ const ProposicoesRecentesCarousel = () => {
   const { data: proposicoes, isLoading } = useQuery({
     queryKey: ['proposicoes-recentes'],
     queryFn: async () => {
-      const { data, error } = await supabase.functions.invoke('buscar-proposicoes-recentes');
+      const { data, error } = await supabase
+        .from('cache_proposicoes_recentes')
+        .select('*')
+        .eq('sigla_tipo', 'PL')
+        .order('data_apresentacao', { ascending: false })
+        .limit(20);
       
       if (error) throw error;
       
-      return data?.proposicoes || [];
+      return data || [];
     },
-    staleTime: 1000 * 60 * 60, // 1 hora
+    staleTime: 1000 * 60 * 30, // 30 minutos
+    refetchInterval: 1000 * 60 * 30, // Atualizar a cada 30 minutos
   });
 
   if (isLoading) {

@@ -48,7 +48,7 @@ const ExplicacaoDetalhadaModal = ({
     try {
       // Primeira parte da explicação
       const parte1Response = await fetch(
-        `https://izspjvegxdfgkgibpyst.supabase.co/functions/v1/gerar-explicacao`,
+        `https://izspjvegxdfgkgibpyst.supabase.co/functions/v1/gerar-explicacao-v2`,
         {
           method: "POST",
           headers: {
@@ -64,8 +64,41 @@ const ExplicacaoDetalhadaModal = ({
         }
       );
 
-      if (!parte1Response.ok || !parte1Response.body) {
+      // Log headers de revisão
+      const revision = parte1Response.headers.get('X-Function-Revision');
+      const model = parte1Response.headers.get('X-Model');
+      if (revision || model) {
+        console.log('📍 Endpoint:', 'gerar-explicacao-v2 (parte 1)');
+        console.log('📍 Revisão:', revision || 'N/A');
+        console.log('📍 Modelo:', model || 'N/A');
+      }
+
+      if (!parte1Response.ok) {
+        // Tentar ler erro como JSON
+        const contentType = parte1Response.headers.get('Content-Type');
+        if (contentType?.includes('application/json')) {
+          const errorData = await parte1Response.json();
+          console.error('❌ Erro do servidor (parte 1):', errorData);
+          
+          if (parte1Response.status === 402) {
+            toast({
+              title: "Sem créditos disponíveis",
+              description: errorData.message || "Por favor, adicione créditos à sua conta Lovable AI.",
+              variant: "destructive"
+            });
+          } else if (parte1Response.status === 429) {
+            toast({
+              title: "Limite de requisições excedido",
+              description: errorData.message || "Aguarde alguns instantes antes de tentar novamente.",
+              variant: "destructive"
+            });
+          }
+        }
         throw new Error("Falha na primeira requisição");
+      }
+
+      if (!parte1Response.body) {
+        throw new Error("Corpo da resposta vazio (parte 1)");
       }
 
       let parte1Conteudo = "";
@@ -102,7 +135,7 @@ const ExplicacaoDetalhadaModal = ({
       setCurrentPart(2);
 
       const parte2Response = await fetch(
-        `https://izspjvegxdfgkgibpyst.supabase.co/functions/v1/gerar-explicacao`,
+        `https://izspjvegxdfgkgibpyst.supabase.co/functions/v1/gerar-explicacao-v2`,
         {
           method: "POST",
           headers: {
@@ -119,8 +152,40 @@ const ExplicacaoDetalhadaModal = ({
         }
       );
 
-      if (!parte2Response.ok || !parte2Response.body) {
+      // Log headers de revisão
+      const revision2 = parte2Response.headers.get('X-Function-Revision');
+      const model2 = parte2Response.headers.get('X-Model');
+      if (revision2 || model2) {
+        console.log('📍 Endpoint:', 'gerar-explicacao-v2 (parte 2)');
+        console.log('📍 Revisão:', revision2 || 'N/A');
+        console.log('📍 Modelo:', model2 || 'N/A');
+      }
+
+      if (!parte2Response.ok) {
+        const contentType = parte2Response.headers.get('Content-Type');
+        if (contentType?.includes('application/json')) {
+          const errorData = await parte2Response.json();
+          console.error('❌ Erro do servidor (parte 2):', errorData);
+          
+          if (parte2Response.status === 402) {
+            toast({
+              title: "Sem créditos disponíveis",
+              description: errorData.message || "Por favor, adicione créditos à sua conta Lovable AI.",
+              variant: "destructive"
+            });
+          } else if (parte2Response.status === 429) {
+            toast({
+              title: "Limite de requisições excedido",
+              description: errorData.message || "Aguarde alguns instantes antes de tentar novamente.",
+              variant: "destructive"
+            });
+          }
+        }
         throw new Error("Falha na segunda requisição");
+      }
+
+      if (!parte2Response.body) {
+        throw new Error("Corpo da resposta vazio (parte 2)");
       }
 
       let conteudoCompleto = parte1Conteudo + "\n\n";

@@ -115,6 +115,18 @@ const Aprender = () => {
   ];
 
 
+  const faculdadeOpcoes = [
+    {
+      id: "questoes-areas",
+      titulo: "Questões por Área",
+      descricao: "Pratique questões geradas por IA baseadas nos resumos",
+      icon: GraduationCap,
+      path: "/faculdade/questoes",
+      iconBg: "bg-emerald-600 shadow-lg shadow-emerald-500/50",
+      glowColor: "rgb(5, 150, 105)",
+    },
+  ];
+
   const estagiosDireito = [
     {
       id: "buscar-vagas",
@@ -145,7 +157,7 @@ const Aprender = () => {
       path: "/jogos-juridicos",
       iconBg: "bg-pink-600 shadow-lg shadow-pink-500/50",
       glowColor: "rgb(219, 39, 119)",
-      disponivel: true
+      disponivel: false
     },
     {
       id: "simulacao-juridica",
@@ -294,6 +306,39 @@ const Aprender = () => {
         
         <CursosCarousel />
       </div>
+
+      {/* Seção Faculdade - Oculta temporariamente */}
+      {/* <div className="mt-12">
+        <div className="mb-6">
+          <h2 className="text-xl md:text-2xl font-bold mb-2">Faculdade</h2>
+          <p className="text-sm text-muted-foreground">
+            Questões geradas por IA para praticar
+          </p>
+        </div>
+
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+          {faculdadeOpcoes.map((opcao) => {
+            const Icon = opcao.icon;
+            return (
+              <button
+                key={opcao.id}
+                onClick={() => navigate(opcao.path)}
+                className="bg-card rounded-2xl md:rounded-xl p-5 md:p-4 text-left transition-all hover:scale-105 hover:shadow-xl min-h-[180px] md:min-h-[160px] flex flex-col border border-border shadow-lg"
+              >
+                <div className={`${opcao.iconBg} rounded-full p-3 md:p-2.5 w-fit mb-4 md:mb-3`}>
+                  <Icon className="w-6 h-6 md:w-5 md:h-5 text-white" />
+                </div>
+                <h3 className="text-sm md:text-sm font-bold text-foreground mb-2 md:mb-1.5">
+                  {opcao.titulo}
+                </h3>
+                <p className="text-muted-foreground text-xs md:text-[11px] line-clamp-3">
+                  {opcao.descricao}
+                </p>
+              </button>
+            );
+          })}
+        </div>
+      </div> */}
 
       {/* Seção Estágios em Direito */}
       <div className="mt-12">

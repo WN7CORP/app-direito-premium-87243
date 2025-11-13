@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { Gavel, Film, Scale, ScanText, Newspaper, GraduationCap, MessageCircle, MapPin } from "lucide-react";
+import { Gavel, Film, Scale, ScanText, Newspaper, GraduationCap, MessageCircle, MapPin, FileText } from "lucide-react";
 
 const Ferramentas = () => {
   const navigate = useNavigate();

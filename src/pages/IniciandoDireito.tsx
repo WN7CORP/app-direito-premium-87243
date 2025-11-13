@@ -1,8 +1,11 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, BookOpen, GraduationCap, ArrowRight } from "lucide-react";
+import { ArrowLeft, BookOpen, GraduationCap, ArrowRight, RefreshCw } from "lucide-react";
 import { useCursosCache } from "@/hooks/useCursosCache";
+import { toast } from "sonner";
+import { formatDistanceToNow } from "date-fns";
+import { ptBR } from "date-fns/locale";
 interface AreaData {
   area: string;
   totalTemas: number;
@@ -60,7 +63,8 @@ export default function IniciandoDireito() {
   const navigate = useNavigate();
   const [areas, setAreas] = useState<AreaData[]>([]);
   const [loading, setLoading] = useState(true);
-  const { cursos, loading: cursosLoading } = useCursosCache();
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const { cursos, loading: cursosLoading, invalidateCache, lastUpdate } = useCursosCache();
 
   useEffect(() => {
     if (!cursosLoading) {
@@ -109,6 +113,22 @@ export default function IniciandoDireito() {
     setAreas(areasArray);
     setLoading(false);
   };
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    toast.info("Atualizando cursos...", { duration: 1500 });
+    
+    // Aguardar um momento para feedback visual
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    invalidateCache();
+    
+    // Aguardar carregamento
+    setTimeout(() => {
+      setIsRefreshing(false);
+      toast.success("Cursos atualizados!", { duration: 2000 });
+    }, 1500);
+  };
   if (loading) {
     return <div className="min-h-screen bg-gradient-to-br from-background via-card to-background flex items-center justify-center">
         <div className="text-center">
@@ -122,7 +142,22 @@ export default function IniciandoDireito() {
       <div className="bg-card border-b border-border sticky top-0 z-10">
         <div className="max-w-[600px] lg:max-w-4xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between mb-3">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleRefresh}
+              disabled={isRefreshing}
+              className="gap-2"
+            >
+              <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+              Atualizar
+            </Button>
             
+            {lastUpdate && (
+              <span className="text-xs text-muted-foreground">
+                Atualizado {formatDistanceToNow(lastUpdate, { addSuffix: true, locale: ptBR })}
+              </span>
+            )}
           </div>
           
           <div className="flex items-center gap-3">

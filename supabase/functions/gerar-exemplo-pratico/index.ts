@@ -1,12 +1,17 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.75.1";
 
+const REVISION = "v2.0.0-exemplo-2025-11-05";
+const MODEL = "gemini-2.0-flash";
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
 serve(async (req) => {
+  console.log(`📍 Function: gerar-exemplo-pratico@${REVISION}`);
+  
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
@@ -25,6 +30,9 @@ serve(async (req) => {
     if (!DIREITO_PREMIUM_API_KEY) {
       throw new Error("DIREITO_PREMIUM_API_KEY não configurada");
     }
+    
+    console.log("✅ DIREITO_PREMIUM_API_KEY configurada");
+    console.log(`🤖 Usando modelo: ${MODEL}`);
 
     const supabase = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
 
@@ -39,7 +47,14 @@ serve(async (req) => {
       console.log("✅ Retornando exemplo prático do cache - 0 tokens gastos");
       return new Response(
         JSON.stringify({ exemplo: cached.exemplo_pratico, cached: true }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { 
+          headers: { 
+            ...corsHeaders, 
+            "Content-Type": "application/json",
+            "X-Function-Revision": REVISION,
+            "X-Model": MODEL,
+          } 
+        }
       );
     }
 
@@ -84,8 +99,25 @@ Retorne APENAS o exemplo, sem introdução ou explicação adicional.`;
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error("Erro da API Gemini:", response.status, errorText);
-      throw new Error(`Erro ao gerar exemplo: ${response.status}`);
+      console.error("❌ Erro da API Gemini:", response.status, errorText);
+      return new Response(
+        JSON.stringify({
+          error: `Erro ao gerar exemplo: ${response.status}`,
+          provider: "google",
+          model: MODEL,
+          status: response.status,
+          message: errorText.substring(0, 200),
+        }),
+        {
+          status: response.status,
+          headers: { 
+            ...corsHeaders, 
+            "Content-Type": "application/json",
+            "X-Function-Revision": REVISION,
+            "X-Model": MODEL,
+          },
+        }
+      );
     }
 
     const data = await response.json();
@@ -112,17 +144,31 @@ Retorne APENAS o exemplo, sem introdução ou explicação adicional.`;
 
     return new Response(
       JSON.stringify({ exemplo, cached: false }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { 
+        headers: { 
+          ...corsHeaders, 
+          "Content-Type": "application/json",
+          "X-Function-Revision": REVISION,
+          "X-Model": MODEL,
+        } 
+      }
     );
   } catch (error) {
-    console.error("Erro em gerar-exemplo-pratico:", error);
+    console.error("❌ Erro em gerar-exemplo-pratico:", error);
     return new Response(
       JSON.stringify({
         error: error instanceof Error ? error.message : "Erro desconhecido",
+        provider: "google",
+        model: MODEL,
       }),
       {
         status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { 
+          ...corsHeaders, 
+          "Content-Type": "application/json",
+          "X-Function-Revision": REVISION,
+          "X-Model": MODEL,
+        },
       }
     );
   }

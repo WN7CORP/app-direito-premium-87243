@@ -6,6 +6,9 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+const CACHE_LIMIT = 100; // Limite máximo de proposições no cache
+const CACHE_VALIDITY_HOURS = 5; // Cache válido por 5 horas
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -14,38 +17,86 @@ serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const lovableApiKey = Deno.env.get('LOVABLE_API_KEY')!;
     
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Verificar cache (últimas 24 horas) - Retornar apenas se tiver fotos válidas
+    // Verificar cache (últimas CACHE_VALIDITY_HOURS horas)
+    const cacheValidSince = new Date(Date.now() - CACHE_VALIDITY_HOURS * 60 * 60 * 1000).toISOString();
+    
     const { data: cacheData, error: cacheError } = await supabase
       .from('cache_proposicoes_recentes')
       .select('*')
-      .gte('updated_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
+      .gte('updated_at', cacheValidSince)
       .order('data_apresentacao', { ascending: false })
-      .limit(15);
+      .limit(CACHE_LIMIT);
 
-    // Verificar se o cache tem fotos válidas (pelo menos 50% com fotos)
-    if (!cacheError && cacheData && cacheData.length >= 1) {
+    // Verificar se o cache é válido (pelo menos 70% com fotos)
+    if (!cacheError && cacheData && cacheData.length >= 10) {
       const comFoto = cacheData.filter(p => p.autor_principal_foto).length;
       const percentualComFoto = (comFoto / cacheData.length) * 100;
       
-      if (percentualComFoto >= 50) {
-        console.log('✅ Retornando do cache:', cacheData.length, 'proposições (', comFoto, 'com fotos)');
-        return new Response(JSON.stringify({ proposicoes: cacheData }), {
+      if (percentualComFoto >= 70) {
+        console.log(`✅ Retornando do cache: ${cacheData.length} proposições (${comFoto} com fotos - ${percentualComFoto.toFixed(0)}%)`);
+        return new Response(JSON.stringify({ proposicoes: cacheData, fromCache: true }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       } else {
-        console.log('⚠️ Cache tem poucas fotos (', percentualComFoto.toFixed(0), '%), forçando atualização...');
+        console.log(`⚠️ Cache tem poucas fotos (${percentualComFoto.toFixed(0)}%), forçando atualização...`);
       }
     }
 
-    console.log('⚡ Cache vazio, buscando da API...');
+    // Verificar progresso no banco
+    const dataHoje = new Date().toISOString().split('T')[0];
+    
+    const { data: progresso } = await supabase
+      .from('cache_proposicoes_progresso')
+      .select('*')
+      .eq('sigla_tipo', 'PL')
+      .eq('data', dataHoje)
+      .single();
+    
+    // Se já finalizou hoje, retornar do cache
+    if (progresso?.finalizado) {
+      console.log('✅ Processamento de hoje já finalizado, retornando do cache');
+        const dataInicio = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+        const { data: cachedData } = await supabase
+          .from('cache_proposicoes_recentes')
+          .select('*')
+          .eq('sigla_tipo', 'PL')
+          .gte('data_apresentacao', dataInicio)
+          .order('ordem_cache', { ascending: false });
+      
+      return new Response(JSON.stringify({ 
+        proposicoes: cachedData || [],
+        fromCache: true,
+        finalizado: true
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    
+    // Inicializar progresso se não existir
+    if (!progresso) {
+      await supabase
+        .from('cache_proposicoes_progresso')
+        .insert({
+          sigla_tipo: 'PL',
+          data: dataHoje,
+          ultima_pagina: 0,
+          total_processados: 0,
+          finalizado: false
+        });
+    }
+    
+    const proximaPagina = (progresso?.ultima_pagina || 0) + 1;
+    console.log(`⚡ Buscando página ${proximaPagina} de PLs do dia...`);
 
-    // Buscar PLs recentes da API da Câmara
+    // Buscar PLs dos últimos 7 dias
+    const dataInicio = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+    console.log(`📅 Buscando PLs apresentados entre ${dataInicio} e ${dataHoje}`);
+    
     const plsResponse = await fetch(
-      'https://dadosabertos.camara.leg.br/api/v2/proposicoes?siglaTipo=PL&ordem=DESC&ordenarPor=id&itens=15',
+      `https://dadosabertos.camara.leg.br/api/v2/proposicoes?siglaTipo=PL&dataApresentacaoInicio=${dataInicio}&dataApresentacaoFim=${dataHoje}&ordem=DESC&ordenarPor=id&itens=20&pagina=${proximaPagina}`,
       { headers: { 'Accept': 'application/json' } }
     );
 
@@ -56,12 +107,42 @@ serve(async (req) => {
     const plsData = await plsResponse.json();
     const proposicoes = plsData.dados || [];
 
-    console.log('Proposições encontradas:', proposicoes.length);
+    console.log(`📦 Proposições encontradas: ${proposicoes.length}`);
+    
+    // Se não houver mais proposições, marcar como finalizado
+    if (proposicoes.length === 0) {
+      await supabase
+        .from('cache_proposicoes_progresso')
+        .update({ finalizado: true })
+        .eq('sigla_tipo', 'PL')
+        .eq('data', dataHoje);
+      
+      console.log('✅ Nenhuma proposição nova, marcando como finalizado');
+      
+        const dataInicio = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+        const { data: cachedData } = await supabase
+          .from('cache_proposicoes_recentes')
+          .select('*')
+          .eq('sigla_tipo', 'PL')
+          .gte('data_apresentacao', dataInicio)
+          .order('ordem_cache', { ascending: false });
+      
+      return new Response(JSON.stringify({ 
+        proposicoes: cachedData || [],
+        fromCache: true,
+        finalizado: true
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
 
     const proposicoesProcessadas = [];
+    let ordemCache = Date.now(); // Usar timestamp como ordem
 
-    for (const pl of proposicoes) {
+    for (const [index, pl] of proposicoes.entries()) {
       try {
+        console.log(`🔄 Processando ${index + 1}/${proposicoes.length}: PL ${pl.numero}/${pl.ano}`);
+
         // Buscar detalhes da proposição
         const detalhesResponse = await fetch(
           `https://dadosabertos.camara.leg.br/api/v2/proposicoes/${pl.id}`,
@@ -73,103 +154,81 @@ serve(async (req) => {
         const detalhes = await detalhesResponse.json();
         const propData = detalhes.dados;
 
-        // Buscar autores
+        // Buscar autores COMPLETOS
         const autoresResponse = await fetch(
           `https://dadosabertos.camara.leg.br/api/v2/proposicoes/${pl.id}/autores`,
           { headers: { 'Accept': 'application/json' } }
         );
 
+        let autoresCompletos = [];
         let autorPrincipal = null;
         let fotoAutor = null;
 
         if (autoresResponse.ok) {
           const autoresData = await autoresResponse.json();
-          const autores = autoresData.dados || [];
+          autoresCompletos = autoresData.dados || [];
           
-          // Pegar primeiro autor do tipo "Autor" ou o primeiro da lista
-          autorPrincipal = autores.find((a: any) => a.tipo === 'Autor') || autores[0];
+          // Pegar primeiro autor do tipo "Autor"
+          autorPrincipal = autoresCompletos.find((a: any) => a.tipo === 'Autor') || autoresCompletos[0];
           
-          console.log('Autor principal encontrado:', {
-            nome: autorPrincipal?.nome,
-            uri: autorPrincipal?.uri,
-            codTipo: autorPrincipal?.codTipo,
-            uriAutor: autorPrincipal?.uriAutor
-          });
+          if (autorPrincipal && autorPrincipal.nome) {
+            try {
+              // Estratégia 1: Buscar pelo nome do deputado (mais confiável)
+              const controller = new AbortController();
+              const timeoutId = setTimeout(() => controller.abort(), 3000);
+              
+              const buscaResponse = await fetch(
+                `https://dadosabertos.camara.leg.br/api/v2/deputados?nome=${encodeURIComponent(autorPrincipal.nome)}&ordem=ASC&ordenarPor=nome`,
+                { 
+                  headers: { 'Accept': 'application/json' },
+                  signal: controller.signal
+                }
+              );
+              
+              clearTimeout(timeoutId);
 
-          if (autorPrincipal) {
-            // Verificar se é um deputado (codTipo 1 ou 10000)
-            const isDeputado = autorPrincipal.codTipo === 1 || autorPrincipal.codTipo === 10000;
-            
-            if (isDeputado) {
-              try {
-                // Extrair ID do deputado de múltiplas fontes
+              if (buscaResponse.ok) {
+                const buscaData = await buscaResponse.json();
+                if (buscaData.dados && buscaData.dados.length > 0) {
+                  const deputado = buscaData.dados[0];
+                  fotoAutor = deputado.urlFoto || null;
+                  console.log(`✅ Foto encontrada para ${autorPrincipal.nome}: ${fotoAutor ? 'SIM' : 'NÃO'}`);
+                }
+              }
+              
+              // Estratégia 2: Se não encontrou foto, tentar buscar pelo ID se disponível
+              if (!fotoAutor) {
                 let deputadoId = null;
                 
-                // Tentar extrair da URI
                 if (autorPrincipal.uri) {
                   const match = autorPrincipal.uri.match(/\/deputados\/(\d+)/);
                   if (match) deputadoId = match[1];
                 }
                 
-                // Se não encontrou, tentar do uriAutor
                 if (!deputadoId && autorPrincipal.uriAutor) {
                   const match = autorPrincipal.uriAutor.match(/\/deputados\/(\d+)/);
                   if (match) deputadoId = match[1];
                 }
                 
-                // Se não encontrou, tentar campo id direto
-                if (!deputadoId && autorPrincipal.id) {
-                  deputadoId = autorPrincipal.id.toString();
-                }
-                
-                console.log('ID do deputado extraído:', deputadoId);
-                
                 if (deputadoId) {
-                  // Buscar foto usando o MESMO método da função buscar-deputados (endpoint de listagem)
-                  const nomeAutor = autorPrincipal.nome;
-                  let fotoEncontrada: string | null = null;
-
                   try {
-                    const buscaResponse = await fetch(
-                      `https://dadosabertos.camara.leg.br/api/v2/deputados?nome=${encodeURIComponent(nomeAutor)}&ordem=ASC&ordenarPor=nome`,
-                      { headers: { 'Accept': 'application/json' } }
-                    );
-
-                    if (buscaResponse.ok) {
-                      const buscaData = await buscaResponse.json();
-                      if (buscaData.dados && buscaData.dados.length > 0) {
-                        fotoEncontrada = buscaData.dados[0].urlFoto || null;
-                      }
-                    }
-                  } catch (_e) {
-                    // silencioso
-                  }
-
-                  if (!fotoEncontrada) {
-                    // Fallback: buscar detalhes do deputado por ID e ler ultimoStatus.urlFoto
-                    const deputadoResponse = await fetch(
+                    const detalhesDeputadoResponse = await fetch(
                       `https://dadosabertos.camara.leg.br/api/v2/deputados/${deputadoId}`,
                       { headers: { 'Accept': 'application/json' } }
                     );
-
-                    if (deputadoResponse.ok) {
-                      const deputadoData = await deputadoResponse.json();
-                      fotoEncontrada = deputadoData.dados?.ultimoStatus?.urlFoto || deputadoData.dados?.urlFoto || null;
-                    } else {
-                      console.error('❌ Erro ao buscar deputado:', deputadoResponse.status);
+                    
+                    if (detalhesDeputadoResponse.ok) {
+                      const detalhesDeputado = await detalhesDeputadoResponse.json();
+                      fotoAutor = detalhesDeputado.dados?.ultimoStatus?.urlFoto || null;
+                      console.log(`✅ Foto encontrada via ID ${deputadoId}: ${fotoAutor ? 'SIM' : 'NÃO'}`);
                     }
+                  } catch (idError) {
+                    console.error(`⚠️ Erro ao buscar foto por ID: ${idError}`);
                   }
-
-                  fotoAutor = fotoEncontrada;
-                  console.log('✅ Foto encontrada:', fotoAutor);
-                } else {
-                  console.warn('⚠️ Não foi possível extrair ID do deputado de nenhuma fonte');
                 }
-              } catch (fotoError) {
-                console.error('❌ Erro ao buscar foto:', fotoError);
               }
-            } else {
-              console.log('⏭️ Autor não é deputado (codTipo:', autorPrincipal.codTipo, '), pulando busca de foto');
+            } catch (fotoError) {
+              console.error(`⚠️ Erro ao buscar foto de ${autorPrincipal.nome}: ${fotoError}`);
             }
           }
         }
@@ -180,36 +239,39 @@ serve(async (req) => {
         
         if (ementa) {
           try {
-            const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
-              method: 'POST',
-              headers: {
-                'Authorization': `Bearer ${lovableApiKey}`,
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                model: 'google/gemini-2.0-flash',
-                messages: [
-                  {
-                    role: 'user',
-                    content: `Você é um redator de títulos jornalísticos. Com base nesta ementa de projeto de lei:
+            const DIREITO_PREMIUM_API_KEY = Deno.env.get('DIREITO_PREMIUM_API_KEY');
+            if (DIREITO_PREMIUM_API_KEY) {
+              const aiResponse = await fetch(
+                `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${DIREITO_PREMIUM_API_KEY}`,
+                {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    contents: [{
+                      parts: [{
+                        text: `Você é um redator de títulos jornalísticos. Com base nesta ementa de projeto de lei:\n\n"${ementa}"\n\nCrie um título curto, claro e chamativo (máximo 80 caracteres) que explique de forma simples o que este projeto de lei pretende fazer. Use linguagem acessível. Apenas retorne o título, sem aspas.`
+                      }]
+                    }],
+                    generationConfig: {
+                      temperature: 0.7,
+                      maxOutputTokens: 100,
+                    }
+                  })
+                }
+              );
 
-"${ementa}"
-
-Crie um título curto, claro e chamativo (máximo 80 caracteres) que explique de forma simples o que este projeto de lei pretende fazer. Use linguagem acessível como se estivesse escrevendo para um jornal. Apenas retorne o título, sem aspas ou formatação extra.`
-                  }
-                ],
-                max_tokens: 100
-              }),
-            });
-
-            if (aiResponse.ok) {
-              const aiData = await aiResponse.json();
-              tituloGerado = aiData.choices?.[0]?.message?.content?.trim();
+              if (aiResponse.ok) {
+                const aiData = await aiResponse.json();
+                tituloGerado = aiData.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+              }
             }
           } catch (aiError) {
-            console.error('Erro ao gerar título com IA:', aiError);
+            console.error('Erro ao gerar título:', aiError);
           }
         }
+
+        // Não buscar votações para otimizar performance
+        const quantidadeVotacoes = 0;
 
         const proposicaoProcessada = {
           id_proposicao: pl.id,
@@ -227,36 +289,70 @@ Crie um título curto, claro e chamativo (máximo 80 caracteres) que explique de
           autor_principal_foto: fotoAutor,
           autor_principal_partido: autorPrincipal?.siglaPartido,
           autor_principal_uf: autorPrincipal?.siglaUf,
+          autores_completos: autoresCompletos,
+          status: propData.statusProposicao?.descricaoTramitacao,
+          situacao: propData.statusProposicao?.descricaoSituacao,
+          tema: propData.tema,
+          keywords: propData.keywords || [],
+          quantidade_votacoes: quantidadeVotacoes,
+          orgao_tramitacao: propData.statusProposicao?.siglaOrgao,
           url_inteiro_teor: propData.urlInteiroTeor,
+          ordem_cache: ordemCache - index, // Ordem decrescente
           updated_at: new Date().toISOString()
         };
         
-        console.log('Proposição processada:', {
-          id: pl.id,
-          titulo: tituloGerado?.substring(0, 50),
-          autor: autorPrincipal?.nome,
-          fotoUrl: fotoAutor ? 'SIM' : 'NÃO'
-        });
-
-        // Salvar/atualizar no banco
-        const { error: upsertError } = await supabase
-          .from('cache_proposicoes_recentes')
-          .upsert(proposicaoProcessada, { onConflict: 'id_proposicao' });
-
-        if (upsertError) {
-          console.error('Erro ao salvar proposição:', upsertError);
-        } else {
-          proposicoesProcessadas.push(proposicaoProcessada);
-        }
+        proposicoesProcessadas.push(proposicaoProcessada);
 
       } catch (error) {
         console.error(`Erro ao processar proposição ${pl.id}:`, error);
       }
     }
 
-    console.log('Proposições processadas:', proposicoesProcessadas.length);
+    console.log(`✅ Proposições processadas: ${proposicoesProcessadas.length}`);
 
-    return new Response(JSON.stringify({ proposicoes: proposicoesProcessadas }), {
+    // Salvar em lote
+    if (proposicoesProcessadas.length > 0) {
+      const { error: upsertError } = await supabase
+        .from('cache_proposicoes_recentes')
+        .upsert(proposicoesProcessadas, { onConflict: 'id_proposicao' });
+
+      if (upsertError) {
+        console.error('Erro ao salvar proposições:', upsertError);
+      }
+    }
+
+    // Atualizar progresso
+    const totalProcessadosAtual = (progresso?.total_processados || 0) + proposicoesProcessadas.length;
+    
+    await supabase
+      .from('cache_proposicoes_progresso')
+      .update({
+        ultima_pagina: proximaPagina,
+        total_processados: totalProcessadosAtual,
+        finalizado: proposicoes.length < 5 // Se retornou menos de 5, acabou
+      })
+      .eq('sigla_tipo', 'PL')
+      .eq('data', dataHoje);
+
+    console.log(`💾 Cache atualizado: ${proposicoesProcessadas.length} novas proposições (total hoje: ${totalProcessadosAtual})`);
+
+    // Retornar todas as proposições do dia
+    const { data: todasDoDia } = await supabase
+      .from('cache_proposicoes_recentes')
+      .select('*')
+      .eq('sigla_tipo', 'PL')
+      .gte('data_apresentacao', dataInicio)
+      .order('ordem_cache', { ascending: false });
+
+    return new Response(JSON.stringify({ 
+      proposicoes: todasDoDia || [],
+      fromCache: false,
+      stats: {
+        processados_agora: proposicoesProcessadas.length,
+        total_hoje: totalProcessadosAtual,
+        pagina: proximaPagina
+      }
+    }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
 

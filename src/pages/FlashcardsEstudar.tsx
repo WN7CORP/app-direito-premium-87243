@@ -43,7 +43,9 @@ const FlashcardsEstudar = () => {
       return allData.map(card => ({
         front: card.pergunta || "",
         back: card.resposta || "",
-        exemplo: card.exemplo || ""
+        exemplo: card.exemplo || "",
+        "audio-pergunta": card["audio-pergunta"] || "",
+        "audio-resposta": card["audio-resposta"] || ""
       }));
     },
     enabled: !!area

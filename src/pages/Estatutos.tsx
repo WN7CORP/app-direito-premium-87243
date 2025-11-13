@@ -198,8 +198,11 @@ const Estatutos = () => {
                       <Icon className={`w-6 h-6 ${estatuto.iconColor}`} />
                     </div>
                     <h3 className="font-bold text-base mb-1">{estatuto.abbr}</h3>
-                    <p className="text-xs text-muted-foreground line-clamp-2">
+                    <p className="text-xs font-semibold text-muted-foreground mb-1">
                       {estatuto.title}
+                    </p>
+                    <p className="text-[10px] font-medium" style={{ color: getGlowColor(estatuto.id) }}>
+                      {estatuto.description}
                     </p>
                   </CardContent>
                 </Card>

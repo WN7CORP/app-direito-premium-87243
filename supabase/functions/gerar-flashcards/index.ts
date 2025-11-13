@@ -1,4 +1,8 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.75.1";
+
+const REVISION = "v2.0.0-flashcards-2025-11-05";
+const MODEL = "gemini-2.0-flash";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -6,6 +10,8 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
+  console.log(`📍 Function: gerar-flashcards@${REVISION}`);
+  
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
@@ -14,15 +20,16 @@ serve(async (req) => {
     const { content, codigo, numeroArtigo, tipo } = await req.json();
 
     const DIREITO_PREMIUM_API_KEY = Deno.env.get("DIREITO_PREMIUM_API_KEY");
-    const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
-    const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-    
+    const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
+    const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+
     if (!DIREITO_PREMIUM_API_KEY) {
       throw new Error("DIREITO_PREMIUM_API_KEY não configurada");
     }
+    
+    console.log("✅ DIREITO_PREMIUM_API_KEY configurada");
+    console.log(`🤖 Usando modelo: ${MODEL}`);
 
-    // Importar createClient do Supabase
-    const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2.75.1');
     const supabase = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
 
     // Mapeamento COMPLETO de códigos - Cache Universal
@@ -64,7 +71,14 @@ serve(async (req) => {
         console.log('✅ Retornando flashcards do cache - 0 tokens gastos');
         return new Response(
           JSON.stringify({ flashcards: cached.flashcards, cached: true }),
-          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          { 
+            headers: { 
+              ...corsHeaders, 
+              "Content-Type": "application/json",
+              "X-Function-Revision": REVISION,
+              "X-Model": MODEL,
+            } 
+          }
         );
       }
     }
@@ -99,8 +113,25 @@ Retorne no formato JSON estruturado usando tool calling.`;
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error("Erro da API:", response.status, errorText);
-      throw new Error(`Erro da API de IA: ${response.status}`);
+      console.error("❌ Erro da API Gemini:", response.status, errorText);
+      return new Response(
+        JSON.stringify({
+          error: `Erro ao gerar flashcards: ${response.status}`,
+          provider: "google",
+          model: MODEL,
+          status: response.status,
+          message: errorText.substring(0, 200),
+        }),
+        {
+          status: response.status,
+          headers: { 
+            ...corsHeaders, 
+            "Content-Type": "application/json",
+            "X-Function-Revision": REVISION,
+            "X-Model": MODEL,
+          },
+        }
+      );
     }
 
     const data = await response.json();
@@ -135,18 +166,30 @@ Retorne no formato JSON estruturado usando tool calling.`;
     return new Response(
       JSON.stringify({ flashcards, cached: false }),
       { 
-        headers: { ...corsHeaders, "Content-Type": "application/json" } 
+        headers: { 
+          ...corsHeaders, 
+          "Content-Type": "application/json",
+          "X-Function-Revision": REVISION,
+          "X-Model": MODEL,
+        } 
       }
     );
   } catch (error) {
-    console.error("Erro:", error);
+    console.error("❌ Erro em gerar-flashcards:", error);
     return new Response(
-      JSON.stringify({ 
-        error: error instanceof Error ? error.message : "Erro desconhecido" 
+      JSON.stringify({
+        error: error instanceof Error ? error.message : "Erro desconhecido",
+        provider: "google",
+        model: MODEL,
       }),
-      { 
+      {
         status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" } 
+        headers: { 
+          ...corsHeaders, 
+          "Content-Type": "application/json",
+          "X-Function-Revision": REVISION,
+          "X-Model": MODEL,
+        },
       }
     );
   }

@@ -3,9 +3,10 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { ArrowLeft, Search, MessageSquare, GraduationCap, Lightbulb, BookOpen, Bookmark, Plus, Minus, ArrowUp, BookMarked, FileQuestion, ChevronDown, X, Share2 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { fetchAllRows } from "@/lib/fetchAllRows";
+import { fetchAllRows, fetchInitialRows } from "@/lib/fetchAllRows";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
+import { sortArticles } from "@/lib/articleSorter";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -27,6 +28,10 @@ import { formatForWhatsApp } from "@/lib/formatWhatsApp";
 import { VadeMecumTabs } from "@/components/VadeMecumTabs";
 import { VadeMecumPlaylist } from "@/components/VadeMecumPlaylist";
 import { VadeMecumRanking } from "@/components/VadeMecumRanking";
+import { BuscaCompacta } from "@/components/BuscaCompacta";
+import { ArtigoListaCompacta } from "@/components/ArtigoListaCompacta";
+import { useProgressiveLoad } from "@/hooks/useProgressiveLoad";
+
 interface Article {
   id: number;
   "Número do Artigo": string | null;
@@ -35,6 +40,7 @@ interface Article {
   "Comentario": string | null;
   "Aula": string | null;
 }
+
 interface Article {
   id: number;
   "Número do Artigo": string;
@@ -43,6 +49,7 @@ interface Article {
   Comentario: string;
   Aula: string;
 }
+
 const Constituicao = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -52,6 +59,10 @@ const Constituicao = () => {
   const [searchInput, setSearchInput] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [displayLimit, setDisplayLimit] = useState(50);
+  
+  // View mode state
+  const [viewMode, setViewMode] = useState<'lista' | 'expandido'>('expandido');
+  const [artigoExpandido, setArtigoExpandido] = useState<number | null>(null);
 
   // Auto-search based on URL parameter
   useEffect(() => {
@@ -60,12 +71,14 @@ const Constituicao = () => {
       setSearchQuery(artigoParam);
     }
   }, [searchParams]);
+
   const [stickyPlayerOpen, setStickyPlayerOpen] = useState(false);
   const [currentAudio, setCurrentAudio] = useState({
     url: "",
     title: "",
     isComment: false
   });
+
   const [modalOpen, setModalOpen] = useState(false);
   const [modalData, setModalData] = useState({
     artigo: "",
@@ -73,29 +86,35 @@ const Constituicao = () => {
     tipo: "explicacao" as "explicacao" | "exemplo",
     nivel: "tecnico" as "tecnico" | "simples"
   });
+
   const [videoModalOpen, setVideoModalOpen] = useState(false);
   const [videoModalData, setVideoModalData] = useState({
     videoUrl: "",
     artigo: "",
     numeroArtigo: ""
   });
+
   const [questoesModalOpen, setQuestoesModalOpen] = useState(false);
   const [questoesModalData, setQuestoesModalData] = useState({
     artigo: "",
     numeroArtigo: ""
   });
+
   const [termosModalOpen, setTermosModalOpen] = useState(false);
   const [termosModalData, setTermosModalData] = useState({
     artigo: "",
     numeroArtigo: ""
   });
+
   const [flashcardsModalOpen, setFlashcardsModalOpen] = useState(false);
   const [flashcardsModalData, setFlashcardsModalData] = useState({
     artigo: "",
     numeroArtigo: ""
   });
+
   const [perguntaModalOpen, setPerguntaModalOpen] = useState(false);
   const [perguntaData, setPerguntaData] = useState({ artigo: "", numeroArtigo: "" });
+  const [loadingFlashcards, setLoadingFlashcards] = useState(false);
   
   // Tabs state
   const [activeTab, setActiveTab] = useState<'artigos' | 'playlist' | 'ranking'>('artigos');
@@ -103,19 +122,11 @@ const Constituicao = () => {
   const tableName = "CF - Constituição Federal";
   const codeName = "Constituição Federal";
 
-  // Fetch articles with React Query for caching
-  const {
-    data: articles = [],
-    isLoading
-  } = useQuery({
-    queryKey: ['constituicao-articles-v2'],
-    queryFn: async () => {
-      const data = await fetchAllRows<Article>("CF - Constituição Federal", "id");
-      return data as any[];
-    },
-    staleTime: 1000 * 60 * 30,
-    // Cache válido por 30 minutos
-    gcTime: 1000 * 60 * 60 // Manter em cache por 1 hora
+  // Use progressive loading for optimal performance
+  const { articles, isLoading, isLoadingFull } = useProgressiveLoad<Article>({
+    tableName,
+    initialBatchSize: 50,
+    orderBy: "id"
   });
 
   // Filter and limit articles with useMemo
@@ -130,14 +141,10 @@ const Constituicao = () => {
       const numeroArtigo = numeroArtigoRaw.toLowerCase().trim();
       const conteudoArtigo = article["Artigo"]?.toLowerCase() || "";
 
-      // Busca por número - encontra artigos que começam com o número buscado
       if (isNumericSearch) {
         const numeroDigits = normalizeDigits(numeroArtigo);
-        // Busca exata ou números que começam com o termo buscado
-        // Ex: buscar "1020" encontra "1020", "10200", "1020-A", etc.
         if (numeroDigits.startsWith(searchLower)) return true;
       } else {
-        // Busca textual no número do artigo
         if (numeroArtigo === searchLower || numeroArtigo.includes(searchLower)) return true;
       }
 
@@ -150,14 +157,12 @@ const Constituicao = () => {
       const normalizeA = normalizeDigits(aNum);
       const normalizeB = normalizeDigits(bNum);
       
-      // Priorizar matches exatos
       const aExato = isNumericSearch ? normalizeA === searchLower : aNum === searchLower;
       const bExato = isNumericSearch ? normalizeB === searchLower : bNum === searchLower;
       
       if (aExato && !bExato) return -1;
       if (!aExato && bExato) return 1;
       
-      // Se ambos começam com o termo, ordenar numericamente
       if (isNumericSearch) {
         const aNumInt = parseInt(normalizeA) || 0;
         const bNumInt = parseInt(normalizeB) || 0;
@@ -167,6 +172,7 @@ const Constituicao = () => {
       return 0;
     });
   }, [articles, searchQuery]);
+
   const displayedArticles = useMemo(() => {
     return searchQuery ? filteredArticles : filteredArticles.slice(0, displayLimit);
   }, [filteredArticles, displayLimit, searchQuery]);
@@ -180,6 +186,7 @@ const Constituicao = () => {
       article["Número do Artigo"].trim() !== ""
     ) as any[];
   }, [articles]);
+  
 
   // Auto-scroll to first result when searching
   useEffect(() => {
@@ -202,20 +209,23 @@ const Constituicao = () => {
         const scrollTop = element.scrollTop;
         const scrollHeight = element.scrollHeight;
         const clientHeight = element.clientHeight;
-        if (scrollTop + clientHeight >= scrollHeight - 500 && displayLimit < filteredArticles.length) {
-          setDisplayLimit(prev => Math.min(prev + 30, filteredArticles.length));
+        if (scrollTop + clientHeight >= scrollHeight - 400 && displayLimit < filteredArticles.length) {
+          setDisplayLimit(prev => Math.min(prev + 50, filteredArticles.length));
         }
       };
       element.addEventListener('scroll', handleScroll);
       return () => element.removeEventListener('scroll', handleScroll);
     }
   }, [displayLimit, filteredArticles.length, searchQuery]);
+
   const increaseFontSize = () => {
     if (fontSize < 24) setFontSize(fontSize + 2);
   };
+
   const decreaseFontSize = () => {
     if (fontSize > 12) setFontSize(fontSize - 2);
   };
+
   const handlePlayComment = (audioUrl: string, title: string) => {
     setCurrentAudio({
       url: audioUrl,
@@ -224,6 +234,7 @@ const Constituicao = () => {
     });
     setStickyPlayerOpen(true);
   };
+
   const handleOpenAula = (article: Article) => {
     if (article.Aula && article["Artigo"] && article["Número do Artigo"]) {
       setVideoModalData({
@@ -234,6 +245,7 @@ const Constituicao = () => {
       setVideoModalOpen(true);
     }
   };
+
   const handleOpenExplicacao = (artigo: string, numeroArtigo: string, tipo: "explicacao" | "exemplo", nivel?: "tecnico" | "simples") => {
     setModalData({
       artigo,
@@ -244,26 +256,22 @@ const Constituicao = () => {
     setModalOpen(true);
   };
   
-  // Formata o conteúdo do artigo aplicando negrito (sem amarelo) a parágrafos, incisos e alíneas
-  const formatArticleContent = (content: string): string => {
-    if (!content) return "Conteúdo não disponível";
-    
-    let result = content;
-    
-    // Aplicar negrito (sem amarelo) APENAS a parágrafos no início da linha
-    result = result.replace(/(^|\n)(§\s*\d+º)/gm, '$1<strong class="font-bold">$2</strong>');
-    
-    // Aplicar negrito (sem amarelo) a "Parágrafo único" no início da linha
-    result = result.replace(/(^|\n)(Parágrafo único)/gim, '$1<strong class="font-bold">$2</strong>');
-    
-    // Aplicar negrito (sem amarelo) a incisos APENAS quando estão no início da linha
-    result = result.replace(/(^|\n)(\s*)(I{1,3}|IV|V|VI{0,3}|IX|X{1,3}|XL|L|XC|C)\s*[-–—]/gm, '$1$2<strong class="font-bold">$3</strong> -');
-    
-    // Aplicar negrito (sem amarelo) a alíneas APENAS quando estão no início da linha
-    result = result.replace(/(^|\n)(\s*)([a-z])\)/gm, '$1$2<strong class="font-bold">$3)</strong>');
-    
-    return result;
+  const handleGenerateFlashcards = async (artigo: string, numeroArtigo: string) => {
+    setLoadingFlashcards(true);
+    try {
+      const response = await supabase.functions.invoke('gerar-flashcards', {
+        body: { content: `Art. ${numeroArtigo}\n${artigo}` }
+      });
+      if (response.error) throw response.error;
+      setFlashcardsModalData({ artigo, numeroArtigo });
+      setFlashcardsModalOpen(true);
+    } catch (error) {
+      console.error('Erro ao gerar flashcards:', error);
+    } finally {
+      setLoadingFlashcards(false);
+    }
   };
+
   
   const scrollToTop = () => {
     contentRef.current?.scrollTo({
@@ -276,252 +284,291 @@ const Constituicao = () => {
     setActiveTab('artigos');
     setSearchQuery(numeroArtigo);
   };
-  return <div className="min-h-screen bg-background text-foreground">
-      {/* Tabs */}
-      <div className="sticky top-0 z-30">
-        <VadeMecumTabs 
-          activeTab={activeTab}
-          onTabChange={(tab) => setActiveTab(tab as any)}
-        />
-      </div>
 
-      {/* Search Bar - only show on artigos tab */}
+  return (
+    <div className="min-h-screen bg-background text-foreground pb-24">
+      <VadeMecumTabs 
+        activeTab={activeTab}
+        onTabChange={(tab) => setActiveTab(tab as any)}
+      />
+
       {activeTab === 'artigos' && (
-        <div className="sticky top-[60px] bg-background border-b border-border z-20">
-          <div className="px-4 pt-4 pb-2 max-w-4xl mx-auto">
-            <div className="space-y-2">
-              <div className="relative animate-fade-in flex gap-2">
-                <div className="relative flex-1">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-                  <input 
-                    type="text" 
-                    placeholder="Buscar por artigo ou conteúdo..." 
-                    value={searchInput}
-                    onChange={e => setSearchInput(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        setSearchQuery(searchInput);
-                      }
-                    }}
-                    className="w-full bg-input text-foreground pl-10 pr-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-ring transition-all" 
-                  />
-                </div>
-                
-                <Button
-                  onClick={() => setSearchQuery(searchInput)}
-                  disabled={!searchInput.trim()}
-                  size="lg"
-                  className="px-6 shrink-0"
-                >
-                  <Search className="w-5 h-5 mr-2" />
-                  Buscar
-                </Button>
-                
-                {searchQuery && (
-                  <Button
-                    onClick={() => {
-                      setSearchInput("");
-                      setSearchQuery("");
-                    }}
-                    variant="outline"
-                    size="lg"
-                    className="px-4 shrink-0"
-                  >
-                    <X className="w-5 h-5" />
-                  </Button>
-                )}
-              </div>
-              
-              {searchQuery && (
-                <p className="text-xs text-muted-foreground text-center">
-                  {filteredArticles.length} {filteredArticles.length === 1 ? 'artigo encontrado' : 'artigos encontrados'}
-                </p>
-              )}
-            </div>
-          </div>
-        </div>
+        <BuscaCompacta
+          value={searchInput}
+          onChange={setSearchInput}
+          onSearch={() => setSearchQuery(searchInput)}
+          onClear={() => {
+            setSearchInput("");
+            setSearchQuery("");
+            setArtigoExpandido(null);
+          }}
+          viewMode={viewMode}
+          onViewModeChange={(mode) => {
+            setViewMode(mode);
+            if (mode === 'lista') setArtigoExpandido(null);
+          }}
+          resultCount={filteredArticles.length}
+        />
       )}
 
-      {/* Sticky Audio Player for Comments */}
-      <StickyAudioPlayer isOpen={stickyPlayerOpen} onClose={() => setStickyPlayerOpen(false)} audioUrl={currentAudio.url} title={currentAudio.title} />
+      <StickyAudioPlayer 
+        isOpen={stickyPlayerOpen} 
+        onClose={() => setStickyPlayerOpen(false)} 
+        audioUrl={currentAudio.url} 
+        title={currentAudio.title}
+      />
 
-      {/* Explicacao Modal */}
-      <ExplicacaoModal isOpen={modalOpen} onClose={() => setModalOpen(false)} artigo={modalData.artigo} numeroArtigo={modalData.numeroArtigo} tipo={modalData.tipo} nivel={modalData.nivel} />
+      <ExplicacaoModal 
+        isOpen={modalOpen} 
+        onClose={() => setModalOpen(false)} 
+        artigo={modalData.artigo} 
+        numeroArtigo={modalData.numeroArtigo} 
+        tipo={modalData.tipo} 
+        nivel={modalData.nivel}
+        codigo="cf"
+        codigoTabela="CF - Constituição Federal"
+      />
 
-      {/* Video Aula Modal */}
-      <VideoAulaModal isOpen={videoModalOpen} onClose={() => setVideoModalOpen(false)} videoUrl={videoModalData.videoUrl} artigo={videoModalData.artigo} numeroArtigo={videoModalData.numeroArtigo} />
+      <VideoAulaModal 
+        isOpen={videoModalOpen} 
+        onClose={() => setVideoModalOpen(false)} 
+        videoUrl={videoModalData.videoUrl} 
+        artigo={videoModalData.artigo} 
+        numeroArtigo={videoModalData.numeroArtigo} 
+      />
 
-      {/* Questoes Modal */}
       <QuestoesModal 
         isOpen={questoesModalOpen} 
         onClose={() => setQuestoesModalOpen(false)} 
         artigo={questoesModalData.artigo} 
-        numeroArtigo={questoesModalData.numeroArtigo}
-        codigoTabela="CF - Constituição Federal"
+        numeroArtigo={questoesModalData.numeroArtigo} 
       />
 
-      {/* Termos Modal */}
       <TermosModal 
         isOpen={termosModalOpen} 
         onClose={() => setTermosModalOpen(false)} 
         artigo={termosModalData.artigo} 
-        numeroArtigo={termosModalData.numeroArtigo}
-        codigoTabela="CF - Constituição Federal"
+        numeroArtigo={termosModalData.numeroArtigo} 
       />
 
-      {/* Flashcards Modal */}
       <FlashcardsArtigoModal 
         isOpen={flashcardsModalOpen} 
         onClose={() => setFlashcardsModalOpen(false)} 
         artigo={flashcardsModalData.artigo} 
-        numeroArtigo={flashcardsModalData.numeroArtigo}
-        codigoTabela="CF - Constituição Federal"
+        numeroArtigo={flashcardsModalData.numeroArtigo} 
       />
 
-      {/* Pergunta Modal */}
-      <PerguntaModal isOpen={perguntaModalOpen} onClose={() => setPerguntaModalOpen(false)} artigo={perguntaData.artigo} numeroArtigo={perguntaData.numeroArtigo} />
+      <PerguntaModal 
+        isOpen={perguntaModalOpen} 
+        onClose={() => setPerguntaModalOpen(false)} 
+        artigo={perguntaData.artigo} 
+        numeroArtigo={perguntaData.numeroArtigo} 
+      />
 
-      {/* Content */}
-      <div ref={contentRef} className="px-4 max-w-4xl mx-auto pb-24 overflow-y-auto" style={{ 
-        height: activeTab === 'artigos' ? 'calc(100vh - 140px)' : 'calc(100vh - 60px)' 
-      }}>
-        
-        {/* Playlist Tab */}
-        {activeTab === 'playlist' && (
-          <VadeMecumPlaylist 
-            articles={articlesWithAudio}
-            codigoNome={codeName}
-          />
-        )}
-
-        {/* Ranking Tab */}
-        {activeTab === 'ranking' && (
-          <VadeMecumRanking 
-            tableName={tableName}
-            codigoNome={codeName}
-            onArticleClick={handleArticleClick}
-          />
-        )}
-
-        {/* Articles Tab */}
+      <div ref={contentRef} className="max-w-4xl mx-auto">
         {activeTab === 'artigos' && (
-          <>
-        {isLoading ? <div className="space-y-6">
-            {[1, 2, 3].map(i => <div key={i} className="bg-card rounded-2xl p-6 border border-border">
-                <Skeleton className="h-8 w-32 mb-3" />
-                <Skeleton className="h-6 w-48 mb-4" />
-                <Skeleton className="h-24 w-full mb-6" />
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                  {[1, 2, 3, 4, 5, 6].map(j => <Skeleton key={j} className="h-10 w-full" />)}
+          viewMode === 'lista' ? (
+            <div className="p-4">
+              {isLoading && (
+                <div className="space-y-4">
+                  {[...Array(5)].map((_, i) => (
+                    <Skeleton key={i} className="h-32 w-full" />
+                  ))}
                 </div>
-              </div>)}
-          </div> : displayedArticles.length === 0 ? <div className="text-center text-muted-foreground py-12">
-            {searchQuery ? "Nenhum artigo encontrado para sua busca." : "Nenhum artigo disponível."}
-          </div> : displayedArticles.map((article, index) => {
-        const hasNumber = article["Número do Artigo"] && article["Número do Artigo"].trim() !== "";
+              )}
 
-        // Se não tem número, renderiza como cabeçalho de seção
-        if (!hasNumber) {
-          return <div key={article.id} className="text-center mb-4 mt-6 font-serif-content">
-                  <div className="text-sm leading-tight text-muted-foreground/80 whitespace-pre-line" dangerouslySetInnerHTML={{
-              __html: formatTextWithUppercase(article["Artigo"] || "")
-            }} />
-                </div>;
-        }
+              {!isLoading && displayedArticles.length === 0 && (
+                <div className="text-center py-16">
+                  <p className="text-muted-foreground">
+                    {searchQuery ? "Nenhum artigo encontrado." : "Nenhum artigo disponível."}
+                  </p>
+                </div>
+              )}
 
-        // Se tem número, renderiza como card normal
-        return <div key={article.id} ref={index === 0 && searchQuery ? firstResultRef : null} className="relative bg-card/80 backdrop-blur-sm rounded-2xl p-6 mb-6 border border-border/50 hover:border-accent/30 transition-all duration-300 animate-fade-in hover:shadow-lg hover:shadow-accent/5 scroll-mt-4" style={{
-          animationDelay: `${index * 0.05}s`,
-          animationFillMode: 'backwards'
-        }}>
-                {/* Copy Button */}
-                <CopyButton 
-                  text={article["Artigo"] || ""}
-                  articleNumber={article["Número do Artigo"] || ""}
-                />
-                
-                {/* Article Header */}
-                <h2 className="text-accent font-bold text-xl md:text-2xl mb-3 animate-scale-in">
-                  Art. {article["Número do Artigo"]}
-                </h2>
-
-                {/* Article Content */}
-                <div 
-                  className="article-content text-foreground/90 mb-6 whitespace-pre-line leading-relaxed font-serif-content" 
-                  style={{
-                    fontSize: `${fontSize}px`,
-                    lineHeight: "1.7"
+              {!isLoading && displayedArticles.length > 0 && (
+                <ArtigoListaCompacta
+                  articles={displayedArticles}
+                  onArtigoClick={(article) => setArtigoExpandido(article.id)}
+                  searchQuery={searchQuery}
+                  onPlayComment={handlePlayComment}
+                  onOpenAula={handleOpenAula}
+                  onOpenExplicacao={handleOpenExplicacao}
+                  onGenerateFlashcards={handleGenerateFlashcards}
+                  onOpenTermos={(artigo, numeroArtigo) => {
+                    setTermosModalData({ artigo, numeroArtigo });
+                    setTermosModalOpen(true);
                   }}
-                  dangerouslySetInnerHTML={{
-                    __html: formatArticleContent(article["Artigo"] || "Conteúdo não disponível")
+                  onOpenQuestoes={(artigo, numeroArtigo) => {
+                    setQuestoesModalData({ artigo, numeroArtigo });
+                    setQuestoesModalOpen(true);
                   }}
+                  onPerguntar={(artigo, numeroArtigo) => {
+                    setPerguntaData({ artigo, numeroArtigo });
+                    setPerguntaModalOpen(true);
+                  }}
+                  loadingFlashcards={loadingFlashcards}
+                  currentAudio={currentAudio}
+                  stickyPlayerOpen={stickyPlayerOpen}
+                  codeName="CF/88"
                 />
+              )}
+            </div>
+          ) : (
+            <div className="px-4 pb-6 space-y-6">
+              {isLoading ? (
+                <div className="space-y-6">
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <div key={i} className="bg-card rounded-2xl p-6 border border-border">
+                      <Skeleton className="h-8 w-32 mb-4" />
+                      <Skeleton className="h-24 w-full" />
+                    </div>
+                  ))}
+                </div>
+              ) : displayedArticles.length === 0 ? (
+                <div className="text-center text-muted-foreground py-12">
+                  {searchQuery ? "Nenhum artigo encontrado para sua busca." : "Nenhum artigo disponível."}
+                </div>
+              ) : (
+                displayedArticles.map((article, index) => {
+                  const numeroArtigo = article["Número do Artigo"];
+                  const isHeader = !numeroArtigo || numeroArtigo.trim() === "";
+                  
+                  if (isHeader) {
+                    return (
+                      <div key={article.id} className="text-center mb-4 mt-6 font-serif-content">
+                        <div 
+                          className="text-sm leading-tight text-muted-foreground/80 whitespace-pre-line"
+                          dangerouslySetInnerHTML={{ __html: formatTextWithUppercase(article["Artigo"] || "") }}
+                        />
+                      </div>
+                    );
+                  }
 
-                {/* Action Menu */}
-                <div className="mb-4 animate-fade-in">
-                  <ArtigoActionsMenu
-                    article={article}
-                    onPlayComment={handlePlayComment}
-                    onOpenAula={() => handleOpenAula(article)}
-                    onOpenExplicacao={(tipo) => handleOpenExplicacao(article["Artigo"]!, article["Número do Artigo"]!, tipo)}
-                    onGenerateFlashcards={() => {
-                      setFlashcardsModalData({
-                        artigo: article["Artigo"]!,
-                        numeroArtigo: article["Número do Artigo"]!
-                      });
-                      setFlashcardsModalOpen(true);
-                    }}
-                    onOpenTermos={() => {
-                      setTermosModalData({ artigo: article["Artigo"]!, numeroArtigo: article["Número do Artigo"]! });
-                      setTermosModalOpen(true);
-                    }}
-                    onOpenQuestoes={() => {
-                      setQuestoesModalData({ artigo: article["Artigo"]!, numeroArtigo: article["Número do Artigo"]! });
-                      setQuestoesModalOpen(true);
-                    }}
-                    onPerguntar={() => {
-                      setPerguntaData({ artigo: article["Artigo"]!, numeroArtigo: article["Número do Artigo"]! });
-                      setPerguntaModalOpen(true);
-                    }}
-                    onShareWhatsApp={() => {
-                      const fullText = `*Art. ${article["Número do Artigo"]}*\n\n${article["Artigo"]}`;
-                      const formattedText = formatForWhatsApp(fullText);
-                      const encodedText = encodeURIComponent(formattedText);
-                      const whatsappUrl = `https://wa.me/?text=${encodedText}`;
-                      window.open(whatsappUrl, '_blank');
-                    }}
-                  />
-               </div>
-              </div>;
-      })}
-          </>
+                  const isHighlighted = searchQuery && numeroArtigo?.toLowerCase().trim() === searchQuery.toLowerCase().trim();
+
+                  return (
+                    <div
+                      key={article.id}
+                      ref={index === 0 && searchQuery ? firstResultRef : null}
+                      className={`bg-card rounded-2xl p-6 border transition-all animate-fade-in ${
+                        isHighlighted 
+                          ? 'border-[hsl(45,93%,58%)] shadow-lg shadow-[hsl(45,93%,58%)]/20 ring-2 ring-[hsl(45,93%,58%)]/20' 
+                          : 'border-border/50 hover:border-[hsl(45,93%,58%)]/30 hover:shadow-[hsl(45,93%,58%)]/5'
+                      }`}
+                      style={{
+                        animationDelay: `${index * 0.05}s`,
+                        animationFillMode: 'backwards'
+                      }}
+                    >
+                      <div className="flex justify-between items-start mb-4">
+                        <h2 className="text-[hsl(45,93%,58%)] font-bold text-xl md:text-2xl">
+                          Art. {numeroArtigo}
+                        </h2>
+                        <div className="flex gap-2">
+                          <CopyButton 
+                            text={`Art. ${numeroArtigo}\n${article["Artigo"]}`}
+                            articleNumber={numeroArtigo || ""}
+                            narrationUrl={article["Narração"] || undefined}
+                          />
+                          <Button
+                            onClick={() => {
+                              const whatsappText = formatForWhatsApp(`# Artigo ${numeroArtigo} - CF/88\n\n${article["Artigo"]}`);
+                              window.open(`https://wa.me/?text=${encodeURIComponent(whatsappText)}`, '_blank');
+                            }}
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 w-8 p-0"
+                          >
+                            <Share2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+
+                      <div 
+                        className="article-content text-foreground/90 mb-6 whitespace-pre-line leading-relaxed font-serif-content"
+                        style={{ fontSize: `${fontSize}px`, lineHeight: "1.7" }}
+                        dangerouslySetInnerHTML={{ __html: formatTextWithUppercase(article["Artigo"] || "") }}
+                      />
+
+                      <ArtigoActionsMenu
+                        article={article}
+                        codigoNome="CF/88"
+                        onPlayComment={(audioUrl: string, title: string) => handlePlayComment(audioUrl, title)}
+                        onOpenAula={() => handleOpenAula(article)}
+                        onOpenExplicacao={(tipo) => handleOpenExplicacao(article["Artigo"] || "", numeroArtigo || "", tipo)}
+                        onGenerateFlashcards={() => handleGenerateFlashcards(article["Artigo"] || "", numeroArtigo || "")}
+                        onOpenTermos={() => {
+                          setTermosModalData({ artigo: article["Artigo"] || "", numeroArtigo: numeroArtigo || "" });
+                          setTermosModalOpen(true);
+                        }}
+                        onOpenQuestoes={() => {
+                          setQuestoesModalData({ artigo: article["Artigo"] || "", numeroArtigo: numeroArtigo || "" });
+                          setQuestoesModalOpen(true);
+                        }}
+                        onPerguntar={() => {
+                          setPerguntaData({ artigo: article["Artigo"] || "", numeroArtigo: numeroArtigo || "" });
+                          setPerguntaModalOpen(true);
+                        }}
+                        loadingFlashcards={loadingFlashcards}
+                        isCommentPlaying={stickyPlayerOpen && currentAudio.url === article["Comentario"]}
+                      />
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          )
+        )}
+
+        {activeTab === 'playlist' && (
+          <div className="p-4">
+            <VadeMecumPlaylist 
+              articles={articlesWithAudio} 
+              codigoNome={codeName}
+            />
+          </div>
+        )}
+
+        {activeTab === 'ranking' && (
+          <div className="p-4">
+            <VadeMecumRanking 
+              tableName={tableName}
+              codigoNome={codeName}
+              onArticleClick={handleArticleClick}
+            />
+          </div>
         )}
       </div>
 
-      {/* Floating Controls - Only visible when content is showing on artigos tab */}
-      {activeTab === 'artigos' && displayedArticles.length > 0 && (
-        <div className="fixed bottom-4 left-1/2 -translate-x-1/2 w-full max-w-[60rem] px-4 flex justify-between z-30 pointer-events-none">
-          {/* Font size controls on the left */}
-          <div className="flex flex-col gap-2 animate-fade-in pointer-events-auto">
-            <button onClick={increaseFontSize} className="bg-accent hover:bg-accent/90 text-accent-foreground w-10 h-10 rounded-full flex items-center justify-center shadow-lg transition-all hover:scale-110">
-              <Plus className="w-4 h-4" />
-            </button>
-            <button onClick={decreaseFontSize} className="bg-accent hover:bg-accent/90 text-accent-foreground w-10 h-10 rounded-full flex items-center justify-center shadow-lg transition-all hover:scale-110">
-              <Minus className="w-4 h-4" />
-            </button>
-            <div className="bg-card border border-border text-foreground text-xs font-medium px-2 py-1.5 rounded-full text-center shadow-lg">
-              {fontSize}px
-            </div>
-          </div>
-
-          {/* Scroll to top button on the right */}
-          <div className="animate-fade-in pointer-events-auto">
-            <button onClick={scrollToTop} className="bg-accent hover:bg-accent/90 text-accent-foreground w-12 h-12 rounded-full flex items-center justify-center shadow-lg transition-all hover:scale-110">
-              <ArrowUp className="w-5 h-5" />
-            </button>
-          </div>
+      <div className="fixed bottom-28 left-4 flex flex-col gap-2 z-30">
+        <Button 
+          onClick={increaseFontSize} 
+          size="icon" 
+          className="rounded-full bg-[hsl(45,93%,58%)] hover:bg-[hsl(45,93%,58%)]/90 text-black"
+        >
+          <Plus className="w-4 h-4" />
+        </Button>
+        <Button 
+          onClick={decreaseFontSize} 
+          size="icon" 
+          className="rounded-full bg-[hsl(45,93%,58%)] hover:bg-[hsl(45,93%,58%)]/90 text-black"
+        >
+          <Minus className="w-4 h-4" />
+        </Button>
+        <div className="bg-card border px-2 py-1 rounded-full text-xs text-center">
+          {fontSize}px
         </div>
-      )}
-    </div>;
+      </div>
+
+      <Button
+        onClick={scrollToTop}
+        size="icon"
+        className="fixed bottom-28 right-4 rounded-full bg-[hsl(45,93%,58%)] hover:bg-[hsl(45,93%,58%)]/90 text-black z-30"
+      >
+        <ArrowUp className="w-5 h-5" />
+      </Button>
+    </div>
+  );
 };
+
 export default Constituicao;

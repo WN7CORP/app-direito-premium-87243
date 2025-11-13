@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { ArrowLeft, Search, X } from "lucide-react";
+import { ArrowLeft, Search, X, Plus, Minus, ArrowUp } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { fetchAllRows } from "@/lib/fetchAllRows";
+import { fetchAllRows, fetchInitialRows } from "@/lib/fetchAllRows";
 import { Skeleton } from "@/components/ui/skeleton";
+import { sortArticles } from "@/lib/articleSorter";
 import { Button } from "@/components/ui/button";
 import InlineAudioButton from "@/components/InlineAudioButton";
 import AudioCommentButton from "@/components/AudioCommentButton";
@@ -21,6 +22,9 @@ import { VadeMecumTabs } from "@/components/VadeMecumTabs";
 import { VadeMecumPlaylist } from "@/components/VadeMecumPlaylist";
 import { VadeMecumRanking } from "@/components/VadeMecumRanking";
 import { ArtigoActionsMenu } from "@/components/ArtigoActionsMenu";
+import { useArticleTracking } from "@/hooks/useArticleTracking";
+import { formatForWhatsApp } from "@/lib/formatWhatsApp";
+import { useIndexedDBCache } from "@/hooks/useIndexedDBCache";
 
 interface Article {
   id: number;
@@ -39,7 +43,7 @@ const LepView = () => {
   const [fontSize, setFontSize] = useState(15);
   const [searchInput, setSearchInput] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
-  const [displayLimit, setDisplayLimit] = useState(100);
+  const [displayLimit, setDisplayLimit] = useState(500);
   const [stickyPlayerOpen, setStickyPlayerOpen] = useState(false);
   const [currentAudio, setCurrentAudio] = useState({ url: "", title: "", isComment: false });
   const [modalOpen, setModalOpen] = useState(false);
@@ -56,6 +60,7 @@ const LepView = () => {
   const [perguntaModalOpen, setPerguntaModalOpen] = useState(false);
   const [perguntaData, setPerguntaData] = useState({ artigo: "", numeroArtigo: "" });
   const [activeTab, setActiveTab] = useState<'artigos' | 'playlist' | 'ranking'>('artigos');
+  const [showScrollTop, setShowScrollTop] = useState(false);
 
   const tableName = "Lei 7.210 de 1984 - Lei de Execução Penal";
   const codeName = "Lei de Execução Penal";
@@ -68,14 +73,42 @@ const LepView = () => {
     }
   }, [searchParams]);
 
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowScrollTop(window.scrollY > 300);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  const increaseFontSize = () => {
+    if (fontSize < 24) setFontSize(fontSize + 2);
+  };
+
+  const decreaseFontSize = () => {
+    if (fontSize > 12) setFontSize(fontSize - 2);
+  };
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const { cachedData, isLoadingCache, saveToCache } = useIndexedDBCache<Article>(tableName);
+
   const { data: articles = [], isLoading } = useQuery({
-    queryKey: ['lep-articles'],
+    queryKey: ['lep-articles-v3'],
     queryFn: async () => {
-      const data = await fetchAllRows<Article>(tableName, "ordem");
-      return data as any as Article[];
+      if (cachedData?.length) return cachedData;
+      const initialData = await fetchInitialRows<Article>(tableName, 100, "id");
+      setTimeout(async () => {
+        const fullData = await fetchAllRows<Article>(tableName, "id");
+        await saveToCache(fullData);
+      }, 100);
+      return initialData as any as Article[];
     },
-    staleTime: 1000 * 60 * 30,
-    gcTime: 1000 * 60 * 60
+    enabled: !isLoadingCache,
+    staleTime: Infinity,
+    gcTime: 1000 * 60 * 60 * 24
   });
 
   const filteredArticles = useMemo(() => {
@@ -124,28 +157,14 @@ const LepView = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <div className="sticky top-0 z-40 bg-background border-b border-border">
-        <div className="flex items-center gap-3 px-4 py-3 max-w-4xl mx-auto">
-          <button onClick={() => navigate(-1)} className="p-2 hover:bg-secondary rounded-lg transition-colors">
-            <ArrowLeft className="w-5 h-5" />
-          </button>
-          <div>
-            <h1 className="font-bold text-lg">Lei de Execução Penal</h1>
-            <p className="text-xs text-muted-foreground">LEP - Lei 7.210/1984</p>
-          </div>
-        </div>
-      </div>
-
-      <div className="sticky top-[60px] z-30">
-        <VadeMecumTabs 
-          activeTab={activeTab}
-          onTabChange={(tab) => setActiveTab(tab as any)}
-        />
-      </div>
+    <div className="min-h-screen bg-background text-foreground pb-24">
+      <VadeMecumTabs 
+        activeTab={activeTab}
+        onTabChange={(tab) => setActiveTab(tab as any)}
+      />
 
       {activeTab === 'artigos' && (
-        <div className="sticky top-[72px] bg-background border-b border-border z-20">
+        <div className="sticky top-[60px] bg-background border-b border-border z-20">
           <div className="px-4 pt-4 pb-2 max-w-4xl mx-auto">
             <div className="space-y-2">
               <div className="relative animate-fade-in flex gap-2">
@@ -191,7 +210,7 @@ const LepView = () => {
         title={currentAudio.title}
       />
 
-      <ExplicacaoModal isOpen={modalOpen} onClose={() => setModalOpen(false)} artigo={modalData.artigo} numeroArtigo={modalData.numeroArtigo} tipo={modalData.tipo} nivel={modalData.nivel} />
+      <ExplicacaoModal isOpen={modalOpen} onClose={() => setModalOpen(false)} artigo={modalData.artigo} numeroArtigo={modalData.numeroArtigo} tipo={modalData.tipo} nivel={modalData.nivel} codigo="lep" codigoTabela={tableName} />
       <VideoAulaModal isOpen={videoModalOpen} onClose={() => setVideoModalOpen(false)} videoUrl={videoModalData.videoUrl} artigo={videoModalData.artigo} numeroArtigo={videoModalData.numeroArtigo} />
       <TermosModal isOpen={termosModalOpen} onClose={() => setTermosModalOpen(false)} artigo={termosData.artigo} numeroArtigo={termosData.numeroArtigo} codigoTabela={tableName} />
       <QuestoesModal isOpen={questoesModalOpen} onClose={() => setQuestoesModalOpen(false)} artigo={questoesData.artigo} numeroArtigo={questoesData.numeroArtigo} />
@@ -231,63 +250,44 @@ const LepView = () => {
               <div className="text-center py-16"><p className="text-muted-foreground">Nenhum artigo encontrado</p></div>
             ) : (
               displayedArticles.map((article, index) => (
-                <div key={article.id} ref={index === 0 ? firstResultRef : null} id={`article-${article["Número do Artigo"]}`} className="bg-card rounded-lg p-5 border border-border shadow-sm hover:shadow-md transition-shadow scroll-mt-24">
-                  <div className="flex items-start justify-between gap-3 mb-3">
-                    <div className="flex items-center gap-3">
-                      <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary/10">
-                        <span className="text-sm font-bold text-primary">{article["Número do Artigo"] || "?"}</span>
-                      </div>
-                      <div>
-                        <h3 className="font-bold text-lg">Art. {article["Número do Artigo"]}</h3>
-                        <p className="text-xs text-muted-foreground">{abbreviation}</p>
-                      </div>
-                    </div>
-                    {article["Narração"] && (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => {
-                          setCurrentAudio({ url: article["Narração"] || "", title: `Art. ${article["Número do Artigo"]}`, isComment: false });
-                          setStickyPlayerOpen(true);
-                        }}
-                      >
-                        Ouvir
-                      </Button>
-                    )}
-                  </div>
-                  <div className="prose prose-sm max-w-none mb-4" style={{ fontSize: `${fontSize}px` }} dangerouslySetInnerHTML={{ __html: formatTextWithUppercase(article["Artigo"] || "Conteúdo não disponível") }} />
-                  
-                  {article["Número do Artigo"] && (
-                    <div className="flex flex-wrap gap-2 mt-4">
-                      <ArtigoActionsMenu
-                        article={article}
-                        onOpenExplicacao={(tipo) => {
-                          setModalData({ artigo: article["Artigo"] || "", numeroArtigo: article["Número do Artigo"] || "", tipo, nivel: "tecnico" });
-                          setModalOpen(true);
-                        }}
-                        onOpenTermos={() => {
-                          setTermosData({ artigo: article["Artigo"] || "", numeroArtigo: article["Número do Artigo"] || "" });
-                          setTermosModalOpen(true);
-                        }}
-                        onOpenQuestoes={() => {
-                          setQuestoesData({ artigo: article["Artigo"] || "", numeroArtigo: article["Número do Artigo"] || "" });
-                          setQuestoesModalOpen(true);
-                        }}
-                        onGenerateFlashcards={() => handleGenerateFlashcards(article["Artigo"] || "", article["Número do Artigo"] || "")}
-                        onPerguntar={() => {
-                          setPerguntaData({ artigo: article["Artigo"] || "", numeroArtigo: article["Número do Artigo"] || "" });
-                          setPerguntaModalOpen(true);
-                        }}
-                        onShareWhatsApp={() => {
-                          const text = `*LEP - Art. ${article["Número do Artigo"]}*\n\n${article["Artigo"] || ""}`;
-                          const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
-                          window.open(url, '_blank');
-                        }}
-                        loadingFlashcards={loadingFlashcards}
-                      />
-                    </div>
-                  )}
-                </div>
+                <ArticleCard
+                  key={article.id}
+                  article={article}
+                  abbreviation={abbreviation}
+                  tableName={tableName}
+                  isFirstResult={index === 0}
+                  fontSize={fontSize}
+                  onOpenExplicacao={(tipo, nivel) => {
+                    setModalData({ artigo: article["Artigo"] || "", numeroArtigo: article["Número do Artigo"] || "", tipo, nivel });
+                    setModalOpen(true);
+                  }}
+                  onOpenVideoAula={(videoUrl) => {
+                    setVideoModalData({ videoUrl, artigo: article["Artigo"] || "", numeroArtigo: article["Número do Artigo"] || "" });
+                    setVideoModalOpen(true);
+                  }}
+                  onGenerateFlashcards={() => handleGenerateFlashcards(article["Artigo"] || "", article["Número do Artigo"] || "")}
+                  onOpenTermos={() => {
+                    setTermosData({ artigo: article["Artigo"] || "", numeroArtigo: article["Número do Artigo"] || "" });
+                    setTermosModalOpen(true);
+                  }}
+                  onOpenQuestoes={() => {
+                    setQuestoesData({ artigo: article["Artigo"] || "", numeroArtigo: article["Número do Artigo"] || "" });
+                    setQuestoesModalOpen(true);
+                  }}
+                  onPerguntar={() => {
+                    setPerguntaData({ artigo: article["Artigo"] || "", numeroArtigo: article["Número do Artigo"] || "" });
+                    setPerguntaModalOpen(true);
+                  }}
+                  onPlayNarration={(url, title) => {
+                    setCurrentAudio({ url, title, isComment: false });
+                    setStickyPlayerOpen(true);
+                  }}
+                  onPlayComment={(url, title) => {
+                    setCurrentAudio({ url, title, isComment: true });
+                    setStickyPlayerOpen(true);
+                  }}
+                  loadingFlashcards={loadingFlashcards}
+                />
               ))
             )}
           </div>
@@ -319,6 +319,143 @@ const LepView = () => {
           />
           </div>
         )}
+      </div>
+
+      {/* Floating Controls */}
+      <div className="fixed bottom-28 left-4 flex flex-col gap-2 z-30 animate-fade-in">
+        <button onClick={increaseFontSize} className="bg-accent hover:bg-accent/90 text-accent-foreground w-10 h-10 rounded-full flex items-center justify-center shadow-lg transition-all hover:scale-110">
+          <Plus className="w-4 h-4" />
+        </button>
+        <button onClick={decreaseFontSize} className="bg-accent hover:bg-accent/90 text-accent-foreground w-10 h-10 rounded-full flex items-center justify-center shadow-lg transition-all hover:scale-110">
+          <Minus className="w-4 h-4" />
+        </button>
+        <div className="bg-card border border-border text-foreground text-xs font-medium px-2 py-1.5 rounded-full text-center shadow-lg">
+          {fontSize}px
+        </div>
+      </div>
+
+      {showScrollTop && (
+        <div className="fixed bottom-[8.5rem] right-4 z-30 animate-fade-in">
+          <button onClick={scrollToTop} className="bg-accent hover:bg-accent/90 text-accent-foreground w-12 h-12 rounded-full flex items-center justify-center shadow-lg transition-all hover:scale-110">
+            <ArrowUp className="w-5 h-5" />
+          </button>
+        </div>
+      )}
+    </div>
+  );
+};
+
+interface ArticleCardProps {
+  article: Article;
+  abbreviation: string;
+  tableName: string;
+  isFirstResult: boolean;
+  fontSize: number;
+  onOpenExplicacao: (tipo: "explicacao" | "exemplo", nivel: "tecnico" | "simples") => void;
+  onOpenVideoAula: (videoUrl: string) => void;
+  onGenerateFlashcards: () => void;
+  onOpenTermos: () => void;
+  onOpenQuestoes: () => void;
+  onPerguntar: () => void;
+  onPlayNarration: (url: string, title: string) => void;
+  onPlayComment: (url: string, title: string) => void;
+  loadingFlashcards: boolean;
+}
+
+const ArticleCard = ({
+  article,
+  abbreviation,
+  tableName,
+  isFirstResult,
+  fontSize,
+  onOpenExplicacao,
+  onOpenVideoAula,
+  onGenerateFlashcards,
+  onOpenTermos,
+  onOpenQuestoes,
+  onPerguntar,
+  onPlayNarration,
+  onPlayComment,
+  loadingFlashcards,
+}: ArticleCardProps) => {
+  const numeroArtigo = article["Número do Artigo"];
+  const hasNumber = numeroArtigo && numeroArtigo.trim() !== "";
+
+  const elementRef = useArticleTracking({
+    tableName,
+    articleId: article.id,
+    numeroArtigo: numeroArtigo || "",
+    enabled: hasNumber,
+  });
+
+  const shareOnWhatsApp = () => {
+    const conteudo = article["Artigo"];
+    const fullText = `*${abbreviation} - Art. ${numeroArtigo}*\n\n${conteudo}`;
+    const formattedText = formatForWhatsApp(fullText);
+    const encodedText = encodeURIComponent(formattedText);
+    const whatsappUrl = `https://wa.me/?text=${encodedText}`;
+    window.open(whatsappUrl, '_blank');
+  };
+
+  // Adaptadores para ArtigoActionsMenu
+  const handleOpenExplicacao = (tipo: "explicacao" | "exemplo") => {
+    onOpenExplicacao(tipo, "tecnico");
+  };
+
+  const handlePlayNarration = (audioUrl: string) => {
+    onPlayNarration(audioUrl, `Art. ${numeroArtigo}`);
+  };
+
+  if (!hasNumber) {
+    return (
+      <div className="text-center mb-4 mt-6 font-serif-content">
+        <div
+          className="text-foreground/90 leading-relaxed"
+          style={{ fontSize: `${fontSize}px` }}
+          dangerouslySetInnerHTML={{ __html: formatTextWithUppercase(article["Artigo"] || "") }}
+        />
+      </div>
+    );
+  }
+
+  return (
+    <div
+      ref={isFirstResult ? elementRef as any : elementRef}
+      id={`article-${numeroArtigo}`}
+      className="relative bg-card/80 backdrop-blur-sm rounded-2xl p-6 mb-6 border border-border/50 hover:border-accent/30 transition-all duration-300 animate-fade-in hover:shadow-lg scroll-mt-4"
+    >
+      <div className="flex justify-between items-start mb-3">
+        <h2 className="text-accent font-bold text-xl md:text-2xl animate-scale-in">
+          Art. {numeroArtigo}
+        </h2>
+        <div className="flex gap-2">
+          <CopyButton
+            text={article["Artigo"] || ""}
+            articleNumber={numeroArtigo || ""}
+            narrationUrl={article["Narração"] || undefined}
+          />
+        </div>
+      </div>
+
+      <div
+        className="article-content text-foreground/90 mb-6 whitespace-pre-line leading-relaxed font-serif-content"
+        style={{ fontSize: `${fontSize}px` }}
+        dangerouslySetInnerHTML={{ __html: formatTextWithUppercase(article["Artigo"] || "Conteúdo não disponível") }}
+      />
+
+      <div className="flex flex-wrap gap-2 mt-4">
+        <ArtigoActionsMenu
+          article={article}
+          codigoNome="Lei de Execução Penal"
+          onOpenExplicacao={handleOpenExplicacao}
+          onOpenTermos={onOpenTermos}
+          onOpenQuestoes={onOpenQuestoes}
+          onGenerateFlashcards={onGenerateFlashcards}
+          onPerguntar={onPerguntar}
+          onPlayNarration={handlePlayNarration}
+          onPlayComment={onPlayComment}
+          loadingFlashcards={loadingFlashcards}
+        />
       </div>
     </div>
   );

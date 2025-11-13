@@ -12,14 +12,22 @@ const ProposicoesRecentesGrid = () => {
   const { data: proposicoes, isLoading } = useQuery({
     queryKey: ['proposicoes-recentes'],
     queryFn: async () => {
-      const { data, error } = await supabase.functions.invoke('buscar-proposicoes-recentes');
+      const dataHoje = new Date().toISOString().split('T')[0];
+      
+      const { data, error } = await supabase
+        .from('cache_proposicoes_recentes')
+        .select('*')
+        .eq('sigla_tipo', 'PL')
+        .gte('data_apresentacao', dataHoje)
+        .order('ordem_cache', { ascending: false })
+        .limit(20);
       
       if (error) throw error;
       
-      return data?.proposicoes || [];
+      return data || [];
     },
-    staleTime: 1000 * 60 * 60, // 1 hora
-    gcTime: 1000 * 60 * 60 * 2, // 2 horas
+    staleTime: 1000 * 60 * 5, // 5 minutos
+    refetchInterval: 1000 * 60 * 5, // Atualizar a cada 5 minutos
   });
 
   if (isLoading) {

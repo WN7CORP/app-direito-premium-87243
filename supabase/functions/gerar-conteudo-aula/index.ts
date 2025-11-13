@@ -15,16 +15,14 @@ serve(async (req) => {
     const { tema, conteudo_base, area, aula_link } = await req.json();
     console.log(`Gerando conteúdo para: ${area} - ${tema}`);
 
-    const GEMINI_API_KEY = Deno.env.get('GEMINI_API_KEY');
     const DIREITO_PREMIUM_API_KEY = Deno.env.get('DIREITO_PREMIUM_API_KEY');
-    const API_KEY = GEMINI_API_KEY || DIREITO_PREMIUM_API_KEY;
     
-    if (!API_KEY) {
-      console.error('Nenhuma API key do Gemini encontrada nas variáveis de ambiente');
-      throw new Error('GEMINI_API_KEY ou DIREITO_PREMIUM_API_KEY não configurada');
+    if (!DIREITO_PREMIUM_API_KEY) {
+      console.error('DIREITO_PREMIUM_API_KEY não configurada nas variáveis de ambiente');
+      throw new Error('DIREITO_PREMIUM_API_KEY não configurada');
     }
 
-    console.log('Chave para Gemini configurada:', API_KEY ? 'Sim (oculta)' : 'Não');
+    console.log('✅ DIREITO_PREMIUM_API_KEY configurada:', DIREITO_PREMIUM_API_KEY ? 'Sim (oculta)' : 'Não');
 
     // Prompt para melhorar e enriquecer o conteúdo existente
     const promptConteudo = `Você é um professor de Direito experiente e didático. 
@@ -115,7 +113,7 @@ IMPORTANTE: Retorne APENAS o JSON, sem markdown, sem explicações, sem \`\`\`js
     // Gerar conteúdo
     console.log('Gerando conteúdo...');
     const responseConteudo = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${API_KEY}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${DIREITO_PREMIUM_API_KEY}`,
       {
         method: 'POST',
         headers: {
@@ -153,7 +151,7 @@ IMPORTANTE: Retorne APENAS o JSON, sem markdown, sem explicações, sem \`\`\`js
     // Gerar flashcards
     console.log('Gerando flashcards...');
     const responseFlashcards = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${API_KEY}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${DIREITO_PREMIUM_API_KEY}`,
       {
         method: 'POST',
         headers: {
@@ -180,7 +178,7 @@ IMPORTANTE: Retorne APENAS o JSON, sem markdown, sem explicações, sem \`\`\`js
     // Gerar questões
     console.log('Gerando questões...');
     const responseQuestoes = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${API_KEY}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${DIREITO_PREMIUM_API_KEY}`,
       {
         method: 'POST',
         headers: {
