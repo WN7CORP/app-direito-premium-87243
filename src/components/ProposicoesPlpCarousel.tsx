@@ -17,16 +17,11 @@ const ProposicoesPlpCarousel = () => {
   const { data: proposicoes, isLoading } = useQuery({
     queryKey: ['plp-recentes'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('cache_plp_recentes')
-        .select('*')
-        .eq('sigla_tipo', 'PLP')
-        .order('data_apresentacao', { ascending: false })
-        .limit(15);
+      const { data, error } = await supabase.functions.invoke('buscar-plp-recentes');
       
       if (error) throw error;
       
-      return data || [];
+      return data?.proposicoes || [];
     },
     staleTime: 1000 * 60 * 30, // 30 minutos
     refetchInterval: 1000 * 60 * 30, // Atualizar a cada 30 minutos
