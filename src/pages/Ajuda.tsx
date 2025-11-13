@@ -5,7 +5,6 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { MessageCircle, Book, Scale, User, FileText, HelpCircle, Mail, Copy, Video, Headphones, BookOpen, FileQuestion, GraduationCap, Gavel, TrendingUp, Brain, Sparkles } from "lucide-react";
-import { SuporteChatModal } from "@/components/SuporteChatModal";
 import { EmailSupportModal } from "@/components/EmailSupportModal";
 import { FAQSearch } from "@/components/FAQSearch";
 import { AppStatisticsCard } from "@/components/AppStatisticsCard";
@@ -15,7 +14,6 @@ import { useNavigate } from "react-router-dom";
 
 export default function Ajuda() {
   const navigate = useNavigate();
-  const [isChatOpen, setIsChatOpen] = useState(false);
   const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const {
@@ -165,14 +163,14 @@ export default function Ajuda() {
           {/* Aba Suporte */}
           <TabsContent value="suporte" className="space-y-6 mt-6">
             <Card className="p-8 text-center bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
-              <MessageCircle className="w-16 h-16 text-primary mx-auto mb-4" />
+              <Mail className="w-16 h-16 text-primary mx-auto mb-4" />
               <h2 className="text-2xl font-bold mb-2">Fale com Nossa Equipe</h2>
               <p className="text-muted-foreground mb-6">
                 Estamos prontos para te ajudar com qualquer dúvida
               </p>
-              <Button size="lg" onClick={() => setIsChatOpen(true)} className="gap-2">
-                <MessageCircle className="w-5 h-5" />
-                Iniciar Chat de Suporte
+              <Button size="lg" onClick={() => setIsEmailModalOpen(true)} className="gap-2">
+                <Mail className="w-5 h-5" />
+                Iniciar Suporte
               </Button>
             </Card>
 
@@ -313,7 +311,6 @@ export default function Ajuda() {
         </Tabs>
       </div>
 
-      <SuporteChatModal open={isChatOpen} onOpenChange={setIsChatOpen} />
       <EmailSupportModal open={isEmailModalOpen} onOpenChange={setIsEmailModalOpen} />
     </div>;
 }
