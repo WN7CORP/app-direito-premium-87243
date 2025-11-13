@@ -173,53 +173,6 @@ export default function Ajuda() {
                 Iniciar Suporte
               </Button>
             </Card>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Card className="p-6 px-0">
-                <div className="flex items-start gap-4">
-                  <div className="p-3 rounded-full bg-primary/10">
-                    <Mail className="w-6 h-6 text-primary" />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-lg mb-2">E-mail de Suporte</h3>
-                    <p className="text-muted-foreground mb-3">
-                      Entre em contato por e-mail para questões mais detalhadas
-                    </p>
-                    <div className="space-y-3">
-                      <div className="flex flex-col items-start gap-2">
-                        <code className="w-full px-3 py-2 bg-muted rounded text-sm">
-                          wn7corporation@gmail.com
-                        </code>
-                        
-                      </div>
-                      <Button className="w-full gap-2" variant="default" onClick={() => setIsEmailModalOpen(true)}>
-                        <Mail className="w-4 h-4" />
-                        Reportar Bug ou Enviar Feedback
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              </Card>
-
-              <Card className="p-6">
-                <div className="flex items-start gap-4">
-                  <div className="p-3 rounded-full bg-green-500/10">
-                    <MessageCircle className="w-6 h-6 text-green-500" />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-lg mb-2">Horário de Atendimento</h3>
-                    <p className="text-muted-foreground mb-3">
-                      Nossa equipe está disponível para te ajudar
-                    </p>
-                    <div className="space-y-1 text-sm">
-                      <p><strong>Segunda a Sexta:</strong> 9h às 18h</p>
-                      <p><strong>Sábado:</strong> 9h às 13h</p>
-                      <p><strong>Domingo:</strong> Fechado</p>
-                    </div>
-                  </div>
-                </div>
-              </Card>
-            </div>
           </TabsContent>
 
           {/* Aba FAQ */}
