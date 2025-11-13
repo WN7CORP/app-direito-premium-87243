@@ -199,7 +199,14 @@ import QuestoesFaculdade from "./pages/QuestoesFaculdade";
 import QuizFaculdade from "./pages/QuizFaculdade";
 import GerarQuestoesAdmin from "./pages/admin/GerarQuestoesAdmin";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+      retry: 1,
+    },
+  },
+});
 
 const ScrollToTop = () => {
   const { pathname } = useLocation();
