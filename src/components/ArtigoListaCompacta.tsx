@@ -120,7 +120,7 @@ export const ArtigoListaCompacta = ({
 
   return (
     <ScrollArea className="h-[calc(100vh-220px)]" ref={scrollAreaRef}>
-      <div className="px-4 py-2 pb-40 max-w-4xl mx-auto space-y-2">
+      <div className="px-4 py-2 pb-40 max-w-4xl mx-auto space-y-0">
         {displayedArticles.length === 0 ? (
           <div className="text-center py-12">
             <p className="text-muted-foreground">Nenhum artigo encontrado</p>

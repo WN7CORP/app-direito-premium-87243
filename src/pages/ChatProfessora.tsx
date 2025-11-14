@@ -64,7 +64,7 @@ const ChatProfessora = () => {
   const [currentContent, setCurrentContent] = useState("");
   const [responseLevel, setResponseLevel] = useState<'basic' | 'complete' | 'deep'>('deep');
   const [fastMode, setFastMode] = useState(false); // Modo aprofundado por padrão
-  const [linguagemMode, setLinguagemMode] = useState<'descomplicado' | 'tecnico'>('descomplicado');
+  const [linguagemMode, setLinguagemMode] = useState<'descomplicado' | 'tecnico'>('tecnico');
   const [thinkingStartTime, setThinkingStartTime] = useState<number | null>(null);
   const [elapsedTime, setElapsedTime] = useState(0);
   const [displayedContent, setDisplayedContent] = useState<Record<number, string>>({});
@@ -1132,6 +1132,10 @@ Seja mais detalhado, traga exemplos práticos, jurisprudências relevantes e an�
 
                     // Detectar [SLIDES]
                     const slidesRegex = /\[SLIDES:\s*([^\]]+)\]\s*(\{[\s\S]*?\})\s*\[\/SLIDES\]/gi;
+
+                    // Detectar [EXEMPLO_PRATICO_SLIDES] - novo formato com campos estruturados
+                    const exemploPraticoSlidesRegex = /\[EXEMPLO_PRATICO_SLIDES\]\s*(\[[\s\S]*?\])\s*\[\/EXEMPLO_PRATICO_SLIDES\]/gi;
+
                     const allMatches: Array<{
                       index: number;
                       length: number;
@@ -1286,6 +1290,19 @@ Seja mais detalhado, traga exemplos práticos, jurisprudências relevantes e an�
                           index: m.index,
                           length: m[0].length,
                           type: 'slides',
+                          match: m as RegExpMatchArray
+                        });
+                      }
+                    }
+
+                    // Coletar exemplo prático slides
+                    const exemploPraticoMatches = processedContent.matchAll(exemploPraticoSlidesRegex);
+                    for (const m of exemploPraticoMatches) {
+                      if (m.index !== undefined) {
+                        allMatches.push({
+                          index: m.index,
+                          length: m[0].length,
+                          type: 'exemplo_pratico_slides',
                           match: m as RegExpMatchArray
                         });
                       }
@@ -1597,6 +1614,17 @@ Seja mais detalhado, traga exemplos práticos, jurisprudências relevantes e an�
                           const data = JSON.parse(jsonStr);
                           if (data.slides && Array.isArray(data.slides)) {
                             elements.push(<MarkdownSlides key={key++} title={title} slides={data.slides} />);
+                          }
+                        } else if (type === 'exemplo_pratico_slides') {
+                          const jsonStr = match[1]?.trim();
+                          const slides = JSON.parse(jsonStr);
+                          if (Array.isArray(slides)) {
+                            // Converter formato estruturado para slides
+                            const formattedSlides = slides.map(ex => ({
+                              title: ex.titulo,
+                              content: `**Situação:**\n${ex.situacao}\n\n**Fundamentação:**\n${ex.fundamentacao}\n\n**Solução:**\n${ex.solucao}\n\n**Observação:**\n${ex.observacao}`
+                            }));
+                            elements.push(<MarkdownSlides key={key++} title="📚 Exemplos Práticos" slides={formattedSlides} />);
                           }
                         }
                       } catch (e) {

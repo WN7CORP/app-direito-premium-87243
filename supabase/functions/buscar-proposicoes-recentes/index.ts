@@ -64,7 +64,7 @@ serve(async (req) => {
           .select('*')
           .eq('sigla_tipo', 'PL')
           .gte('data_apresentacao', dataInicio)
-          .order('ordem_cache', { ascending: false });
+          .order('data_apresentacao', { ascending: false });
       
       return new Response(JSON.stringify({ 
         proposicoes: cachedData || [],
