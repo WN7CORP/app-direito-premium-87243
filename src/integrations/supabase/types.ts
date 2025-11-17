@@ -6482,17 +6482,17 @@ export type Database = {
         Row: {
           Artigo: string | null
           id: number
-          "Número do Artigo": string | null
+          Narração: string | null
         }
         Insert: {
           Artigo?: string | null
           id?: number
-          "Número do Artigo"?: string | null
+          Narração?: string | null
         }
         Update: {
           Artigo?: string | null
           id?: number
-          "Número do Artigo"?: string | null
+          Narração?: string | null
         }
         Relationships: []
       }
