@@ -13,7 +13,7 @@ interface VadeMecumDB extends DBSchema {
 }
 
 const DB_NAME = 'vade-mecum-db';
-const DB_VERSION = 7; // Incrementado para forçar atualização após correção de espaçamento CPPM
+const DB_VERSION = 8; // Incrementado para atualizar links de narração do Código Civil
 const CACHE_DURATION = 1000 * 60 * 60 * 24 * 7; // 7 dias
 
 let dbPromise: Promise<IDBPDatabase<VadeMecumDB>> | null = null;
@@ -28,8 +28,8 @@ const getDB = () => {
         }
         db.createObjectStore('articles');
 
-        if (oldVersion < 7) {
-          console.log('Limpando cache antigo do IndexedDB (correção de espaçamento CPPM)...');
+        if (oldVersion < 8) {
+          console.log('Limpando cache antigo do IndexedDB (atualização de narrações do Código Civil)...');
         }
       },
     });
