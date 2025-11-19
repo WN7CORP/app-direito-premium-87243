@@ -9,7 +9,8 @@ import { Badge } from "@/components/ui/badge";
 import { useState, useMemo } from "react";
 
 // Função para normalizar texto (remover acentos e lowercase)
-const normalizeText = (text: string) => {
+const normalizeText = (text: string | null | undefined): string => {
+  if (!text) return "";
   return text
     .toLowerCase()
     .normalize("NFD")
@@ -93,16 +94,17 @@ const OABOQueEstudarArea = () => {
       const materiaNormalizada = normalizeText(materia.materia);
 
       // Buscar match no tema primeiro
-      let resumoMatch = resumos.find(
-        (resumo) => normalizeText(resumo.tema) === materiaNormalizada
-      );
+      let resumoMatch = resumos.find((resumo) => {
+        const temaNormalizado = normalizeText(resumo.tema);
+        return temaNormalizado && temaNormalizado === materiaNormalizada;
+      });
 
       // Se não achou no tema, buscar no subtema
       if (!resumoMatch) {
-        resumoMatch = resumos.find(
-          (resumo) =>
-            resumo.subtema && normalizeText(resumo.subtema) === materiaNormalizada
-        );
+        resumoMatch = resumos.find((resumo) => {
+          const subtemaNormalizado = normalizeText(resumo.subtema);
+          return subtemaNormalizado && subtemaNormalizado === materiaNormalizada;
+        });
       }
 
       return {
