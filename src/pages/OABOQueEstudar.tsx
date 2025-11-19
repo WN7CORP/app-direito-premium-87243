@@ -18,30 +18,53 @@ const OABOQueEstudar = () => {
         .from("PLANO DE ESTUDOS- MATERIAS")
         .select("*");
 
-      if (error) throw error;
+      if (error) {
+        console.error("Erro ao buscar matérias:", error);
+        throw error;
+      }
+
+      console.log("Dados brutos da tabela:", data);
+      console.log("Primeira linha:", data?.[0]);
+      console.log("Colunas disponíveis:", data?.[0] ? Object.keys(data[0]) : []);
+
       return data;
     },
   });
 
-  // Agrupar por área e contar matérias
+  // Processar estrutura de colunas da tabela
+  // Cada coluna (exceto as de controle) é uma área do direito
+  // Cada linha contém um tema/matéria dessa área
   const areas = useMemo(() => {
-    if (!materias) return [];
+    if (!materias || materias.length === 0) return [];
 
-    const areaMap = materias.reduce((acc: any, materia: any) => {
-      const area = materia.area || "Outras Áreas";
-      if (!acc[area]) {
-        acc[area] = {
-          nome: area,
-          count: 0,
-        };
-      }
-      acc[area].count++;
-      return acc;
-    }, {});
+    // Pegar as colunas da primeira linha (excluindo id e outras colunas de controle)
+    const primeiraLinha = materias[0];
+    const todasColunas = Object.keys(primeiraLinha);
+    
+    console.log("Todas as colunas:", todasColunas);
 
-    return Object.values(areaMap).sort((a: any, b: any) =>
-      a.nome.localeCompare(b.nome, "pt-BR")
+    // Filtrar colunas que são áreas (excluir id, created_at, etc.)
+    const colunasAreas = todasColunas.filter(
+      (col) => !["id", "created_at", "updated_at"].includes(col.toLowerCase())
     );
+
+    console.log("Colunas identificadas como áreas:", colunasAreas);
+
+    // Para cada coluna (área), contar quantas matérias não-vazias existem
+    const areasList = colunasAreas.map((coluna) => {
+      const materiasNaoVazias = materias.filter(
+        (row: any) => row[coluna] && row[coluna].toString().trim() !== ""
+      ).length;
+
+      return {
+        nome: coluna,
+        count: materiasNaoVazias,
+      };
+    }).filter((area) => area.count > 0); // Só incluir áreas com conteúdo
+
+    console.log("Áreas processadas:", areasList);
+
+    return areasList.sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR"));
   }, [materias]);
 
   // Filtrar áreas

@@ -37,17 +37,38 @@ const OABOQueEstudarArea = () => {
 
   const areaDecoded = decodeURIComponent(area || "");
 
-  // Buscar matérias da área
-  const { data: materias, isLoading: loadingMaterias } = useQuery({
+  // Buscar matérias da área (são os valores da coluna correspondente)
+  const { data: dadosTabela, isLoading: loadingMaterias } = useQuery({
     queryKey: ["plano-estudos-materias", areaDecoded],
     queryFn: async () => {
       const { data, error } = await (supabase as any)
         .from("PLANO DE ESTUDOS- MATERIAS")
-        .select("*")
-        .eq("area", areaDecoded);
+        .select("*");
 
-      if (error) throw error;
-      return data as Materia[];
+      if (error) {
+        console.error("Erro ao buscar matérias:", error);
+        throw error;
+      }
+
+      console.log("Dados da tabela:", data);
+      console.log("Área selecionada:", areaDecoded);
+
+      // Extrair matérias da coluna correspondente à área
+      const materiasDaArea: Materia[] = [];
+      
+      data?.forEach((row: any, index: number) => {
+        // Verificar se a coluna existe e tem valor
+        if (row[areaDecoded] && row[areaDecoded].toString().trim() !== "") {
+          materiasDaArea.push({
+            id: index + 1,
+            area: areaDecoded,
+            materia: row[areaDecoded].toString().trim(),
+          });
+        }
+      });
+
+      console.log("Matérias extraídas:", materiasDaArea);
+      return materiasDaArea;
     },
   });
 
@@ -66,9 +87,9 @@ const OABOQueEstudarArea = () => {
 
   // Fazer matching de matérias com resumos
   const materiasComResumos = useMemo(() => {
-    if (!materias || !resumos) return [];
+    if (!dadosTabela || !resumos) return [];
 
-    return materias.map((materia) => {
+    return dadosTabela.map((materia) => {
       const materiaNormalizada = normalizeText(materia.materia);
 
       // Buscar match no tema primeiro
@@ -90,7 +111,7 @@ const OABOQueEstudarArea = () => {
         resumo: resumoMatch || null,
       };
     });
-  }, [materias, resumos]);
+  }, [dadosTabela, resumos]);
 
   // Filtrar matérias
   const materiasFiltradas = useMemo(() => {
