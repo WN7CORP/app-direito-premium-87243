@@ -40,6 +40,14 @@ const OAB = () => {
       gradient: "from-[hsl(0,75%,55%)] to-[hsl(350,70%,45%)]",
     },
     {
+      id: "o-que-estudar",
+      title: "O que estudar",
+      description: "Matérias da OAB com conteúdo",
+      icon: Target,
+      route: "/oab/o-que-estudar",
+      gradient: "from-[hsl(0,75%,55%)] to-[hsl(350,70%,45%)]",
+    },
+    {
       id: "videoaulas",
       title: "Videoaulas 2ª Fase",
       description: `${videoaulas || 0} área${videoaulas !== 1 ? 's' : ''} disponíve${videoaulas !== 1 ? 'is' : 'l'}`,
@@ -52,7 +60,7 @@ const OAB = () => {
       id: "questoes",
       title: "Questões OAB",
       description: "Simulado personalizado por tema",
-      icon: Target,
+      icon: Gavel,
       route: "/simulados/personalizado",
       gradient: "from-[hsl(0,75%,55%)] to-[hsl(350,70%,45%)]",
     },
