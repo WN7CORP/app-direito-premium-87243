@@ -139,22 +139,25 @@ const OABOQueEstudarArea = () => {
 
   return (
     <div className="min-h-screen pb-20">
-      {/* Header */}
-      <div className="relative bg-gradient-to-br from-[hsl(0,75%,55%)] to-[hsl(350,70%,45%)] text-white p-6">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => navigate(-1)}
-          className="absolute top-4 left-4 text-white hover:bg-white/20"
-        >
-          <ArrowLeft className="w-5 h-5" />
-        </Button>
-        <div className="max-w-4xl mx-auto pt-8">
-          <h1 className="text-2xl md:text-3xl font-bold mb-2">{areaDecoded}</h1>
-          <p className="text-sm text-white/90">
-            {totalMaterias} {totalMaterias === 1 ? "matéria" : "matérias"} •{" "}
-            {materiasComConteudo} com conteúdo disponível
-          </p>
+      {/* Header Melhorado */}
+      <div className="sticky top-0 z-10 bg-gradient-to-br from-[hsl(0,75%,55%)] to-[hsl(350,70%,45%)] shadow-lg">
+        <div className="relative px-4 py-6">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => navigate(-1)}
+            className="absolute left-4 top-1/2 -translate-y-1/2 text-white hover:bg-white/20"
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </Button>
+          <div className="text-center text-white">
+            <h1 className="text-2xl md:text-3xl font-bold mb-1">{areaDecoded}</h1>
+            <div className="flex items-center justify-center gap-4 text-sm text-white/90">
+              <span>{totalMaterias} {totalMaterias === 1 ? "matéria" : "matérias"}</span>
+              <span>•</span>
+              <span className="font-semibold">{materiasComConteudo} com conteúdo</span>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -171,17 +174,20 @@ const OABOQueEstudarArea = () => {
           </CardContent>
         </Card>
 
-        {/* Lista de Matérias */}
-        <div className="space-y-3">
+        {/* Lista de Matérias - Layout Uniforme */}
+        <div className="grid grid-cols-1 gap-3">
           {materiasFiltradas.map((materia) => (
-            <Card key={materia.id} className="overflow-hidden">
+            <Card key={materia.id} className="overflow-hidden hover:shadow-md transition-shadow">
               <CardContent className="p-5">
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
-                      <h3 className="font-semibold text-base">
-                        {materia.materia}
-                      </h3>
+                <div className="flex items-start gap-3">
+                  {/* Conteúdo Principal */}
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-semibold text-base mb-2 line-clamp-2">
+                      {materia.materia}
+                    </h3>
+                    
+                    {/* Badge de Status */}
+                    <div className="mb-2">
                       {materia.temResumo ? (
                         <Badge className="bg-green-500/10 text-green-700 hover:bg-green-500/20 border-green-500/20">
                           <CheckCircle2 className="w-3 h-3 mr-1" />
@@ -194,28 +200,34 @@ const OABOQueEstudarArea = () => {
                         </Badge>
                       )}
                     </div>
+
+                    {/* Informação de localização */}
                     {materia.temResumo && materia.resumo && (
-                      <p className="text-sm text-muted-foreground">
-                        Disponível em: {materia.resumo.area} → {materia.resumo.tema}
+                      <p className="text-xs text-muted-foreground line-clamp-1">
+                        {materia.resumo.area} → {materia.resumo.tema}
                       </p>
                     )}
                   </div>
-                  {materia.temResumo && materia.resumo && (
-                    <Button
-                      size="sm"
-                      onClick={() =>
-                        navigate(
-                          `/resumos-juridicos/prontos/${encodeURIComponent(
-                            materia.resumo!.area
-                          )}/${encodeURIComponent(materia.resumo!.tema)}`
-                        )
-                      }
-                      className="shrink-0"
-                    >
-                      Ir para conteúdo
-                      <ExternalLink className="w-4 h-4 ml-1" />
-                    </Button>
-                  )}
+
+                  {/* Botão de Ação */}
+                  <div className="flex-shrink-0">
+                    {materia.temResumo && materia.resumo && (
+                      <Button
+                        size="sm"
+                        onClick={() =>
+                          navigate(
+                            `/resumos-juridicos/prontos/${encodeURIComponent(
+                              materia.resumo!.area
+                            )}/${encodeURIComponent(materia.resumo!.tema)}`
+                          )
+                        }
+                        className="whitespace-nowrap"
+                      >
+                        <ExternalLink className="w-4 h-4 mr-1" />
+                        Ver conteúdo
+                      </Button>
+                    )}
+                  </div>
                 </div>
               </CardContent>
             </Card>

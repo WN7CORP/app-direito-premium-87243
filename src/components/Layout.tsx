@@ -81,7 +81,11 @@ export const Layout = ({ children }: LayoutProps) => {
     /\/biblioteca-lideranca\/\d+/.test(location.pathname) ||
     /\/biblioteca-fora-da-toga\/\d+/.test(location.pathname) ||
     location.pathname.startsWith("/jogos-juridicos") ||
-    location.pathname.startsWith("/camara-deputados");
+    location.pathname.startsWith("/camara-deputados") ||
+    // Esconder em páginas de OAB "O que estudar"
+    location.pathname.startsWith("/oab/o-que-estudar") ||
+    // Esconder em páginas de resumos jurídicos prontos
+    location.pathname.startsWith("/resumos-juridicos/prontos/");
   
   // Esconder Header em páginas com header próprio
   const hideHeader = location.pathname === "/professora" || location.pathname === "/chat-professora";
