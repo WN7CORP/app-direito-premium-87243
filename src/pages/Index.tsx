@@ -72,7 +72,7 @@ const Index = () => {
   });
   const academicCategories = [{
     id: "faculdade",
-    title: "Faculdade",
+    title: "Estudar",
     description: "Conteúdo para aprender sobre Direito",
     icon: GraduationCap,
     gradient: "from-[hsl(0,75%,55%)] to-[hsl(350,70%,45%)]",
