@@ -127,55 +127,11 @@ const Aprender = () => {
     },
   ];
 
-  const estagiosDireito = [
-    {
-      id: "buscar-vagas",
-      titulo: "Buscar Vagas",
-      descricao: "Encontre oportunidades de estágio em todo o Brasil",
-      icon: SearchIcon,
-      path: "/aprender/estagios/buscar",
-      iconBg: "bg-emerald-600 shadow-lg shadow-emerald-500/50",
-      glowColor: "rgb(5, 150, 105)",
-    },
-    {
-      id: "blog-estagios",
-      titulo: "Blog",
-      descricao: "Dicas e orientações para conseguir seu estágio",
-      icon: Newspaper,
-      path: "/aprender/estagios/blog",
-      iconBg: "bg-blue-600 shadow-lg shadow-blue-500/50",
-      glowColor: "rgb(37, 99, 235)",
-    },
-  ];
-
-  const jogosEducativos = [
-    {
-      id: "jogos-juridicos",
-      titulo: "Jogos Jurídicos",
-      descricao: "Aprenda brincando: forca, cruzadas, caça-palavras e stop",
-      icon: Gamepad2,
-      path: "/jogos-juridicos",
-      iconBg: "bg-pink-600 shadow-lg shadow-pink-500/50",
-      glowColor: "rgb(219, 39, 119)",
-      disponivel: false
-    },
-    {
-      id: "simulacao-juridica",
-      titulo: "Jogo de Simulação",
-      descricao: "Pratique argumentação em audiências virtuais interativas",
-      icon: Gavel,
-      path: "/simulacao-juridica",
-      iconBg: "bg-amber-600 shadow-lg shadow-amber-500/50",
-      glowColor: "rgb(217, 119, 6)",
-      disponivel: false
-    },
-  ];
-
   return (
     <div className="px-3 py-4 max-w-6xl mx-auto">
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-2xl md:text-3xl font-bold mb-2">Faculdade</h1>
+        <h1 className="text-2xl md:text-3xl font-bold mb-2">Estudar</h1>
         <p className="text-sm md:text-base text-muted-foreground">
           Conteúdo completo para aprender sobre Direito
         </p>
@@ -339,89 +295,6 @@ const Aprender = () => {
           })}
         </div>
       </div> */}
-
-      {/* Seção Estágios em Direito */}
-      <div className="mt-12">
-        <div className="mb-6">
-          <h2 className="text-xl md:text-2xl font-bold mb-2">Estágios em Direito</h2>
-          <p className="text-sm text-muted-foreground">
-            Encontre oportunidades e dicas para sua carreira
-          </p>
-        </div>
-
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
-          {estagiosDireito.map((opcao) => {
-            const Icon = opcao.icon;
-            return (
-              <button
-                key={opcao.id}
-                onClick={() => navigate(opcao.path)}
-                className="bg-card rounded-2xl md:rounded-xl p-5 md:p-4 text-left transition-all hover:scale-105 hover:shadow-xl min-h-[180px] md:min-h-[160px] flex flex-col border border-border shadow-lg"
-              >
-                <div className={`${opcao.iconBg} rounded-full p-3 md:p-2.5 w-fit mb-4 md:mb-3`}>
-                  <Icon className="w-6 h-6 md:w-5 md:h-5 text-white" />
-                </div>
-                <h3 className="text-sm md:text-sm font-bold text-foreground mb-2 md:mb-1.5">
-                  {opcao.titulo}
-                </h3>
-                <p className="text-muted-foreground text-xs md:text-[11px] line-clamp-3">
-                  {opcao.descricao}
-                </p>
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Seção Jogos Educativos */}
-      <div className="mt-12 pb-20">
-        <div className="mb-6">
-          <h2 className="text-xl md:text-2xl font-bold mb-2">Jogos Educativos</h2>
-          <p className="text-sm text-muted-foreground">
-            Aprenda sobre direito jogando
-          </p>
-        </div>
-
-        <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
-          {jogosEducativos.map((jogo) => {
-            const Icon = jogo.icon;
-            return (
-              <Card
-                key={jogo.id}
-                onClick={() => jogo.disponivel && navigate(jogo.path)}
-                className={`transition-all border-2 border-transparent bg-gradient-to-br from-card to-card/80 group shadow-xl overflow-hidden relative animate-fade-in ${
-                  jogo.disponivel
-                    ? 'cursor-pointer hover:scale-105 hover:shadow-2xl hover:-translate-y-1 hover:border-accent/50'
-                    : 'opacity-60 cursor-not-allowed'
-                }`}
-              >
-                {!jogo.disponivel && (
-                  <Badge className="absolute top-2 right-2 bg-yellow-500 z-10">
-                    Em Breve
-                  </Badge>
-                )}
-                
-                {/* Brilho colorido no topo */}
-                <div 
-                  className="absolute top-0 left-0 right-0 h-1 opacity-80"
-                  style={{
-                    background: `linear-gradient(90deg, transparent, ${jogo.glowColor}, transparent)`,
-                    boxShadow: `0 0 20px ${jogo.glowColor}`
-                  }}
-                />
-                
-                <CardContent className="p-5 flex flex-col items-center text-center min-h-[180px] justify-center">
-                  <div className={`flex items-center justify-center w-12 h-12 rounded-full ${jogo.iconBg} transition-transform group-hover:scale-110 mb-3`}>
-                    <Icon className="w-5 h-5 text-white" />
-                  </div>
-                  <h3 className="font-bold text-base mb-2 text-foreground">{jogo.titulo}</h3>
-                  <p className="text-xs text-muted-foreground line-clamp-2">{jogo.descricao}</p>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
-      </div>
     </div>
   );
 };
