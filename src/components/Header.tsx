@@ -109,9 +109,9 @@ export const Header = () => {
     return <header className="sticky top-0 z-50 w-full border-b border-border bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80">
         <div className="flex h-16 md:h-14 items-center justify-between px-4 md:px-6 max-w-7xl mx-auto">
           <div className="flex items-center gap-3 md:gap-2">
-            <img src="/logo.webp" alt="OAB Premium" className="w-10 h-10 md:w-8 md:h-8 rounded-lg object-cover" />
+            <img src="/logo.webp" alt="Direito - Estudos Premium" className="w-10 h-10 md:w-8 md:h-8 rounded-lg object-cover" />
             <h1 className="md:text-lg text-foreground font-sans tracking-tight font-thin text-base">
-              OAB Premium
+              Direito - Estudos Premium
             </h1>
           </div>
           <VLibrasButton />
