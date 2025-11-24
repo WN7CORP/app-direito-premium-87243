@@ -129,29 +129,33 @@ export default function MapaMentalAreas() {
           </div>
         </div>
 
-        {/* Grid de áreas */}
-        {areas.length > 0 ? <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+        {/* Lista de áreas */}
+        {areas.length > 0 ? <div className="flex flex-col gap-4">
             {areas.map(areaData => {
           const cores = CORES_POR_AREA[areaData.area.toUpperCase()] || CORES_DEFAULT;
-          return <Card key={areaData.area} className={`cursor-pointer hover:scale-105 transition-all bg-card ${cores.bordaCor} border-2 group relative overflow-hidden`} onClick={() => navigate(`/mapa-mental/area/${encodeURIComponent(areaData.area)}`)}>
+          return <Card key={areaData.area} className={`cursor-pointer hover:scale-[1.02] transition-all bg-card ${cores.bordaCor} border-2 group relative overflow-hidden`} onClick={() => navigate(`/mapa-mental/area/${encodeURIComponent(areaData.area)}`)}>
                   {/* Brilho no topo */}
                   <div className="absolute top-0 left-0 right-0 h-1 opacity-80" style={{
               background: `linear-gradient(90deg, transparent, ${cores.glowColor}, transparent)`,
               boxShadow: `0 0 20px ${cores.glowColor}`
             }} />
 
-                  <CardContent className="p-6">
-                    <div className={`w-16 h-16 rounded-full bg-gradient-to-br ${cores.cor} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-lg`}>
-                      <Brain className="w-8 h-8 text-white" />
-                    </div>
+                  <CardContent className="p-5">
+                    <div className="flex items-center gap-4">
+                      <div className={`w-16 h-16 rounded-full bg-gradient-to-br ${cores.cor} flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg flex-shrink-0`}>
+                        <Brain className="w-8 h-8 text-white" />
+                      </div>
 
-                    <h3 className="text-xs font-bold text-foreground mb-2 leading-tight line-clamp-2 min-h-[2.5rem]">
-                      {areaData.area}
-                    </h3>
-                    
-                    <p className="text-muted-foreground text-sm">
-                      {areaData.count} {areaData.count === 1 ? 'mapa' : 'mapas'}
-                    </p>
+                      <div className="flex-1">
+                        <h3 className="text-base font-bold text-foreground mb-1">
+                          {areaData.area}
+                        </h3>
+                        
+                        <p className="text-muted-foreground text-sm">
+                          {areaData.count} {areaData.count === 1 ? 'mapa' : 'mapas'}
+                        </p>
+                      </div>
+                    </div>
                   </CardContent>
                 </Card>;
         })}
