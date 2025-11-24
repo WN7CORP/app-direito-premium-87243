@@ -317,8 +317,8 @@ const Index = () => {
                             <img src={noticia.imagem} alt={noticia.titulo} className="w-full h-full object-cover" />
                             <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                           </div>}
-                        <div className="p-3 bg-black/40">
-                          <h3 className="text-sm font-bold text-white mb-2 leading-tight text-left">
+                        <div className="p-3 bg-black/40 h-[88px] flex flex-col justify-between">
+                          <h3 className="text-sm font-bold text-white leading-tight text-left line-clamp-2">
                             {noticia.titulo}
                           </h3>
                           <div className="flex items-center justify-between text-xs">
