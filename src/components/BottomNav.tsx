@@ -1,5 +1,5 @@
 import { useNavigate, useLocation } from "react-router-dom";
-import { Home, Wrench, Menu, MonitorSmartphone, Sparkles, Library } from "lucide-react";
+import { Home, Wrench, Menu, MonitorSmartphone, Sparkles, Calendar } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { AppSidebar } from "./AppSidebar";
@@ -27,7 +27,7 @@ export const BottomNav = () => {
     {
       id: "plano-estudos",
       label: "Plano de Estudos",
-      icon: Library,
+      icon: Calendar,
       path: "/plano-estudos",
     },
     {
