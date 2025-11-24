@@ -275,11 +275,11 @@ const Index = () => {
                       }}>
                         {item.title}
                       </h4>
-                      <p className="text-white/80 text-xs line-clamp-1" style={{
-                        textShadow: '1px 1px 2px rgba(0,0,0,0.5)'
-                      }}>
-                        {item.description}
-                      </p>
+                        <p className="text-white/80 text-xs line-clamp-2" style={{
+                          textShadow: '1px 1px 2px rgba(0,0,0,0.5)'
+                        }}>
+                          {item.description}
+                        </p>
                     </div>
                   </button>
                 );
@@ -308,37 +308,37 @@ const Index = () => {
                 {[{
                   id: "bibliotecas",
                   title: "Bibliotecas",
-                  description: "Acesse milhares de leis",
+                  description: "Acesse códigos e legislações atualizadas",
                   icon: Library,
                   route: "/bibliotecas"
                 }, {
                   id: "resumos",
                   title: "Resumos",
-                  description: "Conteúdo simplificado",
+                  description: "Sínteses das principais matérias do Direito",
                   icon: Scroll,
                   route: "/resumos-juridicos"
                 }, {
                   id: "flashcards",
                   title: "Flashcards",
-                  description: "Memorize com eficiência",
+                  description: "Fixe conceitos e institutos jurídicos",
                   icon: Sparkles,
                   route: "/flashcards"
                 }, {
                   id: "mapa-mental",
                   title: "Mapa Mental",
-                  description: "Visualize conexões",
+                  description: "Conecte institutos e ramos do Direito",
                   icon: Brain,
                   route: "/mapa-mental"
                 }, {
                   id: "plano-estudos",
                   title: "Plano de Estudos",
-                  description: "Organize sua rotina",
+                  description: "Planeje sua preparação para OAB e concursos",
                   icon: Calendar,
                   route: "/plano-estudos"
                 }, {
                   id: "videoaulas",
                   title: "Videoaulas",
-                  description: "Aprenda com vídeos",
+                  description: "Aulas completas de todas as matérias jurídicas",
                   icon: Play,
                   route: "/aprender"
                 }].map(item => {
