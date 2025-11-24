@@ -263,11 +263,11 @@ const Index = () => {
               }].map(item => {
                 const Icon = item.icon;
                 return (
-                  <button 
-                    key={item.id} 
-                    onClick={() => navigate(item.route)}
-                    className="bg-white/10 backdrop-blur-sm rounded-xl p-3 text-left transition-all hover:bg-white/20 hover:scale-105 flex flex-col gap-2"
-                  >
+                    <button 
+                      key={item.id} 
+                      onClick={() => navigate(item.route)}
+                      className="bg-white/15 backdrop-blur-sm rounded-xl p-3 text-left transition-all hover:bg-white/25 hover:scale-105 flex flex-col gap-2 shadow-lg"
+                    >
                     <Icon className="w-5 h-5 text-white" />
                     <div>
                       <h4 className="text-sm font-bold text-white mb-0.5" style={{
@@ -344,25 +344,25 @@ const Index = () => {
                 }].map(item => {
                   const Icon = item.icon;
                   return (
-                    <button 
-                      key={item.id} 
-                      onClick={() => navigate(item.route)}
-                      className="bg-white/10 backdrop-blur-sm rounded-xl p-3 text-left transition-all hover:bg-white/20 hover:scale-105 flex flex-col gap-2"
-                    >
-                      <Icon className="w-5 h-5 text-white" />
-                      <div>
-                        <h4 className="text-sm font-bold text-white mb-0.5" style={{
-                          textShadow: '1px 1px 3px rgba(0,0,0,0.5)'
-                        }}>
-                          {item.title}
-                        </h4>
-                        <p className="text-white/80 text-xs line-clamp-1" style={{
-                          textShadow: '1px 1px 2px rgba(0,0,0,0.5)'
-                        }}>
-                          {item.description}
-                        </p>
-                      </div>
-                    </button>
+                  <button 
+                    key={item.id} 
+                    onClick={() => navigate(item.route)}
+                    className="bg-white/15 backdrop-blur-sm rounded-xl p-3 text-left transition-all hover:bg-white/25 hover:scale-105 flex flex-col gap-2 shadow-lg"
+                  >
+                    <Icon className="w-5 h-5 text-white" />
+                    <div>
+                      <h4 className="text-sm font-bold text-white mb-0.5" style={{
+                        textShadow: '1px 1px 3px rgba(0,0,0,0.5)'
+                      }}>
+                        {item.title}
+                      </h4>
+                      <p className="text-white/80 text-xs line-clamp-2" style={{
+                        textShadow: '1px 1px 2px rgba(0,0,0,0.5)'
+                      }}>
+                        {item.description}
+                      </p>
+                    </div>
+                  </button>
                   );
                 })}
               </div>
