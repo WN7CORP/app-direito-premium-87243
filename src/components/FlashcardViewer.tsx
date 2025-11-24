@@ -26,17 +26,48 @@ export const FlashcardViewer = ({
   const [isFlipped, setIsFlipped] = useState(false);
   const [autoPlayEnabled, setAutoPlayEnabled] = useState(true);
   const [direction, setDirection] = useState<'left' | 'right'>('right');
+  const [isPlayingAudio, setIsPlayingAudio] = useState(false);
   const { playNarration, stopNarration } = useNarrationPlayer();
 
-  // Função para reproduzir áudio
+  // Função para reproduzir áudio com fallback robusto
   const playAudio = async (url: string) => {
-    if (!url || !autoPlayEnabled) return;
+    console.log('🔊 playAudio chamado com URL:', url);
+    
+    if (!url) {
+      console.warn('⚠️ URL de áudio vazia');
+      return;
+    }
+    
+    if (!autoPlayEnabled) {
+      console.log('🔇 Auto-play desabilitado');
+      return;
+    }
     
     const audio = new Audio(url);
+    console.log('🎼 Objeto Audio criado, tentando reproduzir...');
+    setIsPlayingAudio(true);
+    
+    audio.onended = () => setIsPlayingAudio(false);
+    audio.onerror = () => {
+      console.error('❌ Erro no elemento de áudio');
+      setIsPlayingAudio(false);
+    };
+    
     try {
+      // Tentar usar o contexto primeiro
       await playNarration(audio);
+      console.log('✅ Áudio reproduzido com sucesso via contexto');
     } catch (error) {
-      console.log('Erro ao reproduzir áudio:', error);
+      console.warn('⚠️ Contexto falhou, usando reprodução direta:', error);
+      // Fallback: tocar direto
+      try {
+        await audio.play();
+        console.log('✅ Áudio reproduzido via fallback direto');
+      } catch (playError) {
+        console.error('❌ Falha total na reprodução:', playError);
+        console.error('URL problemática:', url);
+        setIsPlayingAudio(false);
+      }
     }
   };
 
@@ -45,7 +76,17 @@ export const FlashcardViewer = ({
     const currentCard = flashcards[currentIndex];
     if (!currentCard) return;
 
+    console.log('🎵 [Flashcard Audio Debug]', {
+      currentIndex,
+      isFlipped,
+      autoPlayEnabled,
+      'audio-pergunta': currentCard["audio-pergunta"],
+      'audio-resposta': currentCard["audio-resposta"],
+      cardFront: currentCard.front?.substring(0, 50)
+    });
+
     if (!isFlipped && currentCard["audio-pergunta"]) {
+      console.log('▶️ Tentando tocar áudio da PERGUNTA:', currentCard["audio-pergunta"]);
       playAudio(currentCard["audio-pergunta"]);
     }
 
@@ -68,12 +109,21 @@ export const FlashcardViewer = ({
   const handleFlip = () => {
     const currentCard = flashcards[currentIndex];
     const newFlipState = !isFlipped;
+    
+    console.log('🔄 Virando card:', {
+      newFlipState,
+      'audio-resposta': currentCard["audio-resposta"],
+      'audio-pergunta': currentCard["audio-pergunta"]
+    });
+    
     setIsFlipped(newFlipState);
     
     // Toca o áudio correspondente ao virar o card
     if (newFlipState && currentCard["audio-resposta"]) {
+      console.log('▶️ Tentando tocar áudio da RESPOSTA:', currentCard["audio-resposta"]);
       playAudio(currentCard["audio-resposta"]);
     } else if (!newFlipState && currentCard["audio-pergunta"]) {
+      console.log('▶️ Tentando tocar áudio da PERGUNTA:', currentCard["audio-pergunta"]);
       playAudio(currentCard["audio-pergunta"]);
     }
   };
@@ -145,7 +195,15 @@ export const FlashcardViewer = ({
                 </p>
               )}
               <div className="flex-1 flex items-center justify-center text-center">
-                <p className="text-lg font-semibold mb-2">{currentCard.front}</p>
+                <div className="w-full space-y-3">
+                  <p className="text-lg font-semibold mb-2">{currentCard.front}</p>
+                  {currentCard["audio-pergunta"] && (
+                    <div className="flex items-center justify-center gap-2 text-xs text-[hsl(270,60%,55%)]">
+                      <Volume2 className="w-3 h-3" />
+                      <span>{isPlayingAudio && !isFlipped ? 'Reproduzindo...' : 'Narração disponível'}</span>
+                    </div>
+                  )}
+                </div>
               </div>
               <p className="text-xs text-muted-foreground mt-4 text-center">Clique para ver a resposta</p>
             </div>
@@ -157,10 +215,16 @@ export const FlashcardViewer = ({
                 </p>
               )}
               <div className="space-y-4 mt-6">
-                <div className="text-center">
+                <div className="text-center space-y-3">
                   <p className="font-semibold text-foreground leading-relaxed text-base">
                     {currentCard.back}
                   </p>
+                  {currentCard["audio-resposta"] && (
+                    <div className="flex items-center justify-center gap-2 text-xs text-[hsl(270,60%,55%)]">
+                      <Volume2 className="w-3 h-3" />
+                      <span>{isPlayingAudio && isFlipped ? 'Reproduzindo...' : 'Narração disponível'}</span>
+                    </div>
+                  )}
                 </div>
                 
                 {currentCard.exemplo && <div className="bg-background/50 rounded-lg p-4 border border-[hsl(270,60%,55%)]/20">
@@ -181,20 +245,57 @@ export const FlashcardViewer = ({
         </motion.div>
       </AnimatePresence>
 
-      <div className="flex justify-between items-center gap-4">
-        <Button onClick={handlePrevious} variant="outline" disabled={flashcards.length <= 1} className="flex-1">
-          <ChevronLeft className="w-4 h-4 mr-2" />
-          Anterior
-        </Button>
+      <div className="space-y-3">
+        {hasAudio && (
+          <div className="flex gap-2 justify-center">
+            {currentCard["audio-pergunta"] && !isFlipped && (
+              <Button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  playAudio(currentCard["audio-pergunta"]!);
+                }}
+                variant="outline"
+                size="sm"
+                className="gap-2"
+                disabled={isPlayingAudio}
+              >
+                <Volume2 className="w-4 h-4" />
+                Ouvir Pergunta
+              </Button>
+            )}
+            {currentCard["audio-resposta"] && isFlipped && (
+              <Button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  playAudio(currentCard["audio-resposta"]!);
+                }}
+                variant="outline"
+                size="sm"
+                className="gap-2"
+                disabled={isPlayingAudio}
+              >
+                <Volume2 className="w-4 h-4" />
+                Ouvir Resposta
+              </Button>
+            )}
+          </div>
+        )}
+        
+        <div className="flex justify-between items-center gap-4">
+          <Button onClick={handlePrevious} variant="outline" disabled={flashcards.length <= 1} className="flex-1">
+            <ChevronLeft className="w-4 h-4 mr-2" />
+            Anterior
+          </Button>
 
-        <Button onClick={handleFlip} variant="ghost" size="icon">
-          <RotateCw className="w-4 h-4" />
-        </Button>
+          <Button onClick={handleFlip} variant="ghost" size="icon">
+            <RotateCw className="w-4 h-4" />
+          </Button>
 
-        <Button onClick={handleNext} variant="outline" disabled={flashcards.length <= 1} className="flex-1">
-          Próximo
-          <ChevronRight className="w-4 h-4 ml-2" />
-        </Button>
+          <Button onClick={handleNext} variant="outline" disabled={flashcards.length <= 1} className="flex-1">
+            Próximo
+            <ChevronRight className="w-4 h-4 ml-2" />
+          </Button>
+        </div>
       </div>
     </div>;
 };
