@@ -5,7 +5,6 @@ import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { BibliotecaIntro } from "@/components/BibliotecaIntro";
 import { LivroCard } from "@/components/LivroCard";
-import { AreaLivrosCarousel } from "@/components/AreaLivrosCarousel";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -248,21 +247,42 @@ const BibliotecaEstudos = () => {
           </CardContent>
         </Card>
 
-        {/* Lista de seções com carrosséis */}
-        <div className="space-y-8">
+        {/* Grid de Áreas */}
+        <div className="grid grid-cols-2 gap-4 px-2">
           {areasFiltradas.length > 0 ? (
             areasFiltradas.map(([area, data]) => (
-              <AreaLivrosCarousel
+              <div
                 key={area}
-                area={area}
-                livros={debouncedSearch ? data.livros : data.livrosCarrossel}
-                totalLivros={data.livros.length}
-                onVerTodos={(area) => setSelectedArea(area)}
-                onLivroClick={(id) => navigate(`/biblioteca-estudos/${id}`)}
-              />
+                onClick={() => setSelectedArea(area)}
+                className="relative aspect-[3/4] rounded-xl overflow-hidden cursor-pointer group"
+              >
+                {/* Imagem de fundo */}
+                {data.capa ? (
+                  <img
+                    src={data.capa}
+                    alt={area}
+                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                  />
+                ) : (
+                  <div className="absolute inset-0 bg-gradient-to-br from-secondary to-secondary/50" />
+                )}
+                
+                {/* Gradiente escuro para legibilidade */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
+                
+                {/* Conteúdo */}
+                <div className="absolute inset-0 p-4 flex flex-col justify-end">
+                  <h3 className="text-white font-bold text-lg mb-1 line-clamp-2">
+                    {area}
+                  </h3>
+                  <p className="text-white/80 text-sm">
+                    {data.livros.length} {data.livros.length === 1 ? 'livro' : 'livros'}
+                  </p>
+                </div>
+              </div>
             ))
           ) : (
-            <div className="text-center py-12">
+            <div className="col-span-2 text-center py-12">
               <p className="text-muted-foreground">
                 Nenhum resultado encontrado para "{debouncedSearch}"
               </p>
