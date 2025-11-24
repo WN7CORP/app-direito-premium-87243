@@ -13,54 +13,70 @@ const VadeMecumTodas = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearchFocused, setIsSearchFocused] = useState(false);
 
-  const categories = [
+  const todasFuncionalidades = [
     {
       id: "constituicao",
-      title: "Constituição",
-      description: "Acessa a Constituição Federal",
+      titulo: "Constituição Federal",
+      descricao: "Acesse a Carta Magna brasileira",
       icon: Crown,
-      iconBg: "bg-orange-500",
       route: "/constituicao"
     },
     {
       id: "codigos",
-      title: "Códigos e Leis",
-      description: "Explore códigos e legislação",
+      titulo: "Códigos e Leis",
+      descricao: "Explore toda legislação essencial",
       icon: Scale,
-      iconBg: "bg-red-500",
       route: "/codigos"
     },
     {
       id: "legislacao-penal",
-      title: "Legislação Penal",
-      description: "LEP, Drogas, Maria da Penha",
+      titulo: "Legislação Penal",
+      descricao: "LEP, Drogas, Maria da Penha",
       icon: Shield,
-      iconBg: "bg-red-600",
       route: "/legislacao-penal-especial"
     },
     {
       id: "estatutos",
-      title: "Estatutos",
-      description: "Consulte estatutos especiais",
+      titulo: "Estatutos",
+      descricao: "Consulte estatutos especiais",
       icon: Gavel,
-      iconBg: "bg-purple-500",
       route: "/estatutos"
     },
     {
       id: "previdenciario",
-      title: "Previdenciário",
-      description: "Leis de Benefícios e Custeio",
+      titulo: "Previdenciário",
+      descricao: "Leis de Benefícios e Custeio",
       icon: HandCoins,
-      iconBg: "bg-emerald-500",
       route: "/previdenciario"
     },
     {
       id: "sumulas",
-      title: "Súmulas",
-      description: "Súmulas do STF e STJ",
+      titulo: "Súmulas (STF/STJ)",
+      descricao: "Súmulas vinculantes e ordinárias",
       icon: BookText,
-      iconBg: "bg-blue-500",
       route: "/sumulas"
+    },
+    {
+      id: "eleicoes",
+      titulo: "Eleições (TSE)",
+      descricao: "Dados e resultados eleitorais",
+      icon: Vote,
+      route: "#",
+      disabled: true
+    },
+    {
+      id: "camara",
+      titulo: "Câmara dos Deputados",
+      descricao: "Deputados e votações",
+      icon: Landmark,
+      route: "/camara-deputados"
+    },
+    {
+      id: "leis-ordinarias",
+      titulo: "Leis Ordinárias",
+      descricao: "Legislação federal recente",
+      icon: ScrollText,
+      route: "#leis-ordinarias"
     }
   ];
 
@@ -114,27 +130,57 @@ const VadeMecumTodas = () => {
         )}
       </div>
       
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {categories.map((category, index) => {
-          const Icon = category.icon;
+      {/* Grid de Funcionalidades - Estilo Vermelho */}
+      <div className="space-y-3">
+        <h2 className="text-xl font-bold text-foreground">Todas as Funcionalidades</h2>
+        <p className="text-sm text-muted-foreground">Acesse rapidamente o que você precisa</p>
+      </div>
+
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
+        {todasFuncionalidades.map((func, index) => {
+          const Icon = func.icon;
           return (
             <button
-              key={category.id}
-              onClick={() => navigate(category.route)}
-              className="bg-card rounded-xl p-4 text-left transition-all hover:scale-105 hover:shadow-xl animate-fade-in"
+              key={func.id}
+              onClick={() => {
+                if (func.disabled) {
+                  toast.info("Em breve! Esta funcionalidade está sendo desenvolvida.");
+                } else if (func.route.startsWith('#')) {
+                  // Scroll suave para a seção
+                  const elemento = document.querySelector(func.route);
+                  if (elemento) {
+                    elemento.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                  }
+                } else {
+                  navigate(func.route);
+                }
+              }}
+              className={`bg-gradient-to-br from-[hsl(0,75%,55%)] to-[hsl(350,70%,45%)] rounded-2xl p-5 text-left transition-all hover:scale-105 hover:shadow-2xl min-h-[160px] flex flex-col relative overflow-hidden shadow-xl animate-fade-in ${func.disabled ? 'opacity-70' : ''}`}
               style={{
-                animationDelay: `${index * 0.1}s`,
+                animationDelay: `${index * 0.05}s`,
                 animationFillMode: 'backwards'
               }}
             >
-              <div className={`${category.iconBg} rounded-full p-3 w-fit mb-3 shadow-lg`}>
+              {func.disabled && (
+                <div className="absolute top-2 right-2 bg-yellow-500 text-white text-[10px] font-semibold px-2 py-0.5 rounded-full z-20">
+                  Em breve
+                </div>
+              )}
+              
+              <div className="absolute inset-0 bg-gradient-to-tl from-black/60 via-black/30 to-transparent pointer-events-none" />
+              
+              <div className="bg-white/20 rounded-xl p-2.5 w-fit relative z-10 shadow-lg mb-3">
                 <Icon className="w-6 h-6 text-white" />
               </div>
-              <h3 className="text-base font-bold text-foreground mb-1">
-                {category.title}
+              
+              <h3 className="text-lg font-bold text-white mb-2 relative z-10" 
+                  style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.6)' }}>
+                {func.titulo}
               </h3>
-              <p className="text-muted-foreground text-xs">
-                {category.description}
+              
+              <p className="text-white/80 text-xs line-clamp-2 relative z-10" 
+                 style={{ textShadow: '1px 1px 3px rgba(0,0,0,0.5)' }}>
+                {func.descricao}
               </p>
             </button>
           );
@@ -142,59 +188,18 @@ const VadeMecumTodas = () => {
       </div>
 
       {/* Leis Ordinárias - Carrossel */}
-      <div className="animate-fade-in" style={{ animationDelay: '0.3s', animationFillMode: 'backwards' }}>
+      <div id="leis-ordinarias" className="animate-fade-in" style={{ animationDelay: '0.5s', animationFillMode: 'backwards' }}>
         <LeisOrdinariasCarousel />
       </div>
 
       {/* Projetos de Lei Recentes (PL) */}
-      <div className="animate-fade-in" style={{ animationDelay: '0.4s', animationFillMode: 'backwards' }}>
+      <div className="animate-fade-in" style={{ animationDelay: '0.55s', animationFillMode: 'backwards' }}>
         <ProposicoesRecentesCarousel />
       </div>
 
       {/* Leis Complementares Recentes (PLP) */}
-      <div className="animate-fade-in" style={{ animationDelay: '0.45s', animationFillMode: 'backwards' }}>
+      <div className="animate-fade-in" style={{ animationDelay: '0.6s', animationFillMode: 'backwards' }}>
         <ProposicoesPlpCarousel />
-      </div>
-
-      {/* Seção Poder Legislativo */}
-      <div className="space-y-4 animate-fade-in" style={{ animationDelay: '0.5s', animationFillMode: 'backwards' }}>
-        <h2 className="text-xl font-bold text-foreground">Poder Legislativo</h2>
-        
-        <div className="grid grid-cols-2 gap-4">
-          <div
-            className="bg-card rounded-xl p-4 text-left opacity-60 cursor-not-allowed animate-fade-in relative"
-            style={{ animationDelay: '0.5s', animationFillMode: 'backwards' }}
-          >
-            <div className="absolute top-2 right-2 bg-yellow-500 text-white text-[10px] font-semibold px-2 py-0.5 rounded-full">
-              Em breve
-            </div>
-            <div className="bg-green-500 rounded-full p-3 w-fit mb-3 shadow-lg">
-              <Vote className="w-6 h-6 text-white" />
-            </div>
-            <h3 className="text-base font-bold text-foreground mb-1">
-              Eleições
-            </h3>
-            <p className="text-muted-foreground text-xs">
-              Dados e resultados eleitorais
-            </p>
-          </div>
-
-          <button
-            onClick={() => navigate("/camara-deputados")}
-            className="bg-card rounded-xl p-4 text-left transition-all hover:scale-105 hover:shadow-xl animate-fade-in"
-            style={{ animationDelay: '0.6s', animationFillMode: 'backwards' }}
-          >
-            <div className="bg-green-600 rounded-full p-3 w-fit mb-3 shadow-lg">
-              <Landmark className="w-6 h-6 text-white" />
-            </div>
-            <h3 className="text-base font-bold text-foreground mb-1">
-              Câmara dos Deputados
-            </h3>
-            <p className="text-muted-foreground text-xs">
-              Deputados e votações
-            </p>
-          </button>
-        </div>
       </div>
 
       {/* Card "Sobre o Vade Mecum" - Movido para baixo */}
