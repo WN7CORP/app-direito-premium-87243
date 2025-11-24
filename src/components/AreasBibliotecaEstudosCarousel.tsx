@@ -33,19 +33,24 @@ const AreasBibliotecaEstudosCarousel = () => {
     },
   });
 
-  // Agrupar por área e pegar a primeira capa de cada área
+  // Agrupar por área e pegar a primeira capa de cada área + contar livros
   const areas = useMemo(() => {
     if (!items) return [];
     
-    const areaMap = new Map<string, string | null>();
+    const areaMap = new Map<string, { capa: string | null; count: number }>();
     items.forEach(item => {
-      if (item.Área && !areaMap.has(item.Área)) {
-        areaMap.set(item.Área, item["Capa-area"]);
+      if (item.Área) {
+        const existing = areaMap.get(item.Área);
+        if (!existing) {
+          areaMap.set(item.Área, { capa: item["Capa-area"], count: 1 });
+        } else {
+          existing.count += 1;
+        }
       }
     });
 
     return Array.from(areaMap.entries())
-      .map(([area, capa]) => ({ area, capa }))
+      .map(([area, data]) => ({ area, capa: data.capa, count: data.count }))
       .sort((a, b) => a.area.localeCompare(b.area, 'pt-BR'));
   }, [items]);
 
@@ -64,7 +69,7 @@ const AreasBibliotecaEstudosCarousel = () => {
   return (
     <div className="overflow-hidden" ref={emblaRef}>
       <div className="flex gap-3">
-        {areas.map(({ area, capa }) => (
+        {areas.map(({ area, capa, count }) => (
           <div
             key={area}
             onClick={() => navigate("/biblioteca-estudos", { state: { selectedArea: area } })}
@@ -84,6 +89,21 @@ const AreasBibliotecaEstudosCarousel = () => {
                 </div>
               )}
               <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent" />
+              
+              {/* Badge "Atualizado 2026" - topo */}
+              <div className="absolute top-2 left-2">
+                <span className="text-[9px] font-medium text-white/70 bg-black/40 backdrop-blur-sm px-2 py-0.5 rounded">
+                  Atualizado 2026
+                </span>
+              </div>
+              
+              {/* Quantidade de livros - topo direito */}
+              <div className="absolute top-2 right-2">
+                <span className="text-[9px] font-medium text-white/70 bg-black/40 backdrop-blur-sm px-2 py-0.5 rounded">
+                  {count} {count === 1 ? 'livro' : 'livros'}
+                </span>
+              </div>
+              
               <div className="absolute bottom-0 left-0 right-0 p-3">
                 <h3 className="text-white font-semibold text-sm leading-tight line-clamp-2">
                   {area}
