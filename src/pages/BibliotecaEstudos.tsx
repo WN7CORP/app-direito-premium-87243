@@ -250,11 +250,15 @@ const BibliotecaEstudos = () => {
         {/* Lista de Áreas */}
         <div className="space-y-3 px-2">
           {areasFiltradas.length > 0 ? (
-            areasFiltradas.map(([area, data]) => (
+            areasFiltradas.map(([area, data], index) => (
               <Card
                 key={area}
                 onClick={() => setSelectedArea(area)}
-                className="cursor-pointer group overflow-hidden border border-accent/20 hover:border-accent/60 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_20px_50px_rgba(8,_112,_184,_0.7)]"
+                className="cursor-pointer group overflow-hidden border border-accent/20 hover:border-accent/60 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_20px_50px_rgba(8,_112,_184,_0.7)] animate-fade-in"
+                style={{
+                  animationDelay: `${index * 0.1}s`,
+                  animationFillMode: 'backwards'
+                }}
               >
                 <div className="flex items-center gap-4 p-4">
                   {/* Imagem/Ícone - Formato capa de livro (2:3) */}
