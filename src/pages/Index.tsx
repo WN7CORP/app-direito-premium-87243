@@ -161,79 +161,6 @@ const Index = () => {
           </span>
         </div>
 
-        {/* Biblioteca de Estudos - Carrossel de Áreas */}
-        <div className="space-y-3">
-          <div className="flex items-center justify-between px-1">
-            <div>
-              <h2 className="md:text-lg text-foreground font-normal text-base">Biblioteca de Estudos</h2>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                Explore por área do Direito
-              </p>
-            </div>
-            <Button 
-              size="sm"
-              onClick={() => navigate('/biblioteca-estudos')}
-              className="bg-primary/70 hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-300 rounded-full px-3 text-xs flex items-center gap-1"
-            >
-              Ver mais
-              <ArrowRight className="w-3 h-3" />
-            </Button>
-          </div>
-          
-          <AreasBibliotecaEstudosCarousel />
-        </div>
-
-        {/* Academic Environment Section */}
-        <div className="space-y-3">
-          <h2 className="md:text-lg text-foreground px-1 font-normal text-base">Ambiente Acadêmico</h2>
-          
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
-            {academicCategories.map(category => {
-            const Icon = category.icon;
-            return <button key={category.id} onClick={() => navigate(category.route)} className={`bg-gradient-to-br ${category.gradient} rounded-2xl md:rounded-xl p-5 md:p-4 text-left transition-all hover:scale-105 hover:shadow-2xl min-h-[160px] md:min-h-[140px] flex flex-col relative overflow-hidden shadow-xl`}>
-                  <div className="absolute inset-0 bg-gradient-to-tl from-black/60 via-black/30 to-transparent pointer-events-none" />
-                  <div className="bg-white/20 rounded-xl md:rounded-lg p-2.5 md:p-2 w-fit relative z-10 shadow-lg mb-3 md:mb-2">
-                    <Icon className="w-6 h-6 md:w-5 md:h-5 text-white" />
-                  </div>
-                  <h3 className="text-lg md:text-base font-bold text-white mb-2 md:mb-1 relative z-10" style={{
-                textShadow: '2px 2px 4px rgba(0,0,0,0.6)'
-              }}>
-                    {category.title}
-                  </h3>
-                  <p className="text-white/80 text-xs md:text-[11px] line-clamp-2 relative z-10" style={{
-                textShadow: '1px 1px 3px rgba(0,0,0,0.5)'
-              }}>
-                    {category.description}
-                  </p>
-                </button>;
-          })}
-          </div>
-        </div>
-
-        {/* Cursos em Destaque */}
-        <div className="space-y-3">
-          <div className="flex items-center justify-between px-1">
-            <div>
-              <h2 className="md:text-lg text-foreground font-normal text-base">
-                Cursos em Destaque
-              </h2>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                Descomplicando o Direito
-              </p>
-            </div>
-            <Button 
-              size="sm"
-              onClick={() => navigate('/iniciando-direito')}
-              className="bg-primary/70 hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-300 rounded-full px-3 text-xs flex items-center gap-1"
-            >
-              Ver mais
-              <ArrowRight className="w-3 h-3" />
-            </Button>
-          </div>
-          
-          <CursosCarousel />
-        </div>
-
         {/* Notícias em Destaque - Carrossel */}
         <div className="space-y-3">
           <div className="flex items-center justify-between px-1">
@@ -336,6 +263,79 @@ const Index = () => {
             })}
               </div>
             </div> : null}
+        </div>
+
+        {/* Biblioteca de Estudos - Carrossel de Áreas */}
+        <div className="space-y-3">
+          <div className="flex items-center justify-between px-1">
+            <div>
+              <h2 className="md:text-lg text-foreground font-normal text-base">Biblioteca de Estudos</h2>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Explore por área do Direito
+              </p>
+            </div>
+            <Button 
+              size="sm"
+              onClick={() => navigate('/biblioteca-estudos')}
+              className="bg-primary/70 hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-300 rounded-full px-3 text-xs flex items-center gap-1"
+            >
+              Ver mais
+              <ArrowRight className="w-3 h-3" />
+            </Button>
+          </div>
+          
+          <AreasBibliotecaEstudosCarousel />
+        </div>
+
+        {/* Academic Environment Section */}
+        <div className="space-y-3">
+          <h2 className="md:text-lg text-foreground px-1 font-normal text-base">Ambiente Acadêmico</h2>
+          
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+            {academicCategories.map(category => {
+            const Icon = category.icon;
+            return <button key={category.id} onClick={() => navigate(category.route)} className={`bg-gradient-to-br ${category.gradient} rounded-2xl md:rounded-xl p-5 md:p-4 text-left transition-all hover:scale-105 hover:shadow-2xl min-h-[160px] md:min-h-[140px] flex flex-col relative overflow-hidden shadow-xl`}>
+                  <div className="absolute inset-0 bg-gradient-to-tl from-black/60 via-black/30 to-transparent pointer-events-none" />
+                  <div className="bg-white/20 rounded-xl md:rounded-lg p-2.5 md:p-2 w-fit relative z-10 shadow-lg mb-3 md:mb-2">
+                    <Icon className="w-6 h-6 md:w-5 md:h-5 text-white" />
+                  </div>
+                  <h3 className="text-lg md:text-base font-bold text-white mb-2 md:mb-1 relative z-10" style={{
+                textShadow: '2px 2px 4px rgba(0,0,0,0.6)'
+              }}>
+                    {category.title}
+                  </h3>
+                  <p className="text-white/80 text-xs md:text-[11px] line-clamp-2 relative z-10" style={{
+                textShadow: '1px 1px 3px rgba(0,0,0,0.5)'
+              }}>
+                    {category.description}
+                  </p>
+                </button>;
+          })}
+          </div>
+        </div>
+
+        {/* Cursos em Destaque */}
+        <div className="space-y-3">
+          <div className="flex items-center justify-between px-1">
+            <div>
+              <h2 className="md:text-lg text-foreground font-normal text-base">
+                Cursos em Destaque
+              </h2>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Descomplicando o Direito
+              </p>
+            </div>
+            <Button 
+              size="sm"
+              onClick={() => navigate('/iniciando-direito')}
+              className="bg-primary/70 hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-300 rounded-full px-3 text-xs flex items-center gap-1"
+            >
+              Ver mais
+              <ArrowRight className="w-3 h-3" />
+            </Button>
+          </div>
+          
+          <CursosCarousel />
         </div>
       </div>
     </div>;
