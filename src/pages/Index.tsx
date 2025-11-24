@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
-import { Crown, Gavel, FileText, Scale, GraduationCap, BookOpen as BookOpenIcon, Library, Hammer, Target, Search, Headphones, Play, Loader2, Newspaper, ArrowRight, Sparkles, Calendar, Scroll, Brain, Monitor, Video, BookOpen } from "lucide-react";
+import { Crown, Gavel, FileText, Scale, GraduationCap, BookOpen as BookOpenIcon, Library, Hammer, Target, Search, Headphones, Play, Loader2, Newspaper, ArrowRight, Sparkles, Scroll, Brain, Monitor, Video, BookOpen } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import useEmblaCarousel from 'embla-carousel-react';
@@ -249,6 +249,12 @@ const Index = () => {
                 route: "/resumos-juridicos"
               },
               {
+                id: "bibliotecas",
+                title: "Bibliotecas",
+                icon: Library,
+                route: "/bibliotecas"
+              },
+              {
                 id: "flashcards",
                 title: "Flashcards",
                 icon: Sparkles,
@@ -265,12 +271,6 @@ const Index = () => {
                 title: "Cursos",
                 icon: GraduationCap,
                 route: "/iniciando-direito"
-              },
-              {
-                id: "plano",
-                title: "Plano de Estudos",
-                icon: Calendar,
-                route: "/plano-estudos"
               },
               {
                 id: "videoaulas",
