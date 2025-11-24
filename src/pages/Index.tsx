@@ -269,7 +269,7 @@ const Index = () => {
         <div className="space-y-3">
           <h2 className="md:text-lg text-foreground px-1 font-normal text-base">Ferramentas de Estudo</h2>
           
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
+          <div className="grid grid-cols-3 gap-3 md:gap-4">
             {[
               {
                 id: "resumos",
