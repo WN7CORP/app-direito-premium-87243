@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
-import { Crown, Gavel, FileText, Scale, GraduationCap, BookOpen as BookOpenIcon, Library, Hammer, Target, Search, Headphones, Play, Loader2, BookMarked, Newspaper, ArrowRight, Sparkles, Calendar } from "lucide-react";
+import { Crown, Gavel, FileText, Scale, GraduationCap, BookOpen as BookOpenIcon, Library, Hammer, Target, Search, Headphones, Play, Loader2, Newspaper, ArrowRight, Sparkles, Calendar, Scroll, Brain, Monitor, Video, BookOpen } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import useEmblaCarousel from 'embla-carousel-react';
@@ -82,7 +82,7 @@ const Index = () => {
     id: "vade-mecum",
     title: "Vade Mecum",
     description: "Constituição, códigos, leis e súmulas",
-    icon: BookMarked,
+    icon: Scale,
     gradient: "from-[hsl(0,75%,55%)] to-[hsl(350,70%,45%)]",
     route: "/vade-mecum"
   }, {
@@ -269,23 +269,63 @@ const Index = () => {
         <div className="space-y-3">
           <h2 className="md:text-lg text-foreground px-1 font-normal text-base">Em Alta</h2>
           
-          <div className="grid grid-cols-2 gap-3 md:gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
             {[
               {
                 id: "vade-mecum",
                 title: "Vade Mecum",
-                description: "Constituição, códigos, leis e súmulas",
-                icon: BookMarked,
+                description: "Legislação atualizada",
+                icon: Scale,
                 gradient: "from-[hsl(0,75%,55%)] to-[hsl(350,70%,45%)]",
                 route: "/vade-mecum"
               },
               {
                 id: "professora",
-                title: "Professora IA",
-                description: "Tire suas dúvidas com a IA",
+                title: "Professora",
+                description: "Professora jurídica para tirar dúvidas",
                 icon: GraduationCap,
                 gradient: "from-[hsl(0,75%,55%)] to-[hsl(350,70%,45%)]",
                 route: "/professora"
+              },
+              {
+                id: "biblioteca-oab",
+                title: "Biblioteca da OAB",
+                description: "Livros e materiais OAB",
+                icon: Library,
+                gradient: "from-[hsl(0,75%,55%)] to-[hsl(350,70%,45%)]",
+                route: "/biblioteca-oab"
+              },
+              {
+                id: "o-que-estudar",
+                title: "O que estudar para OAB",
+                description: "Guia completo de estudos",
+                icon: BookOpen,
+                gradient: "from-[hsl(0,75%,55%)] to-[hsl(350,70%,45%)]",
+                route: "/oab/o-que-estudar"
+              },
+              {
+                id: "videoaulas-oab",
+                title: "Videoaulas 2ª Fase OAB",
+                description: "Aulas práticas e peças",
+                icon: Video,
+                gradient: "from-[hsl(0,75%,55%)] to-[hsl(350,70%,45%)]",
+                route: "/videoaulas-oab"
+              },
+              {
+                id: "questoes-oab",
+                title: "Questões OAB",
+                description: "Pratique questões da prova",
+                icon: Gavel,
+                gradient: "from-[hsl(0,75%,55%)] to-[hsl(350,70%,45%)]",
+                route: "/simulados/personalizado"
+              },
+              {
+                id: "simulado-oab",
+                title: "Simulado OAB",
+                description: "Simulados completos",
+                icon: Target,
+                gradient: "from-[hsl(0,75%,55%)] to-[hsl(350,70%,45%)]",
+                route: "/simulados/exames"
               }
             ].map(category => {
               const Icon = category.icon;
@@ -332,7 +372,7 @@ const Index = () => {
               {
                 id: "resumos",
                 title: "Resumos Jurídicos",
-                icon: FileText,
+                icon: Scroll,
                 route: "/resumos-juridicos"
               },
               {
@@ -344,7 +384,7 @@ const Index = () => {
               {
                 id: "mapa-mental",
                 title: "Mapa Mental",
-                icon: Target,
+                icon: Brain,
                 route: "/mapa-mental"
               },
               {
@@ -362,7 +402,7 @@ const Index = () => {
               {
                 id: "desktop",
                 title: "Acesso Desktop",
-                icon: Play,
+                icon: Monitor,
                 route: "/acesso-desktop"
               }
             ].map(item => {
@@ -396,19 +436,19 @@ const Index = () => {
                 id: "oab-biblioteca",
                 title: "Biblioteca OAB",
                 icon: Library,
-                route: "/oab"
+                route: "/biblioteca-oab"
               },
               {
                 id: "oab-videoaulas",
                 title: "Videoaulas OAB",
-                icon: Play,
-                route: "/oab"
+                icon: Video,
+                route: "/videoaulas-oab"
               },
               {
                 id: "oab-simulados",
                 title: "Simulados OAB",
                 icon: Target,
-                route: "/oab"
+                route: "/simulados/exames"
               }
             ].map(item => {
               const Icon = item.icon;
