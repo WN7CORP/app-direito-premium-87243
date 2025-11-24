@@ -148,6 +148,7 @@ import JogoRouter from "./pages/jogos/JogoRouter";
 import OAB from "./pages/OAB";
 import OABOQueEstudar from "./pages/OABOQueEstudar";
 import OABOQueEstudarArea from "./pages/OABOQueEstudarArea";
+import OABFuncoes from "./pages/OABFuncoes";
 import MeuBrasil from "./pages/MeuBrasil";
 import MeuBrasilHistoria from "./pages/MeuBrasilHistoria";
 import MeuBrasilHistoriaView from "./pages/MeuBrasilHistoriaView";
@@ -328,6 +329,7 @@ const App = () => {
               <Route path="/flashcards/temas" element={<FlashcardsTemas />} />
               <Route path="/flashcards/estudar" element={<FlashcardsEstudar />} />
               <Route path="/oab" element={<OAB />} />
+              <Route path="/oab-funcoes" element={<OABFuncoes />} />
               <Route path="/oab/o-que-estudar" element={<OABOQueEstudar />} />
               <Route path="/oab/o-que-estudar/:area" element={<OABOQueEstudarArea />} />
               <Route path="/videoaulas-oab" element={<VideoaulasOAB />} />

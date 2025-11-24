@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
-import { Crown, Gavel, FileText, Scale, GraduationCap, BookOpen as BookOpenIcon, Library, Hammer, Target, Search, Headphones, Play, Loader2, Newspaper, ArrowRight, Sparkles, Scroll, Brain, Monitor, Video, BookOpen, Calendar } from "lucide-react";
+import { Crown, Gavel, FileText, Scale, GraduationCap, BookOpen as BookOpenIcon, Library, Hammer, Target, Search, Headphones, Play, Loader2, Newspaper, ArrowRight, Sparkles, Scroll, Brain, Monitor, Video, BookOpen, Calendar, Settings } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import useEmblaCarousel from 'embla-carousel-react';
@@ -327,13 +327,13 @@ const Index = () => {
                 description: "Estudos completos para OAB",
                 icon: Gavel,
                 gradient: "from-[hsl(0,75%,55%)] to-[hsl(350,70%,45%)]",
-                route: "/biblioteca-oab"
+                route: "/oab-funcoes"
               },
               {
                 id: "ferramentas",
                 title: "Ferramentas",
                 description: "Assistente IA e analisador",
-                icon: Sparkles,
+                icon: Settings,
                 gradient: "from-[hsl(0,75%,55%)] to-[hsl(350,70%,45%)]",
                 route: "/ferramentas"
               }
