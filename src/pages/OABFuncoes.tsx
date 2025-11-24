@@ -70,17 +70,17 @@ const OABFuncoes = () => {
               <button
                 key={funcao.id}
                 onClick={() => navigate(funcao.route)}
-                className="bg-gradient-to-br from-[hsl(0,75%,55%)] to-[hsl(350,70%,45%)] rounded-xl p-4 text-left transition-all hover:scale-[1.02] hover:shadow-2xl flex items-center gap-4 relative overflow-hidden shadow-xl"
+                className="bg-gradient-to-br from-[hsl(0,75%,55%)] to-[hsl(350,70%,45%)] rounded-xl p-4 text-left transition-all hover:scale-[1.02] hover:shadow-2xl flex items-center gap-4 relative overflow-hidden shadow-xl min-h-[88px]"
               >
                 <div className="absolute inset-0 bg-gradient-to-tl from-black/60 via-black/30 to-transparent pointer-events-none" />
-                <div className="bg-white/20 rounded-lg p-3 relative z-10 shadow-lg">
+                <div className="bg-white/20 rounded-lg p-3 relative z-10 shadow-lg flex-shrink-0">
                   <Icon className="w-6 h-6 text-white" />
                 </div>
-                <div className="flex-1 relative z-10">
-                  <h3 className="text-base font-bold text-white mb-1" style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.6)' }}>
+                <div className="flex-1 relative z-10 min-w-0">
+                  <h3 className="text-base font-bold text-white mb-1 line-clamp-1" style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.6)' }}>
                     {funcao.title}
                   </h3>
-                  <p className="text-white/80 text-sm" style={{ textShadow: '1px 1px 3px rgba(0,0,0,0.5)' }}>
+                  <p className="text-white/80 text-sm line-clamp-1" style={{ textShadow: '1px 1px 3px rgba(0,0,0,0.5)' }}>
                     {funcao.description}
                   </p>
                 </div>
