@@ -1,5 +1,5 @@
 import { useNavigate, useLocation } from "react-router-dom";
-import { Home, GraduationCap, Menu, MonitorSmartphone, Sparkles, Library } from "lucide-react";
+import { Home, Wrench, Menu, MonitorSmartphone, Sparkles, Library } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { AppSidebar } from "./AppSidebar";
@@ -25,16 +25,16 @@ export const BottomNav = () => {
       path: "/",
     },
     {
-      id: "professora",
-      label: "Professora",
-      icon: GraduationCap,
-      path: "/chat-professora",
-    },
-    {
       id: "biblioteca",
       label: "Bibliotecas",
       icon: Library,
       path: "/bibliotecas",
+    },
+    {
+      id: "ferramentas",
+      label: "Ferramentas",
+      icon: Wrench,
+      path: "/ferramentas",
     },
     {
       id: "novidades",
