@@ -65,14 +65,14 @@ const NoticiaCard = ({ titulo, capa, portal, categoria, dataHora, analise_ia, on
   return (
     <Card 
       onClick={onClick}
-      className="cursor-pointer hover:scale-[1.01] hover:shadow-xl transition-all border border-border hover:border-primary/50 bg-card group overflow-hidden"
+      className="cursor-pointer hover:scale-[1.01] hover:shadow-xl transition-all border border-border hover:border-primary/50 bg-card group overflow-hidden h-32"
     >
-      <CardContent className="p-0">
+      <CardContent className="p-0 h-full">
         {/* Layout Horizontal: Imagem à esquerda, conteúdo à direita */}
-        <div className="flex gap-3">
+        <div className="flex gap-3 h-full">
           {/* Imagem de capa - à esquerda */}
           {capa && (
-            <div className="relative w-32 md:w-40 flex-shrink-0 overflow-hidden bg-muted">
+            <div className="relative w-32 flex-shrink-0 overflow-hidden bg-muted">
               <img
                 src={capa}
                 alt={titulo}
@@ -85,23 +85,25 @@ const NoticiaCard = ({ titulo, capa, portal, categoria, dataHora, analise_ia, on
           )}
           
           {/* Conteúdo - à direita */}
-          <div className="flex-1 p-3 space-y-2 min-w-0">
-            {/* Categoria e Badge de Análise */}
-            <div className="flex items-center gap-2 flex-wrap">
-              <Badge className={`${getCategoryColor(categoria)} text-white text-xs px-2 py-0.5`}>
-                {categoria}
-              </Badge>
-              {analise_ia && (
-                <Badge variant="outline" className="text-xs px-2 py-0.5 bg-primary/10 text-primary border-primary/30">
-                  ✨ Análise IA
+          <div className="flex-1 p-3 flex flex-col justify-between min-w-0">
+            <div className="space-y-2">
+              {/* Categoria e Badge de Análise */}
+              <div className="flex items-center gap-2 flex-wrap">
+                <Badge className={`${getCategoryColor(categoria)} text-white text-xs px-2 py-0.5`}>
+                  {categoria}
                 </Badge>
-              )}
-            </div>
+                {analise_ia && (
+                  <Badge variant="outline" className="text-xs px-2 py-0.5 bg-primary/10 text-primary border-primary/30">
+                    ✨ Análise IA
+                  </Badge>
+                )}
+              </div>
 
-            {/* Título */}
-            <h3 className="font-semibold text-sm md:text-base text-foreground line-clamp-2 group-hover:text-primary transition-colors leading-tight text-left">
-              {titulo}
-            </h3>
+              {/* Título */}
+              <h3 className="font-semibold text-sm text-foreground line-clamp-2 group-hover:text-primary transition-colors leading-tight text-left">
+                {titulo}
+              </h3>
+            </div>
 
             {/* Portal e Data/Hora */}
             <div className="flex items-center justify-between text-xs text-muted-foreground gap-2 flex-wrap">
@@ -111,7 +113,7 @@ const NoticiaCard = ({ titulo, capa, portal, categoria, dataHora, analise_ia, on
               </div>
               <div className="flex items-center gap-1 flex-shrink-0">
                 <Calendar className="w-3 h-3" />
-                <span className="whitespace-nowrap">{formatarDataHora(dataHora)}</span>
+                <span className="whitespace-nowrap text-[10px]">{formatarDataHora(dataHora)}</span>
               </div>
             </div>
           </div>

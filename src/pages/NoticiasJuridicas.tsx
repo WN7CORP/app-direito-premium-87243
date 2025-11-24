@@ -49,11 +49,11 @@ const NoticiasJuridicas = () => {
   };
   return <div className="min-h-screen pb-20 bg-background">
       {/* Header com introdução */}
-      <div className="bg-primary px-4 py-6 shadow-lg">
+      <div className="bg-gradient-to-br from-[hsl(0,75%,55%)] to-[hsl(350,70%,45%)] px-4 py-6 shadow-lg">
         <div className="max-w-6xl mx-auto">
           <div className="mb-2">
-            <h1 className="text-2xl md:text-3xl font-bold text-primary-foreground mb-2">Notícias em Destaque</h1>
-            <p className="text-primary-foreground/90 text-sm">
+            <h1 className="text-2xl md:text-3xl font-bold text-white mb-2">Notícias em Destaque</h1>
+            <p className="text-white/90 text-sm">
               Acompanhe as principais notícias do Brasil sobre concursos, direito, OAB e muito mais
             </p>
           </div>
@@ -64,7 +64,7 @@ const NoticiasJuridicas = () => {
       <div className="sticky top-0 z-10 bg-background border-b border-border shadow-sm">
         <div className="max-w-6xl mx-auto px-4 py-3">
           <div className="flex gap-2 overflow-x-auto scrollbar-hide">
-            {categorias.map(categoria => <Button key={categoria} onClick={() => setCategoriaAtiva(categoria)} variant={categoriaAtiva === categoria ? "default" : "outline"} size="sm" className={`whitespace-nowrap ${categoriaAtiva === categoria ? "" : "hover:bg-primary/10"}`}>
+            {categorias.map(categoria => <Button key={categoria} onClick={() => setCategoriaAtiva(categoria)} variant={categoriaAtiva === categoria ? "default" : "outline"} size="sm" className={`whitespace-nowrap ${categoriaAtiva === categoria ? "bg-gradient-to-br from-[hsl(0,75%,55%)] to-[hsl(350,70%,45%)] text-white" : "hover:bg-primary/10"}`}>
                 {categoria}
               </Button>)}
           </div>
@@ -96,7 +96,18 @@ const NoticiasJuridicas = () => {
               {noticiasFiltradas.length} {noticiasFiltradas.length === 1 ? 'notícia encontrada' : 'notícias encontradas'}
             </div>
             <div className="max-w-6xl mx-auto space-y-3">
-              {noticiasFiltradas.map(noticia => <NoticiaCard key={noticia.id} {...noticia} onClick={() => handleNoticiaClick(noticia)} />)}
+              {noticiasFiltradas.map((noticia, index) => (
+                <div
+                  key={noticia.id}
+                  className="animate-fade-in"
+                  style={{
+                    animationDelay: `${index * 0.05}s`,
+                    animationFillMode: 'backwards'
+                  }}
+                >
+                  <NoticiaCard {...noticia} onClick={() => handleNoticiaClick(noticia)} />
+                </div>
+              ))}
             </div>
           </>}
       </div>
