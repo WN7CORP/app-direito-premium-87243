@@ -95,8 +95,8 @@ const OAB = () => {
           </p>
         </div>
 
-        {/* Categories Grid - Estilo Vade Mecum */}
-        <div className="grid grid-cols-2 gap-3 md:gap-4">
+        {/* Categories List - Estilo Aprender */}
+        <div className="space-y-3">
           {oabCategories.map((category) => {
             const Icon = category.icon;
             return (
@@ -104,31 +104,21 @@ const OAB = () => {
                 key={category.id}
                 onClick={() => !category.disabled && navigate(category.route)}
                 disabled={category.disabled}
-                className={`bg-gradient-to-br ${category.gradient} rounded-2xl p-4 md:p-5 text-left transition-all hover:scale-105 hover:shadow-xl flex flex-col items-center justify-center gap-3 min-h-[140px] md:min-h-[160px] relative overflow-hidden disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100`}
+                className={`w-full bg-gradient-to-br ${category.gradient} rounded-xl p-4 text-left transition-all hover:scale-[1.02] hover:shadow-xl flex items-center gap-4 relative overflow-hidden disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100`}
               >
-                <div className="absolute inset-0 bg-gradient-to-tl from-black/60 via-black/30 to-transparent pointer-events-none" />
+                <div className="absolute inset-0 bg-gradient-to-r from-black/20 via-transparent to-black/10 pointer-events-none" />
                 
-                {/* Ícone pequeno centralizado */}
-                <div className="bg-white/20 rounded-lg p-2.5 md:p-3 w-fit relative z-10 shadow-lg">
-                  <Icon className="w-8 h-8 md:w-10 md:h-10 text-white" />
+                {/* Ícone à esquerda com tamanho padronizado */}
+                <div className="flex items-center justify-center w-12 h-12 rounded-full bg-white/20 shadow-lg relative z-10 flex-shrink-0">
+                  <Icon className="w-6 h-6 text-white" />
                 </div>
                 
-                {/* Título e descrição centralizados */}
-                <div className="text-center relative z-10 space-y-1">
-                  <h3
-                    className="text-base md:text-lg font-bold text-white"
-                    style={{
-                      textShadow: '2px 2px 4px rgba(0,0,0,0.6)',
-                    }}
-                  >
+                {/* Título e descrição à direita */}
+                <div className="flex-1 relative z-10 space-y-0.5">
+                  <h3 className="text-base md:text-lg font-bold text-white">
                     {category.title}
                   </h3>
-                  <p
-                    className="text-white/90 text-xs md:text-sm line-clamp-2"
-                    style={{
-                      textShadow: '1px 1px 3px rgba(0,0,0,0.5)',
-                    }}
-                  >
+                  <p className="text-white/80 text-xs md:text-sm">
                     {category.description}
                   </p>
                 </div>
