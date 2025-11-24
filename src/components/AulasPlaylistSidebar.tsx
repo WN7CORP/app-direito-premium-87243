@@ -28,7 +28,7 @@ export const AulasPlaylistSidebar = ({ area, aulas, aulaAtual }: AulasPlaylistSi
   );
 
   const handleVoltar = () => {
-    navigate(`/iniciando-direito/${encodeURIComponent(area)}`);
+    navigate(`/iniciando-direito/${encodeURIComponent(area)}/temas`);
   };
 
   return (
@@ -65,7 +65,7 @@ export const AulasPlaylistSidebar = ({ area, aulas, aulaAtual }: AulasPlaylistSi
             return (
               <button
                 key={aula.ordem}
-                onClick={() => navigate(`/iniciando-direito/${encodeURIComponent(area)}/${encodeURIComponent(aula.tema)}`)}
+                onClick={() => navigate(`/iniciando-direito/${encodeURIComponent(area)}/aula/${encodeURIComponent(aula.tema)}`)}
                 className={`
                   w-full p-3 rounded-lg text-left transition-all duration-200
                   hover:bg-accent/50

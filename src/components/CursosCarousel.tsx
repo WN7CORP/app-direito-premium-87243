@@ -70,7 +70,7 @@ export const CursosCarousel = () => {
         {cursosDestaque.map((curso, idx) => (
           <div
             key={idx}
-            onClick={() => navigate(`/iniciando-direito/${encodeURIComponent(curso.area)}/${encodeURIComponent(curso.tema)}`)}
+            onClick={() => navigate(`/iniciando-direito/${encodeURIComponent(curso.area)}/aula/${encodeURIComponent(curso.tema)}`)}
             className="flex-shrink-0 w-[320px] cursor-pointer hover:scale-105 transition-all duration-300 group rounded-xl overflow-hidden shadow-lg hover:shadow-2xl border border-accent/30 bg-gradient-to-br from-[hsl(var(--gradient-red-start))] to-[hsl(var(--gradient-red-end))]"
           >
             {/* Container da imagem - limpo, sem texto sobreposto */}

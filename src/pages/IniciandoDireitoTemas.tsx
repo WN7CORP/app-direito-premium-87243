@@ -117,8 +117,11 @@ export default function IniciandoDireitoTemas() {
                 <span className="text-xs font-bold text-white">{temaData.ordem}</span>
               </div>
               
-              {/* Card do tema com gradiente de fundo */}
-              <button onClick={() => navigate(`/iniciando-direito/${encodeURIComponent(areaDecoded)}/${encodeURIComponent(temaData.tema)}`)} className="w-full text-left relative overflow-hidden backdrop-blur-sm border-2 border-border/50 rounded-lg hover:border-primary hover:shadow-2xl shadow-xl transition-all duration-300 group hover:scale-[1.02]" style={{
+              {/* Card do tema */}
+              <button 
+                onClick={() => navigate(`/iniciando-direito/${encodeURIComponent(areaDecoded)}/aula/${encodeURIComponent(temaData.tema)}`)} 
+                className="w-full text-left relative overflow-hidden backdrop-blur-sm border-2 border-border/50 rounded-lg hover:border-primary hover:shadow-2xl shadow-xl transition-all duration-300 group hover:scale-[1.02]" 
+                style={{
             background: `linear-gradient(135deg, hsl(var(--card)) 0%, hsl(var(--card)) 70%, ${corArea.replace('bg-', '')} 100%)`
           }}>
                 {/* Shimmer effect on hover */}

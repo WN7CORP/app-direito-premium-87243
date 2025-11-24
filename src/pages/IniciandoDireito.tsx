@@ -188,32 +188,24 @@ export default function IniciandoDireito() {
           </p>
         </div>
 
-        {/* Timeline de Áreas */}
+        {/* Grid de Áreas - 2 por linha */}
         <div className="space-y-4">
           <h2 className="text-xl font-bold text-foreground mb-4">Áreas do Direito</h2>
           
-          <div className="relative space-y-6">
-            {/* Linha vertical com gradiente */}
-            <div className="absolute left-[11px] top-0 bottom-0 w-0.5 bg-gradient-to-b from-primary via-primary/50 to-transparent" />
-
-            {areas.map((areaData, index) => <div key={areaData.area} className="relative pl-10 animate-fade-in-up" style={{
-            animationDelay: `${index * 0.15}s`,
-            animationFillMode: 'backwards'
-          }}>
-                {/* Marcador colorido maior com pulso e glow */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {areas.map((areaData, index) => (
+              <div 
+                key={areaData.area} 
+                className="animate-fade-in-up" 
+                style={{
+                  animationDelay: `${index * 0.1}s`,
+                  animationFillMode: 'backwards'
+                }}
+              >
+                {/* Card da área */}
                 <div 
-                  className="absolute left-0 top-2 w-7 h-7 rounded-full border-4 border-background shadow-lg animate-pulse" 
-                  style={{
-                    backgroundColor: areaData.corHex,
-                    boxShadow: CORES_AREAS[areaData.area]?.glow || '0 0 30px rgba(107, 114, 128, 0.5)',
-                    animationDelay: `${index * 0.15 + 0.3}s`
-                  }} 
-                />
-                
-                {/* Card da área com background gradiente vibrante */}
-                <div 
-                  onClick={() => navigate(`/iniciando-direito/${encodeURIComponent(areaData.area)}`)} 
-                  className="w-full relative overflow-hidden backdrop-blur-sm border-2 rounded-xl p-6 shadow-xl transition-all duration-500 group hover:scale-[1.03] cursor-pointer"
+                  onClick={() => navigate(`/iniciando-direito/${encodeURIComponent(areaData.area)}/sobre`)} 
+                  className="relative overflow-hidden backdrop-blur-sm border-2 rounded-xl p-6 shadow-xl transition-all duration-500 group hover:scale-[1.03] cursor-pointer h-full"
                   style={{
                     background: `linear-gradient(135deg, hsl(var(--card)) 0%, hsl(var(--card)) 70%, ${areaData.corHex}30 100%)`,
                     borderColor: `${areaData.corHex}40`,
@@ -228,7 +220,7 @@ export default function IniciandoDireito() {
                     e.currentTarget.style.boxShadow = '';
                   }}
                 >
-                  {/* Shimmer effect mais visível */}
+                  {/* Shimmer effect */}
                   <div 
                     className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" 
                     style={{
@@ -252,7 +244,7 @@ export default function IniciandoDireito() {
                         className="text-white px-3 py-1.5 rounded-full text-xs font-semibold shadow-md animate-bounce-in" 
                         style={{
                           backgroundColor: areaData.corHex,
-                          animationDelay: `${index * 0.15 + 0.5}s`,
+                          animationDelay: `${index * 0.1 + 0.3}s`,
                           animationFillMode: 'backwards'
                         }}
                       >
@@ -265,13 +257,15 @@ export default function IniciandoDireito() {
                       <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
                         Primeiros temas:
                       </p>
-                      {areaData.primeirosTemas.map((tema, i) => <div key={i} className="flex items-start gap-2 text-sm text-muted-foreground group-hover:text-foreground transition-colors">
+                      {areaData.primeirosTemas.map((tema, i) => (
+                        <div key={i} className="flex items-start gap-2 text-sm text-muted-foreground group-hover:text-foreground transition-colors">
                           <BookOpen className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: areaData.corHex }} />
-                          <span className="flex-1">{tema}</span>
-                        </div>)}
+                          <span className="flex-1 line-clamp-1">{tema}</span>
+                        </div>
+                      ))}
                     </div>
 
-                    {/* Botão "Ver todos os temas" com animação */}
+                    {/* Botão "Ver curso" */}
                     <div className="mt-5 pt-4 border-t border-border/30">
                       <button 
                         className="relative w-full px-5 py-3 rounded-lg font-semibold text-sm transition-all duration-300 overflow-hidden group/btn flex items-center justify-center gap-2"
@@ -295,20 +289,14 @@ export default function IniciandoDireito() {
                           e.currentTarget.style.boxShadow = 'none';
                         }}
                       >
-                        <span className="relative z-10">Ver todos os {areaData.totalTemas} temas</span>
+                        <span className="relative z-10">Ver curso</span>
                         <ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover/btn:translate-x-1 relative z-10" />
-                        <div 
-                          className="absolute inset-0 -z-0 opacity-0 group-hover/btn:opacity-100 transition-opacity duration-300"
-                          style={{
-                            background: `linear-gradient(90deg, transparent, ${areaData.corHex}20, transparent)`,
-                            animation: 'shimmer 2s infinite'
-                          }}
-                        />
                       </button>
                     </div>
                   </div>
                 </div>
-              </div>)}
+              </div>
+            ))}
           </div>
         </div>
       </div>
