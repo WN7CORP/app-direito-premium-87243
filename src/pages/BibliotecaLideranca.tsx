@@ -83,8 +83,8 @@ const BibliotecaLideranca = () => {
 
   return (
     <div className="min-h-screen pb-20">
-      {/* Header com Capa */}
-      <div className="relative h-64 md:h-80 overflow-hidden">
+      {/* Header com Capa - mais compacto */}
+      <div className="relative h-48 md:h-56 overflow-hidden">
         {/* Imagem de fundo */}
         {capa?.capa && (
           <img
