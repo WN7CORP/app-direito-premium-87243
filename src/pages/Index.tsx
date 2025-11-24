@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
-import { Crown, Gavel, FileText, Scale, GraduationCap, BookOpen as BookOpenIcon, Library, Hammer, Target, Search, Headphones, Play, Loader2, Newspaper, ArrowRight, Sparkles, Scroll, Brain, Monitor, Video, BookOpen } from "lucide-react";
+import { Crown, Gavel, FileText, Scale, GraduationCap, BookOpen as BookOpenIcon, Library, Hammer, Target, Search, Headphones, Play, Loader2, Newspaper, ArrowRight, Sparkles, Scroll, Brain, Monitor, Video, BookOpen, Calendar } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import useEmblaCarousel from 'embla-carousel-react';
@@ -267,10 +267,10 @@ const Index = () => {
                 route: "/mapa-mental"
               },
               {
-                id: "cursos",
-                title: "Cursos",
-                icon: GraduationCap,
-                route: "/iniciando-direito"
+                id: "plano-estudos",
+                title: "Plano de Estudos",
+                icon: Calendar,
+                route: "/plano-estudos"
               },
               {
                 id: "videoaulas",
