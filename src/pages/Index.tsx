@@ -132,7 +132,7 @@ const Index = () => {
         </div>
 
         {/* Notícias em Destaque - Carrossel */}
-        <div className="space-y-3">
+        <div className="space-y-3 -mx-1">
           <div className="flex items-center justify-between px-1">
             <h2 className="md:text-lg text-foreground font-normal text-base">Notícias em Destaque</h2>
             <div className="flex gap-2">
