@@ -12,8 +12,8 @@ export const BottomNav = () => {
 
   const isActive = (path: string) => location.pathname === path;
   
-  // Esconder menu nas páginas de flashcards
-  if (location.pathname.includes('/flashcards/estudar')) {
+  // Esconder menu nas páginas de flashcards e OAB
+  if (location.pathname.includes('/flashcards/estudar') || location.pathname === '/oab') {
     return null;
   }
 
