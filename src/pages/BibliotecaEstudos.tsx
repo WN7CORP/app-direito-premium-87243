@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, Search, BookOpen, ArrowLeft } from "lucide-react";
+import { Loader2, Search, BookOpen, ArrowLeft, ChevronRight } from "lucide-react";
 import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { BibliotecaIntro } from "@/components/BibliotecaIntro";
@@ -254,7 +254,7 @@ const BibliotecaEstudos = () => {
               <Card
                 key={area}
                 onClick={() => setSelectedArea(area)}
-                className="cursor-pointer group overflow-hidden border border-accent/20 hover:border-accent/60 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_20px_50px_rgba(8,_112,_184,_0.7)] animate-fade-in"
+                className="cursor-pointer group overflow-hidden bg-secondary/40 hover:bg-secondary/60 border border-accent/20 hover:border-accent/60 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_20px_50px_rgba(8,_112,_184,_0.7)] animate-fade-in"
                 style={{
                   animationDelay: `${index * 0.1}s`,
                   animationFillMode: 'backwards'
@@ -286,6 +286,9 @@ const BibliotecaEstudos = () => {
                       {data.livros.length} {data.livros.length === 1 ? 'livro' : 'livros'}
                     </p>
                   </div>
+                  
+                  {/* Seta indicadora */}
+                  <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-accent group-hover:translate-x-1 transition-all duration-300 flex-shrink-0" />
                 </div>
               </Card>
             ))
