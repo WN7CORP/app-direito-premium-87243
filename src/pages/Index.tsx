@@ -72,20 +72,6 @@ const Index = () => {
     }
   });
   const academicCategories = [{
-    id: "faculdade",
-    title: "Estudar",
-    description: "Conteúdo para aprender sobre Direito",
-    icon: GraduationCap,
-    gradient: "from-[hsl(0,75%,55%)] to-[hsl(350,70%,45%)]",
-    route: "/aprender"
-  }, {
-    id: "vade-mecum",
-    title: "Vade Mecum",
-    description: "Constituição, códigos, leis e súmulas",
-    icon: Scale,
-    gradient: "from-[hsl(0,75%,55%)] to-[hsl(350,70%,45%)]",
-    route: "/vade-mecum"
-  }, {
     id: "oab",
     title: "OAB",
     description: "Biblioteca, videoaulas e simulados",
@@ -162,153 +148,7 @@ const Index = () => {
         </div>
 
         {/* Notícias em Destaque - Carrossel */}
-        <div className="space-y-3">
-          <div className="flex items-center justify-between px-1">
-            <h2 className="md:text-lg text-foreground font-normal text-base">Notícias em Destaque</h2>
-            <div className="flex gap-2">
-              
-              <Button 
-                size="sm"
-                onClick={() => navigate('/noticias-juridicas')}
-                className="bg-primary/70 hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-300 rounded-full px-3 text-xs flex items-center gap-1"
-              >
-                Ver mais
-                <ArrowRight className="w-3 h-3" />
-              </Button>
-            </div>
-          </div>
-          
-          {loadingNews ? <div className="flex justify-center py-8">
-              <Loader2 className="w-6 h-6 md:w-5 md:h-5 animate-spin text-accent" />
-            </div> : featuredNews.length > 0 ? <div className="overflow-hidden" ref={emblaRefVideo}>
-              <div className="flex gap-3 md:gap-4">
-                {featuredNews.map((noticia, index) => {
-              const formatarDataHora = (dataString: string) => {
-                try {
-                  if (!dataString) return '';
-
-                  // Se for uma data ISO com hora
-                  if (dataString.includes('T')) {
-                    const date = new Date(dataString);
-                    if (isNaN(date.getTime())) return '';
-
-                    // Adicionar 3 horas para corrigir fuso horário
-                    date.setHours(date.getHours() + 3);
-                    return date.toLocaleDateString('pt-BR', {
-                      day: '2-digit',
-                      month: '2-digit',
-                      year: 'numeric',
-                      hour: '2-digit',
-                      minute: '2-digit'
-                    });
-                  }
-
-                  // Se for uma data com hora no formato brasileiro (dd/MM/yyyy HH:mm)
-                  if (dataString.includes('/') && dataString.includes(':')) {
-                    return dataString;
-                  }
-
-                  // Se for apenas data no formato ISO
-                  if (dataString.includes('-')) {
-                    const date = new Date(dataString);
-                    if (isNaN(date.getTime())) return '';
-                    return date.toLocaleDateString('pt-BR', {
-                      day: '2-digit',
-                      month: '2-digit',
-                      year: 'numeric'
-                    });
-                  }
-
-                  // Se for apenas data no formato brasileiro dd/MM/yyyy
-                  if (dataString.includes('/')) {
-                    return dataString;
-                  }
-                  return dataString;
-                } catch {
-                  return '';
-                }
-              };
-              return <div key={noticia.id} className="flex-[0_0_70%] md:flex-[0_0_40%] lg:flex-[0_0_28.5%] min-w-0 rounded-xl overflow-hidden text-left transition-all hover:scale-105 hover:shadow-2xl border border-accent/30 shadow-lg relative bg-gradient-to-br from-primary to-primary/80">
-                      <button onClick={() => {
-                  navigate('/noticias-juridicas/:noticiaId', {
-                    state: {
-                      noticia: {
-                        id: noticia.id,
-                        categoria: noticia.categoria_tipo || 'Geral',
-                        portal: noticia.fonte || '',
-                        titulo: noticia.titulo,
-                        capa: noticia.imagem || '',
-                        link: noticia.link,
-                        dataHora: noticia.data
-                      }
-                    }
-                  });
-                }} className="w-full">
-                        {noticia.imagem && <div className="aspect-video relative bg-secondary">
-                            <img src={noticia.imagem} alt={noticia.titulo} className="w-full h-full object-cover" />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                          </div>}
-                        <div className="p-3 bg-black/40 h-[88px] flex flex-col justify-between">
-                          <h3 className="text-sm font-bold text-white leading-tight text-left line-clamp-2">
-                            {noticia.titulo}
-                          </h3>
-                          <div className="flex items-center justify-between text-xs">
-                            {noticia.data && <p className="text-white/80">
-                                {formatarDataHora(noticia.data)}
-                              </p>}
-                          </div>
-                        </div>
-                      </button>
-                    </div>;
-            })}
-              </div>
-            </div> : null}
-        </div>
-
-        {/* Em Alta */}
-        <div className="space-y-3">
-          <h2 className="md:text-lg text-foreground px-1 font-normal text-base">🔥 Em Alta</h2>
-          
-          <div className="grid grid-cols-2 gap-3 md:gap-4">
-            {[
-              {
-                id: "vade-mecum",
-                title: "Vade Mecum",
-                description: "Legislação atualizada",
-                icon: Scale,
-                gradient: "from-[hsl(0,75%,55%)] to-[hsl(350,70%,45%)]",
-                route: "/vade-mecum"
-              },
-              {
-                id: "professora",
-                title: "Professora",
-                description: "Professora jurídica para tirar dúvidas",
-                icon: GraduationCap,
-                gradient: "from-[hsl(0,75%,55%)] to-[hsl(350,70%,45%)]",
-                route: "/chat-professora"
-              }
-            ].map(category => {
-              const Icon = category.icon;
-              return (
-                <button
-                  key={category.id}
-                  onClick={() => navigate(category.route)}
-                  className={`bg-gradient-to-br ${category.gradient} rounded-2xl md:rounded-xl p-5 md:p-4 text-left transition-all hover:scale-105 hover:shadow-2xl min-h-[160px] md:min-h-[140px] flex flex-col relative overflow-hidden shadow-xl`}
-                >
-                  <div className="absolute inset-0 bg-gradient-to-tl from-black/60 via-black/30 to-transparent pointer-events-none" />
-                  <div className="bg-white/20 rounded-xl md:rounded-lg p-2.5 md:p-2 w-fit relative z-10 shadow-lg mb-3 md:mb-2">
-                    <Icon className="w-6 h-6 md:w-5 md:h-5 text-white" />
-                  </div>
-                  <h3 className="text-lg md:text-base font-bold text-white mb-2 md:mb-1 relative z-10" style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.6)' }}>
-                    {category.title}
-                  </h3>
-                  <p className="text-white/80 text-xs md:text-[11px] line-clamp-2 relative z-10" style={{ textShadow: '1px 1px 3px rgba(0,0,0,0.5)' }}>
-                    {category.description}
-                  </p>
-                </button>
-              );
-            })}
-          </div>
+...
         </div>
 
         {/* Ferramentas de Estudo */}
@@ -352,18 +192,6 @@ const Index = () => {
                 title: "Videoaulas",
                 icon: Play,
                 route: "/aprender"
-              },
-              {
-                id: "audioaulas",
-                title: "Audioaulas",
-                icon: Headphones,
-                route: "/audioaulas"
-              },
-              {
-                id: "desktop",
-                title: "Acesso Desktop",
-                icon: Monitor,
-                route: "/acesso-desktop"
               }
             ].map(item => {
               const Icon = item.icon;
@@ -380,6 +208,52 @@ const Index = () => {
                   <h3 className="text-[10px] md:text-sm font-bold text-white relative z-10 leading-tight" style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.6)' }}>
                     {item.title}
                   </h3>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Em Alta */}
+        <div className="space-y-3">
+          <h2 className="md:text-lg text-foreground px-1 font-normal text-base">🔥 Em Alta</h2>
+          
+          <div className="grid grid-cols-2 gap-3 md:gap-4">
+            {[
+              {
+                id: "vade-mecum",
+                title: "Vade Mecum",
+                description: "Legislação atualizada",
+                icon: Scale,
+                gradient: "from-[hsl(0,75%,55%)] to-[hsl(350,70%,45%)]",
+                route: "/vade-mecum"
+              },
+              {
+                id: "professora",
+                title: "Professora",
+                description: "Professora jurídica para tirar dúvidas",
+                icon: GraduationCap,
+                gradient: "from-[hsl(0,75%,55%)] to-[hsl(350,70%,45%)]",
+                route: "/chat-professora"
+              }
+            ].map(category => {
+              const Icon = category.icon;
+              return (
+                <button
+                  key={category.id}
+                  onClick={() => navigate(category.route)}
+                  className={`bg-gradient-to-br ${category.gradient} rounded-2xl md:rounded-xl p-5 md:p-4 text-left transition-all hover:scale-105 hover:shadow-2xl min-h-[160px] md:min-h-[140px] flex flex-col relative overflow-hidden shadow-xl`}
+                >
+                  <div className="absolute inset-0 bg-gradient-to-tl from-black/60 via-black/30 to-transparent pointer-events-none" />
+                  <div className="bg-white/20 rounded-xl md:rounded-lg p-2.5 md:p-2 w-fit relative z-10 shadow-lg mb-3 md:mb-2">
+                    <Icon className="w-6 h-6 md:w-5 md:h-5 text-white" />
+                  </div>
+                  <h3 className="text-lg md:text-base font-bold text-white mb-2 md:mb-1 relative z-10" style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.6)' }}>
+                    {category.title}
+                  </h3>
+                  <p className="text-white/80 text-xs md:text-[11px] line-clamp-2 relative z-10" style={{ textShadow: '1px 1px 3px rgba(0,0,0,0.5)' }}>
+                    {category.description}
+                  </p>
                 </button>
               );
             })}
@@ -441,28 +315,6 @@ const Index = () => {
               );
             })}
           </div>
-        </div>
-
-        {/* Biblioteca de Estudos - Carrossel de Áreas */}
-        <div className="space-y-3">
-          <div className="flex items-center justify-between px-1">
-            <div>
-              <h2 className="md:text-lg text-foreground font-normal text-base">Biblioteca de Estudos</h2>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                Explore por área do Direito
-              </p>
-            </div>
-            <Button 
-              size="sm"
-              onClick={() => navigate('/biblioteca-estudos')}
-              className="bg-primary/70 hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-300 rounded-full px-3 text-xs flex items-center gap-1"
-            >
-              Ver mais
-              <ArrowRight className="w-3 h-3" />
-            </Button>
-          </div>
-          
-          <AreasBibliotecaEstudosCarousel />
         </div>
 
         {/* Academic Environment Section */}
