@@ -161,25 +161,6 @@ const Index = () => {
           </span>
         </div>
 
-        {/* Bibliotecas Jurídicas Section - Carrossel */}
-        <div className="space-y-3">
-          <div className="flex items-center justify-between px-1">
-            <div>
-              <h2 className="md:text-lg text-foreground font-normal text-base">Bibliotecas Jurídicas</h2>
-            </div>
-            <Button 
-              size="sm"
-              onClick={() => navigate('/bibliotecas')}
-              className="bg-primary/70 hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-300 rounded-full px-3 text-xs flex items-center gap-1"
-            >
-              Ver mais
-              <ArrowRight className="w-3 h-3" />
-            </Button>
-          </div>
-          
-          <BibliotecasCarousel />
-        </div>
-
         {/* Biblioteca de Estudos - Carrossel de Áreas */}
         <div className="space-y-3">
           <div className="flex items-center justify-between px-1">

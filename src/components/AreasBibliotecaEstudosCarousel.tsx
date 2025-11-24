@@ -67,10 +67,10 @@ const AreasBibliotecaEstudosCarousel = () => {
         {areas.map(({ area, capa }) => (
           <div
             key={area}
-            onClick={() => navigate("/biblioteca-estudos")}
+            onClick={() => navigate("/biblioteca-estudos", { state: { selectedArea: area } })}
             className="flex-[0_0_140px] min-w-0 cursor-pointer group"
           >
-            <div className="relative aspect-[2/3] rounded-lg overflow-hidden shadow-lg border border-accent/20 hover:border-accent/60 transition-all duration-300 hover:shadow-[0_8px_30px_rgba(8,_112,_184,_0.5)]">
+            <div className="relative aspect-[2/3] rounded-lg overflow-hidden shadow-[0_8px_30px_rgba(0,_0,_0,_0.4)] border border-accent/20 hover:border-accent/60 transition-all duration-300 hover:shadow-[0_12px_40px_rgba(8,_112,_184,_0.6)]">
               {capa ? (
                 <img
                   src={capa}
@@ -83,7 +83,7 @@ const AreasBibliotecaEstudosCarousel = () => {
                   <BookOpen className="w-12 h-12 text-accent" />
                 </div>
               )}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent" />
               <div className="absolute bottom-0 left-0 right-0 p-3">
                 <h3 className="text-white font-semibold text-sm leading-tight line-clamp-2">
                   {area}

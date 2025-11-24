@@ -1,11 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2, Search, BookOpen, ArrowLeft, ChevronRight } from "lucide-react";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { BibliotecaIntro } from "@/components/BibliotecaIntro";
 import { LivroCard } from "@/components/LivroCard";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { useDebounce } from "@/hooks/useDebounce";
@@ -23,10 +23,19 @@ interface BibliotecaItem {
 }
 const BibliotecaEstudos = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [selectedArea, setSelectedArea] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [mostrarIntro, setMostrarIntro] = useState(true);
   const debouncedSearch = useDebounce(searchTerm, 300);
+
+  // Verificar se veio com uma área selecionada via state
+  useEffect(() => {
+    if (location.state?.selectedArea) {
+      setSelectedArea(location.state.selectedArea);
+      setMostrarIntro(false);
+    }
+  }, [location.state]);
 
   const { data: capa } = useQuery({
     queryKey: ["capa-biblioteca-estudos"],
