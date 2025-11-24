@@ -1,10 +1,24 @@
 import { useNavigate } from "react-router-dom";
-import { MessageCircle, FileText, ArrowLeft } from "lucide-react";
+import { MessageCircle, FileText, ArrowLeft, Newspaper, Sparkles, HelpCircle } from "lucide-react";
 
 const Ferramentas = () => {
   const navigate = useNavigate();
 
   const ferramentas = [
+    {
+      id: "noticias",
+      title: "Notícias Jurídicas",
+      description: "Acompanhe as principais notícias do mundo jurídico",
+      icon: Newspaper,
+      route: "/noticias-juridicas"
+    },
+    {
+      id: "novidades",
+      title: "Novidades",
+      description: "Veja todas as atualizações e melhorias do app",
+      icon: Sparkles,
+      route: "/novidades"
+    },
     {
       id: "assistente-ia",
       title: "Assistente IA",
@@ -18,6 +32,13 @@ const Ferramentas = () => {
       description: "Análise completa de documentos jurídicos",
       icon: FileText,
       route: "/analisar"
+    },
+    {
+      id: "ajuda",
+      title: "Ajuda",
+      description: "Central de ajuda e suporte",
+      icon: HelpCircle,
+      route: "/ajuda"
     }
   ];
 
@@ -35,7 +56,7 @@ const Ferramentas = () => {
           <div>
             <h1 className="text-xl md:text-2xl font-bold text-foreground">Ferramentas</h1>
             <p className="text-sm text-muted-foreground mt-1">
-              Assistente IA e análise de documentos
+              Todas as ferramentas úteis em um só lugar
             </p>
           </div>
         </div>
