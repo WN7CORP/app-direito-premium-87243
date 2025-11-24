@@ -155,7 +155,7 @@ const VadeMecumTodas = () => {
                   navigate(func.route);
                 }
               }}
-              className={`bg-gradient-to-br from-[hsl(0,75%,55%)] to-[hsl(350,70%,45%)] rounded-2xl p-5 text-left transition-all hover:scale-105 hover:shadow-2xl min-h-[160px] flex flex-col relative overflow-hidden shadow-xl animate-fade-in ${func.disabled ? 'opacity-70' : ''}`}
+              className={`bg-gradient-to-br from-[hsl(0,75%,55%)] to-[hsl(350,70%,45%)] rounded-2xl p-4 text-left transition-all hover:scale-105 hover:shadow-2xl min-h-[120px] flex flex-col justify-between relative overflow-hidden shadow-xl animate-fade-in ${func.disabled ? 'opacity-70' : ''}`}
               style={{
                 animationDelay: `${index * 0.05}s`,
                 animationFillMode: 'backwards'
@@ -169,19 +169,14 @@ const VadeMecumTodas = () => {
               
               <div className="absolute inset-0 bg-gradient-to-tl from-black/60 via-black/30 to-transparent pointer-events-none" />
               
-              <div className="bg-white/20 rounded-xl p-2.5 w-fit relative z-10 shadow-lg mb-3">
-                <Icon className="w-6 h-6 text-white" />
+              <div className="bg-white/20 rounded-xl p-2 w-fit relative z-10 shadow-lg mb-2">
+                <Icon className="w-5 h-5 text-white" />
               </div>
               
-              <h3 className="text-lg font-bold text-white mb-2 relative z-10" 
+              <h3 className="text-sm font-bold text-white relative z-10 leading-tight" 
                   style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.6)' }}>
                 {func.titulo}
               </h3>
-              
-              <p className="text-white/80 text-xs line-clamp-2 relative z-10" 
-                 style={{ textShadow: '1px 1px 3px rgba(0,0,0,0.5)' }}>
-                {func.descricao}
-              </p>
             </button>
           );
         })}

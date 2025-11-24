@@ -104,34 +104,18 @@ const OAB = () => {
                 key={category.id}
                 onClick={() => !category.disabled && navigate(category.route)}
                 disabled={category.disabled}
-                className={`bg-gradient-to-br ${category.gradient} rounded-2xl p-4 md:p-5 text-left transition-all hover:scale-105 hover:shadow-xl flex flex-col items-center justify-center gap-3 min-h-[140px] md:min-h-[160px] relative overflow-hidden disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100`}
+                className={`bg-gradient-to-br ${category.gradient} rounded-2xl p-4 text-left transition-all hover:scale-105 hover:shadow-2xl min-h-[120px] flex flex-col justify-between relative overflow-hidden shadow-xl disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100`}
               >
                 <div className="absolute inset-0 bg-gradient-to-tl from-black/60 via-black/30 to-transparent pointer-events-none" />
                 
-                {/* Ícone pequeno centralizado */}
-                <div className="bg-white/20 rounded-lg p-2.5 md:p-3 w-fit relative z-10 shadow-lg">
-                  <Icon className="w-8 h-8 md:w-10 md:h-10 text-white" />
+                <div className="bg-white/20 rounded-xl p-2 w-fit relative z-10 shadow-lg mb-2">
+                  <Icon className="w-5 h-5 text-white" />
                 </div>
                 
-                {/* Título e descrição centralizados */}
-                <div className="text-center relative z-10 space-y-1">
-                  <h3
-                    className="text-base md:text-lg font-bold text-white"
-                    style={{
-                      textShadow: '2px 2px 4px rgba(0,0,0,0.6)',
-                    }}
-                  >
-                    {category.title}
-                  </h3>
-                  <p
-                    className="text-white/90 text-xs md:text-sm line-clamp-2"
-                    style={{
-                      textShadow: '1px 1px 3px rgba(0,0,0,0.5)',
-                    }}
-                  >
-                    {category.description}
-                  </p>
-                </div>
+                <h3 className="text-sm font-bold text-white relative z-10 leading-tight" 
+                    style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.6)' }}>
+                  {category.title}
+                </h3>
               </button>
             );
           })}

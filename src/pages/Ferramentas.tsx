@@ -95,7 +95,7 @@ const Ferramentas = () => {
             <button
               key={ferramenta.id}
               onClick={() => !ferramenta.emBreve && navigate(ferramenta.path)}
-              className={`bg-card rounded-2xl md:rounded-xl p-5 md:p-4 text-left transition-all min-h-[180px] md:min-h-[160px] flex flex-col border border-border shadow-lg relative ${
+              className={`bg-card rounded-2xl p-4 text-left transition-all min-h-[120px] flex flex-col justify-between border border-border shadow-lg relative ${
                 ferramenta.emBreve 
                   ? 'opacity-60 cursor-not-allowed' 
                   : 'hover:scale-105 hover:shadow-xl'
@@ -107,15 +107,12 @@ const Ferramentas = () => {
                   Em Breve
                 </div>
               )}
-              <div className={`${ferramenta.iconColor} rounded-full p-3 md:p-2.5 w-fit mb-4 md:mb-3`}>
-                <Icon className="w-6 h-6 md:w-5 md:h-5 text-white" />
+              <div className={`${ferramenta.iconColor} rounded-full p-2 w-fit mb-2`}>
+                <Icon className="w-5 h-5 text-white" />
               </div>
-              <h3 className="text-sm md:text-sm font-bold text-foreground mb-2 md:mb-1.5">
+              <h3 className="text-sm font-bold text-foreground leading-tight">
                 {ferramenta.titulo}
               </h3>
-              <p className="text-muted-foreground text-xs md:text-[11px] line-clamp-3">
-                {ferramenta.descricao}
-              </p>
             </button>
           );
         })}
