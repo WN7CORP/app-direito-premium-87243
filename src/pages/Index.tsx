@@ -160,15 +160,20 @@ const Index = () => {
           </span>
         </div>
 
-        {/* Bibliotecas Jurídicas Section - Carrossel */}
+        {/* Cursos em Destaque */}
         <div className="space-y-3">
           <div className="flex items-center justify-between px-1">
             <div>
-              <h2 className="md:text-lg text-foreground font-normal text-base">Bibliotecas Jurídicas</h2>
+              <h2 className="md:text-lg text-foreground font-normal text-base">
+                Cursos em Destaque
+              </h2>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Descomplicando o Direito
+              </p>
             </div>
             <Button 
               size="sm"
-              onClick={() => navigate('/bibliotecas')}
+              onClick={() => navigate('/iniciando-direito')}
               className="bg-primary/70 hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-300 rounded-full px-3 text-xs flex items-center gap-1"
             >
               Ver mais
@@ -176,7 +181,7 @@ const Index = () => {
             </Button>
           </div>
           
-          <BibliotecasCarousel />
+          <CursosCarousel />
         </div>
 
         {/* Academic Environment Section */}
@@ -206,20 +211,15 @@ const Index = () => {
           </div>
         </div>
 
-        {/* Cursos em Destaque */}
+        {/* Bibliotecas Jurídicas Section - Carrossel */}
         <div className="space-y-3">
           <div className="flex items-center justify-between px-1">
             <div>
-              <h2 className="md:text-lg text-foreground font-normal text-base">
-                Cursos em Destaque
-              </h2>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                Descomplicando o Direito
-              </p>
+              <h2 className="md:text-lg text-foreground font-normal text-base">Bibliotecas Jurídicas</h2>
             </div>
             <Button 
               size="sm"
-              onClick={() => navigate('/iniciando-direito')}
+              onClick={() => navigate('/bibliotecas')}
               className="bg-primary/70 hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-300 rounded-full px-3 text-xs flex items-center gap-1"
             >
               Ver mais
@@ -227,7 +227,7 @@ const Index = () => {
             </Button>
           </div>
           
-          <CursosCarousel />
+          <BibliotecasCarousel />
         </div>
 
         {/* Notícias em Destaque - Carrossel */}
