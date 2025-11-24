@@ -247,42 +247,46 @@ const BibliotecaEstudos = () => {
           </CardContent>
         </Card>
 
-        {/* Grid de Áreas */}
-        <div className="grid grid-cols-2 gap-4 px-2">
+        {/* Lista de Áreas */}
+        <div className="space-y-3 px-2">
           {areasFiltradas.length > 0 ? (
             areasFiltradas.map(([area, data]) => (
-              <div
+              <Card
                 key={area}
                 onClick={() => setSelectedArea(area)}
-                className="relative aspect-[3/4] rounded-xl overflow-hidden cursor-pointer group"
+                className="cursor-pointer group overflow-hidden border border-accent/20 hover:border-accent/60 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_20px_50px_rgba(8,_112,_184,_0.7)]"
               >
-                {/* Imagem de fundo */}
-                {data.capa ? (
-                  <img
-                    src={data.capa}
-                    alt={area}
-                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                  />
-                ) : (
-                  <div className="absolute inset-0 bg-gradient-to-br from-secondary to-secondary/50" />
-                )}
-                
-                {/* Gradiente escuro forte para legibilidade */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/60 to-transparent" />
-                
-                {/* Conteúdo */}
-                <div className="absolute inset-0 p-5 flex flex-col justify-end">
-                  <h3 className="text-white font-bold text-base md:text-lg leading-tight mb-2">
-                    {area}
-                  </h3>
-                  <p className="text-white/90 text-xs md:text-sm font-medium">
-                    {data.livros.length} {data.livros.length === 1 ? 'livro' : 'livros'}
-                  </p>
+                <div className="flex items-center gap-4 p-4">
+                  {/* Imagem/Ícone */}
+                  <div className="relative w-20 h-20 rounded-lg overflow-hidden flex-shrink-0">
+                    {data.capa ? (
+                      <img
+                        src={data.capa}
+                        alt={area}
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                        loading="lazy"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-gradient-to-br from-blue-500/20 to-indigo-500/20 flex items-center justify-center">
+                        <BookOpen className="w-10 h-10 text-accent" />
+                      </div>
+                    )}
+                  </div>
+                  
+                  {/* Informações */}
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-semibold text-base mb-1 text-foreground truncate">
+                      {area}
+                    </h3>
+                    <p className="text-sm text-muted-foreground">
+                      {data.livros.length} {data.livros.length === 1 ? 'livro' : 'livros'}
+                    </p>
+                  </div>
                 </div>
-              </div>
+              </Card>
             ))
           ) : (
-            <div className="col-span-2 text-center py-12">
+            <div className="text-center py-12">
               <p className="text-muted-foreground">
                 Nenhum resultado encontrado para "{debouncedSearch}"
               </p>
