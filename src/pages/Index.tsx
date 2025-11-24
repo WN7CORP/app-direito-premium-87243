@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
-import { Crown, Gavel, FileText, Scale, GraduationCap, BookOpen as BookOpenIcon, Library, Hammer, Target, Search, Headphones, Play, Loader2, BookMarked, Newspaper, ArrowRight } from "lucide-react";
+import { Crown, Gavel, FileText, Scale, GraduationCap, BookOpen as BookOpenIcon, Library, Hammer, Target, Search, Headphones, Play, Loader2, BookMarked, Newspaper, ArrowRight, ScrollText, Sparkles, Calendar, Monitor, Video, Brain } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import useEmblaCarousel from 'embla-carousel-react';
@@ -71,27 +71,99 @@ const Index = () => {
       return todosVideos.sort(() => Math.random() - 0.5);
     }
   });
+  
+  // Opções da seção Estudar
+  const estudarOpcoes = [
+    {
+      id: "resumos",
+      titulo: "Resumos Jurídicos",
+      icon: ScrollText,
+      path: "/resumos-juridicos",
+      gradient: "from-orange-600 to-orange-500",
+    },
+    {
+      id: "flashcards",
+      titulo: "Flashcards",
+      icon: Sparkles,
+      path: "/flashcards",
+      gradient: "from-blue-600 to-blue-500",
+    },
+    {
+      id: "mapa-mental",
+      titulo: "Mapa Mental",
+      icon: Brain,
+      path: "/mapa-mental",
+      gradient: "from-violet-600 to-violet-500",
+    },
+    {
+      id: "plano",
+      titulo: "Plano de Estudos",
+      icon: Calendar,
+      path: "/plano-estudos",
+      gradient: "from-indigo-600 to-indigo-500",
+    },
+    {
+      id: "audioaulas",
+      titulo: "Audioaulas",
+      icon: Headphones,
+      path: "/audioaulas",
+      gradient: "from-purple-600 to-purple-500",
+    },
+    {
+      id: "desktop",
+      titulo: "Acesso Desktop",
+      icon: Monitor,
+      path: "/acesso-desktop",
+      gradient: "from-green-600 to-green-500",
+    },
+  ];
+
+  // Opções da seção OAB
+  const oabOpcoes = [
+    {
+      id: "biblioteca",
+      titulo: "Biblioteca da OAB",
+      icon: BookOpenIcon,
+      path: "/biblioteca-oab",
+      gradient: "from-red-600 to-red-500",
+    },
+    {
+      id: "o-que-estudar",
+      titulo: "O que estudar",
+      icon: Target,
+      path: "/oab/o-que-estudar",
+      gradient: "from-amber-600 to-amber-500",
+    },
+    {
+      id: "videoaulas",
+      titulo: "Videoaulas 2ª Fase",
+      icon: Video,
+      path: "/videoaulas-oab",
+      gradient: "from-cyan-600 to-cyan-500",
+    },
+    {
+      id: "questoes",
+      titulo: "Questões OAB",
+      icon: Gavel,
+      path: "/simulados/personalizado",
+      gradient: "from-pink-600 to-pink-500",
+    },
+    {
+      id: "simulado",
+      titulo: "Simulado OAB",
+      icon: Scale,
+      path: "/simulados/exames",
+      gradient: "from-teal-600 to-teal-500",
+    },
+  ];
+  
   const academicCategories = [{
-    id: "faculdade",
-    title: "Estudar",
-    description: "Conteúdo para aprender sobre Direito",
-    icon: GraduationCap,
-    gradient: "from-[hsl(0,75%,55%)] to-[hsl(350,70%,45%)]",
-    route: "/aprender"
-  }, {
     id: "vade-mecum",
     title: "Vade Mecum",
     description: "Constituição, códigos, leis e súmulas",
     icon: BookMarked,
     gradient: "from-[hsl(0,75%,55%)] to-[hsl(350,70%,45%)]",
     route: "/vade-mecum"
-  }, {
-    id: "oab",
-    title: "OAB",
-    description: "Biblioteca, videoaulas e simulados",
-    icon: Scale,
-    gradient: "from-[hsl(0,75%,55%)] to-[hsl(350,70%,45%)]",
-    route: "/oab"
   }, {
     id: "ferramentas",
     title: "Ferramentas",
@@ -159,6 +231,48 @@ const Index = () => {
           <span className="text-foreground/60 text-sm md:text-xs">
             O que você quer buscar?
           </span>
+        </div>
+
+        {/* Seção Estudar - Compacta */}
+        <div className="space-y-3">
+          <div className="flex items-center justify-between px-1">
+            <h2 className="md:text-lg text-foreground font-normal text-base">Estudar</h2>
+            <Button 
+              size="sm"
+              onClick={() => navigate('/aprender')}
+              className="bg-primary/70 hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-300 rounded-full px-3 text-xs flex items-center gap-1"
+            >
+              Ver mais
+              <ArrowRight className="w-3 h-3" />
+            </Button>
+          </div>
+          
+          <div className="grid grid-cols-3 gap-2 md:gap-3">
+            {estudarOpcoes.map((opcao, index) => {
+              const Icon = opcao.icon;
+              return (
+                <button
+                  key={opcao.id}
+                  onClick={() => navigate(opcao.path)}
+                  className={`bg-gradient-to-br ${opcao.gradient} rounded-xl p-3 md:p-4 text-center transition-all hover:scale-105 hover:shadow-xl min-h-[100px] md:min-h-[110px] flex flex-col items-center justify-center gap-2 relative overflow-hidden shadow-lg animate-fade-in`}
+                  style={{
+                    animationDelay: `${index * 0.05}s`,
+                    animationFillMode: 'backwards'
+                  }}
+                >
+                  <div className="absolute inset-0 bg-gradient-to-tl from-black/40 via-black/20 to-transparent pointer-events-none" />
+                  <div className="bg-white/20 rounded-lg p-2 relative z-10 shadow-md">
+                    <Icon className="w-5 h-5 md:w-6 md:h-6 text-white" />
+                  </div>
+                  <h3 className="text-xs md:text-sm font-bold text-white relative z-10 text-center leading-tight" style={{
+                    textShadow: '1px 1px 3px rgba(0,0,0,0.7)'
+                  }}>
+                    {opcao.titulo}
+                  </h3>
+                </button>
+              );
+            })}
+          </div>
         </div>
 
         {/* Notícias em Destaque - Carrossel */}
@@ -265,11 +379,11 @@ const Index = () => {
             </div> : null}
         </div>
 
-        {/* Academic Environment Section */}
+        {/* Seção Ambiente Acadêmico - Apenas Vade Mecum e Ferramentas */}
         <div className="space-y-3">
           <h2 className="md:text-lg text-foreground px-1 font-normal text-base">Ambiente Acadêmico</h2>
           
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+          <div className="grid grid-cols-2 gap-3 md:gap-4">
             {academicCategories.map(category => {
             const Icon = category.icon;
             return <button key={category.id} onClick={() => navigate(category.route)} className={`bg-gradient-to-br ${category.gradient} rounded-2xl md:rounded-xl p-5 md:p-4 text-left transition-all hover:scale-105 hover:shadow-2xl min-h-[160px] md:min-h-[140px] flex flex-col relative overflow-hidden shadow-xl`}>
@@ -289,6 +403,48 @@ const Index = () => {
                   </p>
                 </button>;
           })}
+          </div>
+        </div>
+
+        {/* Seção OAB - Compacta */}
+        <div className="space-y-3">
+          <div className="flex items-center justify-between px-1">
+            <h2 className="md:text-lg text-foreground font-normal text-base">OAB</h2>
+            <Button 
+              size="sm"
+              onClick={() => navigate('/oab')}
+              className="bg-primary/70 hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-300 rounded-full px-3 text-xs flex items-center gap-1"
+            >
+              Ver mais
+              <ArrowRight className="w-3 h-3" />
+            </Button>
+          </div>
+          
+          <div className="grid grid-cols-3 gap-2 md:gap-3">
+            {oabOpcoes.map((opcao, index) => {
+              const Icon = opcao.icon;
+              return (
+                <button
+                  key={opcao.id}
+                  onClick={() => navigate(opcao.path)}
+                  className={`bg-gradient-to-br ${opcao.gradient} rounded-xl p-3 md:p-4 text-center transition-all hover:scale-105 hover:shadow-xl min-h-[100px] md:min-h-[110px] flex flex-col items-center justify-center gap-2 relative overflow-hidden shadow-lg animate-fade-in`}
+                  style={{
+                    animationDelay: `${index * 0.05}s`,
+                    animationFillMode: 'backwards'
+                  }}
+                >
+                  <div className="absolute inset-0 bg-gradient-to-tl from-black/40 via-black/20 to-transparent pointer-events-none" />
+                  <div className="bg-white/20 rounded-lg p-2 relative z-10 shadow-md">
+                    <Icon className="w-5 h-5 md:w-6 md:h-6 text-white" />
+                  </div>
+                  <h3 className="text-xs md:text-sm font-bold text-white relative z-10 text-center leading-tight" style={{
+                    textShadow: '1px 1px 3px rgba(0,0,0,0.7)'
+                  }}>
+                    {opcao.titulo}
+                  </h3>
+                </button>
+              );
+            })}
           </div>
         </div>
 
