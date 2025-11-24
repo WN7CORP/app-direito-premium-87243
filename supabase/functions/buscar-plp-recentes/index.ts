@@ -55,23 +55,35 @@ serve(async (req) => {
       .eq('data', dataHoje)
       .single();
     
-    // Se já finalizou hoje, retornar do cache
+    // Se já finalizou hoje, verificar se realmente tem dados no cache
     if (progresso?.finalizado) {
-      console.log('✅ Processamento PLP de hoje já finalizado, retornando do cache');
+      const dataInicio = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
       const { data: cachedData } = await supabase
         .from('cache_plp_recentes')
         .select('*')
         .eq('sigla_tipo', 'PLP')
-        .gte('data_apresentacao', dataHoje)
+        .gte('data_apresentacao', dataInicio)
         .order('ordem_cache', { ascending: false });
       
-      return new Response(JSON.stringify({ 
-        proposicoes: cachedData || [],
-        fromCache: true,
-        finalizado: true
-      }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+      // Se o cache tem dados, retornar
+      if (cachedData && cachedData.length > 0) {
+        console.log(`✅ Processamento PLP de hoje já finalizado, retornando ${cachedData.length} PLPs do cache`);
+        return new Response(JSON.stringify({ 
+          proposicoes: cachedData,
+          fromCache: true,
+          finalizado: true
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+      
+      // Se não tem dados, resetar o progresso e buscar
+      console.log('⚠️ Cache PLP vazio mesmo com finalizado=true, resetando progresso...');
+      await supabase
+        .from('cache_proposicoes_progresso')
+        .update({ finalizado: false, ultima_pagina: 0, total_processados: 0 })
+        .eq('sigla_tipo', 'PLP')
+        .eq('data', dataHoje);
     }
     
     // Inicializar progresso se não existir
