@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
-import { Library, Video, Target, BookOpen, Gavel, ArrowLeft } from "lucide-react";
+import { Library, Video, Target, BookOpen, Gavel, ArrowLeft, Info } from "lucide-react";
+import { Card } from "@/components/ui/card";
 
 const OABFuncoes = () => {
   const navigate = useNavigate();
@@ -43,7 +44,7 @@ const OABFuncoes = () => {
   ];
 
   return (
-    <div className="flex flex-col min-h-screen bg-background pb-20 md:pb-0">
+    <div className="flex flex-col min-h-screen bg-background">
       <div className="flex-1 px-3 md:px-6 py-4 md:py-6 space-y-6">
         {/* Header */}
         <div className="flex items-center gap-3">
@@ -87,6 +88,30 @@ const OABFuncoes = () => {
             );
           })}
         </div>
+
+        {/* Seção Sobre */}
+        <Card className="p-6 bg-card border-border">
+          <div className="flex items-start gap-3 mb-4">
+            <div className="p-2 rounded-lg bg-primary/10">
+              <Info className="w-5 h-5 text-primary" />
+            </div>
+            <h2 className="text-lg font-bold text-foreground">Sobre esta área</h2>
+          </div>
+          
+          <div className="space-y-3 text-sm text-muted-foreground">
+            <p>
+              Esta seção reúne <strong className="text-foreground">todas as ferramentas necessárias</strong> para você se preparar para o Exame da Ordem dos Advogados do Brasil (OAB).
+            </p>
+            
+            <p>
+              A aprovação na OAB é fundamental para exercer a advocacia no Brasil. Aqui você encontra materiais de estudo, videoaulas específicas, simulados completos, guias de conteúdo e banco de questões de provas anteriores.
+            </p>
+            
+            <p>
+              Utilize todas as ferramentas disponíveis para <strong className="text-foreground">maximizar suas chances de aprovação</strong> e conquistar sua carteira da OAB!
+            </p>
+          </div>
+        </Card>
       </div>
     </div>
   );
