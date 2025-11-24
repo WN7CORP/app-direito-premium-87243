@@ -96,7 +96,7 @@ const OAB = () => {
         </div>
 
         {/* Categories Grid - Estilo Vade Mecum */}
-        <div className="grid grid-cols-2 gap-3 md:gap-4">
+        <div className="grid grid-cols-3 gap-3 md:gap-4">
           {oabCategories.map((category) => {
             const Icon = category.icon;
             return (
