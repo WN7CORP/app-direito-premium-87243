@@ -269,7 +269,7 @@ const Index = () => {
         <div className="space-y-3">
           <h2 className="md:text-lg text-foreground px-1 font-normal text-base">Ferramentas de Estudo</h2>
           
-          <div className="grid grid-cols-3 gap-2 md:gap-4">
+          <div className="grid grid-cols-3 gap-2 md:gap-3">
             {[
               {
                 id: "resumos",
@@ -313,13 +313,13 @@ const Index = () => {
                 <button
                   key={item.id}
                   onClick={() => navigate(item.route)}
-                  className="bg-gradient-to-br from-[hsl(0,75%,55%)] to-[hsl(350,70%,45%)] rounded-xl md:rounded-2xl p-3 md:p-4 text-left transition-all hover:scale-105 hover:shadow-2xl flex items-center gap-2 md:gap-3 relative overflow-hidden shadow-xl"
+                  className="bg-gradient-to-br from-[hsl(0,75%,55%)] to-[hsl(350,70%,45%)] rounded-xl md:rounded-2xl p-3 md:p-4 text-center transition-all hover:scale-105 hover:shadow-2xl flex flex-col items-center justify-center gap-2 relative overflow-hidden shadow-xl min-h-[90px] md:min-h-[110px]"
                 >
                   <div className="absolute inset-0 bg-gradient-to-tl from-black/60 via-black/30 to-transparent pointer-events-none" />
-                  <div className="bg-white/20 rounded-lg md:rounded-xl p-2 md:p-2.5 relative z-10 shadow-lg flex-shrink-0">
+                  <div className="bg-white/20 rounded-lg md:rounded-xl p-2 md:p-2.5 relative z-10 shadow-lg">
                     <Icon className="w-5 h-5 md:w-6 md:h-6 text-white" />
                   </div>
-                  <h3 className="text-[10px] md:text-sm font-bold text-white relative z-10 leading-tight" style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.6)' }}>
+                  <h3 className="text-[9px] md:text-xs font-bold text-white relative z-10 leading-tight" style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.6)' }}>
                     {item.title}
                   </h3>
                 </button>
