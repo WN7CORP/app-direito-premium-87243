@@ -226,7 +226,7 @@ const Aprender = () => {
                 <button
                   key={opcao.id}
                   onClick={() => navigate(opcao.path)}
-                  className="bg-card rounded-2xl md:rounded-xl p-5 md:p-4 text-left transition-all hover:scale-105 hover:shadow-xl min-h-[180px] md:min-h-[160px] flex flex-col border border-border shadow-lg"
+                  className="bg-accent/10 rounded-2xl md:rounded-xl p-5 md:p-4 text-left transition-all hover:scale-105 hover:shadow-xl min-h-[180px] md:min-h-[160px] flex flex-col border border-accent/20 shadow-lg"
                 >
                   <div className={`${opcao.iconBg} rounded-full p-3 md:p-2.5 w-fit mb-4 md:mb-3`}>
                     <Icon className="w-6 h-6 md:w-5 md:h-5 text-white" />
