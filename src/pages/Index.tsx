@@ -301,7 +301,7 @@ const Index = () => {
                   return '';
                 }
               };
-              return <div key={noticia.id} className="flex-[0_0_70%] md:flex-[0_0_40%] lg:flex-[0_0_28.5%] min-w-0 rounded-xl overflow-hidden text-left transition-all hover:scale-105 hover:shadow-2xl border border-accent/30 shadow-lg relative bg-gradient-to-br from-[hsl(0,75%,55%)] to-[hsl(350,70%,45%)]">
+              return <div key={noticia.id} className="flex-[0_0_70%] md:flex-[0_0_40%] lg:flex-[0_0_28.5%] min-w-0 rounded-xl overflow-hidden text-left transition-all hover:scale-105 hover:shadow-2xl border border-accent/30 shadow-lg relative bg-gradient-to-br from-primary to-primary/80">
                       <button onClick={() => {
                   navigate('/noticias-juridicas/:noticiaId', {
                     state: {
