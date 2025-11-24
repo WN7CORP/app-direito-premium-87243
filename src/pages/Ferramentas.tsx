@@ -88,7 +88,7 @@ const Ferramentas = () => {
         </p>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+      <div className="grid grid-cols-3 gap-3 md:gap-4">
         {ferramentas.map((ferramenta) => {
           const Icon = ferramenta.icon;
           return (
