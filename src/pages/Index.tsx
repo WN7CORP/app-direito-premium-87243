@@ -377,7 +377,7 @@ const Index = () => {
                   <div className="bg-white/20 rounded-lg md:rounded-xl p-2 md:p-2.5 relative z-10 shadow-lg">
                     <Icon className="w-5 h-5 md:w-6 md:h-6 text-white" />
                   </div>
-                  <h3 className="text-[10px] md:text-sm font-bold text-white relative z-10 leading-tight" style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.6)' }}>
+                  <h3 className="text-[9px] md:text-xs font-bold text-white relative z-10 leading-tight" style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.6)' }}>
                     {item.title}
                   </h3>
                 </button>
