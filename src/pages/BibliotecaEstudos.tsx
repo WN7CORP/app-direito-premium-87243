@@ -267,15 +267,15 @@ const BibliotecaEstudos = () => {
                   <div className="absolute inset-0 bg-gradient-to-br from-secondary to-secondary/50" />
                 )}
                 
-                {/* Gradiente escuro para legibilidade */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
+                {/* Gradiente escuro forte para legibilidade */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/60 to-transparent" />
                 
                 {/* Conteúdo */}
-                <div className="absolute inset-0 p-4 flex flex-col justify-end">
-                  <h3 className="text-white font-bold text-lg mb-1 line-clamp-2">
+                <div className="absolute inset-0 p-5 flex flex-col justify-end">
+                  <h3 className="text-white font-bold text-base md:text-lg leading-tight mb-2">
                     {area}
                   </h3>
-                  <p className="text-white/80 text-sm">
+                  <p className="text-white/90 text-xs md:text-sm font-medium">
                     {data.livros.length} {data.livros.length === 1 ? 'livro' : 'livros'}
                   </p>
                 </div>
