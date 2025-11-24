@@ -11,6 +11,7 @@ interface QuestoesModalProps {
   artigo: string;
   numeroArtigo: string;
   codigoTabela?: string;
+  codigo?: string;
 }
 
 interface QuizQuestion {
@@ -20,7 +21,7 @@ interface QuizQuestion {
   explanation?: string;
 }
 
-const QuestoesModal = ({ isOpen, onClose, artigo, numeroArtigo, codigoTabela = 'CP - Código Penal' }: QuestoesModalProps) => {
+const QuestoesModal = ({ isOpen, onClose, artigo, numeroArtigo, codigoTabela = 'CP - Código Penal', codigo = 'cp' }: QuestoesModalProps) => {
   const [questions, setQuestions] = useState<QuizQuestion[]>([]);
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -92,11 +93,21 @@ const QuestoesModal = ({ isOpen, onClose, artigo, numeroArtigo, codigoTabela = '
           },
           body: JSON.stringify({
             artigo: `Art. ${numeroArtigo}\n${artigo}`,
-            codigo: 'cpp',
+            codigo: codigo,
             numeroArtigo: numeroArtigo
           })
         }
       );
+
+      console.log('🔍 [Debug QuestoesModal]', {
+        codigoEnviado: codigo,
+        tabelaMapeada: codigoTabela,
+        numeroArtigo: numeroArtigo
+      });
+
+      if (!response.ok) {
+        throw new Error('Falha na requisição');
+      }
 
       if (!response.ok) {
         throw new Error('Falha na requisição');

@@ -10,6 +10,7 @@ interface TermosModalProps {
   artigo: string;
   numeroArtigo: string;
   codigoTabela?: string;
+  codigo?: string;
 }
 
 interface Termo {
@@ -27,7 +28,7 @@ interface Aprofundamento {
   pontos: PontoAprofundamento[];
 }
 
-const TermosModal = ({ isOpen, onClose, artigo, numeroArtigo, codigoTabela = 'CP - Código Penal' }: TermosModalProps) => {
+const TermosModal = ({ isOpen, onClose, artigo, numeroArtigo, codigoTabela = 'CP - Código Penal', codigo = 'cp' }: TermosModalProps) => {
   const [termos, setTermos] = useState<Termo[]>([]);
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -102,11 +103,21 @@ const TermosModal = ({ isOpen, onClose, artigo, numeroArtigo, codigoTabela = 'CP
           },
           body: JSON.stringify({
             artigo: `Art. ${numeroArtigo}\n${artigo}`,
-            codigo: 'cpp',
+            codigo: codigo,
             numeroArtigo: numeroArtigo
           })
         }
       );
+
+      console.log('🔍 [Debug TermosModal - Geração]', {
+        codigoEnviado: codigo,
+        tabelaMapeada: codigoTabela,
+        numeroArtigo: numeroArtigo
+      });
+
+      if (!response.ok) {
+        throw new Error('Falha na requisição');
+      }
 
       if (!response.ok) {
         throw new Error('Falha na requisição');
@@ -175,13 +186,24 @@ const TermosModal = ({ isOpen, onClose, artigo, numeroArtigo, codigoTabela = 'CP
           },
           body: JSON.stringify({
             artigo: `Art. ${numeroArtigo}\n${artigo}`,
-            codigo: 'cpp',
+            codigo: codigo,
             numeroArtigo: numeroArtigo,
             aprofundar: true,
             termoEspecifico: termoNome
           })
         }
       );
+
+      console.log('🔍 [Debug TermosModal - Aprofundamento]', {
+        codigoEnviado: codigo,
+        tabelaMapeada: codigoTabela,
+        numeroArtigo: numeroArtigo,
+        termoAprofundado: termoNome
+      });
+
+      if (!response.ok) {
+        throw new Error('Falha na requisição');
+      }
 
       if (!response.ok) {
         throw new Error('Falha na requisição');
