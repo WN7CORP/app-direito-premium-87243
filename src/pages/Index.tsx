@@ -12,7 +12,6 @@ import ProposicoesRecentesCarousel from "@/components/ProposicoesRecentesCarouse
 import { useFeaturedNews } from "@/hooks/useFeaturedNews";
 import { Button } from "@/components/ui/button";
 import { CursosCarousel } from "@/components/CursosCarousel";
-
 const Index = () => {
   const navigate = useNavigate();
   const [atualizandoNoticias, setAtualizandoNoticias] = useState(false);
@@ -138,11 +137,7 @@ const Index = () => {
             <h2 className="md:text-lg text-foreground font-normal text-base">Notícias em Destaque</h2>
             <div className="flex gap-2">
               
-              <Button 
-                size="sm"
-                onClick={() => navigate('/noticias-juridicas')}
-                className="bg-primary/70 hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-300 rounded-full px-3 text-xs flex items-center gap-1"
-              >
+              <Button size="sm" onClick={() => navigate('/noticias-juridicas')} className="bg-primary/70 hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-300 rounded-full px-3 text-xs flex items-center gap-1">
                 Ver mais
                 <ArrowRight className="w-3 h-3" />
               </Button>
@@ -241,61 +236,50 @@ const Index = () => {
           <h2 className="md:text-lg text-foreground px-1 font-normal text-base">Ferramentas de Estudo</h2>
           
           <div className="grid grid-cols-3 gap-2 md:gap-3">
-            {[
-              {
-                id: "bibliotecas",
-                title: "Bibliotecas",
-                icon: Library,
-                route: "/bibliotecas"
-              },
-              {
-                id: "resumos",
-                title: "Resumos Jurídicos",
-                icon: Scroll,
-                route: "/resumos-juridicos"
-              },
-              {
-                id: "flashcards",
-                title: "Flashcards",
-                icon: Sparkles,
-                route: "/flashcards"
-              },
-              {
-                id: "mapa-mental",
-                title: "Mapa Mental",
-                icon: Brain,
-                route: "/mapa-mental"
-              },
-              {
-                id: "plano-estudos",
-                title: "Plano de Estudos",
-                icon: Calendar,
-                route: "/plano-estudos"
-              },
-              {
-                id: "videoaulas",
-                title: "Videoaulas",
-                icon: Play,
-                route: "/aprender"
-              }
-            ].map(item => {
-              const Icon = item.icon;
-              return (
-                <button
-                  key={item.id}
-                  onClick={() => navigate(item.route)}
-                  className="bg-gradient-to-br from-[hsl(0,75%,55%)] to-[hsl(350,70%,45%)] rounded-xl md:rounded-2xl p-3 md:p-4 text-center transition-all hover:scale-105 hover:shadow-2xl flex flex-col items-center justify-center gap-2 relative overflow-hidden shadow-xl min-h-[90px] md:min-h-[110px]"
-                >
+            {[{
+            id: "bibliotecas",
+            title: "Bibliotecas",
+            icon: Library,
+            route: "/bibliotecas"
+          }, {
+            id: "resumos",
+            title: "Resumos Jurídicos",
+            icon: Scroll,
+            route: "/resumos-juridicos"
+          }, {
+            id: "flashcards",
+            title: "Flashcards",
+            icon: Sparkles,
+            route: "/flashcards"
+          }, {
+            id: "mapa-mental",
+            title: "Mapa Mental",
+            icon: Brain,
+            route: "/mapa-mental"
+          }, {
+            id: "plano-estudos",
+            title: "Plano de Estudos",
+            icon: Calendar,
+            route: "/plano-estudos"
+          }, {
+            id: "videoaulas",
+            title: "Videoaulas",
+            icon: Play,
+            route: "/aprender"
+          }].map(item => {
+            const Icon = item.icon;
+            return <button key={item.id} onClick={() => navigate(item.route)} className="bg-gradient-to-br from-[hsl(0,75%,55%)] to-[hsl(350,70%,45%)] rounded-xl md:rounded-2xl p-3 md:p-4 text-center transition-all hover:scale-105 hover:shadow-2xl flex flex-col items-center justify-center gap-2 relative overflow-hidden shadow-xl min-h-[90px] md:min-h-[110px]">
                   <div className="absolute inset-0 bg-gradient-to-tl from-black/60 via-black/30 to-transparent pointer-events-none" />
                   <div className="bg-white/20 rounded-lg md:rounded-xl p-2 md:p-2.5 relative z-10 shadow-lg">
                     <Icon className="w-5 h-5 md:w-6 md:h-6 text-white" />
                   </div>
-                  <h3 className="text-xs md:text-base font-bold text-white relative z-10 leading-tight" style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.6)' }}>
+                  <h3 className="text-xs md:text-base font-bold text-white relative z-10 leading-tight" style={{
+                textShadow: '2px 2px 4px rgba(0,0,0,0.6)'
+              }}>
                     {item.title}
                   </h3>
-                </button>
-              );
-            })}
+                </button>;
+          })}
           </div>
         </div>
 
@@ -304,60 +288,53 @@ const Index = () => {
           <h2 className="md:text-lg text-foreground px-1 font-normal text-base">🔥 Em Alta</h2>
           
           <div className="grid grid-cols-2 gap-3 md:gap-4">
-            {[
-              {
-                id: "vade-mecum",
-                title: "Vade Mecum",
-                description: "Legislação atualizada",
-                icon: Scale,
-                gradient: "from-[hsl(0,75%,55%)] to-[hsl(350,70%,45%)]",
-                route: "/vade-mecum"
-              },
-              {
-                id: "professora",
-                title: "Professora",
-                description: "Professora jurídica para tirar dúvidas",
-                icon: GraduationCap,
-                gradient: "from-[hsl(0,75%,55%)] to-[hsl(350,70%,45%)]",
-                route: "/chat-professora"
-              },
-              {
-                id: "oab",
-                title: "OAB",
-                description: "Todas as ferramentas para sua aprovação",
-                icon: Gavel,
-                gradient: "from-[hsl(0,75%,55%)] to-[hsl(350,70%,45%)]",
-                route: "/oab-funcoes"
-              },
-              {
-                id: "ferramentas",
-                title: "Ferramentas",
-                description: "Assistente IA e Analisador de documentos",
-                icon: Settings,
-                gradient: "from-[hsl(0,75%,55%)] to-[hsl(350,70%,45%)]",
-                route: "/ferramentas"
-              }
-            ].map(category => {
-              const Icon = category.icon;
-              return (
-                <button
-                  key={category.id}
-                  onClick={() => navigate(category.route)}
-                  className={`bg-gradient-to-br ${category.gradient} rounded-2xl md:rounded-xl p-5 md:p-4 text-left transition-all hover:scale-105 hover:shadow-2xl min-h-[160px] md:min-h-[140px] flex flex-col relative overflow-hidden shadow-xl`}
-                >
+            {[{
+            id: "vade-mecum",
+            title: "Vade Mecum",
+            description: "Legislação atualizada",
+            icon: Scale,
+            gradient: "from-[hsl(0,75%,55%)] to-[hsl(350,70%,45%)]",
+            route: "/vade-mecum"
+          }, {
+            id: "professora",
+            title: "Professora",
+            description: "Professora jurídica para tirar dúvidas",
+            icon: GraduationCap,
+            gradient: "from-[hsl(0,75%,55%)] to-[hsl(350,70%,45%)]",
+            route: "/chat-professora"
+          }, {
+            id: "oab",
+            title: "OAB",
+            description: "Todas as ferramentas para sua aprovação",
+            icon: Gavel,
+            gradient: "from-[hsl(0,75%,55%)] to-[hsl(350,70%,45%)]",
+            route: "/oab-funcoes"
+          }, {
+            id: "ferramentas",
+            title: "Ferramentas",
+            description: "Assistente IA e Analisador de documentos",
+            icon: Settings,
+            gradient: "from-[hsl(0,75%,55%)] to-[hsl(350,70%,45%)]",
+            route: "/ferramentas"
+          }].map(category => {
+            const Icon = category.icon;
+            return <button key={category.id} onClick={() => navigate(category.route)} className={`bg-gradient-to-br ${category.gradient} rounded-2xl md:rounded-xl p-5 md:p-4 text-left transition-all hover:scale-105 hover:shadow-2xl min-h-[160px] md:min-h-[140px] flex flex-col relative overflow-hidden shadow-xl`}>
                   <div className="absolute inset-0 bg-gradient-to-tl from-black/60 via-black/30 to-transparent pointer-events-none" />
                   <div className="bg-white/20 rounded-xl md:rounded-lg p-2.5 md:p-2 w-fit relative z-10 shadow-lg mb-3 md:mb-2">
                     <Icon className="w-6 h-6 md:w-5 md:h-5 text-white" />
                   </div>
-                  <h3 className="text-lg md:text-base font-bold text-white mb-2 md:mb-1 relative z-10" style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.6)' }}>
+                  <h3 className="text-lg md:text-base font-bold text-white mb-2 md:mb-1 relative z-10" style={{
+                textShadow: '2px 2px 4px rgba(0,0,0,0.6)'
+              }}>
                     {category.title}
                   </h3>
-                  <p className="text-white/80 text-xs md:text-[11px] line-clamp-2 relative z-10" style={{ textShadow: '1px 1px 3px rgba(0,0,0,0.5)' }}>
+                  <p className="text-white/80 text-xs md:text-[11px] line-clamp-2 relative z-10" style={{
+                textShadow: '1px 1px 3px rgba(0,0,0,0.5)'
+              }}>
                     {category.description}
                   </p>
-                </button>
-              );
-            })}
+                </button>;
+          })}
           </div>
         </div>
 
@@ -372,11 +349,7 @@ const Index = () => {
                 Descomplicando o Direito
               </p>
             </div>
-            <Button 
-              size="sm"
-              onClick={() => navigate('/iniciando-direito')}
-              className="bg-primary/70 hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-300 rounded-full px-3 text-xs flex items-center gap-1"
-            >
+            <Button size="sm" onClick={() => navigate('/iniciando-direito')} className="bg-primary/70 hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-300 rounded-full px-3 text-xs flex items-center gap-1">
               Ver mais
               <ArrowRight className="w-3 h-3" />
             </Button>
@@ -387,59 +360,9 @@ const Index = () => {
 
         {/* Estudos para a OAB */}
         <div className="space-y-3">
-          <h2 className="md:text-lg text-foreground px-1 font-normal text-base">Estudos para a OAB</h2>
           
-          <div className="grid grid-cols-3 gap-2 md:gap-3">
-            {[
-              {
-                id: "biblioteca-oab",
-                title: "Biblioteca OAB",
-                icon: Library,
-                route: "/biblioteca-oab"
-              },
-              {
-                id: "videoaulas-oab",
-                title: "Videoaulas OAB",
-                icon: Video,
-                route: "/videoaulas-oab"
-              },
-              {
-                id: "simulados-oab",
-                title: "Simulados OAB",
-                icon: Target,
-                route: "/simulados/exames"
-              },
-              {
-                id: "o-que-estudar-oab",
-                title: "O que estudar para OAB",
-                icon: BookOpen,
-                route: "/oab/o-que-estudar"
-              },
-              {
-                id: "questoes-oab",
-                title: "Questões OAB",
-                icon: Gavel,
-                route: "/simulados/personalizado"
-              }
-            ].map(item => {
-              const Icon = item.icon;
-              return (
-                <button
-                  key={item.id}
-                  onClick={() => navigate(item.route)}
-                  className="bg-gradient-to-br from-[hsl(0,75%,55%)] to-[hsl(350,70%,45%)] rounded-xl md:rounded-2xl p-3 md:p-4 text-center transition-all hover:scale-105 hover:shadow-2xl flex flex-col items-center justify-center gap-2 relative overflow-hidden shadow-xl min-h-[90px] md:min-h-[110px]"
-                >
-                  <div className="absolute inset-0 bg-gradient-to-tl from-black/60 via-black/30 to-transparent pointer-events-none" />
-                  <div className="bg-white/20 rounded-lg md:rounded-xl p-2 md:p-2.5 relative z-10 shadow-lg">
-                    <Icon className="w-5 h-5 md:w-6 md:h-6 text-white" />
-                  </div>
-                  <h3 className="text-xs md:text-base font-bold text-white relative z-10 leading-tight" style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.6)' }}>
-                    {item.title}
-                  </h3>
-                </button>
-              );
-            })}
-          </div>
+          
+          
         </div>
       </div>
     </div>;
