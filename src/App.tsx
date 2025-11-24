@@ -166,6 +166,7 @@ import PopularCPMManual from "./pages/PopularCPMManual";
 import SimuladosTJSP from "./pages/SimuladosTJSP";
 import PopularSimuladoTJSP from "./pages/PopularSimuladoTJSP";
 import IniciandoDireito from "./pages/IniciandoDireito";
+import IniciandoDireitoSobre from "./pages/IniciandoDireitoSobre";
 import IniciandoDireitoTemas from "./pages/IniciandoDireitoTemas";
 import IniciandoDireitoAula from "./pages/IniciandoDireitoAula";
 import MapaMentalAreas from "./pages/MapaMentalAreas";
@@ -413,8 +414,9 @@ const App = () => {
             <Route path="/simulados/tjsp" element={<SimuladosTJSP />} />
             <Route path="/popular-simulado-tjsp" element={<PopularSimuladoTJSP />} />
               <Route path="/iniciando-direito" element={<IniciandoDireito />} />
-              <Route path="/iniciando-direito/:area" element={<IniciandoDireitoTemas />} />
-              <Route path="/iniciando-direito/:area/:tema" element={<IniciandoDireitoAula />} />
+              <Route path="/iniciando-direito/:area/sobre" element={<IniciandoDireitoSobre />} />
+              <Route path="/iniciando-direito/:area/temas" element={<IniciandoDireitoTemas />} />
+              <Route path="/iniciando-direito/:area/aula/:tema" element={<IniciandoDireitoAula />} />
               <Route path="/simulacao-juridica" element={<SimulacaoJuridica />} />
               <Route path="/simulacao-juridica/modo" element={<SimulacaoEscolhaModo />} />
               <Route path="/simulacao-juridica/areas" element={<SimulacaoAreas />} />
