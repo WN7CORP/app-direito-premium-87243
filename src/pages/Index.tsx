@@ -269,7 +269,7 @@ const Index = () => {
         <div className="space-y-3">
           <h2 className="md:text-lg text-foreground px-1 font-normal text-base">Em Alta</h2>
           
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
+          <div className="grid grid-cols-2 gap-3 md:gap-4">
             {[
               {
                 id: "vade-mecum",
@@ -285,47 +285,7 @@ const Index = () => {
                 description: "Professora jurídica para tirar dúvidas",
                 icon: GraduationCap,
                 gradient: "from-[hsl(0,75%,55%)] to-[hsl(350,70%,45%)]",
-                route: "/professora"
-              },
-              {
-                id: "biblioteca-oab",
-                title: "Biblioteca da OAB",
-                description: "Livros e materiais OAB",
-                icon: Library,
-                gradient: "from-[hsl(0,75%,55%)] to-[hsl(350,70%,45%)]",
-                route: "/biblioteca-oab"
-              },
-              {
-                id: "o-que-estudar",
-                title: "O que estudar para OAB",
-                description: "Guia completo de estudos",
-                icon: BookOpen,
-                gradient: "from-[hsl(0,75%,55%)] to-[hsl(350,70%,45%)]",
-                route: "/oab/o-que-estudar"
-              },
-              {
-                id: "videoaulas-oab",
-                title: "Videoaulas 2ª Fase OAB",
-                description: "Aulas práticas e peças",
-                icon: Video,
-                gradient: "from-[hsl(0,75%,55%)] to-[hsl(350,70%,45%)]",
-                route: "/videoaulas-oab"
-              },
-              {
-                id: "questoes-oab",
-                title: "Questões OAB",
-                description: "Pratique questões da prova",
-                icon: Gavel,
-                gradient: "from-[hsl(0,75%,55%)] to-[hsl(350,70%,45%)]",
-                route: "/simulados/personalizado"
-              },
-              {
-                id: "simulado-oab",
-                title: "Simulado OAB",
-                description: "Simulados completos",
-                icon: Target,
-                gradient: "from-[hsl(0,75%,55%)] to-[hsl(350,70%,45%)]",
-                route: "/simulados/exames"
+                route: "/chat-professora"
               }
             ].map(category => {
               const Icon = category.icon;
@@ -433,22 +393,34 @@ const Index = () => {
           <div className="grid grid-cols-3 gap-2 md:gap-3">
             {[
               {
-                id: "oab-biblioteca",
+                id: "biblioteca-oab",
                 title: "Biblioteca OAB",
                 icon: Library,
                 route: "/biblioteca-oab"
               },
               {
-                id: "oab-videoaulas",
+                id: "videoaulas-oab",
                 title: "Videoaulas OAB",
                 icon: Video,
                 route: "/videoaulas-oab"
               },
               {
-                id: "oab-simulados",
+                id: "simulados-oab",
                 title: "Simulados OAB",
                 icon: Target,
                 route: "/simulados/exames"
+              },
+              {
+                id: "o-que-estudar-oab",
+                title: "O que estudar para OAB",
+                icon: BookOpen,
+                route: "/oab/o-que-estudar"
+              },
+              {
+                id: "questoes-oab",
+                title: "Questões OAB",
+                icon: Gavel,
+                route: "/simulados/personalizado"
               }
             ].map(item => {
               const Icon = item.icon;
