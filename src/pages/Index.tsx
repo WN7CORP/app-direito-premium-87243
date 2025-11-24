@@ -297,7 +297,7 @@ const Index = () => {
                   return '';
                 }
               };
-              return <div key={noticia.id} className="flex-[0_0_70%] md:flex-[0_0_40%] lg:flex-[0_0_28.5%] min-w-0 bg-accent/10 rounded-xl overflow-hidden text-left transition-all hover:scale-105 hover:shadow-2xl border border-accent/20 hover:border-primary/30 shadow-lg relative">
+              return <div key={noticia.id} className="flex-[0_0_70%] md:flex-[0_0_40%] lg:flex-[0_0_28.5%] min-w-0 bg-gradient-to-br from-[hsl(0,75%,55%)] to-[hsl(350,70%,45%)] rounded-xl overflow-hidden text-left transition-all hover:scale-105 hover:shadow-2xl border border-accent/30 shadow-lg relative">
                       <button onClick={() => {
                   navigate('/noticias-juridicas/:noticiaId', {
                     state: {
@@ -318,11 +318,11 @@ const Index = () => {
                             <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                           </div>}
                         <div className="p-3">
-                          <h3 className="text-sm font-bold text-foreground mb-2 leading-tight text-left">
+                          <h3 className="text-sm font-bold text-white mb-2 leading-tight text-left">
                             {noticia.titulo}
                           </h3>
                           <div className="flex items-center justify-between text-xs">
-                            {noticia.data && <p className="text-muted-foreground">
+                            {noticia.data && <p className="text-white/80">
                                 {formatarDataHora(noticia.data)}
                               </p>}
                           </div>
