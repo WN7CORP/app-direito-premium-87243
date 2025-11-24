@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Send, X, Brain, ArrowLeft, Image, FileText, BookOpen, Scale, GraduationCap, MessageCircle, Lightbulb, Video, Book, ExternalLink, Play, ArrowDown, Trash2 } from "lucide-react";
+import { Send, X, Brain, ArrowLeft, Image, FileText, BookOpen, Scale, GraduationCap, MessageCircle, Lightbulb, Video, Book, ExternalLink, Play, ArrowDown, Trash2, Paperclip } from "lucide-react";
 import { VLibrasButton } from "@/components/VLibrasButton";
 import { HighlightedBox } from "@/components/chat/HighlightedBox";
 import { ComparisonCarousel } from "@/components/chat/ComparisonCarousel";
@@ -68,6 +68,7 @@ const ChatProfessora = () => {
   const [thinkingStartTime, setThinkingStartTime] = useState<number | null>(null);
   const [elapsedTime, setElapsedTime] = useState(0);
   const [displayedContent, setDisplayedContent] = useState<Record<number, string>>({});
+  const [showAttachMenu, setShowAttachMenu] = useState(false);
 
   // Configurar worker do PDF.js uma vez
   useEffect(() => {
@@ -80,6 +81,22 @@ const ChatProfessora = () => {
       console.warn("Falha ao configurar worker do PDF.js", e);
     }
   }, []);
+  
+  // Fechar menu de anexo ao clicar fora
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (showAttachMenu && !target.closest('.relative')) {
+        setShowAttachMenu(false);
+      }
+    };
+    
+    if (showAttachMenu) {
+      document.addEventListener('click', handleClickOutside);
+      return () => document.removeEventListener('click', handleClickOutside);
+    }
+  }, [showAttachMenu]);
+  
   const [userScrolledUp, setUserScrolledUp] = useState(false);
 
   // Timer para elapsed time do thinking indicator
@@ -655,20 +672,6 @@ const ChatProfessora = () => {
     // Permitir envio se houver arquivo OU texto
     if (!input.trim() && uploadedFiles.length === 0) return;
 
-    // Se estiver no modo recommendation, buscar materiais de forma visual
-    if (mode === 'recommendation' && input.trim()) {
-      const queryLower = input.toLowerCase();
-      let tipo: 'livros' | 'videos' | 'todos' = 'todos';
-      if (queryLower.includes('livro')) {
-        tipo = 'livros';
-      } else if (queryLower.includes('vídeo') || queryLower.includes('video')) {
-        tipo = 'videos';
-      }
-      await buscarMateriaisVisuais(input.trim(), tipo);
-      setInput("");
-      return;
-    }
-
     // Se houver arquivos anexados (imagem ou PDF), mostrar mensagem analisando
     let messageText = input.trim();
     if (uploadedFiles.length > 0) {
@@ -809,50 +812,6 @@ Seja mais detalhado, traga exemplos práticos, jurisprudências relevantes e an�
             </div>
           </div>
         </div>;
-    } else if (mode === "recommendation") {
-      return <div className="flex flex-col items-center justify-center h-full space-y-6 pb-20 px-4">
-          <div className="text-center space-y-4 max-w-2xl">
-            <div className="bg-primary/10 p-4 rounded-full w-20 h-20 mx-auto flex items-center justify-center">
-              <Lightbulb className="w-10 h-10 text-primary" />
-            </div>
-            <h2 className="text-3xl font-bold mb-2">O que você está estudando?</h2>
-            <p className="text-muted-foreground mb-6">Escolha um tipo de material para começar</p>
-            
-            <div className="grid grid-cols-2 gap-4 max-w-md mx-auto mb-8">
-              <Card className="p-6 cursor-pointer hover:scale-105 hover:shadow-lg transition-all border-2 hover:border-primary" onClick={() => {
-              setInput("Busque um livro sobre");
-            }}>
-                <div className="text-center space-y-2">
-                  <Book className="w-12 h-12 mx-auto text-primary" />
-                  <p className="font-bold">Livros</p>
-                  <p className="text-xs text-muted-foreground">Biblioteca completa</p>
-                </div>
-              </Card>
-              
-              <Card className="p-6 cursor-pointer hover:scale-105 hover:shadow-lg transition-all border-2 hover:border-primary" onClick={() => {
-              setInput("Busque vídeos sobre");
-            }}>
-                <div className="text-center space-y-2">
-                  <Video className="w-12 h-12 mx-auto text-primary" />
-                  <p className="font-bold">Vídeos</p>
-                  <p className="text-xs text-muted-foreground">Videoaulas</p>
-                </div>
-              </Card>
-            </div>
-            
-            <div className="text-left space-y-3 bg-card border border-border rounded-lg p-4 max-w-md mx-auto">
-              <p className="font-semibold text-center">💡 Exemplos - Clique para testar:</p>
-              <div className="space-y-2">
-                {["Busque um livro sobre Direito Penal", "Busque vídeos sobre Direito Constitucional", "Recomende material sobre Processo Civil", "Vídeos sobre Direito do Trabalho"].map((example, index) => <Card key={index} className="p-3 cursor-pointer hover:bg-accent/10 transition-colors text-left border-accent/30" onClick={() => {
-                setInput(example);
-                setTimeout(() => sendMessage(), 100);
-              }}>
-                    <p className="text-sm">{example}</p>
-                  </Card>)}
-              </div>
-            </div>
-          </div>
-        </div>;
     } else {
       return <div className="flex flex-col items-center justify-center h-full space-y-6 pb-20 px-4">
           <div className="text-center space-y-3">
@@ -920,35 +879,33 @@ Seja mais detalhado, traga exemplos práticos, jurisprudências relevantes e an�
         </div>
         
         <Tabs value={mode} onValueChange={v => handleModeChange(v as ChatMode)}>
-          <TabsList className="w-full grid grid-cols-4">
+          <TabsList className="w-full grid grid-cols-3">
             <TabsTrigger value="study" className="gap-2 text-xs md:text-sm"><BookOpen className="w-4 h-4" />Estudo</TabsTrigger>
-            <TabsTrigger value="aula" className="gap-2 text-xs md:text-sm" onClick={() => navigate('/aula-interativa')}><GraduationCap className="w-4 h-4" />Aula</TabsTrigger>
-            <TabsTrigger value="recommendation" className="gap-2 text-xs md:text-sm"><Lightbulb className="w-5 h-5" />Material</TabsTrigger>
             <TabsTrigger value="realcase" className="gap-2 text-xs md:text-sm"><Scale className="w-5 h-5" />Caso Real</TabsTrigger>
+            <TabsTrigger value="aula" className="gap-2 text-xs md:text-sm" onClick={() => navigate('/aula-interativa')}><GraduationCap className="w-4 h-4" />Aula</TabsTrigger>
           </TabsList>
         </Tabs>
 
-        {/* Toggle Linguagem */}
-        <div className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-white/5 backdrop-blur-sm rounded-lg mt-2">
-          
-          <div className="flex gap-1 p-1 bg-black/20 rounded-lg">
+        {/* Toggle Linguagem - mais compacto */}
+        <div className="w-full flex items-center justify-center gap-2 py-2 px-4 mt-2">
+          <div className="flex gap-1 p-0.5 bg-black/20 rounded-full">
             <Button onClick={() => {
               if (linguagemMode !== 'descomplicado') {
                 setLinguagemMode('descomplicado');
                 limparConversa();
               }
-            }} variant={linguagemMode === 'descomplicado' ? 'default' : 'ghost'} size="sm" className={cn("text-xs transition-all gap-1.5", linguagemMode === 'descomplicado' ? "bg-primary/60 text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground hover:bg-white/5")}>
-              <span className="text-base">😊</span>
-              <span>Descomplicado</span>
+            }} variant={linguagemMode === 'descomplicado' ? 'default' : 'ghost'} size="sm" className={cn("text-xs transition-all gap-1 rounded-full h-7 px-3", linguagemMode === 'descomplicado' ? "bg-primary/60 text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground hover:bg-white/5")}>
+              <span className="text-sm">😊</span>
+              <span className="text-[11px]">Descomplicado</span>
             </Button>
             <Button onClick={() => {
               if (linguagemMode !== 'tecnico') {
                 setLinguagemMode('tecnico');
                 limparConversa();
               }
-            }} variant={linguagemMode === 'tecnico' ? 'default' : 'ghost'} size="sm" className={cn("text-xs transition-all gap-1.5", linguagemMode === 'tecnico' ? "bg-primary/60 text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground hover:bg-white/5")}>
-              <span className="text-base">⚖️</span>
-              <span>Modo Técnico</span>
+            }} variant={linguagemMode === 'tecnico' ? 'default' : 'ghost'} size="sm" className={cn("text-xs transition-all gap-1 rounded-full h-7 px-3", linguagemMode === 'tecnico' ? "bg-primary/60 text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground hover:bg-white/5")}>
+              <span className="text-sm">⚖️</span>
+              <span className="text-[11px]">Modo Técnico</span>
             </Button>
           </div>
         </div>
@@ -2002,16 +1959,6 @@ Seja mais detalhado, traga exemplos práticos, jurisprudências relevantes e an�
           </div>}
 
         <div className="border-t border-border bg-background px-4 py-3 space-y-3">
-          {mode !== "recommendation" && <div className="flex gap-2">
-              <input ref={imageInputRef} type="file" accept="image/*" onChange={e => e.target.files?.[0] && handleFileSelect(e.target.files[0], "image")} className="hidden" />
-              <button onClick={() => imageInputRef.current?.click()} disabled={isLoading} className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-full bg-accent/20 hover:bg-accent/30 transition-colors border border-border disabled:opacity-50 disabled:cursor-not-allowed">
-                <Image className="w-4 h-4" /><span className="text-sm font-medium">Analisar Imagem</span>
-              </button>
-              <input ref={pdfInputRef} type="file" accept="application/pdf" onChange={e => e.target.files?.[0] && handleFileSelect(e.target.files[0], "pdf")} className="hidden" />
-              <button onClick={() => pdfInputRef.current?.click()} disabled={isLoading} className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-full bg-accent/20 hover:bg-accent/30 transition-colors border border-border disabled:opacity-50 disabled:cursor-not-allowed">
-                <FileText className="w-4 h-4" /><span className="text-sm font-medium">Analisar PDF</span>
-              </button>
-            </div>}
           <div className="flex items-center gap-2">
             <Input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => {
             if (e.key === "Enter" && !e.shiftKey) {
@@ -2019,6 +1966,55 @@ Seja mais detalhado, traga exemplos práticos, jurisprudências relevantes e an�
               sendMessage();
             }
           }} placeholder="Digite sua pergunta..." disabled={isLoading || isCreatingLesson} className="flex-1" />
+            
+          {mode === "study" || mode === "realcase" ? (
+              <div className="relative">
+                <input ref={imageInputRef} type="file" accept="image/*" onChange={e => {
+                  e.target.files?.[0] && handleFileSelect(e.target.files[0], "image");
+                  setShowAttachMenu(false);
+                }} className="hidden" />
+                <input ref={pdfInputRef} type="file" accept="application/pdf" onChange={e => {
+                  e.target.files?.[0] && handleFileSelect(e.target.files[0], "pdf");
+                  setShowAttachMenu(false);
+                }} className="hidden" />
+                
+                <Button 
+                  variant="outline" 
+                  size="icon"
+                  onClick={() => setShowAttachMenu(!showAttachMenu)}
+                  disabled={isLoading}
+                  className="relative"
+                >
+                  <Paperclip className="w-5 h-5" />
+                </Button>
+                
+                {showAttachMenu && (
+                  <div className="absolute bottom-full right-0 mb-2 bg-background border border-border rounded-lg shadow-lg py-1 min-w-[160px] z-50">
+                    <button 
+                      onClick={() => {
+                        imageInputRef.current?.click();
+                      }}
+                      disabled={isLoading}
+                      className="w-full flex items-center gap-2 px-4 py-2.5 hover:bg-accent transition-colors text-left disabled:opacity-50"
+                    >
+                      <Image className="w-4 h-4" />
+                      <span className="text-sm">Analisar Imagem</span>
+                    </button>
+                    <button 
+                      onClick={() => {
+                        pdfInputRef.current?.click();
+                      }}
+                      disabled={isLoading}
+                      className="w-full flex items-center gap-2 px-4 py-2.5 hover:bg-accent transition-colors text-left disabled:opacity-50"
+                    >
+                      <FileText className="w-4 h-4" />
+                      <span className="text-sm">Analisar PDF</span>
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : null}
+            
             <Button onClick={sendMessage} disabled={isLoading || isCreatingLesson || !input.trim() && uploadedFiles.length === 0} size="icon">
               {isLoading || isCreatingLesson ? <Brain className="w-4 h-4 animate-pulse" /> : <Send className="w-5 h-5" />}
             </Button>
