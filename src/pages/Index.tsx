@@ -170,42 +170,36 @@ const Index = () => {
               {
                 id: "resumos",
                 title: "Resumos Jurídicos",
-                description: "Crie resumos estruturados",
                 icon: FileText,
                 route: "/resumos-juridicos"
               },
               {
                 id: "flashcards",
                 title: "Flashcards",
-                description: "Estude com flashcards interativos",
                 icon: Sparkles,
                 route: "/flashcards"
               },
               {
                 id: "mapa-mental",
                 title: "Mapa Mental",
-                description: "Mapas mentais visuais",
                 icon: Target,
                 route: "/mapa-mental"
               },
               {
                 id: "plano",
                 title: "Plano de Estudos",
-                description: "Organize seu cronograma",
                 icon: Calendar,
                 route: "/plano-estudos"
               },
               {
                 id: "audioaulas",
                 title: "Audioaulas",
-                description: "Aprenda ouvindo",
                 icon: Headphones,
                 route: "/audioaulas"
               },
               {
                 id: "desktop",
                 title: "Acesso Desktop",
-                description: "Plataforma completa no PC",
                 icon: Play,
                 route: "/acesso-desktop"
               }
@@ -215,18 +209,15 @@ const Index = () => {
                 <button
                   key={item.id}
                   onClick={() => navigate(item.route)}
-                  className="bg-gradient-to-br from-[hsl(0,75%,55%)] to-[hsl(350,70%,45%)] rounded-2xl md:rounded-xl p-5 md:p-4 text-left transition-all hover:scale-105 hover:shadow-2xl min-h-[160px] md:min-h-[140px] flex flex-col relative overflow-hidden shadow-xl"
+                  className="bg-gradient-to-br from-[hsl(0,75%,55%)] to-[hsl(350,70%,45%)] rounded-2xl md:rounded-xl p-4 md:p-3 text-left transition-all hover:scale-105 hover:shadow-2xl min-h-[100px] md:min-h-[90px] flex flex-col items-center justify-center gap-2 relative overflow-hidden shadow-xl"
                 >
                   <div className="absolute inset-0 bg-gradient-to-tl from-black/60 via-black/30 to-transparent pointer-events-none" />
-                  <div className="bg-white/20 rounded-xl md:rounded-lg p-2.5 md:p-2 w-fit relative z-10 shadow-lg mb-3 md:mb-2">
+                  <div className="bg-white/20 rounded-xl md:rounded-lg p-2.5 md:p-2 relative z-10 shadow-lg">
                     <Icon className="w-6 h-6 md:w-5 md:h-5 text-white" />
                   </div>
-                  <h3 className="text-lg md:text-base font-bold text-white mb-2 md:mb-1 relative z-10" style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.6)' }}>
+                  <h3 className="text-sm md:text-xs font-bold text-white text-center relative z-10" style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.6)' }}>
                     {item.title}
                   </h3>
-                  <p className="text-white/80 text-xs md:text-[11px] line-clamp-2 relative z-10" style={{ textShadow: '1px 1px 3px rgba(0,0,0,0.5)' }}>
-                    {item.description}
-                  </p>
                 </button>
               );
             })}
