@@ -251,13 +251,13 @@ const Index = () => {
               {[{
                 id: "vade-mecum",
                 title: "Vade Mecum",
-                description: "Legislação atualizada",
+                description: "Códigos e leis organizados",
                 icon: Scale,
                 route: "/vade-mecum"
               }, {
                 id: "professora",
                 title: "Professora",
-                description: "Professora jurídica para tirar dúvidas",
+                description: "Tire dúvidas jurídicas rapidamente",
                 icon: GraduationCap,
                 route: "/chat-professora"
               }].map(item => {
@@ -308,37 +308,37 @@ const Index = () => {
                 {[{
                   id: "bibliotecas",
                   title: "Bibliotecas",
-                  description: "Acesse códigos e legislações atualizadas",
+                  description: "Códigos e legislações completas",
                   icon: Library,
                   route: "/bibliotecas"
                 }, {
                   id: "resumos",
                   title: "Resumos",
-                  description: "Sínteses das principais matérias do Direito",
+                  description: "Principais matérias do Direito",
                   icon: Scroll,
                   route: "/resumos-juridicos"
                 }, {
                   id: "flashcards",
                   title: "Flashcards",
-                  description: "Fixe conceitos e institutos jurídicos",
+                  description: "Fixe conceitos jurídicos",
                   icon: Sparkles,
                   route: "/flashcards"
                 }, {
                   id: "mapa-mental",
                   title: "Mapa Mental",
-                  description: "Conecte institutos e ramos do Direito",
+                  description: "Conecte institutos jurídicos",
                   icon: Brain,
                   route: "/mapa-mental"
                 }, {
                   id: "plano-estudos",
                   title: "Plano de Estudos",
-                  description: "Planeje sua preparação para OAB e concursos",
+                  description: "Organize sua preparação",
                   icon: Calendar,
                   route: "/plano-estudos"
                 }, {
                   id: "videoaulas",
                   title: "Videoaulas",
-                  description: "Aulas completas de todas as matérias jurídicas",
+                  description: "Aulas de matérias jurídicas",
                   icon: Play,
                   route: "/aprender"
                 }].map(item => {
