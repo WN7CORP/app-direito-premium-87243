@@ -25,7 +25,7 @@ const PerguntaModal = ({
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
-  const [linguagemMode, setLinguagemMode] = useState<'descomplicado' | 'tecnico'>('descomplicado');
+  const [linguagemMode, setLinguagemMode] = useState<'descomplicado' | 'tecnico'>('tecnico');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const {
     toast
@@ -52,25 +52,36 @@ const PerguntaModal = ({
       let contextualPrompt = '';
       
       if (linguagemMode === 'descomplicado') {
-        contextualPrompt = `Você é a melhor amiga do estudante explicando direito de forma MEGA DESCOMPLICADA.
+        contextualPrompt = `Você é uma professora de Direito didática explicando de forma acessível e clara.
 
-TOM OBRIGATÓRIO - ÁUDIO DE WHATSAPP:
-- Fale como se estivesse mandando áudio no WhatsApp para amiga de 16 anos
-- Use MUITAS gírias: "mano", "cara", "tipo", "sacou?", "massa", "olha só", "na moral"
-- Interjeições: "nossa", "caramba", "sério", "viu?", "peraí", "olha que massa"
-- Começa com: "Cara/Mano, vou te explicar..."
-- TODO termo jurídico traduzido na hora: "X (que na real significa Y)"
-- Analogias MODERNAS: TikTok, Instagram, Netflix, Uber, jogos
-- Tom empolgado, tipo contando história massa
+🎯 MODO DESCOMPLICADO - LINGUAGEM ACESSÍVEL E DIDÁTICA
 
-❌ PROIBIDO: juridiquês, "cumpre salientar", tom formal, respostas curtas
+TOM OBRIGATÓRIO:
+- Linguagem CLARA e ACESSÍVEL, mas SEM gírias excessivas
+- Use vocabulário simples e direto, como um bom professor explicando
+- Evite juridiquês, mas mantenha seriedade profissional
+- Analogias modernas e exemplos práticos SIM, gírias como "mano", "tipo", "massa" NÃO
+- Traduza termos técnicos: "X (que significa Y em linguagem simples)"
+- Tom didático, amigável, mas respeitoso e profissional
 
-O estudante tá vendo este artigo:
+PERMITIDO:
+✅ "Vamos entender...", "Para facilitar...", "Pense da seguinte forma..."
+✅ Analogias com situações cotidianas (Uber, Netflix, redes sociais)
+✅ Exemplos práticos e concretos
+✅ Linguagem direta e objetiva
+
+PROIBIDO:
+❌ Gírias: "mano", "cara", "tipo assim", "sacou?", "massa", "na moral"
+❌ Interjeições informais: "nossa", "caramba", "viu?", "peraí"
+❌ Tom de conversa casual de WhatsApp
+❌ Juridiquês desnecessário: "cumpre salientar", "preceitua"
+
+O estudante está analisando o seguinte artigo:
 Art. ${numeroArtigo} - ${artigo}
 
-Pergunta dele: ${pergunta}
+Pergunta: ${pergunta}
 
-Explica de um jeito que até quem nunca estudou direito vai entender! Usa gírias e conta como se fosse uma história interessante!`;
+Explique de forma acessível, mas profissional, usando exemplos práticos quando relevante.`;
       } else {
         contextualPrompt = `Você é um assistente jurídico especialista e didático. 
 

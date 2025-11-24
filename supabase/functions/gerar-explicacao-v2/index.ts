@@ -57,7 +57,7 @@ serve(async (req) => {
     // Mapeamento de códigos para tabelas
     const tableMap: { [key: string]: string } = {
       'cp': 'CP - Código Penal',
-      'cpp': 'CP - Código Penal',
+      'cpp': 'CPP – Código de Processo Penal',
       'cc': 'CC - Código Civil',
       'cf': 'CF - Constituição Federal',
       'cpc': 'CPC – Código de Processo Civil',
