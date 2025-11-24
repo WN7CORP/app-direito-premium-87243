@@ -7,6 +7,13 @@ const OABFuncoes = () => {
 
   const funcoes = [
     {
+      id: "o-que-estudar-oab",
+      title: "O que estudar para OAB",
+      description: "Guia completo de conteúdos",
+      icon: BookOpen,
+      route: "/oab/o-que-estudar"
+    },
+    {
       id: "biblioteca-oab",
       title: "Biblioteca OAB",
       description: "Acesse materiais de estudo para OAB",
@@ -14,11 +21,11 @@ const OABFuncoes = () => {
       route: "/biblioteca-oab"
     },
     {
-      id: "videoaulas-oab",
-      title: "Videoaulas OAB",
-      description: "Assista aulas preparatórias",
-      icon: Video,
-      route: "/videoaulas-oab"
+      id: "questoes-oab",
+      title: "Questões OAB",
+      description: "Resolva questões de provas anteriores",
+      icon: Gavel,
+      route: "/simulados/personalizado"
     },
     {
       id: "simulados-oab",
@@ -28,24 +35,17 @@ const OABFuncoes = () => {
       route: "/simulados/exames"
     },
     {
-      id: "o-que-estudar-oab",
-      title: "O que estudar para OAB",
-      description: "Guia completo de conteúdos",
-      icon: BookOpen,
-      route: "/oab/o-que-estudar"
-    },
-    {
-      id: "questoes-oab",
-      title: "Questões OAB",
-      description: "Resolva questões de provas anteriores",
-      icon: Gavel,
-      route: "/simulados/personalizado"
+      id: "videoaulas-oab",
+      title: "Videoaulas Segunda Fase da OAB",
+      description: "Assista aulas preparatórias para 2ª fase",
+      icon: Video,
+      route: "/videoaulas-oab"
     }
   ];
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
-      <div className="flex-1 px-3 md:px-6 py-4 md:py-6 space-y-6">
+      <div className="flex-1 px-3 md:px-6 py-4 md:py-6 space-y-6 pb-6">{/* Removido pb-20 para esconder rodapé */}
         {/* Header */}
         <div className="flex items-center gap-3">
           <button
