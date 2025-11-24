@@ -28,7 +28,8 @@ serve(async (req) => {
 
     // Mapeamento COMPLETO de códigos - Cache Universal
     const tableMap: { [key: string]: string } = {
-      'cpp': 'CP - Código Penal',
+      'cp': 'CP - Código Penal',
+      'cpp': 'CPP – Código de Processo Penal',
       'cc': 'CC - Código Civil',
       'cf': 'CF - Constituição Federal',
       'cpc': 'CPC – Código de Processo Civil',

@@ -27,6 +27,7 @@ import { useArticleTracking } from "@/hooks/useArticleTracking";
 import { ArtigoActionsMenu } from "@/components/ArtigoActionsMenu";
 import { formatForWhatsApp } from "@/lib/formatWhatsApp";
 import { useProgressiveLoad } from "@/hooks/useProgressiveLoad";
+import { getCodigoFromTable } from "@/lib/codigoMappings";
 interface Article {
   id: number;
   "Número do Artigo": string | null;
@@ -326,24 +327,19 @@ const CodigoView = () => {
   const handleGenerateFlashcards = async (artigo: string, numeroArtigo: string) => {
     setLoadingFlashcards(true);
     try {
-      // Mapear código da tabela para código curto
-      const codigoMap: { [key: string]: string } = {
-        'CP - Código Penal': 'cpp',
-        'CC - Código Civil': 'cc',
-        'CF - Constituição Federal': 'cf',
-        'CPC – Código de Processo Civil': 'cpc',
-        'CPP – Código de Processo Penal': 'cppenal',
-        'CDC – Código de Defesa do Consumidor': 'cdc',
-        'CLT – Consolidação das Leis do Trabalho': 'clt',
-        'CTN – Código Tributário Nacional': 'ctn',
-        'CTB Código de Trânsito Brasileiro': 'ctb',
-        'CE – Código Eleitoral': 'ce',
-      };
+      // Usar mapeamento universal centralizado
+      const codigo = getCodigoFromTable(tableName);
+
+      console.log('🔍 [Debug FlashcardsModal]', {
+        codigoEnviado: codigo,
+        tabelaMapeada: tableName,
+        numeroArtigo: numeroArtigo
+      });
 
       const response = await supabase.functions.invoke('gerar-flashcards', {
         body: { 
           content: `Art. ${numeroArtigo}\n${artigo}`,
-          codigo: codigoMap[tableName] || id,
+          codigo: codigo,
           numeroArtigo: numeroArtigo,
           tipo: 'artigo'
         }
@@ -474,6 +470,7 @@ const CodigoView = () => {
         artigo={termosData.artigo} 
         numeroArtigo={termosData.numeroArtigo}
         codigoTabela={tableName}
+        codigo={getCodigoFromTable(tableName)}
       />
 
       {/* Questoes Modal */}
@@ -483,6 +480,7 @@ const CodigoView = () => {
         artigo={questoesData.artigo} 
         numeroArtigo={questoesData.numeroArtigo}
         codigoTabela={tableName}
+        codigo={getCodigoFromTable(tableName)}
       />
 
       {/* Pergunta Modal */}
