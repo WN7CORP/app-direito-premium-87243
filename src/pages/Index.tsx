@@ -363,6 +363,12 @@ const Index = () => {
           <div className="grid grid-cols-3 gap-2 md:gap-3">
             {[
               {
+                id: "cursos-videoaulas",
+                title: "Cursos e Videoaulas",
+                icon: Play,
+                route: "/iniciando-direito"
+              },
+              {
                 id: "resumos",
                 title: "Resumos Jurídicos",
                 icon: FileText,
