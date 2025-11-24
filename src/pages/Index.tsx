@@ -389,44 +389,78 @@ const Index = () => {
           <CursosCarousel />
         </div>
 
-        {/* Ferramentas */}
+        {/* OAB */}
         <div className="space-y-3">
-          <h2 className="md:text-lg text-foreground px-1 font-normal text-base">Ferramentas</h2>
-          
-          <div className="grid grid-cols-2 gap-3 md:gap-4">
-            {[{
-              id: "oab",
-              title: "OAB",
-              description: "Todas as ferramentas para sua aprovação",
-              icon: Gavel,
-              gradient: "from-[hsl(0,75%,55%)] to-[hsl(350,70%,45%)]",
-              route: "/oab-funcoes"
-            }, {
-              id: "ferramentas",
-              title: "Ferramentas",
-              description: "Todas as ferramentas jurídicas",
-              icon: Hammer,
-              gradient: "from-[hsl(0,75%,55%)] to-[hsl(350,70%,45%)]",
-              route: "/ferramentas"
-            }].map(category => {
-              const Icon = category.icon;
-              return <button key={category.id} onClick={() => navigate(category.route)} className={`bg-gradient-to-br ${category.gradient} rounded-2xl md:rounded-xl p-5 md:p-4 text-left transition-all hover:scale-105 hover:shadow-2xl min-h-[160px] md:min-h-[140px] flex flex-col relative overflow-hidden shadow-xl`}>
-                  <div className="absolute inset-0 bg-gradient-to-tl from-black/60 via-black/30 to-transparent pointer-events-none" />
-                  <div className="bg-white/20 rounded-xl md:rounded-lg p-2.5 md:p-2 w-fit relative z-10 shadow-lg mb-3 md:mb-2">
-                    <Icon className="w-6 h-6 md:w-5 md:h-5 text-white" />
-                  </div>
-                  <h3 className="text-lg md:text-base font-bold text-white mb-2 md:mb-1 relative z-10" style={{
-                    textShadow: '2px 2px 4px rgba(0,0,0,0.6)'
-                  }}>
-                    {category.title}
-                  </h3>
-                  <p className="text-white/80 text-xs md:text-[11px] line-clamp-2 relative z-10" style={{
-                    textShadow: '1px 1px 3px rgba(0,0,0,0.5)'
-                  }}>
-                    {category.description}
-                  </p>
-                </button>;
-            })}
+          <div className="bg-gradient-to-br from-[hsl(0,75%,45%)] to-[hsl(350,70%,35%)] rounded-2xl md:rounded-xl p-5 md:p-4 relative overflow-hidden shadow-xl">
+            <div className="absolute inset-0 bg-gradient-to-tl from-black/60 via-black/30 to-transparent pointer-events-none" />
+            
+            <div className="flex items-center gap-3 mb-4 relative z-10">
+              <div className="bg-white/20 rounded-xl md:rounded-lg p-2.5 md:p-2 shadow-lg">
+                <Gavel className="w-6 h-6 md:w-5 md:h-5 text-white" />
+              </div>
+              <h3 className="text-lg md:text-base font-bold text-white" style={{
+                textShadow: '2px 2px 4px rgba(0,0,0,0.6)'
+              }}>
+                OAB
+              </h3>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-2 md:gap-3 relative z-10">
+              {[{
+                id: "o-que-estudar-oab",
+                title: "O que estudar",
+                description: "Guia completo de conteúdos",
+                icon: BookOpen,
+                route: "/oab/o-que-estudar"
+              }, {
+                id: "biblioteca-oab",
+                title: "Biblioteca OAB",
+                description: "Materiais de estudo",
+                icon: Library,
+                route: "/biblioteca-oab"
+              }, {
+                id: "questoes-oab",
+                title: "Questões OAB",
+                description: "Provas anteriores",
+                icon: Gavel,
+                route: "/simulados/personalizado"
+              }, {
+                id: "simulados-oab",
+                title: "Simulados OAB",
+                description: "Simulados completos",
+                icon: Target,
+                route: "/simulados/exames"
+              }, {
+                id: "videoaulas-oab",
+                title: "Videoaulas 2ª Fase",
+                description: "Aulas preparatórias",
+                icon: Video,
+                route: "/videoaulas-oab"
+              }].map(item => {
+                const Icon = item.icon;
+                return (
+                  <button 
+                    key={item.id} 
+                    onClick={() => navigate(item.route)}
+                    className="bg-white/15 backdrop-blur-sm rounded-xl p-3 text-left transition-all hover:bg-white/25 hover:scale-105 flex flex-col gap-2 shadow-lg"
+                  >
+                    <Icon className="w-5 h-5 text-white" />
+                    <div>
+                      <h4 className="text-sm font-bold text-white mb-0.5" style={{
+                        textShadow: '1px 1px 3px rgba(0,0,0,0.5)'
+                      }}>
+                        {item.title}
+                      </h4>
+                      <p className="text-white/80 text-xs line-clamp-2" style={{
+                        textShadow: '1px 1px 2px rgba(0,0,0,0.5)'
+                      }}>
+                        {item.description}
+                      </p>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </div>
       </div>
