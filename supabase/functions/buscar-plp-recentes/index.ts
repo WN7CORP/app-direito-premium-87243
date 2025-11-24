@@ -47,7 +47,6 @@ serve(async (req) => {
 
     // Verificar progresso no banco
     const dataHoje = new Date().toISOString().split('T')[0];
-    const dataInicio = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
     
     const { data: progresso } = await supabase
       .from('cache_proposicoes_progresso')
@@ -63,7 +62,7 @@ serve(async (req) => {
         .from('cache_plp_recentes')
         .select('*')
         .eq('sigla_tipo', 'PLP')
-        .gte('data_apresentacao', dataInicio)
+        .gte('data_apresentacao', dataHoje)
         .order('ordem_cache', { ascending: false });
       
       return new Response(JSON.stringify({ 
@@ -92,6 +91,7 @@ serve(async (req) => {
     console.log(`⚡ Buscando página ${proximaPagina} de PLPs do dia...`);
 
     // Buscar PLPs dos últimos 7 dias
+    const dataInicio = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
     console.log(`📅 Buscando PLPs apresentados entre ${dataInicio} e ${dataHoje}`);
     
     const plpsResponse = await fetch(
@@ -122,7 +122,7 @@ serve(async (req) => {
         .from('cache_plp_recentes')
         .select('*')
         .eq('sigla_tipo', 'PLP')
-        .gte('data_apresentacao', dataInicio)
+        .gte('data_apresentacao', dataHoje)
         .order('ordem_cache', { ascending: false });
       
       return new Response(JSON.stringify({ 
@@ -319,12 +319,12 @@ serve(async (req) => {
 
     console.log(`💾 Cache PLP atualizado: ${proposicoesProcessadas.length} novos (total hoje: ${totalProcessadosAtual})`);
 
-    // Retornar todas as proposições dos últimos 7 dias
+    // Retornar todas as proposições do dia
     const { data: todasDoDia } = await supabase
       .from('cache_plp_recentes')
       .select('*')
       .eq('sigla_tipo', 'PLP')
-      .gte('data_apresentacao', dataInicio)
+      .gte('data_apresentacao', dataHoje)
       .order('ordem_cache', { ascending: false });
 
     return new Response(JSON.stringify({ 
