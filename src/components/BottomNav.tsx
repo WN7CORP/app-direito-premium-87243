@@ -25,10 +25,10 @@ export const BottomNav = () => {
       path: "/",
     },
     {
-      id: "biblioteca",
-      label: "Bibliotecas",
+      id: "plano-estudos",
+      label: "Plano de Estudos",
       icon: Library,
-      path: "/bibliotecas",
+      path: "/plano-estudos",
     },
     {
       id: "ferramentas",
