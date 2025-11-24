@@ -345,6 +345,52 @@ const Index = () => {
           </div>
         </div>
 
+        {/* Ferramentas */}
+        <div className="space-y-3">
+          <h2 className="md:text-lg text-foreground px-1 font-normal text-base">Ferramentas</h2>
+          
+          <div className="grid grid-cols-2 gap-3 md:gap-4">
+            {[
+              {
+                id: "assistente-ia",
+                title: "Assistente IA",
+                description: "Assistente jurídico inteligente",
+                icon: Sparkles,
+                gradient: "from-[hsl(0,75%,55%)] to-[hsl(350,70%,45%)]",
+                route: "/ferramentas"
+              },
+              {
+                id: "analisador",
+                title: "Analisador",
+                description: "Análise de documentos jurídicos",
+                icon: FileText,
+                gradient: "from-[hsl(0,75%,55%)] to-[hsl(350,70%,45%)]",
+                route: "/ferramentas"
+              }
+            ].map(category => {
+              const Icon = category.icon;
+              return (
+                <button
+                  key={category.id}
+                  onClick={() => navigate(category.route)}
+                  className={`bg-gradient-to-br ${category.gradient} rounded-2xl md:rounded-xl p-5 md:p-4 text-left transition-all hover:scale-105 hover:shadow-2xl min-h-[160px] md:min-h-[140px] flex flex-col relative overflow-hidden shadow-xl`}
+                >
+                  <div className="absolute inset-0 bg-gradient-to-tl from-black/60 via-black/30 to-transparent pointer-events-none" />
+                  <div className="bg-white/20 rounded-xl md:rounded-lg p-2.5 md:p-2 w-fit relative z-10 shadow-lg mb-3 md:mb-2">
+                    <Icon className="w-6 h-6 md:w-5 md:h-5 text-white" />
+                  </div>
+                  <h3 className="text-lg md:text-base font-bold text-white mb-2 md:mb-1 relative z-10" style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.6)' }}>
+                    {category.title}
+                  </h3>
+                  <p className="text-white/80 text-xs md:text-[11px] line-clamp-2 relative z-10" style={{ textShadow: '1px 1px 3px rgba(0,0,0,0.5)' }}>
+                    {category.description}
+                  </p>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
         {/* Estudos para a OAB */}
         <div className="space-y-3">
           <h2 className="md:text-lg text-foreground px-1 font-normal text-base">Estudos para a OAB</h2>
