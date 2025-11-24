@@ -265,28 +265,6 @@ const Index = () => {
             </div> : null}
         </div>
 
-        {/* Biblioteca de Estudos - Carrossel de Áreas */}
-        <div className="space-y-3">
-          <div className="flex items-center justify-between px-1">
-            <div>
-              <h2 className="md:text-lg text-foreground font-normal text-base">Biblioteca de Estudos</h2>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                Explore por área do Direito
-              </p>
-            </div>
-            <Button 
-              size="sm"
-              onClick={() => navigate('/biblioteca-estudos')}
-              className="bg-primary/70 hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-300 rounded-full px-3 text-xs flex items-center gap-1"
-            >
-              Ver mais
-              <ArrowRight className="w-3 h-3" />
-            </Button>
-          </div>
-          
-          <AreasBibliotecaEstudosCarousel />
-        </div>
-
         {/* Academic Environment Section */}
         <div className="space-y-3">
           <h2 className="md:text-lg text-foreground px-1 font-normal text-base">Ambiente Acadêmico</h2>
@@ -312,6 +290,28 @@ const Index = () => {
                 </button>;
           })}
           </div>
+        </div>
+
+        {/* Biblioteca de Estudos - Carrossel de Áreas */}
+        <div className="space-y-3">
+          <div className="flex items-center justify-between px-1">
+            <div>
+              <h2 className="md:text-lg text-foreground font-normal text-base">Biblioteca de Estudos</h2>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Explore por área do Direito
+              </p>
+            </div>
+            <Button 
+              size="sm"
+              onClick={() => navigate('/biblioteca-estudos')}
+              className="bg-primary/70 hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-300 rounded-full px-3 text-xs flex items-center gap-1"
+            >
+              Ver mais
+              <ArrowRight className="w-3 h-3" />
+            </Button>
+          </div>
+          
+          <AreasBibliotecaEstudosCarousel />
         </div>
 
         {/* Cursos em Destaque */}
