@@ -90,16 +90,16 @@ const AreasBibliotecaEstudosCarousel = () => {
               )}
               <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent" />
               
-              {/* Badge "Atualizado" - topo */}
+              {/* Badge "Atualizado 2026" - topo */}
               <div className="absolute top-2 left-2">
-                <span className="text-[10px] font-semibold text-amber-200/90 bg-black/50 backdrop-blur-sm px-2.5 py-1 rounded">
-                  Atualizado
+                <span className="text-[9px] font-medium text-white/70 bg-black/40 backdrop-blur-sm px-2 py-0.5 rounded">
+                  Atualizado 2026
                 </span>
               </div>
               
               {/* Quantidade de livros - topo direito */}
               <div className="absolute top-2 right-2">
-                <span className="text-[10px] font-semibold text-white/80 bg-black/50 backdrop-blur-sm px-2.5 py-1 rounded">
+                <span className="text-[9px] font-medium text-white/70 bg-black/40 backdrop-blur-sm px-2 py-0.5 rounded">
                   {count} {count === 1 ? 'livro' : 'livros'}
                 </span>
               </div>
