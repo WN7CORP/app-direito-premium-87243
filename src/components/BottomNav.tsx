@@ -1,5 +1,5 @@
 import { useNavigate, useLocation } from "react-router-dom";
-import { Home, GraduationCap, Menu, MonitorSmartphone, Sparkles, BookOpen as BookOpenIcon } from "lucide-react";
+import { Home, GraduationCap, Menu, MonitorSmartphone, Sparkles, Library } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { AppSidebar } from "./AppSidebar";
@@ -32,8 +32,8 @@ export const BottomNav = () => {
     },
     {
       id: "biblioteca",
-      label: "Biblioteca",
-      icon: BookOpenIcon,
+      label: "Bibliotecas",
+      icon: Library,
       path: "/bibliotecas",
     },
     {
