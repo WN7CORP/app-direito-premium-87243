@@ -131,8 +131,8 @@ const Bibliotecas = () => {
   }
 
   return (
-    <div className="px-3 py-4 max-w-4xl mx-auto">
-      <div className="mb-6">
+    <div className="px-3 py-4 max-w-4xl mx-auto pb-6 min-h-screen">
+      <div className="mb-6 animate-fade-in">
         <h1 className="text-xl md:text-2xl font-bold mb-1 flex items-center gap-2">
           <Library className="w-6 h-6" />
           Bibliotecas
@@ -142,8 +142,8 @@ const Bibliotecas = () => {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {bibliotecas.map((biblioteca) => {
+      <div className="grid grid-cols-2 gap-3 md:gap-4">
+        {bibliotecas.map((biblioteca, index) => {
           const Icon = biblioteca.icon;
           const capaUrl = getCapaUrl(biblioteca.bibliotecaName);
           const count = contagens?.[biblioteca.key as keyof typeof contagens] || 0;
@@ -151,15 +151,19 @@ const Bibliotecas = () => {
           return (
             <Card
               key={biblioteca.path}
-              className="cursor-pointer hover:scale-105 hover:shadow-2xl hover:-translate-y-1 transition-all border border-accent/20 hover:border-accent/50 group overflow-hidden"
+              className="cursor-pointer hover:scale-105 transition-all duration-300 border border-accent/20 hover:border-accent/60 group overflow-hidden shadow-[0_8px_30px_rgba(0,_0,_0,_0.3)] hover:shadow-[0_12px_40px_rgba(8,_112,_184,_0.5)] hover:-translate-y-2 animate-fade-in"
               onClick={() => navigate(biblioteca.path)}
+              style={{
+                animationDelay: `${index * 0.1}s`,
+                animationFillMode: 'backwards'
+              }}
             >
-              <div className="relative h-40 overflow-hidden">
+              <div className="relative h-32 md:h-40 overflow-hidden">
                 {capaUrl ? (
                   <img
                     src={capaUrl}
                     alt={biblioteca.title}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform"
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                     loading="lazy"
                     onError={(e) => {
                       (e.currentTarget as HTMLImageElement).style.display = "none";
@@ -167,17 +171,17 @@ const Bibliotecas = () => {
                   />
                 ) : (
                   <div className={`w-full h-full bg-gradient-to-br ${biblioteca.gradient} flex items-center justify-center`}>
-                    <Icon className="w-20 h-20 text-accent group-hover:scale-110 transition-transform" />
+                    <Icon className="w-12 h-12 md:w-16 md:h-16 text-accent group-hover:scale-110 transition-transform duration-300" />
                   </div>
                 )}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                <div className="absolute top-3 right-3 bg-accent text-accent-foreground px-3 py-1.5 rounded-full text-sm font-bold shadow-lg">
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
+                <div className="absolute top-2 right-2 bg-accent text-accent-foreground px-2 py-1 md:px-3 md:py-1.5 rounded-full text-xs md:text-sm font-bold shadow-lg">
                   {count} {count === 1 ? "livro" : "livros"}
                 </div>
               </div>
-              <CardContent className="p-6">
-                <h3 className="font-semibold text-lg mb-2">{biblioteca.title}</h3>
-                <p className="text-sm text-muted-foreground">
+              <CardContent className="p-3 md:p-4 bg-secondary/40">
+                <h3 className="font-semibold text-sm md:text-base mb-1 line-clamp-2">{biblioteca.title}</h3>
+                <p className="text-xs text-muted-foreground line-clamp-2">
                   {biblioteca.description}
                 </p>
               </CardContent>

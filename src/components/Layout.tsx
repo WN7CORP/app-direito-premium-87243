@@ -67,6 +67,7 @@ export const Layout = ({ children }: LayoutProps) => {
     location.pathname.startsWith("/mapa-mental") ||
     location.pathname === "/ajuda" ||
     // Esconder em todas as páginas de bibliotecas
+    location.pathname === "/bibliotecas" ||
     location.pathname === "/biblioteca-estudos" ||
     location.pathname === "/biblioteca-classicos" ||
     location.pathname === "/biblioteca-oab" ||
