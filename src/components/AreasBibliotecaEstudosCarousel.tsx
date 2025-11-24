@@ -1,0 +1,100 @@
+import { useNavigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import useEmblaCarousel from "embla-carousel-react";
+import { Loader2, BookOpen } from "lucide-react";
+import { useMemo } from "react";
+
+interface BibliotecaItem {
+  id: number;
+  Área: string | null;
+  "Capa-area": string | null;
+}
+
+const AreasBibliotecaEstudosCarousel = () => {
+  const navigate = useNavigate();
+  const [emblaRef] = useEmblaCarousel({
+    align: "start",
+    containScroll: "trimSnaps",
+    dragFree: true,
+    skipSnaps: true,
+  });
+
+  const { data: items, isLoading } = useQuery({
+    queryKey: ["biblioteca-estudos-areas"],
+    queryFn: async () => {
+      const { data, error } = await (supabase as any)
+        .from("BIBLIOTECA-ESTUDOS")
+        .select("Área, Capa-area")
+        .order("Área");
+
+      if (error) throw error;
+      return data as BibliotecaItem[];
+    },
+  });
+
+  // Agrupar por área e pegar a primeira capa de cada área
+  const areas = useMemo(() => {
+    if (!items) return [];
+    
+    const areaMap = new Map<string, string | null>();
+    items.forEach(item => {
+      if (item.Área && !areaMap.has(item.Área)) {
+        areaMap.set(item.Área, item["Capa-area"]);
+      }
+    });
+
+    return Array.from(areaMap.entries())
+      .map(([area, capa]) => ({ area, capa }))
+      .sort((a, b) => a.area.localeCompare(b.area, 'pt-BR'));
+  }, [items]);
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center py-8">
+        <Loader2 className="w-6 h-6 animate-spin text-accent" />
+      </div>
+    );
+  }
+
+  if (!areas.length) {
+    return null;
+  }
+
+  return (
+    <div className="overflow-hidden" ref={emblaRef}>
+      <div className="flex gap-3">
+        {areas.map(({ area, capa }) => (
+          <div
+            key={area}
+            onClick={() => navigate("/biblioteca-estudos")}
+            className="flex-[0_0_140px] min-w-0 cursor-pointer group"
+          >
+            <div className="relative aspect-[2/3] rounded-lg overflow-hidden shadow-lg border border-accent/20 hover:border-accent/60 transition-all duration-300 hover:shadow-[0_8px_30px_rgba(8,_112,_184,_0.5)]">
+              {capa ? (
+                <img
+                  src={capa}
+                  alt={area}
+                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                  loading="lazy"
+                />
+              ) : (
+                <div className="w-full h-full bg-gradient-to-br from-blue-500/20 to-indigo-500/20 flex items-center justify-center">
+                  <BookOpen className="w-12 h-12 text-accent" />
+                </div>
+              )}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
+              <div className="absolute bottom-0 left-0 right-0 p-3">
+                <h3 className="text-white font-semibold text-sm leading-tight line-clamp-2">
+                  {area}
+                </h3>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+export default AreasBibliotecaEstudosCarousel;
