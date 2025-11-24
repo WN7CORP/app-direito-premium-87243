@@ -318,18 +318,6 @@ const Index = () => {
           <div className="grid grid-cols-3 gap-2 md:gap-3">
             {[
               {
-                id: "cursos",
-                title: "Cursos",
-                icon: GraduationCap,
-                route: "/iniciando-direito"
-              },
-              {
-                id: "videoaulas",
-                title: "Videoaulas",
-                icon: Play,
-                route: "/aprender"
-              },
-              {
                 id: "resumos",
                 title: "Resumos Jurídicos",
                 icon: Scroll,
@@ -348,10 +336,22 @@ const Index = () => {
                 route: "/mapa-mental"
               },
               {
+                id: "cursos",
+                title: "Cursos",
+                icon: GraduationCap,
+                route: "/iniciando-direito"
+              },
+              {
                 id: "plano",
                 title: "Plano de Estudos",
                 icon: Calendar,
                 route: "/plano-estudos"
+              },
+              {
+                id: "videoaulas",
+                title: "Videoaulas",
+                icon: Play,
+                route: "/aprender"
               },
               {
                 id: "audioaulas",
