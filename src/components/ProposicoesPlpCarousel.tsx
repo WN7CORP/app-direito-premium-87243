@@ -36,7 +36,20 @@ const ProposicoesPlpCarousel = () => {
   }
 
   if (!proposicoes || proposicoes.length === 0) {
-    return null;
+    if (isLoading) return null;
+    
+    return (
+      <div className="space-y-3">
+        <div className="flex items-center justify-between px-1">
+          <h2 className="md:text-lg text-foreground font-normal text-base">Leis Complementares Recentes (PLP)</h2>
+        </div>
+        <div className="bg-card border border-border rounded-lg p-6 text-center">
+          <p className="text-sm text-muted-foreground">
+            Carregando dados pela primeira vez... Isso pode levar alguns minutos.
+          </p>
+        </div>
+      </div>
+    );
   }
 
   return (
