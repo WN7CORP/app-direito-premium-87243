@@ -133,21 +133,20 @@ const Index = () => {
 
         {/* Notícias em Destaque - Carrossel */}
         <div className="space-y-3">
-          <div className="bg-gradient-to-br from-[hsl(220,15%,20%)] to-[hsl(220,15%,15%)] rounded-2xl md:rounded-xl p-5 md:p-4 relative overflow-hidden shadow-xl">
-            <div className="absolute inset-0 bg-gradient-to-tl from-black/40 via-black/20 to-transparent pointer-events-none" />
-            <div className="flex items-center justify-between px-1 relative z-10">
-              <h2 className="md:text-lg text-white font-normal text-base">Notícias em Destaque</h2>
-              <div className="flex gap-2">
-                <Button size="sm" onClick={() => navigate('/noticias-juridicas')} className="bg-white/15 hover:bg-white/25 text-white shadow-lg hover:shadow-xl transition-all duration-300 rounded-full px-3 text-xs flex items-center gap-1">
-                  Ver mais
-                  <ArrowRight className="w-3 h-3" />
-                </Button>
-              </div>
+          <div className="flex items-center justify-between px-1">
+            <h2 className="md:text-lg text-foreground font-normal text-base">Notícias em Destaque</h2>
+            <div className="flex gap-2">
+              
+              <Button size="sm" onClick={() => navigate('/noticias-juridicas')} className="bg-primary/70 hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-300 rounded-full px-3 text-xs flex items-center gap-1">
+                Ver mais
+                <ArrowRight className="w-3 h-3" />
+              </Button>
             </div>
+          </div>
           
-            {loadingNews ? <div className="flex justify-center py-8">
-                <Loader2 className="w-6 h-6 md:w-5 md:h-5 animate-spin text-accent" />
-              </div> : featuredNews.length > 0 ? <div className="overflow-hidden relative z-10" ref={emblaRefVideo}>
+          {loadingNews ? <div className="flex justify-center py-8">
+              <Loader2 className="w-6 h-6 md:w-5 md:h-5 animate-spin text-accent" />
+            </div> : featuredNews.length > 0 ? <div className="overflow-hidden" ref={emblaRefVideo}>
               <div className="flex gap-3 md:gap-4">
                 {featuredNews.map((noticia, index) => {
               const formatarDataHora = (dataString: string) => {
@@ -228,9 +227,8 @@ const Index = () => {
                       </button>
                     </div>;
             })}
-                </div>
-              </div> : null}
-          </div>
+              </div>
+            </div> : null}
         </div>
 
         {/* Em Alta */}
@@ -292,8 +290,8 @@ const Index = () => {
 
         {/* Estudos */}
         <div className="space-y-3">
-          <div className="bg-gradient-to-br from-[hsl(220,15%,20%)] to-[hsl(220,15%,15%)] rounded-2xl md:rounded-xl p-5 md:p-4 relative overflow-hidden shadow-xl">
-              <div className="absolute inset-0 bg-gradient-to-tl from-black/40 via-black/20 to-transparent pointer-events-none" />
+          <div className="bg-gradient-to-br from-[hsl(0,75%,45%)] to-[hsl(350,70%,35%)] rounded-2xl md:rounded-xl p-5 md:p-4 relative overflow-hidden shadow-xl">
+              <div className="absolute inset-0 bg-gradient-to-tl from-black/60 via-black/30 to-transparent pointer-events-none" />
               
               <div className="flex items-center gap-3 mb-4 relative z-10">
                 <div className="bg-white/20 rounded-xl md:rounded-lg p-2.5 md:p-2 shadow-lg">
@@ -373,33 +371,28 @@ const Index = () => {
 
         {/* Cursos em Destaque */}
         <div className="space-y-3">
-          <div className="bg-gradient-to-br from-[hsl(220,15%,20%)] to-[hsl(220,15%,15%)] rounded-2xl md:rounded-xl p-5 md:p-4 relative overflow-hidden shadow-xl">
-            <div className="absolute inset-0 bg-gradient-to-tl from-black/40 via-black/20 to-transparent pointer-events-none" />
-            <div className="flex items-center justify-between px-1 relative z-10">
-              <div>
-                <h2 className="md:text-lg text-white font-normal text-base">
-                  Cursos em Destaque
-                </h2>
-                <p className="text-xs text-white/70 mt-0.5">
-                  Descomplicando o Direito
-                </p>
-              </div>
-              <Button size="sm" onClick={() => navigate('/iniciando-direito')} className="bg-white/15 hover:bg-white/25 text-white shadow-lg hover:shadow-xl transition-all duration-300 rounded-full px-3 text-xs flex items-center gap-1">
-                Ver mais
-                <ArrowRight className="w-3 h-3" />
-              </Button>
+          <div className="flex items-center justify-between px-1">
+            <div>
+              <h2 className="md:text-lg text-foreground font-normal text-base">
+                Cursos em Destaque
+              </h2>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Descomplicando o Direito
+              </p>
             </div>
-            
-            <div className="relative z-10 mt-3">
-              <CursosCarousel />
-            </div>
+            <Button size="sm" onClick={() => navigate('/iniciando-direito')} className="bg-primary/70 hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-300 rounded-full px-3 text-xs flex items-center gap-1">
+              Ver mais
+              <ArrowRight className="w-3 h-3" />
+            </Button>
           </div>
+          
+          <CursosCarousel />
         </div>
 
         {/* OAB */}
         <div className="space-y-3">
-          <div className="bg-gradient-to-br from-[hsl(220,15%,20%)] to-[hsl(220,15%,15%)] rounded-2xl md:rounded-xl p-5 md:p-4 relative overflow-hidden shadow-xl">
-            <div className="absolute inset-0 bg-gradient-to-tl from-black/40 via-black/20 to-transparent pointer-events-none" />
+          <div className="bg-gradient-to-br from-[hsl(0,75%,45%)] to-[hsl(350,70%,35%)] rounded-2xl md:rounded-xl p-5 md:p-4 relative overflow-hidden shadow-xl">
+            <div className="absolute inset-0 bg-gradient-to-tl from-black/60 via-black/30 to-transparent pointer-events-none" />
             
             <div className="flex items-center gap-3 mb-4 relative z-10">
               <div className="bg-white/20 rounded-xl md:rounded-lg p-2.5 md:p-2 shadow-lg">
