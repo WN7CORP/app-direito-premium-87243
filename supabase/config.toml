@@ -1,1 +1,10 @@
 project_id = "izspjvegxdfgkgibpyst"
+
+[functions.buscar-proposicoes-recentes]
+verify_jwt = false
+
+[functions.buscar-plp-recentes]
+verify_jwt = false
+
+[functions.buscar-deputados]
+verify_jwt = false
