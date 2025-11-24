@@ -267,7 +267,7 @@ const Index = () => {
 
         {/* Em Alta */}
         <div className="space-y-3">
-          <h2 className="md:text-lg text-foreground px-1 font-normal text-base">Em Alta</h2>
+          <h2 className="md:text-lg text-foreground px-1 font-normal text-base">🔥 Em Alta</h2>
           
           <div className="grid grid-cols-2 gap-3 md:gap-4">
             {[
