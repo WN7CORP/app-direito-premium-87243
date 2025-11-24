@@ -257,8 +257,8 @@ const BibliotecaEstudos = () => {
                 className="cursor-pointer group overflow-hidden border border-accent/20 hover:border-accent/60 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_20px_50px_rgba(8,_112,_184,_0.7)]"
               >
                 <div className="flex items-center gap-4 p-4">
-                  {/* Imagem/Ícone */}
-                  <div className="relative w-20 h-20 rounded-lg overflow-hidden flex-shrink-0">
+                  {/* Imagem/Ícone - Formato capa de livro (2:3) */}
+                  <div className="relative w-16 h-24 rounded-lg overflow-hidden flex-shrink-0">
                     {data.capa ? (
                       <img
                         src={data.capa}
@@ -268,14 +268,14 @@ const BibliotecaEstudos = () => {
                       />
                     ) : (
                       <div className="w-full h-full bg-gradient-to-br from-blue-500/20 to-indigo-500/20 flex items-center justify-center">
-                        <BookOpen className="w-10 h-10 text-accent" />
+                        <BookOpen className="w-8 h-8 text-accent" />
                       </div>
                     )}
                   </div>
                   
                   {/* Informações */}
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-base mb-1 text-foreground truncate">
+                    <h3 className="font-semibold text-base mb-1 text-foreground leading-tight">
                       {area}
                     </h3>
                     <p className="text-sm text-muted-foreground">
