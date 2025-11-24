@@ -231,92 +231,113 @@ const Index = () => {
             </div> : null}
         </div>
 
-        {/* Ferramentas de Estudo */}
-        <div className="space-y-3">
-          <h2 className="md:text-lg text-foreground px-1 font-normal text-base">Ferramentas de Estudo</h2>
-          
-          <div className="grid grid-cols-3 gap-2 md:gap-3">
-            {[{
-            id: "bibliotecas",
-            title: "Bibliotecas",
-            icon: Library,
-            route: "/bibliotecas"
-          }, {
-            id: "resumos",
-            title: "Resumos Jurídicos",
-            icon: Scroll,
-            route: "/resumos-juridicos"
-          }, {
-            id: "flashcards",
-            title: "Flashcards",
-            icon: Sparkles,
-            route: "/flashcards"
-          }, {
-            id: "mapa-mental",
-            title: "Mapa Mental",
-            icon: Brain,
-            route: "/mapa-mental"
-          }, {
-            id: "plano-estudos",
-            title: "Plano de Estudos",
-            icon: Calendar,
-            route: "/plano-estudos"
-          }, {
-            id: "videoaulas",
-            title: "Videoaulas",
-            icon: Play,
-            route: "/aprender"
-          }].map(item => {
-            const Icon = item.icon;
-            return <button key={item.id} onClick={() => navigate(item.route)} className="bg-gradient-to-br from-[hsl(0,75%,55%)] to-[hsl(350,70%,45%)] rounded-xl md:rounded-2xl p-3 md:p-4 text-center transition-all hover:scale-105 hover:shadow-2xl flex flex-col items-center justify-center gap-2 relative overflow-hidden shadow-xl min-h-[90px] md:min-h-[110px]">
-                  <div className="absolute inset-0 bg-gradient-to-tl from-black/60 via-black/30 to-transparent pointer-events-none" />
-                  <div className="bg-white/20 rounded-lg md:rounded-xl p-2 md:p-2.5 relative z-10 shadow-lg">
-                    <Icon className="w-5 h-5 md:w-6 md:h-6 text-white" />
-                  </div>
-                  <h3 className="text-xs md:text-base font-bold text-white relative z-10 leading-tight" style={{
-                textShadow: '2px 2px 4px rgba(0,0,0,0.6)'
-              }}>
-                    {item.title}
-                  </h3>
-                </button>;
-          })}
-          </div>
-        </div>
-
         {/* Em Alta */}
         <div className="space-y-3">
           <h2 className="md:text-lg text-foreground px-1 font-normal text-base">🔥 Em Alta</h2>
           
           <div className="grid grid-cols-2 gap-3 md:gap-4">
+            {/* Card Estudos - Ocupa 2 colunas */}
+            <div className="col-span-2 bg-gradient-to-br from-[hsl(0,75%,55%)] to-[hsl(350,70%,45%)] rounded-2xl md:rounded-xl p-5 md:p-4 relative overflow-hidden shadow-xl">
+              <div className="absolute inset-0 bg-gradient-to-tl from-black/60 via-black/30 to-transparent pointer-events-none" />
+              
+              <div className="flex items-center gap-3 mb-4 relative z-10">
+                <div className="bg-white/20 rounded-xl md:rounded-lg p-2.5 md:p-2 shadow-lg">
+                  <BookOpenIcon className="w-6 h-6 md:w-5 md:h-5 text-white" />
+                </div>
+                <h3 className="text-lg md:text-base font-bold text-white" style={{
+                  textShadow: '2px 2px 4px rgba(0,0,0,0.6)'
+                }}>
+                  Estudos
+                </h3>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-2 md:gap-3 relative z-10">
+                {[{
+                  id: "bibliotecas",
+                  title: "Bibliotecas",
+                  description: "Acesse milhares de leis",
+                  icon: Library,
+                  route: "/bibliotecas"
+                }, {
+                  id: "resumos",
+                  title: "Resumos",
+                  description: "Conteúdo simplificado",
+                  icon: Scroll,
+                  route: "/resumos-juridicos"
+                }, {
+                  id: "flashcards",
+                  title: "Flashcards",
+                  description: "Memorize com eficiência",
+                  icon: Sparkles,
+                  route: "/flashcards"
+                }, {
+                  id: "mapa-mental",
+                  title: "Mapa Mental",
+                  description: "Visualize conexões",
+                  icon: Brain,
+                  route: "/mapa-mental"
+                }, {
+                  id: "plano-estudos",
+                  title: "Plano de Estudos",
+                  description: "Organize sua rotina",
+                  icon: Calendar,
+                  route: "/plano-estudos"
+                }, {
+                  id: "videoaulas",
+                  title: "Videoaulas",
+                  description: "Aprenda com vídeos",
+                  icon: Play,
+                  route: "/aprender"
+                }].map(item => {
+                  const Icon = item.icon;
+                  return (
+                    <button 
+                      key={item.id} 
+                      onClick={() => navigate(item.route)}
+                      className="bg-white/10 backdrop-blur-sm rounded-xl p-3 text-left transition-all hover:bg-white/20 hover:scale-105 flex flex-col gap-2"
+                    >
+                      <Icon className="w-5 h-5 text-white" />
+                      <div>
+                        <h4 className="text-sm font-bold text-white mb-0.5" style={{
+                          textShadow: '1px 1px 3px rgba(0,0,0,0.5)'
+                        }}>
+                          {item.title}
+                        </h4>
+                        <p className="text-white/80 text-xs line-clamp-1" style={{
+                          textShadow: '1px 1px 2px rgba(0,0,0,0.5)'
+                        }}>
+                          {item.description}
+                        </p>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+            
+            {/* Outros cards Em Alta */}
             {[{
-            id: "vade-mecum",
-            title: "Vade Mecum",
-            description: "Legislação atualizada",
-            icon: Scale,
-            gradient: "from-[hsl(0,75%,55%)] to-[hsl(350,70%,45%)]",
-            route: "/vade-mecum"
-          }, {
-            id: "professora",
-            title: "Professora",
-            description: "Professora jurídica para tirar dúvidas",
-            icon: GraduationCap,
-            gradient: "from-[hsl(0,75%,55%)] to-[hsl(350,70%,45%)]",
-            route: "/chat-professora"
-          }, {
-            id: "oab",
-            title: "OAB",
-            description: "Todas as ferramentas para sua aprovação",
-            icon: Gavel,
-            gradient: "from-[hsl(0,75%,55%)] to-[hsl(350,70%,45%)]",
-            route: "/oab-funcoes"
-          }, {
-            id: "ferramentas",
-            title: "Ferramentas",
-            description: "Assistente IA e Analisador de documentos",
-            icon: Settings,
-            gradient: "from-[hsl(0,75%,55%)] to-[hsl(350,70%,45%)]",
-            route: "/ferramentas"
-          }].map(category => {
+              id: "vade-mecum",
+              title: "Vade Mecum",
+              description: "Legislação atualizada",
+              icon: Scale,
+              gradient: "from-[hsl(0,75%,55%)] to-[hsl(350,70%,45%)]",
+              route: "/vade-mecum"
+            }, {
+              id: "professora",
+              title: "Professora",
+              description: "Professora jurídica para tirar dúvidas",
+              icon: GraduationCap,
+              gradient: "from-[hsl(0,75%,55%)] to-[hsl(350,70%,45%)]",
+              route: "/chat-professora"
+            }, {
+              id: "oab",
+              title: "OAB",
+              description: "Todas as ferramentas para sua aprovação",
+              icon: Gavel,
+              gradient: "from-[hsl(0,75%,55%)] to-[hsl(350,70%,45%)]",
+              route: "/oab-funcoes"
+            }].map(category => {
             const Icon = category.icon;
             return <button key={category.id} onClick={() => navigate(category.route)} className={`bg-gradient-to-br ${category.gradient} rounded-2xl md:rounded-xl p-5 md:p-4 text-left transition-all hover:scale-105 hover:shadow-2xl min-h-[160px] md:min-h-[140px] flex flex-col relative overflow-hidden shadow-xl`}>
                   <div className="absolute inset-0 bg-gradient-to-tl from-black/60 via-black/30 to-transparent pointer-events-none" />
