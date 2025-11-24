@@ -3,13 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import NoticiaCard from "@/components/NoticiaCard";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
-import { Newspaper, RefreshCw } from "lucide-react";
+import { Newspaper } from "lucide-react";
 import { SmartLoadingIndicator } from "@/components/chat/SmartLoadingIndicator";
-import { formatDistanceToNow } from "date-fns";
-import { ptBR } from "date-fns/locale";
-import { toast } from "sonner";
 interface Noticia {
   id: string;
   categoria: string;
@@ -27,8 +23,7 @@ const NoticiasJuridicas = () => {
   const {
     data: noticias,
     isLoading,
-    error,
-    refetch
+    error
   } = useQuery({
     queryKey: ['noticias-juridicas'],
     queryFn: async () => {
@@ -44,11 +39,6 @@ const NoticiasJuridicas = () => {
     refetchOnWindowFocus: true
   });
 
-  const handleRefresh = async () => {
-    toast.info("Atualizando notícias...");
-    await refetch();
-    toast.success("Notícias atualizadas!");
-  };
   const noticiasFiltradas = categoriaAtiva === "Todas" ? noticias : noticias?.filter(n => n.categoria === categoriaAtiva);
   const handleNoticiaClick = (noticia: Noticia) => {
     navigate(`/noticias-juridicas/${noticia.id}`, {
@@ -61,24 +51,12 @@ const NoticiasJuridicas = () => {
       {/* Header com introdução */}
       <div className="bg-primary px-4 py-6 shadow-lg">
         <div className="max-w-6xl mx-auto">
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-3">
-              <h1 className="text-2xl md:text-3xl font-bold text-primary-foreground">Jurídico em Pauta</h1>
-            </div>
-            <Button
-              onClick={handleRefresh}
-              disabled={isLoading}
-              variant="outline"
-              size="sm"
-              className="gap-2 bg-primary-foreground/10 border-primary-foreground/20 text-primary-foreground hover:bg-primary-foreground/20"
-            >
-              <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
-              Atualizar
-            </Button>
+          <div className="mb-2">
+            <h1 className="text-2xl md:text-3xl font-bold text-primary-foreground mb-2">Notícias em Destaque</h1>
+            <p className="text-primary-foreground/90 text-sm">
+              Acompanhe as principais notícias do Brasil sobre concursos, direito, OAB e muito mais
+            </p>
           </div>
-          <p className="text-primary-foreground/90 text-sm">
-            Acompanhe as principais notícias do mundo jurídico
-          </p>
         </div>
       </div>
 
@@ -114,10 +92,10 @@ const NoticiasJuridicas = () => {
           </div>}
 
         {!isLoading && !error && noticiasFiltradas && noticiasFiltradas.length > 0 && <>
-            <div className="mb-4 text-sm text-muted-foreground">
+            <div className="mb-4 text-sm text-muted-foreground max-w-6xl mx-auto">
               {noticiasFiltradas.length} {noticiasFiltradas.length === 1 ? 'notícia encontrada' : 'notícias encontradas'}
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
+            <div className="max-w-6xl mx-auto space-y-3">
               {noticiasFiltradas.map(noticia => <NoticiaCard key={noticia.id} {...noticia} onClick={() => handleNoticiaClick(noticia)} />)}
             </div>
           </>}
