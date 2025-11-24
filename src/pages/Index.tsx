@@ -243,16 +243,16 @@ const Index = () => {
           <div className="grid grid-cols-3 gap-2 md:gap-3">
             {[
               {
-                id: "resumos",
-                title: "Resumos Jurídicos",
-                icon: Scroll,
-                route: "/resumos-juridicos"
-              },
-              {
                 id: "bibliotecas",
                 title: "Bibliotecas",
                 icon: Library,
                 route: "/bibliotecas"
+              },
+              {
+                id: "resumos",
+                title: "Resumos Jurídicos",
+                icon: Scroll,
+                route: "/resumos-juridicos"
               },
               {
                 id: "flashcards",
