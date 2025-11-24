@@ -226,15 +226,16 @@ const Aprender = () => {
                 <button
                   key={opcao.id}
                   onClick={() => navigate(opcao.path)}
-                  className="bg-red-950/40 rounded-2xl md:rounded-xl p-5 md:p-4 text-left transition-all hover:scale-105 hover:shadow-xl min-h-[180px] md:min-h-[160px] flex flex-col border border-red-900/30 shadow-lg"
+                  className="bg-gradient-to-br from-secondary to-secondary/60 rounded-2xl md:rounded-xl p-5 md:p-4 text-left transition-all hover:scale-105 hover:shadow-2xl min-h-[180px] md:min-h-[160px] flex flex-col relative overflow-hidden shadow-xl"
                 >
-                  <div className={`${opcao.iconBg} rounded-full p-3 md:p-2.5 w-fit mb-4 md:mb-3`}>
+                  <div className="absolute inset-0 bg-gradient-to-tl from-black/40 via-black/20 to-transparent pointer-events-none" />
+                  <div className="bg-white/20 rounded-xl md:rounded-lg p-2.5 md:p-2 w-fit relative z-10 shadow-lg mb-3 md:mb-2">
                     <Icon className="w-6 h-6 md:w-5 md:h-5 text-white" />
                   </div>
-                  <h3 className="text-sm md:text-sm font-bold text-foreground mb-2 md:mb-1.5">
+                  <h3 className="text-sm md:text-sm font-bold text-white mb-2 md:mb-1 relative z-10" style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.6)' }}>
                     {opcao.titulo}
                   </h3>
-                  <p className="text-muted-foreground text-xs md:text-[11px] line-clamp-3">
+                  <p className="text-white/80 text-xs md:text-[11px] line-clamp-3 relative z-10" style={{ textShadow: '1px 1px 3px rgba(0,0,0,0.5)' }}>
                     {opcao.descricao}
                   </p>
                 </button>
