@@ -320,6 +320,22 @@ const Index = () => {
                 icon: GraduationCap,
                 gradient: "from-[hsl(0,75%,55%)] to-[hsl(350,70%,45%)]",
                 route: "/chat-professora"
+              },
+              {
+                id: "oab",
+                title: "OAB",
+                description: "Todas as ferramentas para sua aprovação",
+                icon: Gavel,
+                gradient: "from-[hsl(0,75%,55%)] to-[hsl(350,70%,45%)]",
+                route: "/oab-funcoes"
+              },
+              {
+                id: "ferramentas",
+                title: "Ferramentas",
+                description: "Assistente IA e Analisador de documentos",
+                icon: Settings,
+                gradient: "from-[hsl(0,75%,55%)] to-[hsl(350,70%,45%)]",
+                route: "/ferramentas"
               }
             ].map(category => {
               const Icon = category.icon;
