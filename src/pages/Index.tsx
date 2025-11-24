@@ -345,9 +345,9 @@ const Index = () => {
           </div>
         </div>
 
-        {/* OAB */}
+        {/* Estudos para a OAB */}
         <div className="space-y-3">
-          <h2 className="md:text-lg text-foreground px-1 font-normal text-base">OAB</h2>
+          <h2 className="md:text-lg text-foreground px-1 font-normal text-base">Estudos para a OAB</h2>
           
           <div className="grid grid-cols-3 gap-2 md:gap-3">
             {[
