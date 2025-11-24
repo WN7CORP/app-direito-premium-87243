@@ -229,7 +229,7 @@ const Aprender = () => {
                   className="bg-gradient-to-br from-secondary to-secondary/60 rounded-2xl md:rounded-xl p-5 md:p-4 text-left transition-all hover:scale-105 hover:shadow-2xl min-h-[180px] md:min-h-[160px] flex flex-col relative overflow-hidden shadow-xl"
                 >
                   <div className="absolute inset-0 bg-gradient-to-tl from-black/40 via-black/20 to-transparent pointer-events-none" />
-                  <div className="bg-white/20 rounded-xl md:rounded-lg p-2.5 md:p-2 w-fit relative z-10 shadow-lg mb-3 md:mb-2">
+                  <div className="bg-gradient-to-br from-[hsl(0,75%,55%)] to-[hsl(350,70%,45%)] rounded-xl md:rounded-lg p-2.5 md:p-2 w-fit relative z-10 shadow-lg mb-3 md:mb-2">
                     <Icon className="w-6 h-6 md:w-5 md:h-5 text-white" />
                   </div>
                   <h3 className="text-sm md:text-sm font-bold text-white mb-2 md:mb-1 relative z-10" style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.6)' }}>
