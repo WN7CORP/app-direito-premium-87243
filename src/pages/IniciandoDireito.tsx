@@ -188,60 +188,63 @@ export default function IniciandoDireito() {
           </p>
         </div>
 
-        {/* Grid de Áreas - Compacto e Colorido */}
-        <div className="space-y-4">
+        {/* Grid de Áreas - Elegante e Espaçoso */}
+        <div className="space-y-6">
           <h2 className="text-xl font-bold text-foreground mb-4">Áreas do Direito</h2>
           
-          <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {areas.map((areaData, index) => (
               <button
                 key={areaData.area}
                 onClick={() => navigate(`/iniciando-direito/${encodeURIComponent(areaData.area)}/sobre`)}
-                className="group relative bg-card border-2 rounded-xl p-4 transition-all duration-300 hover:scale-105 hover:shadow-xl flex flex-col items-center justify-center gap-2 min-h-[130px] overflow-hidden animate-fade-in"
+                className="group relative bg-card/50 backdrop-blur-sm border-3 rounded-2xl p-6 transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl flex flex-col items-center justify-center gap-4 min-h-[180px] overflow-hidden animate-fade-in"
                 style={{
-                  borderColor: areaData.corHex + '60',
+                  borderWidth: '3px',
+                  borderColor: areaData.corHex + '80',
                   animationDelay: `${index * 50}ms`
                 }}
               >
                 {/* Gradiente de fundo sutil */}
                 <div 
-                  className="absolute inset-0 opacity-5 group-hover:opacity-10 transition-opacity duration-300"
+                  className="absolute inset-0 opacity-0 group-hover:opacity-20 transition-opacity duration-500"
                   style={{
-                    background: `linear-gradient(135deg, ${areaData.corHex}, transparent)`
+                    background: `linear-gradient(135deg, ${areaData.corHex}40, transparent)`
                   }}
                 />
                 
-                {/* Ícone */}
+                {/* Ícone grande centralizado */}
                 <div 
-                  className="relative rounded-full p-2.5 transition-transform duration-300 group-hover:scale-110"
+                  className="relative rounded-full p-4 transition-all duration-300 group-hover:scale-110 group-hover:rotate-6 shadow-lg"
                   style={{
-                    backgroundColor: areaData.corHex + '20'
+                    backgroundColor: areaData.corHex + '25'
                   }}
                 >
                   <GraduationCap 
-                    className="w-6 h-6 transition-transform duration-300 group-hover:rotate-12" 
+                    className="w-10 h-10 transition-all duration-300" 
                     style={{ color: areaData.corHex }}
                   />
                 </div>
 
                 {/* Nome da área */}
-                <div className="relative text-center">
-                  <h3 className="font-bold text-xs leading-tight text-foreground">
+                <div className="relative text-center space-y-2">
+                  <h3 className="font-bold text-base leading-tight text-foreground">
                     {areaData.area.replace('Direito ', '')}
                   </h3>
                   <p 
-                    className="text-[10px] font-semibold mt-1 flex items-center justify-center gap-1"
+                    className="text-sm font-bold"
                     style={{ color: areaData.corHex }}
                   >
-                    <span>{areaData.totalTemas}</span>
-                    <span className="text-muted-foreground">aulas</span>
+                    {areaData.totalTemas} aulas
                   </p>
                 </div>
 
                 {/* Glow effect on hover */}
                 <div 
-                  className="absolute inset-0 opacity-0 group-hover:opacity-20 blur-xl transition-opacity duration-300 pointer-events-none"
-                  style={{ backgroundColor: areaData.corHex }}
+                  className="absolute inset-0 opacity-0 group-hover:opacity-30 blur-2xl transition-opacity duration-500 pointer-events-none"
+                  style={{ 
+                    backgroundColor: areaData.corHex,
+                    boxShadow: `0 0 60px ${areaData.corHex}`
+                  }}
                 />
               </button>
             ))}
