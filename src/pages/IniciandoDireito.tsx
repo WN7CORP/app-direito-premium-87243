@@ -174,7 +174,7 @@ export default function IniciandoDireito() {
                 {/* Card da área */}
                 <div 
                   onClick={() => navigate(`/iniciando-direito/${encodeURIComponent(areaData.area)}/sobre`)} 
-                  className="relative overflow-hidden backdrop-blur-sm border-2 rounded-xl p-4 shadow-lg transition-all duration-300 group hover:scale-[1.02] cursor-pointer h-full"
+                  className="relative overflow-hidden backdrop-blur-sm border-2 rounded-xl p-4 shadow-lg transition-all duration-300 group hover:scale-[1.02] cursor-pointer flex flex-col h-full bg-muted/30"
                   style={{
                     background: `linear-gradient(135deg, hsl(var(--card)) 0%, hsl(var(--card)) 70%, ${areaData.corHex}30 100%)`,
                     borderColor: `${areaData.corHex}40`,
@@ -199,7 +199,7 @@ export default function IniciandoDireito() {
                     }} 
                   />
                   
-                  <div className="relative z-10">
+                  <div className="relative z-10 flex flex-col h-full">
                     <div className="flex items-start justify-between mb-2">
                       <div className="flex-1">
                         <h3 className="text-base font-bold text-foreground group-hover:text-primary transition-colors duration-300 leading-tight">
@@ -219,21 +219,8 @@ export default function IniciandoDireito() {
                       </span>
                     </div>
 
-                    {/* Preview dos 2 primeiros temas */}
-                    <div className="space-y-1.5 mt-3 pt-3 border-t border-border/50">
-                      <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide mb-1">
-                        Primeiros temas:
-                      </p>
-                      {areaData.primeirosTemas.slice(0, 2).map((tema, i) => (
-                        <div key={i} className="flex items-start gap-1.5 text-xs text-muted-foreground group-hover:text-foreground transition-colors">
-                          <BookOpen className="w-3 h-3 flex-shrink-0 mt-0.5" style={{ color: areaData.corHex }} />
-                          <span className="flex-1 line-clamp-1">{tema}</span>
-                        </div>
-                      ))}
-                    </div>
-
-                    {/* Botão "Ver curso" */}
-                    <div className="mt-3 pt-3 border-t border-border/30">
+                    {/* Botão "Ver curso" - alinhado na parte inferior */}
+                    <div className="mt-auto pt-3">
                       <button 
                         className="relative w-full px-3 py-2 rounded-lg font-semibold text-xs transition-all duration-300 overflow-hidden group/btn flex items-center justify-center gap-1.5"
                         style={{
