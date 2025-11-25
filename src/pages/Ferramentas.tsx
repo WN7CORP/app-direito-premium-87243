@@ -65,7 +65,7 @@ const Ferramentas = () => {
           return <button 
               key={ferramenta.id} 
               onClick={() => navigate(ferramenta.route)} 
-              className="bg-card border border-border rounded-xl p-3 text-left transition-all hover:bg-accent hover:scale-105 flex flex-col gap-2 shadow-lg"
+              className="bg-card border border-border rounded-xl p-3 text-left transition-all hover:bg-accent hover:scale-105 flex flex-col gap-2 shadow-lg min-h-[130px]"
             >
               <Icon className="w-5 h-5 text-primary" />
               <div>
