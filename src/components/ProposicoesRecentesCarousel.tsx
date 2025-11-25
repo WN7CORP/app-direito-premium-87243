@@ -14,18 +14,21 @@ const ProposicoesRecentesCarousel = () => {
     slidesToScroll: 1
   });
 
-  const { data: proposicoes, isLoading } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: ['proposicoes-recentes'],
     queryFn: async () => {
       const { data, error } = await supabase.functions.invoke('buscar-proposicoes-recentes');
       
       if (error) throw error;
       
-      return data?.proposicoes || [];
+      return data || { proposicoes: [], finalizado: false };
     },
     staleTime: 1000 * 60 * 30, // 30 minutos
     refetchInterval: 1000 * 60 * 30, // Atualizar a cada 30 minutos
   });
+
+  const proposicoes = data?.proposicoes || [];
+  const isFinalizado = data?.finalizado === true;
 
   if (isLoading) {
     return (
@@ -45,7 +48,9 @@ const ProposicoesRecentesCarousel = () => {
         </div>
         <div className="bg-card border border-border rounded-lg p-6 text-center">
           <p className="text-sm text-muted-foreground">
-            Carregando dados pela primeira vez... Isso pode levar alguns minutos.
+            {isFinalizado 
+              ? "Nenhum projeto de lei encontrado nos últimos 30 dias." 
+              : "Carregando dados pela primeira vez... Isso pode levar alguns minutos."}
           </p>
         </div>
       </div>
