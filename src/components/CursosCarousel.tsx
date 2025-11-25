@@ -126,7 +126,7 @@ export const CursosCarousel = () => {
             </div>
 
             {/* Informações ABAIXO da capa */}
-            <div className="p-3" style={{ backgroundColor: 'hsl(355, 50%, 40%)' }}>
+            <div className="p-3" style={{ backgroundColor: 'hsl(0, 0%, 18%)' }}>
               <p className="text-xs text-white/80 mb-1">
                 {curso.area}
               </p>
