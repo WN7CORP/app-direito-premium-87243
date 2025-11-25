@@ -340,7 +340,7 @@ const Index = () => {
                   title: "Videoaulas",
                   description: "Aulas de matérias jurídicas",
                   icon: Play,
-                  route: "/aprender"
+                  route: "/videoaulas"
                 }].map(item => {
                   const Icon = item.icon;
                   return (
