@@ -150,15 +150,7 @@ const VadeMecumTodas = () => {
         <LeisOrdinariasCarousel />
       </div>
 
-      {/* Projetos de Lei Recentes - Carrossel */}
-      <div className="animate-fade-in" style={{ animationDelay: '0.4s', animationFillMode: 'backwards' }}>
-        <ProposicoesRecentesCarousel />
-      </div>
-
-      {/* Leis Complementares - Carrossel */}
-      <div className="animate-fade-in" style={{ animationDelay: '0.45s', animationFillMode: 'backwards' }}>
-        <ProposicoesPlpCarousel />
-      </div>
+      {/* Seções de Projetos de Lei Recentes e Leis Complementares removidas do Vade Mecum conforme solicitado */}
 
       {/* Seção Poder Legislativo */}
       <div className="space-y-4 animate-fade-in" style={{ animationDelay: '0.5s', animationFillMode: 'backwards' }}>

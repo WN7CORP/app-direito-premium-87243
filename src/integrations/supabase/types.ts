@@ -5340,78 +5340,6 @@ export type Database = {
         }
         Relationships: []
       }
-      "PLANO DE ESTUDOS- MATERIAS": {
-        Row: {
-          Administrativo: string | null
-          Ambiental: string | null
-          Constitucional: string | null
-          Consumidor: string | null
-          "Direito Civil": string | null
-          "Direito Eleitoral": string | null
-          "Direito Financeiro": string | null
-          "Direito Previdenciário": string | null
-          "Direitos Humanos": string | null
-          ECA: string | null
-          Empresarial: string | null
-          Ética: string | null
-          Filosofia: string | null
-          id: number
-          Internacional: string | null
-          Penal: string | null
-          "Processo Civil": string | null
-          "Processo do Trabalho": string | null
-          "Processo Penal": string | null
-          Trabalho: string | null
-          Tributário: string | null
-        }
-        Insert: {
-          Administrativo?: string | null
-          Ambiental?: string | null
-          Constitucional?: string | null
-          Consumidor?: string | null
-          "Direito Civil"?: string | null
-          "Direito Eleitoral"?: string | null
-          "Direito Financeiro"?: string | null
-          "Direito Previdenciário"?: string | null
-          "Direitos Humanos"?: string | null
-          ECA?: string | null
-          Empresarial?: string | null
-          Ética?: string | null
-          Filosofia?: string | null
-          id?: number
-          Internacional?: string | null
-          Penal?: string | null
-          "Processo Civil"?: string | null
-          "Processo do Trabalho"?: string | null
-          "Processo Penal"?: string | null
-          Trabalho?: string | null
-          Tributário?: string | null
-        }
-        Update: {
-          Administrativo?: string | null
-          Ambiental?: string | null
-          Constitucional?: string | null
-          Consumidor?: string | null
-          "Direito Civil"?: string | null
-          "Direito Eleitoral"?: string | null
-          "Direito Financeiro"?: string | null
-          "Direito Previdenciário"?: string | null
-          "Direitos Humanos"?: string | null
-          ECA?: string | null
-          Empresarial?: string | null
-          Ética?: string | null
-          Filosofia?: string | null
-          id?: number
-          Internacional?: string | null
-          Penal?: string | null
-          "Processo Civil"?: string | null
-          "Processo do Trabalho"?: string | null
-          "Processo Penal"?: string | null
-          Trabalho?: string | null
-          Tributário?: string | null
-        }
-        Relationships: []
-      }
       premium_analytics: {
         Row: {
           action: string
@@ -6792,18 +6720,7 @@ export type Database = {
       }
     }
     Views: {
-      vw_status_cache_proposicoes: {
-        Row: {
-          com_foto: number | null
-          data_mais_antiga: string | null
-          data_mais_recente: string | null
-          percentual_foto: number | null
-          tipo: string | null
-          total: number | null
-          ultima_atualizacao: string | null
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Functions: {
       get_flashcard_areas: {
@@ -6824,7 +6741,6 @@ export type Database = {
         Args: { p_correta: boolean; p_questao_id: number }
         Returns: undefined
       }
-      limpar_cache_proposicoes_antigo: { Args: never; Returns: undefined }
       reset_daily_limits: { Args: never; Returns: undefined }
       verificar_status_premium: {
         Args: { p_user_id: string }
