@@ -170,7 +170,7 @@ Por favor, explique:
   }
   const autorPrincipal = autores.find(a => a.tipo === "Autor") || autores[0];
 
-  return <div className="container mx-auto px-4 py-6 pb-20">
+  return <div className="container mx-auto px-3 sm:px-4 py-6 pb-20">
       {/* Cabeçalho */}
       <Button
         variant="ghost"
@@ -182,14 +182,14 @@ Por favor, explique:
       </Button>
 
       {/* Informações Principais */}
-      <Card className="p-6 mb-6 bg-gradient-to-br from-gray-900/95 to-gray-800/95 border-2 border-blue-500/50">
-        <div className="flex items-start justify-between mb-4">
+      <Card className="p-4 sm:p-6 mb-6 bg-gradient-to-br from-gray-900/95 to-gray-800/95 border-2 border-blue-500/50">
+        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-4">
           <div className="flex-1">
-            <div className="flex items-center gap-3 mb-2">
-              <Badge variant="outline" className="text-lg px-4 py-2">
+            <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-2">
+              <Badge variant="outline" className="text-base sm:text-lg px-3 sm:px-4 py-1.5 sm:py-2 whitespace-nowrap">
                 {proposicao.siglaTipo} {proposicao.numero}/{proposicao.ano}
               </Badge>
-              {proposicao.statusProposicao?.descricaoSituacao && <Badge variant="secondary">
+              {proposicao.statusProposicao?.descricaoSituacao && <Badge variant="secondary" className="text-xs sm:text-sm">
                   {proposicao.statusProposicao.descricaoSituacao}
                 </Badge>}
             </div>
@@ -201,24 +201,24 @@ Por favor, explique:
                       <User className="w-4 h-4" />
                     </AvatarFallback>}
                 </Avatar>
-                <div className="text-sm text-muted-foreground">
+                <div className="text-xs sm:text-sm text-muted-foreground">
                   <span>Autor: </span>
                   <span className="font-semibold text-foreground">{autorPrincipal.nome}</span>
-                  <span className="ml-2">{autorPrincipal.siglaPartido}-{autorPrincipal.siglaUf}</span>
+                  <span className="ml-1 sm:ml-2">{autorPrincipal.siglaPartido}-{autorPrincipal.siglaUf}</span>
                 </div>
               </div>
             )}
           </div>
-          <Button onClick={gerarExplicacao} disabled={loadingExplicacao}>
+          <Button onClick={gerarExplicacao} disabled={loadingExplicacao} className="w-full sm:w-auto" size="sm">
             <Lightbulb className="mr-2 h-4 w-4" />
             {loadingExplicacao ? "Gerando..." : "Explicar com IA"}
           </Button>
         </div>
 
-        <h1 className="text-2xl font-bold mb-4">Ementa</h1>
-        <p className="text-lg mb-6 leading-relaxed">{proposicao.ementa}</p>
+        <h1 className="text-xl sm:text-2xl font-bold mb-4">Ementa</h1>
+        <p className="text-base sm:text-lg mb-6 leading-relaxed">{proposicao.ementa}</p>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="flex items-start gap-2">
             <Calendar className="h-5 w-5 text-blue-400 mt-1" />
             <div>
@@ -241,14 +241,14 @@ Por favor, explique:
         {proposicao.keywords && <div className="mt-4">
             <p className="text-sm text-muted-foreground mb-2">Palavras-chave:</p>
             <div className="flex flex-wrap gap-2">
-              {proposicao.keywords.split(',').map((keyword, idx) => <Badge key={idx} variant="secondary">
+              {proposicao.keywords.split(',').map((keyword, idx) => <Badge key={idx} variant="secondary" className="text-xs">
                   {keyword.trim()}
                 </Badge>)}
             </div>
           </div>}
 
         {proposicao.urlInteiroTeor && <div className="mt-4">
-            <Button variant="outline" className="w-full md:w-auto" onClick={() => window.open(proposicao.urlInteiroTeor, '_blank')}>
+            <Button variant="outline" className="w-full sm:w-auto" onClick={() => window.open(proposicao.urlInteiroTeor, '_blank')}>
               <ExternalLink className="mr-2 h-4 w-4" />
               Ver Inteiro Teor
             </Button>
@@ -256,8 +256,8 @@ Por favor, explique:
       </Card>
 
       {/* Status e Tramitação */}
-      {proposicao.statusProposicao && <Card className="p-6 mb-6">
-          <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
+      {proposicao.statusProposicao && <Card className="p-4 sm:p-6 mb-6">
+          <h2 className="text-lg sm:text-xl font-bold mb-4 flex items-center gap-2">
             <FileText className="h-5 w-5" />
             Situação e Tramitação
           </h2>
@@ -265,15 +265,15 @@ Por favor, explique:
           <div className="space-y-4">
             {proposicao.statusProposicao.descricaoTramitacao && <div>
                 <p className="text-sm text-muted-foreground mb-1">Descrição da Tramitação</p>
-                <p className="font-semibold">{proposicao.statusProposicao.descricaoTramitacao}</p>
+                <p className="text-sm sm:text-base font-semibold">{proposicao.statusProposicao.descricaoTramitacao}</p>
               </div>}
 
-            {proposicao.statusProposicao.despacho && <div className="p-4 bg-gray-800/50 rounded-lg">
+            {proposicao.statusProposicao.despacho && <div className="p-3 sm:p-4 bg-gray-800/50 rounded-lg">
                 <p className="text-sm text-muted-foreground mb-1">Último Despacho</p>
-                <p className="text-sm">{proposicao.statusProposicao.despacho}</p>
+                <p className="text-xs sm:text-sm">{proposicao.statusProposicao.despacho}</p>
               </div>}
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {proposicao.statusProposicao.siglaOrgao && <div>
                   <p className="text-sm text-muted-foreground">Órgão</p>
                   <p className="font-semibold">{proposicao.statusProposicao.siglaOrgao}</p>
@@ -289,8 +289,8 @@ Por favor, explique:
 
       {/* Votações */}
       {votacoes.length > 0 && (
-        <Card className="p-6 mb-6">
-          <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
+        <Card className="p-4 sm:p-6 mb-6">
+          <h2 className="text-lg sm:text-xl font-bold mb-4 flex items-center gap-2">
             <FileText className="h-5 w-5" />
             Votações ({votacoes.length})
           </h2>
@@ -351,24 +351,24 @@ Por favor, explique:
 
                   {/* Estatísticas da votação */}
                   {stats.total > 0 && (
-                    <div className="grid grid-cols-4 gap-2">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                       <div className="text-center p-2 bg-green-500/10 rounded border border-green-500/30">
-                        <p className="text-xl font-bold text-green-500">{stats.sim}</p>
+                        <p className="text-lg sm:text-xl font-bold text-green-500">{stats.sim}</p>
                         <p className="text-xs text-muted-foreground">Sim</p>
                         <p className="text-xs text-green-400">{Math.round(stats.sim / stats.total * 100)}%</p>
                       </div>
                       <div className="text-center p-2 bg-red-500/10 rounded border border-red-500/30">
-                        <p className="text-xl font-bold text-red-500">{stats.nao}</p>
+                        <p className="text-lg sm:text-xl font-bold text-red-500">{stats.nao}</p>
                         <p className="text-xs text-muted-foreground">Não</p>
                         <p className="text-xs text-red-400">{Math.round(stats.nao / stats.total * 100)}%</p>
                       </div>
                       <div className="text-center p-2 bg-gray-500/10 rounded border border-gray-500/30">
-                        <p className="text-xl font-bold text-gray-400">{stats.abstencao}</p>
+                        <p className="text-lg sm:text-xl font-bold text-gray-400">{stats.abstencao}</p>
                         <p className="text-xs text-muted-foreground">Abst.</p>
                         <p className="text-xs text-gray-400">{Math.round(stats.abstencao / stats.total * 100)}%</p>
                       </div>
                       <div className="text-center p-2 bg-yellow-500/10 rounded border border-yellow-500/30">
-                        <p className="text-xl font-bold text-yellow-500">{stats.obstrucao}</p>
+                        <p className="text-lg sm:text-xl font-bold text-yellow-500">{stats.obstrucao}</p>
                         <p className="text-xs text-muted-foreground">Obstr.</p>
                         <p className="text-xs text-yellow-400">{Math.round(stats.obstrucao / stats.total * 100)}%</p>
                       </div>
@@ -386,13 +386,13 @@ Por favor, explique:
       )}
 
       {/* Autores */}
-      {autores.length > 0 && <Card className="p-6">
-          <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
+      {autores.length > 0 && <Card className="p-4 sm:p-6">
+          <h2 className="text-lg sm:text-xl font-bold mb-4 flex items-center gap-2">
             <BookOpen className="h-5 w-5" />
             Autores ({autores.length})
           </h2>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {autores.map((autor, index) => <Card key={`autor-${autor.id || index}-${autor.uri || autor.nome}`} className="p-4 hover:border-blue-500/50 transition-all cursor-pointer" onClick={() => {
           const deputadoId = autor.uri.split('/').pop();
           navigate(`/camara-deputados/deputado/${deputadoId}`);
