@@ -58,57 +58,62 @@ export const CursosCarousel = () => {
     return null;
   }
 
+  // Pegar apenas as 4 primeiras áreas para destaque
+  const areasDestaque = areasAgrupadas.slice(0, 4);
+
   return (
-    <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 animate-fade-in">
-      {areasAgrupadas.map((area, idx) => (
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 animate-fade-in">
+      {areasDestaque.map((area, idx) => (
         <button
           key={area.area}
           onClick={() => navigate(`/iniciando-direito/${encodeURIComponent(area.area)}/sobre`)}
-          className="group relative bg-card border-2 rounded-xl p-4 transition-all duration-300 hover:scale-105 hover:shadow-xl flex flex-col items-center justify-center gap-2 min-h-[130px] overflow-hidden"
+          className="group relative bg-card/80 backdrop-blur-sm border-2 rounded-2xl p-6 transition-all duration-500 hover:scale-105 hover:shadow-2xl flex flex-col items-center justify-center gap-4 min-h-[160px] overflow-hidden"
           style={{
-            borderColor: area.corHex + '60',
-            animationDelay: `${idx * 50}ms`
+            borderColor: area.corHex + '80',
+            animationDelay: `${idx * 100}ms`
           }}
         >
-          {/* Gradiente de fundo sutil */}
+          {/* Gradiente de fundo */}
           <div 
-            className="absolute inset-0 opacity-5 group-hover:opacity-10 transition-opacity duration-300"
+            className="absolute inset-0 opacity-0 group-hover:opacity-20 transition-opacity duration-500"
             style={{
-              background: `linear-gradient(135deg, ${area.corHex}, transparent)`
+              background: `linear-gradient(135deg, ${area.corHex}40, transparent)`
             }}
           />
           
-          {/* Ícone */}
+          {/* Ícone grande */}
           <div 
-            className="relative rounded-full p-2.5 transition-transform duration-300 group-hover:scale-110"
+            className="relative rounded-full p-5 transition-all duration-500 group-hover:scale-110 group-hover:rotate-6 shadow-lg"
             style={{
-              backgroundColor: area.corHex + '20'
+              backgroundColor: area.corHex + '25'
             }}
           >
             <GraduationCap 
-              className="w-6 h-6 transition-transform duration-300 group-hover:rotate-12" 
+              className="w-12 h-12 transition-all duration-500" 
               style={{ color: area.corHex }}
             />
           </div>
 
           {/* Nome da área */}
-          <div className="relative text-center">
-            <h3 className="font-bold text-xs leading-tight text-foreground">
+          <div className="relative text-center space-y-1">
+            <h3 className="font-bold text-base leading-tight text-foreground">
               {area.nomeCompacto}
             </h3>
             <p 
-              className="text-[10px] font-semibold mt-1 flex items-center justify-center gap-1"
+              className="text-sm font-bold"
               style={{ color: area.corHex }}
             >
-              <span>{area.numeroAulas}</span>
-              <span className="text-muted-foreground">aulas</span>
+              {area.numeroAulas} aulas
             </p>
           </div>
 
           {/* Glow effect on hover */}
           <div 
-            className="absolute inset-0 opacity-0 group-hover:opacity-20 blur-xl transition-opacity duration-300 pointer-events-none"
-            style={{ backgroundColor: area.corHex }}
+            className="absolute inset-0 opacity-0 group-hover:opacity-30 blur-2xl transition-opacity duration-500 pointer-events-none"
+            style={{ 
+              backgroundColor: area.corHex,
+              boxShadow: `0 0 60px ${area.corHex}`
+            }}
           />
         </button>
       ))}
