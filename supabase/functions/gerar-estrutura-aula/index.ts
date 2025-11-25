@@ -18,9 +18,9 @@ serve(async (req) => {
       throw new Error('Tema é obrigatório');
     }
 
-    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
-    if (!LOVABLE_API_KEY) {
-      throw new Error('LOVABLE_API_KEY não configurada');
+    const DIREITO_PREMIUM_API_KEY = Deno.env.get('DIREITO_PREMIUM_API_KEY');
+    if (!DIREITO_PREMIUM_API_KEY) {
+      throw new Error('DIREITO_PREMIUM_API_KEY não configurada');
     }
 
     console.log('Gerando estrutura de aula para:', tema);
@@ -121,41 +121,38 @@ Formato JSON esperado:
   ]
 }`;
 
-    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
-        messages: [
-          { 
-            role: 'system', 
-            content: 'Você é um professor jurídico expert que cria aulas estruturadas e didáticas. Sempre retorne APENAS JSON puro válido, sem markdown, sem ```json.' 
-          },
-          { role: 'user', content: prompt }
-        ],
-        max_tokens: 8000,
-      }),
-    });
+    const systemPrompt = 'Você é um professor jurídico expert que cria aulas estruturadas e didáticas. Sempre retorne APENAS JSON puro válido, sem markdown, sem ```json.';
+    const fullPrompt = `${systemPrompt}\n\n${prompt}`;
+
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${DIREITO_PREMIUM_API_KEY}`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          contents: [{
+            parts: [{
+              text: fullPrompt
+            }]
+          }],
+          generationConfig: {
+            temperature: 0.7,
+            maxOutputTokens: 8000,
+          }
+        })
+      }
+    );
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('Erro no Lovable AI Gateway:', response.status, errorText);
-      
-      if (response.status === 429) {
-        throw new Error('Limite de requisições excedido. Aguarde um momento e tente novamente.');
-      }
-      if (response.status === 402) {
-        throw new Error('Créditos insuficientes. Adicione créditos em Settings -> Workspace -> Usage.');
-      }
-      
+      console.error('Erro na API Gemini:', response.status, errorText);
       throw new Error('Erro ao gerar estrutura da aula');
     }
 
     const data = await response.json();
-    let estruturaText = data.choices?.[0]?.message?.content;
+    let estruturaText = data.candidates?.[0]?.content?.parts?.[0]?.text;
     
     // Limpar markdown se presente
     estruturaText = estruturaText.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
