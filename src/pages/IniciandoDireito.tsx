@@ -141,25 +141,6 @@ export default function IniciandoDireito() {
       {/* Header */}
       <div className="bg-card border-b border-border sticky top-0 z-10">
         <div className="max-w-[600px] lg:max-w-4xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between mb-3">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleRefresh}
-              disabled={isRefreshing}
-              className="gap-2"
-            >
-              <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-              Atualizar
-            </Button>
-            
-            {lastUpdate && (
-              <span className="text-xs text-muted-foreground">
-                Atualizado {formatDistanceToNow(lastUpdate, { addSuffix: true, locale: ptBR })}
-              </span>
-            )}
-          </div>
-          
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center animate-scale-in shadow-lg">
               <GraduationCap className="w-6 h-6 text-primary-foreground animate-pulse" />
@@ -176,32 +157,20 @@ export default function IniciandoDireito() {
 
       {/* Conteúdo */}
       <div className="max-w-[600px] lg:max-w-4xl mx-auto px-4 py-6">
-        <div className="bg-card/50 backdrop-blur-sm border border-border rounded-lg p-6 mb-8">
-          <h2 className="text-lg font-semibold text-foreground mb-2 flex items-center gap-2">
-            <BookOpen className="w-5 h-5 text-primary" />
-            Sobre este Curso
-          </h2>
-          <p className="text-muted-foreground leading-relaxed">
-            O "Iniciando o Direito" é o curso perfeito para quem está começando a estudar Direito. 
-            Explore cada área jurídica através de videoaulas didáticas e conteúdo detalhado gerado 
-            especialmente para facilitar seu aprendizado. Escolha uma área abaixo para começar!
-          </p>
-        </div>
-
         {/* Grid de Áreas - Elegante e Espaçoso */}
-        <div className="space-y-6">
-          <h2 className="text-xl font-bold text-foreground mb-4">Áreas do Direito</h2>
+        <div className="space-y-6 mb-8">
+          <h2 className="text-xl font-bold text-foreground mb-4 animate-fade-in">Áreas do Direito</h2>
           
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {areas.map((areaData, index) => (
               <button
                 key={areaData.area}
                 onClick={() => navigate(`/iniciando-direito/${encodeURIComponent(areaData.area)}/sobre`)}
-                className="group relative bg-card/50 backdrop-blur-sm border-3 rounded-2xl p-6 transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl flex flex-col items-center justify-center gap-4 min-h-[180px] overflow-hidden animate-fade-in"
+                className="group relative bg-card/50 backdrop-blur-sm border-3 rounded-2xl p-6 transition-all duration-500 hover:scale-105 hover:shadow-2xl flex flex-col items-center justify-center gap-4 min-h-[180px] overflow-hidden animate-fade-in opacity-0"
                 style={{
                   borderWidth: '3px',
                   borderColor: areaData.corHex + '80',
-                  animationDelay: `${index * 50}ms`
+                  animation: `fade-in 0.5s ease-out ${index * 100}ms forwards, scale-in 0.4s ease-out ${index * 100}ms forwards`
                 }}
               >
                 {/* Gradiente de fundo sutil */}
@@ -249,6 +218,19 @@ export default function IniciandoDireito() {
               </button>
             ))}
           </div>
+        </div>
+
+        {/* Sobre este Curso */}
+        <div className="bg-card/50 backdrop-blur-sm border border-border rounded-lg p-6 animate-fade-in" style={{ animationDelay: '400ms' }}>
+          <h2 className="text-lg font-semibold text-foreground mb-2 flex items-center gap-2">
+            <BookOpen className="w-5 h-5 text-primary" />
+            Sobre este Curso
+          </h2>
+          <p className="text-muted-foreground leading-relaxed">
+            O "Iniciando o Direito" é o curso perfeito para quem está começando a estudar Direito. 
+            Explore cada área jurídica através de videoaulas didáticas e conteúdo detalhado gerado 
+            especialmente para facilitar seu aprendizado. Escolha uma área abaixo para começar!
+          </p>
         </div>
       </div>
     </div>;
