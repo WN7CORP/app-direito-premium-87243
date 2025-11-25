@@ -1,56 +1,52 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCursosCache } from "@/hooks/useCursosCache";
-import { Play, ArrowRight } from "lucide-react";
-import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { GraduationCap } from "lucide-react";
 import { SmartLoadingIndicator } from "@/components/chat/SmartLoadingIndicator";
 
-interface CursoPreview {
+interface AreaCurso {
   area: string;
-  tema: string;
-  ordem: number;
   corHex: string;
-  capaAula?: string;
+  numeroAulas: number;
+  nomeCompacto: string;
 }
 
-const CORES_AREAS: Record<string, string> = {
-  "Direito Penal": "#ef4444",
-  "Direito Civil": "#3b82f6",
-  "Direito Constitucional": "#10b981",
-  "Direito Administrativo": "#a855f7",
-  "Direito Trabalhista": "#f59e0b",
-  "Direito Empresarial": "#ec4899",
-  "Direito Tributário": "#6366f1",
-  "Direito Processual Civil": "#06b6d4",
-  "Direito Processual Penal": "#f97316"
+const CORES_AREAS: Record<string, { cor: string; nomeCompacto: string }> = {
+  "Direito Penal": { cor: "#ef4444", nomeCompacto: "Penal" },
+  "Direito Civil": { cor: "#3b82f6", nomeCompacto: "Civil" },
+  "Direito Constitucional": { cor: "#10b981", nomeCompacto: "Constitucional" },
+  "Direito Administrativo": { cor: "#a855f7", nomeCompacto: "Administrativo" },
+  "Direito Trabalhista": { cor: "#f59e0b", nomeCompacto: "Trabalhista" },
+  "Direito Empresarial": { cor: "#ec4899", nomeCompacto: "Empresarial" },
+  "Direito Tributário": { cor: "#6366f1", nomeCompacto: "Tributário" },
+  "Direito Processual Civil": { cor: "#06b6d4", nomeCompacto: "Proc. Civil" },
+  "Direito Processual Penal": { cor: "#f97316", nomeCompacto: "Proc. Penal" }
 };
 
 export const CursosCarousel = () => {
   const navigate = useNavigate();
   const { cursos, loading: cursosLoading } = useCursosCache();
-  const [cursosDestaque, setCursosDestaque] = useState<CursoPreview[]>([]);
+  const [areasAgrupadas, setAreasAgrupadas] = useState<AreaCurso[]>([]);
 
   useEffect(() => {
     if (!cursosLoading && cursos.length > 0) {
-      // Pegar todas as áreas disponíveis
-      const areas = [...new Set(cursos.map((c: any) => c.area))];
+      // Agrupar cursos por área e contar número de aulas
+      const areaMap = new Map<string, number>();
       
-      // Escolher uma área aleatória ou rotacionar
-      const areaEscolhida = areas[Math.floor(Math.random() * areas.length)];
-      
-      // Pegar as primeiras 6 aulas dessa área
-      const cursosArea = cursos
-        .filter((c: any) => c.area === areaEscolhida)
-        .slice(0, 6)
-        .map((c: any) => ({
-          area: c.area,
-          tema: c.tema,
-          ordem: c.ordem,
-          corHex: CORES_AREAS[c.area] || "#6b7280",
-          capaAula: c['capa-aula']
-        }));
-      
-      setCursosDestaque(cursosArea);
+      cursos.forEach((curso: any) => {
+        const area = curso.area;
+        areaMap.set(area, (areaMap.get(area) || 0) + 1);
+      });
+
+      // Converter para array de AreaCurso
+      const areas: AreaCurso[] = Array.from(areaMap.entries()).map(([area, count]) => ({
+        area,
+        corHex: CORES_AREAS[area]?.cor || "#6b7280",
+        nomeCompacto: CORES_AREAS[area]?.nomeCompacto || area,
+        numeroAulas: count
+      }));
+
+      setAreasAgrupadas(areas);
     }
   }, [cursosLoading, cursos]);
 
@@ -58,86 +54,64 @@ export const CursosCarousel = () => {
     return <SmartLoadingIndicator nome="Cursos" />;
   }
 
-  if (cursosDestaque.length === 0) {
+  if (areasAgrupadas.length === 0) {
     return null;
   }
 
-  const areaAtual = cursosDestaque[0]?.area;
-
   return (
-    <ScrollArea className="w-full">
-      <div className="flex gap-3 md:gap-4 pb-4">
-        {cursosDestaque.map((curso, idx) => (
-          <div
-            key={idx}
-            onClick={() => navigate(`/iniciando-direito/${encodeURIComponent(curso.area)}/aula/${encodeURIComponent(curso.tema)}`)}
-            className="flex-shrink-0 w-[320px] cursor-pointer hover:scale-105 transition-all duration-300 group rounded-xl overflow-hidden shadow-lg hover:shadow-2xl border border-accent/30 bg-gradient-to-br from-[hsl(var(--gradient-red-start))] to-[hsl(var(--gradient-red-end))]"
+    <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 animate-fade-in">
+      {areasAgrupadas.map((area, idx) => (
+        <button
+          key={area.area}
+          onClick={() => navigate(`/iniciando-direito/${encodeURIComponent(area.area)}/sobre`)}
+          className="group relative bg-card border-2 rounded-xl p-4 transition-all duration-300 hover:scale-105 hover:shadow-xl flex flex-col items-center justify-center gap-2 min-h-[130px] overflow-hidden"
+          style={{
+            borderColor: area.corHex + '60',
+            animationDelay: `${idx * 50}ms`
+          }}
+        >
+          {/* Gradiente de fundo sutil */}
+          <div 
+            className="absolute inset-0 opacity-5 group-hover:opacity-10 transition-opacity duration-300"
+            style={{
+              background: `linear-gradient(135deg, ${area.corHex}, transparent)`
+            }}
+          />
+          
+          {/* Ícone */}
+          <div 
+            className="relative rounded-full p-2.5 transition-transform duration-300 group-hover:scale-110"
+            style={{
+              backgroundColor: area.corHex + '20'
+            }}
           >
-            {/* Container da imagem - limpo, sem texto sobreposto */}
-            <div 
-              className="relative overflow-hidden"
-              style={{
-                backgroundColor: curso.corHex + '20'
-              }}
-            >
-              {/* Imagem da capa */}
-              {curso.capaAula ? (
-                <img 
-                  src={curso.capaAula} 
-                  alt={curso.tema}
-                  className="w-full h-auto object-contain transition-transform duration-500 group-hover:scale-105"
-                />
-              ) : (
-                <div 
-                  className="w-full aspect-[3/4]"
-                  style={{
-                    background: `linear-gradient(135deg, ${curso.corHex}30, ${curso.corHex}10)`
-                  }}
-                />
-              )}
-              
-              {/* Icon de Play - centralizado */}
-              <div className="absolute inset-0 flex items-center justify-center z-10">
-                <div 
-                  className="rounded-full p-4 shadow-2xl backdrop-blur-sm"
-                  style={{ backgroundColor: curso.corHex + '40' }}
-                >
-                  <Play className="w-8 h-8 text-white fill-white" />
-                </div>
-              </div>
-
-              {/* Aula número badge - apenas sobre a imagem */}
-              <div className="absolute top-4 right-4 z-10">
-                <div 
-                  className="px-3 py-1 rounded-full text-xs font-bold text-white shadow-lg backdrop-blur-sm"
-                  style={{ backgroundColor: curso.corHex + (curso.capaAula ? '90' : '') }}
-                >
-                  Aula {curso.ordem}
-                </div>
-              </div>
-
-              {/* Hover overlay sutil */}
-              <div 
-                className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                style={{
-                  background: `linear-gradient(to top, ${curso.corHex}20 0%, transparent 40%)`
-                }}
-              />
-            </div>
-
-            {/* Informações ABAIXO da capa */}
-            <div className="p-3" style={{ backgroundColor: 'hsl(355, 50%, 40%)' }}>
-              <p className="text-xs text-white/80 mb-1">
-                {curso.area}
-              </p>
-              <h3 className="font-bold text-sm leading-tight line-clamp-2 text-white">
-                {curso.tema}
-              </h3>
-            </div>
+            <GraduationCap 
+              className="w-6 h-6 transition-transform duration-300 group-hover:rotate-12" 
+              style={{ color: area.corHex }}
+            />
           </div>
-        ))}
-      </div>
-      <ScrollBar orientation="horizontal" />
-    </ScrollArea>
+
+          {/* Nome da área */}
+          <div className="relative text-center">
+            <h3 className="font-bold text-xs leading-tight text-foreground">
+              {area.nomeCompacto}
+            </h3>
+            <p 
+              className="text-[10px] font-semibold mt-1 flex items-center justify-center gap-1"
+              style={{ color: area.corHex }}
+            >
+              <span>{area.numeroAulas}</span>
+              <span className="text-muted-foreground">aulas</span>
+            </p>
+          </div>
+
+          {/* Glow effect on hover */}
+          <div 
+            className="absolute inset-0 opacity-0 group-hover:opacity-20 blur-xl transition-opacity duration-300 pointer-events-none"
+            style={{ backgroundColor: area.corHex }}
+          />
+        </button>
+      ))}
+    </div>
   );
 };
