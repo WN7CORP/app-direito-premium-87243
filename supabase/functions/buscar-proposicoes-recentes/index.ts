@@ -30,19 +30,15 @@ serve(async (req) => {
       .order('data_apresentacao', { ascending: false })
       .limit(CACHE_LIMIT);
 
-    // Verificar se o cache é válido (pelo menos 70% com fotos)
+    // Se o cache tem dados válidos, retornar
     if (!cacheError && cacheData && cacheData.length >= 10) {
       const comFoto = cacheData.filter(p => p.autor_principal_foto).length;
       const percentualComFoto = (comFoto / cacheData.length) * 100;
       
-      if (percentualComFoto >= 70) {
-        console.log(`✅ Retornando do cache: ${cacheData.length} proposições (${comFoto} com fotos - ${percentualComFoto.toFixed(0)}%)`);
-        return new Response(JSON.stringify({ proposicoes: cacheData, fromCache: true }), {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
-      } else {
-        console.log(`⚠️ Cache tem poucas fotos (${percentualComFoto.toFixed(0)}%), forçando atualização...`);
-      }
+      console.log(`✅ Retornando do cache: ${cacheData.length} proposições (${comFoto} com fotos - ${percentualComFoto.toFixed(0)}%)`);
+      return new Response(JSON.stringify({ proposicoes: cacheData, fromCache: true }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
     // Verificar progresso no banco
