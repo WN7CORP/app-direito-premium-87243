@@ -1,11 +1,10 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Layers, Search, BookOpen, Video, Zap, Brain, BookMarked, ScrollText } from "lucide-react";
+import { Layers, Search } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { SmartLoadingIndicator } from "@/components/chat/SmartLoadingIndicator";
-import { Badge } from "@/components/ui/badge";
 
 interface AreaConteudos {
   area: string;
@@ -192,113 +191,136 @@ export default function CentralConteudos() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-card to-background pb-20">
+    <div className="min-h-screen bg-background pb-20">
       <div className="max-w-7xl mx-auto px-4 py-6">
-        {/* Header */}
+        {/* Header Elegante */}
         <div className="mb-8">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-br from-primary to-primary/80 shadow-lg">
-              <Layers className="w-6 h-6 text-white" />
+          <div className="flex items-center gap-4 mb-6">
+            <div className="flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-primary via-primary to-primary/80 shadow-xl shadow-primary/20">
+              <Layers className="w-8 h-8 text-white" />
             </div>
             <div>
-              <h1 className="text-2xl md:text-3xl font-bold">Central de Conteúdos</h1>
-              <p className="text-sm md:text-base text-muted-foreground">
+              <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+                Central de Conteúdos
+              </h1>
+              <p className="text-muted-foreground mt-1">
                 Todo o conteúdo jurídico organizado por área
               </p>
             </div>
           </div>
 
-          {/* Search */}
-          <Card className="mb-6">
-            <CardContent className="p-4">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input
-                  placeholder="Buscar área do direito..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-            </CardContent>
-          </Card>
+          {/* Search Elegante */}
+          <div className="relative">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+            <Input
+              placeholder="Buscar área do direito..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-12 h-14 text-base bg-card/50 backdrop-blur-sm border-2 focus:border-primary/50 transition-colors"
+            />
+          </div>
         </div>
 
-        {/* Grid de Áreas */}
+        {/* Grid de Áreas Elegante */}
         {filteredAreas.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             {filteredAreas.map((areaData) => {
               const cores = CORES_POR_AREA[areaData.area] || CORES_DEFAULT;
               return (
                 <Card
                   key={areaData.area}
-                  className={`cursor-pointer hover:scale-[1.02] transition-all bg-card ${cores.bordaCor} border-2 group relative overflow-hidden`}
+                  className="cursor-pointer hover:scale-[1.01] transition-all duration-300 bg-card/50 backdrop-blur-sm border-2 hover:border-primary/30 group relative overflow-hidden shadow-lg hover:shadow-xl"
                   onClick={() => navigate(`/central-conteudos/${encodeURIComponent(areaData.area)}`)}
                 >
-                  {/* Glow no topo */}
+                  {/* Glow Gradient Top */}
                   <div
-                    className="absolute top-0 left-0 right-0 h-1 opacity-80"
+                    className="absolute top-0 left-0 right-0 h-1.5"
                     style={{
                       background: `linear-gradient(90deg, transparent, ${cores.glowColor}, transparent)`,
-                      boxShadow: `0 0 20px ${cores.glowColor}`
+                      boxShadow: `0 0 30px ${cores.glowColor}90`
                     }}
                   />
 
-                  <CardContent className="p-5">
-                    <div className="flex items-start gap-4 mb-4">
+                  <CardContent className="p-6">
+                    <div className="flex items-center gap-5 mb-5">
                       <div
-                        className={`w-14 h-14 rounded-full bg-gradient-to-br ${cores.cor} flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg flex-shrink-0`}
+                        className={`w-20 h-20 rounded-2xl bg-gradient-to-br ${cores.cor} flex items-center justify-center group-hover:scale-105 transition-transform shadow-xl flex-shrink-0`}
+                        style={{ boxShadow: `0 8px 20px ${cores.glowColor}40` }}
                       >
-                        <Layers className="w-7 h-7 text-white" />
+                        <Layers className="w-10 h-10 text-white" />
                       </div>
 
                       <div className="flex-1 min-w-0">
-                        <h3 className="text-base font-bold text-foreground mb-1">
+                        <h3 className="text-xl font-bold text-foreground mb-1.5">
                           {areaData.area}
                         </h3>
-                        <p className="text-muted-foreground text-sm">
+                        <p className="text-muted-foreground text-base">
                           {areaData.total} {areaData.total === 1 ? "conteúdo" : "conteúdos"}
                         </p>
                       </div>
                     </div>
 
-                    {/* Badges de conteúdos */}
-                    <div className="flex flex-wrap gap-2">
+                    {/* Badges Elegantes com Ícones */}
+                    <div className="flex flex-wrap gap-2.5">
                       {areaData.videoaulas > 0 && (
-                        <Badge variant="secondary" className="text-xs gap-1">
-                          <Video className="w-3 h-3" />
-                          {areaData.videoaulas}
-                        </Badge>
+                        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-500/10 border border-red-500/20">
+                          <svg className="w-4 h-4 text-red-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M23 7l-7 5 7 5V7z" />
+                            <rect x="1" y="5" width="15" height="14" rx="2" ry="2" />
+                          </svg>
+                          <span className="text-sm font-medium text-red-500">{areaData.videoaulas}</span>
+                        </div>
                       )}
                       {areaData.biblioteca > 0 && (
-                        <Badge variant="secondary" className="text-xs gap-1">
-                          <BookOpen className="w-3 h-3" />
-                          {areaData.biblioteca}
-                        </Badge>
+                        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-500/10 border border-blue-500/20">
+                          <svg className="w-4 h-4 text-blue-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
+                            <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
+                          </svg>
+                          <span className="text-sm font-medium text-blue-500">{areaData.biblioteca}</span>
+                        </div>
                       )}
                       {areaData.flashcards > 0 && (
-                        <Badge variant="secondary" className="text-xs gap-1">
-                          <Zap className="w-3 h-3" />
-                          {areaData.flashcards}
-                        </Badge>
+                        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-yellow-500/10 border border-yellow-500/20">
+                          <svg className="w-4 h-4 text-yellow-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+                          </svg>
+                          <span className="text-sm font-medium text-yellow-500">{areaData.flashcards}</span>
+                        </div>
                       )}
                       {areaData.mapaMental > 0 && (
-                        <Badge variant="secondary" className="text-xs gap-1">
-                          <Brain className="w-3 h-3" />
-                          {areaData.mapaMental}
-                        </Badge>
+                        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-purple-500/10 border border-purple-500/20">
+                          <svg className="w-4 h-4 text-purple-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M12 2a10 10 0 1 0 10 10 4 4 0 0 1-5-5 4 4 0 0 1-5-5" />
+                            <path d="M8.5 8.5v.01" />
+                            <path d="M16 15.5v.01" />
+                            <path d="M12 12v.01" />
+                            <path d="M11 17v.01" />
+                            <path d="M7 14v.01" />
+                          </svg>
+                          <span className="text-sm font-medium text-purple-500">{areaData.mapaMental}</span>
+                        </div>
                       )}
                       {areaData.cursos > 0 && (
-                        <Badge variant="secondary" className="text-xs gap-1">
-                          <BookMarked className="w-3 h-3" />
-                          {areaData.cursos}
-                        </Badge>
+                        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-green-500/10 border border-green-500/20">
+                          <svg className="w-4 h-4 text-green-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+                            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+                          </svg>
+                          <span className="text-sm font-medium text-green-500">{areaData.cursos}</span>
+                        </div>
                       )}
                       {areaData.resumos > 0 && (
-                        <Badge variant="secondary" className="text-xs gap-1">
-                          <ScrollText className="w-3 h-3" />
-                          {areaData.resumos}
-                        </Badge>
+                        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-orange-500/10 border border-orange-500/20">
+                          <svg className="w-4 h-4 text-orange-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                            <path d="M14 2v6h6" />
+                            <line x1="16" y1="13" x2="8" y2="13" />
+                            <line x1="16" y1="17" x2="8" y2="17" />
+                            <line x1="10" y1="9" x2="8" y2="9" />
+                          </svg>
+                          <span className="text-sm font-medium text-orange-500">{areaData.resumos}</span>
+                        </div>
                       )}
                     </div>
                   </CardContent>

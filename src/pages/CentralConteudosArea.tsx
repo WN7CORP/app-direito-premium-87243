@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, Video, BookOpen, Zap, Brain, BookMarked, ScrollText, ExternalLink } from "lucide-react";
+import { ArrowLeft, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { SmartLoadingIndicator } from "@/components/chat/SmartLoadingIndicator";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
@@ -62,8 +62,8 @@ export default function CentralConteudosArea() {
     try {
       const areaBusca = decodeURIComponent(area);
 
-      // Buscar todos os conteúdos em paralelo
-      const [videoaulasRes, bibliotecaRes, flashcardsRes, mapaRes, cursosRes, resumosRes] = await Promise.all([
+      // Buscar todos os conteúdos em paralelo (exceto videoaulas detalhadas)
+      const [videoaulasPlaylistsRes, bibliotecaRes, flashcardsRes, mapaRes, cursosRes, resumosRes] = await Promise.all([
         supabase.from("VIDEO AULAS-NOVO" as any).select("*").ilike("area", `%${areaBusca}%`),
         supabase.from("BIBLIOTECA-ESTUDOS" as any).select("*").ilike("Área", `%${areaBusca}%`),
         supabase.rpc("get_flashcard_temas", { p_area: areaBusca }),
@@ -72,8 +72,36 @@ export default function CentralConteudosArea() {
         supabase.from("RESUMO" as any).select("*").ilike("area", `%${areaBusca}%`)
       ]);
 
+      // Buscar vídeos individuais de cada playlist
+      const videoaulasDetalhadas = [];
+      const playlists = (videoaulasPlaylistsRes.data || []) as any[];
+      
+      for (const playlist of playlists.slice(0, 10)) { // Limitar a 10 playlists para performance
+        try {
+          const { data: videoData } = await supabase.functions.invoke('buscar-videos-playlist', {
+            body: { playlistLink: playlist.link }
+          });
+          
+          if (videoData?.videos && Array.isArray(videoData.videos)) {
+            // Adicionar apenas os primeiros 5 vídeos de cada playlist
+            const videosComPlaylist = videoData.videos.slice(0, 5).map((video: any) => ({
+              ...video,
+              playlistArea: playlist.area,
+              playlistTema: playlist.tema,
+              playlistLink: playlist.link,
+              categoria: playlist.categoria
+            }));
+            videoaulasDetalhadas.push(...videosComPlaylist);
+          }
+        } catch (err) {
+          console.error('Erro ao buscar vídeos da playlist:', err);
+          // Fallback: adicionar a playlist em si
+          videoaulasDetalhadas.push(playlist);
+        }
+      }
+
       setConteudos({
-        videoaulas: videoaulasRes.data || [],
+        videoaulas: videoaulasDetalhadas.length > 0 ? videoaulasDetalhadas : playlists,
         biblioteca: bibliotecaRes.data || [],
         flashcards: flashcardsRes.data || [],
         mapaMental: mapaRes.data || [],
@@ -97,8 +125,8 @@ export default function CentralConteudosArea() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-card to-background pb-20">
-        <div className="max-w-7xl mx-auto px-4 py-6">
+      <div className="min-h-screen bg-background pb-20">
+        <div className="max-w-6xl mx-auto px-4 py-6">
           <SmartLoadingIndicator nome="Conteúdos da Área" />
         </div>
       </div>
@@ -106,73 +134,96 @@ export default function CentralConteudosArea() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-card to-background pb-20">
-      <div className="max-w-7xl mx-auto px-4 py-6">
-        {/* Header com cor da área */}
-        <div className="mb-8">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => navigate("/central-conteudos")}
-            className="mb-4"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Voltar
-          </Button>
+    <div className="min-h-screen bg-background pb-20">
+      <div className="max-w-6xl mx-auto px-4 py-6">
+        {/* Header Elegante */}
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => navigate("/central-conteudos")}
+          className="mb-6 hover:bg-primary/10"
+        >
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Voltar
+        </Button>
 
-          <div className="relative rounded-2xl overflow-hidden p-6 mb-6">
-            <div
-              className={`absolute inset-0 bg-gradient-to-br ${cores.cor} opacity-20`}
-            />
-            <div className="relative z-10">
-              <h1 className="text-3xl md:text-4xl font-bold mb-2">{area}</h1>
-              <p className="text-muted-foreground">
-                {totalConteudos} {totalConteudos === 1 ? "conteúdo disponível" : "conteúdos disponíveis"}
-              </p>
-            </div>
+        <div className="relative rounded-3xl overflow-hidden p-8 mb-8 shadow-2xl">
+          <div
+            className={`absolute inset-0 bg-gradient-to-br ${cores.cor} opacity-90`}
+          />
+          <div
+            className="absolute inset-0"
+            style={{
+              background: `radial-gradient(circle at 30% 20%, ${cores.glowColor}40, transparent 70%)`
+            }}
+          />
+          <div className="relative z-10">
+            <h1 className="text-4xl md:text-5xl font-bold text-white mb-3 drop-shadow-lg">
+              {area}
+            </h1>
+            <p className="text-white/90 text-lg">
+              {totalConteudos} {totalConteudos === 1 ? "conteúdo disponível" : "conteúdos disponíveis"}
+            </p>
           </div>
         </div>
 
-        {/* Accordion de Conteúdos */}
+        {/* Accordion Elegante */}
         <Accordion type="multiple" className="space-y-4">
           {/* Videoaulas */}
           {conteudos.videoaulas.length > 0 && (
-            <AccordionItem value="videoaulas" className="border rounded-lg px-4">
-              <AccordionTrigger className="hover:no-underline">
-                <div className="flex items-center gap-3">
-                  <div className={`w-10 h-10 rounded-full bg-gradient-to-br ${cores.cor} flex items-center justify-center`}>
-                    <Video className="w-5 h-5 text-white" />
+            <AccordionItem value="videoaulas" className="border-2 rounded-2xl px-6 bg-card/50 backdrop-blur-sm overflow-hidden">
+              <AccordionTrigger className="hover:no-underline py-6">
+                <div className="flex items-center gap-4">
+                  <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center shadow-lg shadow-red-500/20">
+                    <svg className="w-7 h-7 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M23 7l-7 5 7 5V7z" />
+                      <rect x="1" y="5" width="15" height="14" rx="2" ry="2" />
+                    </svg>
                   </div>
                   <div className="text-left">
-                    <h3 className="font-semibold">Videoaulas</h3>
+                    <h3 className="text-lg font-bold">Videoaulas</h3>
                     <p className="text-sm text-muted-foreground">
-                      {conteudos.videoaulas.length} {conteudos.videoaulas.length === 1 ? "videoaula" : "videoaulas"}
+                      {conteudos.videoaulas.length} {conteudos.videoaulas.length === 1 ? "playlist" : "playlists"}
                     </p>
                   </div>
                 </div>
               </AccordionTrigger>
               <AccordionContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-4">
-                  {conteudos.videoaulas.map((video: any) => (
-                    <Card
-                      key={video.id}
-                      className="cursor-pointer hover:bg-accent transition-colors"
-                      onClick={() => navigate(`/videoaulas/player?link=${encodeURIComponent(video.link)}`)}
-                    >
-                      <CardContent className="p-4">
-                        <div className="flex items-start gap-3">
-                          <Video className="w-5 h-5 text-primary flex-shrink-0 mt-1" />
-                          <div className="flex-1 min-w-0">
-                            <h4 className="font-medium text-sm mb-1 line-clamp-2">{video.area}</h4>
-                            {video.tema && (
-                              <p className="text-xs text-muted-foreground line-clamp-1">{video.tema}</p>
-                            )}
+                <div className="grid grid-cols-1 gap-3 pt-2 pb-4">
+                  {conteudos.videoaulas.map((video: any, index: number) => {
+                    // Determinar se é uma playlist ou um vídeo individual
+                    const titulo = video.title || video.tema || video.playlistTema || video.area;
+                    const subtitulo = video.playlistTema || video.categoria || "Videoaula";
+                    const linkFinal = video.link || (video.playlistLink ? `${video.playlistLink}&index=${index + 1}` : "");
+                    
+                    return (
+                      <Card
+                        key={video.id || `video-${index}`}
+                        className="cursor-pointer hover:bg-accent/50 transition-all duration-200 border-2 hover:border-red-500/30 group"
+                        onClick={() => navigate(`/videoaulas/player?link=${encodeURIComponent(linkFinal)}`)}
+                      >
+                        <CardContent className="p-5">
+                          <div className="flex items-center gap-4">
+                            <div className="w-12 h-12 rounded-lg bg-red-500/10 flex items-center justify-center flex-shrink-0 group-hover:bg-red-500/20 transition-colors">
+                              <svg className="w-6 h-6 text-red-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <path d="M23 7l-7 5 7 5V7z" />
+                                <rect x="1" y="5" width="15" height="14" rx="2" ry="2" />
+                              </svg>
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <h4 className="font-semibold text-base mb-1 line-clamp-2">
+                                {titulo}
+                              </h4>
+                              <p className="text-sm text-muted-foreground line-clamp-1">
+                                {subtitulo}
+                              </p>
+                            </div>
+                            <ExternalLink className="w-5 h-5 text-muted-foreground flex-shrink-0 group-hover:text-red-500 transition-colors" />
                           </div>
-                          <ExternalLink className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
                 </div>
               </AccordionContent>
             </AccordionItem>
@@ -180,14 +231,17 @@ export default function CentralConteudosArea() {
 
           {/* Biblioteca */}
           {conteudos.biblioteca.length > 0 && (
-            <AccordionItem value="biblioteca" className="border rounded-lg px-4">
-              <AccordionTrigger className="hover:no-underline">
-                <div className="flex items-center gap-3">
-                  <div className={`w-10 h-10 rounded-full bg-gradient-to-br ${cores.cor} flex items-center justify-center`}>
-                    <BookOpen className="w-5 h-5 text-white" />
+            <AccordionItem value="biblioteca" className="border-2 rounded-2xl px-6 bg-card/50 backdrop-blur-sm overflow-hidden">
+              <AccordionTrigger className="hover:no-underline py-6">
+                <div className="flex items-center gap-4">
+                  <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-lg shadow-blue-500/20">
+                    <svg className="w-7 h-7 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
+                      <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
+                    </svg>
                   </div>
                   <div className="text-left">
-                    <h3 className="font-semibold">Biblioteca de Estudos</h3>
+                    <h3 className="text-lg font-bold">Biblioteca de Estudos</h3>
                     <p className="text-sm text-muted-foreground">
                       {conteudos.biblioteca.length} {conteudos.biblioteca.length === 1 ? "livro" : "livros"}
                     </p>
@@ -195,21 +249,26 @@ export default function CentralConteudosArea() {
                 </div>
               </AccordionTrigger>
               <AccordionContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-4">
+                <div className="grid grid-cols-1 gap-3 pt-2 pb-4">
                   {conteudos.biblioteca.map((livro: any) => (
                     <Card
                       key={livro.id}
-                      className="cursor-pointer hover:bg-accent transition-colors"
+                      className="cursor-pointer hover:bg-accent/50 transition-all duration-200 border-2 hover:border-blue-500/30 group"
                       onClick={() => navigate(`/biblioteca-estudos/${livro.id}`)}
                     >
-                      <CardContent className="p-4">
-                        <div className="flex items-start gap-3">
-                          <BookOpen className="w-5 h-5 text-primary flex-shrink-0 mt-1" />
-                          <div className="flex-1 min-w-0">
-                            <h4 className="font-medium text-sm mb-1 line-clamp-2">{livro.Tema}</h4>
-                            <p className="text-xs text-muted-foreground">{livro.Área}</p>
+                      <CardContent className="p-5">
+                        <div className="flex items-center gap-4">
+                          <div className="w-12 h-12 rounded-lg bg-blue-500/10 flex items-center justify-center flex-shrink-0 group-hover:bg-blue-500/20 transition-colors">
+                            <svg className="w-6 h-6 text-blue-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                              <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
+                              <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
+                            </svg>
                           </div>
-                          <ExternalLink className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                          <div className="flex-1 min-w-0">
+                            <h4 className="font-semibold text-base mb-1 line-clamp-2">{livro.Tema}</h4>
+                            <p className="text-sm text-muted-foreground">{livro.Área}</p>
+                          </div>
+                          <ExternalLink className="w-5 h-5 text-muted-foreground flex-shrink-0 group-hover:text-blue-500 transition-colors" />
                         </div>
                       </CardContent>
                     </Card>
@@ -221,14 +280,16 @@ export default function CentralConteudosArea() {
 
           {/* Flashcards */}
           {conteudos.flashcards.length > 0 && (
-            <AccordionItem value="flashcards" className="border rounded-lg px-4">
-              <AccordionTrigger className="hover:no-underline">
-                <div className="flex items-center gap-3">
-                  <div className={`w-10 h-10 rounded-full bg-gradient-to-br ${cores.cor} flex items-center justify-center`}>
-                    <Zap className="w-5 h-5 text-white" />
+            <AccordionItem value="flashcards" className="border-2 rounded-2xl px-6 bg-card/50 backdrop-blur-sm overflow-hidden">
+              <AccordionTrigger className="hover:no-underline py-6">
+                <div className="flex items-center gap-4">
+                  <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-yellow-500 to-yellow-600 flex items-center justify-center shadow-lg shadow-yellow-500/20">
+                    <svg className="w-7 h-7 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+                    </svg>
                   </div>
                   <div className="text-left">
-                    <h3 className="font-semibold">Flashcards</h3>
+                    <h3 className="text-lg font-bold">Flashcards</h3>
                     <p className="text-sm text-muted-foreground">
                       {conteudos.flashcards.reduce((sum: number, f: any) => sum + (f.total_questoes || 0), 0)} flashcards
                     </p>
@@ -236,23 +297,27 @@ export default function CentralConteudosArea() {
                 </div>
               </AccordionTrigger>
               <AccordionContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-4">
+                <div className="grid grid-cols-1 gap-3 pt-2 pb-4">
                   {conteudos.flashcards.map((tema: any) => (
                     <Card
                       key={tema.tema}
-                      className="cursor-pointer hover:bg-accent transition-colors"
+                      className="cursor-pointer hover:bg-accent/50 transition-all duration-200 border-2 hover:border-yellow-500/30 group"
                       onClick={() => navigate(`/flashcards/estudar?area=${encodeURIComponent(area || "")}&tema=${encodeURIComponent(tema.tema)}`)}
                     >
-                      <CardContent className="p-4">
-                        <div className="flex items-start gap-3">
-                          <Zap className="w-5 h-5 text-primary flex-shrink-0 mt-1" />
+                      <CardContent className="p-5">
+                        <div className="flex items-center gap-4">
+                          <div className="w-12 h-12 rounded-lg bg-yellow-500/10 flex items-center justify-center flex-shrink-0 group-hover:bg-yellow-500/20 transition-colors">
+                            <svg className="w-6 h-6 text-yellow-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                              <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+                            </svg>
+                          </div>
                           <div className="flex-1 min-w-0">
-                            <h4 className="font-medium text-sm mb-1 line-clamp-2">{tema.tema}</h4>
-                            <p className="text-xs text-muted-foreground">
+                            <h4 className="font-semibold text-base mb-1 line-clamp-2">{tema.tema}</h4>
+                            <p className="text-sm text-muted-foreground">
                               {tema.total_questoes} {tema.total_questoes === 1 ? "flashcard" : "flashcards"}
                             </p>
                           </div>
-                          <ExternalLink className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                          <ExternalLink className="w-5 h-5 text-muted-foreground flex-shrink-0 group-hover:text-yellow-500 transition-colors" />
                         </div>
                       </CardContent>
                     </Card>
@@ -264,14 +329,21 @@ export default function CentralConteudosArea() {
 
           {/* Mapas Mentais */}
           {conteudos.mapaMental.length > 0 && (
-            <AccordionItem value="mapamental" className="border rounded-lg px-4">
-              <AccordionTrigger className="hover:no-underline">
-                <div className="flex items-center gap-3">
-                  <div className={`w-10 h-10 rounded-full bg-gradient-to-br ${cores.cor} flex items-center justify-center`}>
-                    <Brain className="w-5 h-5 text-white" />
+            <AccordionItem value="mapamental" className="border-2 rounded-2xl px-6 bg-card/50 backdrop-blur-sm overflow-hidden">
+              <AccordionTrigger className="hover:no-underline py-6">
+                <div className="flex items-center gap-4">
+                  <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center shadow-lg shadow-purple-500/20">
+                    <svg className="w-7 h-7 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M12 2a10 10 0 1 0 10 10 4 4 0 0 1-5-5 4 4 0 0 1-5-5" />
+                      <path d="M8.5 8.5v.01" />
+                      <path d="M16 15.5v.01" />
+                      <path d="M12 12v.01" />
+                      <path d="M11 17v.01" />
+                      <path d="M7 14v.01" />
+                    </svg>
                   </div>
                   <div className="text-left">
-                    <h3 className="font-semibold">Mapas Mentais</h3>
+                    <h3 className="text-lg font-bold">Mapas Mentais</h3>
                     <p className="text-sm text-muted-foreground">
                       {conteudos.mapaMental.length} {conteudos.mapaMental.length === 1 ? "mapa" : "mapas"}
                     </p>
@@ -279,15 +351,24 @@ export default function CentralConteudosArea() {
                 </div>
               </AccordionTrigger>
               <AccordionContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-4">
+                <div className="grid grid-cols-1 gap-3 pt-2 pb-4">
                   {conteudos.mapaMental.map((mapa: any) => (
-                    <Card key={mapa.id} className="hover:bg-accent transition-colors">
-                      <CardContent className="p-4">
-                        <div className="flex items-start gap-3">
-                          <Brain className="w-5 h-5 text-primary flex-shrink-0 mt-1" />
+                    <Card key={mapa.id} className="hover:bg-accent/50 transition-all duration-200 border-2 hover:border-purple-500/30">
+                      <CardContent className="p-5">
+                        <div className="flex items-center gap-4">
+                          <div className="w-12 h-12 rounded-lg bg-purple-500/10 flex items-center justify-center flex-shrink-0">
+                            <svg className="w-6 h-6 text-purple-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                              <path d="M12 2a10 10 0 1 0 10 10 4 4 0 0 1-5-5 4 4 0 0 1-5-5" />
+                              <path d="M8.5 8.5v.01" />
+                              <path d="M16 15.5v.01" />
+                              <path d="M12 12v.01" />
+                              <path d="M11 17v.01" />
+                              <path d="M7 14v.01" />
+                            </svg>
+                          </div>
                           <div className="flex-1 min-w-0">
-                            <h4 className="font-medium text-sm mb-1 line-clamp-2">{mapa.tema}</h4>
-                            <p className="text-xs text-muted-foreground">{mapa.area}</p>
+                            <h4 className="font-semibold text-base mb-1 line-clamp-2">{mapa.tema}</h4>
+                            <p className="text-sm text-muted-foreground">{mapa.area}</p>
                           </div>
                         </div>
                       </CardContent>
@@ -300,14 +381,17 @@ export default function CentralConteudosArea() {
 
           {/* Cursos */}
           {conteudos.cursos.length > 0 && (
-            <AccordionItem value="cursos" className="border rounded-lg px-4">
-              <AccordionTrigger className="hover:no-underline">
-                <div className="flex items-center gap-3">
-                  <div className={`w-10 h-10 rounded-full bg-gradient-to-br ${cores.cor} flex items-center justify-center`}>
-                    <BookMarked className="w-5 h-5 text-white" />
+            <AccordionItem value="cursos" className="border-2 rounded-2xl px-6 bg-card/50 backdrop-blur-sm overflow-hidden">
+              <AccordionTrigger className="hover:no-underline py-6">
+                <div className="flex items-center gap-4">
+                  <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center shadow-lg shadow-green-500/20">
+                    <svg className="w-7 h-7 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+                      <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+                    </svg>
                   </div>
                   <div className="text-left">
-                    <h3 className="font-semibold">Cursos</h3>
+                    <h3 className="text-lg font-bold">Cursos</h3>
                     <p className="text-sm text-muted-foreground">
                       {conteudos.cursos.length} {conteudos.cursos.length === 1 ? "curso" : "cursos"}
                     </p>
@@ -315,21 +399,26 @@ export default function CentralConteudosArea() {
                 </div>
               </AccordionTrigger>
               <AccordionContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-4">
+                <div className="grid grid-cols-1 gap-3 pt-2 pb-4">
                   {conteudos.cursos.map((curso: any) => (
                     <Card
                       key={curso.id}
-                      className="cursor-pointer hover:bg-accent transition-colors"
+                      className="cursor-pointer hover:bg-accent/50 transition-all duration-200 border-2 hover:border-green-500/30 group"
                       onClick={() => navigate(`/cursos/modulos?area=${encodeURIComponent(curso.area)}&tema=${encodeURIComponent(curso.tema)}`)}
                     >
-                      <CardContent className="p-4">
-                        <div className="flex items-start gap-3">
-                          <BookMarked className="w-5 h-5 text-primary flex-shrink-0 mt-1" />
-                          <div className="flex-1 min-w-0">
-                            <h4 className="font-medium text-sm mb-1 line-clamp-2">{curso.tema}</h4>
-                            <p className="text-xs text-muted-foreground">{curso.area}</p>
+                      <CardContent className="p-5">
+                        <div className="flex items-center gap-4">
+                          <div className="w-12 h-12 rounded-lg bg-green-500/10 flex items-center justify-center flex-shrink-0 group-hover:bg-green-500/20 transition-colors">
+                            <svg className="w-6 h-6 text-green-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+                              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+                            </svg>
                           </div>
-                          <ExternalLink className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                          <div className="flex-1 min-w-0">
+                            <h4 className="font-semibold text-base mb-1 line-clamp-2">{curso.tema}</h4>
+                            <p className="text-sm text-muted-foreground">{curso.area}</p>
+                          </div>
+                          <ExternalLink className="w-5 h-5 text-muted-foreground flex-shrink-0 group-hover:text-green-500 transition-colors" />
                         </div>
                       </CardContent>
                     </Card>
@@ -341,14 +430,20 @@ export default function CentralConteudosArea() {
 
           {/* Resumos */}
           {conteudos.resumos.length > 0 && (
-            <AccordionItem value="resumos" className="border rounded-lg px-4">
-              <AccordionTrigger className="hover:no-underline">
-                <div className="flex items-center gap-3">
-                  <div className={`w-10 h-10 rounded-full bg-gradient-to-br ${cores.cor} flex items-center justify-center`}>
-                    <ScrollText className="w-5 h-5 text-white" />
+            <AccordionItem value="resumos" className="border-2 rounded-2xl px-6 bg-card/50 backdrop-blur-sm overflow-hidden">
+              <AccordionTrigger className="hover:no-underline py-6">
+                <div className="flex items-center gap-4">
+                  <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center shadow-lg shadow-orange-500/20">
+                    <svg className="w-7 h-7 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                      <path d="M14 2v6h6" />
+                      <line x1="16" y1="13" x2="8" y2="13" />
+                      <line x1="16" y1="17" x2="8" y2="17" />
+                      <line x1="10" y1="9" x2="8" y2="9" />
+                    </svg>
                   </div>
                   <div className="text-left">
-                    <h3 className="font-semibold">Resumos Jurídicos</h3>
+                    <h3 className="text-lg font-bold">Resumos Jurídicos</h3>
                     <p className="text-sm text-muted-foreground">
                       {conteudos.resumos.length} {conteudos.resumos.length === 1 ? "resumo" : "resumos"}
                     </p>
@@ -356,23 +451,31 @@ export default function CentralConteudosArea() {
                 </div>
               </AccordionTrigger>
               <AccordionContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-4">
+                <div className="grid grid-cols-1 gap-3 pt-2 pb-4">
                   {conteudos.resumos.map((resumo: any) => (
                     <Card
                       key={resumo.id}
-                      className="cursor-pointer hover:bg-accent transition-colors"
+                      className="cursor-pointer hover:bg-accent/50 transition-all duration-200 border-2 hover:border-orange-500/30 group"
                       onClick={() => navigate(`/resumos-juridicos/prontos/view?id=${resumo.id}`)}
                     >
-                      <CardContent className="p-4">
-                        <div className="flex items-start gap-3">
-                          <ScrollText className="w-5 h-5 text-primary flex-shrink-0 mt-1" />
+                      <CardContent className="p-5">
+                        <div className="flex items-center gap-4">
+                          <div className="w-12 h-12 rounded-lg bg-orange-500/10 flex items-center justify-center flex-shrink-0 group-hover:bg-orange-500/20 transition-colors">
+                            <svg className="w-6 h-6 text-orange-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                              <path d="M14 2v6h6" />
+                              <line x1="16" y1="13" x2="8" y2="13" />
+                              <line x1="16" y1="17" x2="8" y2="17" />
+                              <line x1="10" y1="9" x2="8" y2="9" />
+                            </svg>
+                          </div>
                           <div className="flex-1 min-w-0">
-                            <h4 className="font-medium text-sm mb-1 line-clamp-2">{resumo.tema}</h4>
+                            <h4 className="font-semibold text-base mb-1 line-clamp-2">{resumo.tema}</h4>
                             {resumo.subtema && (
-                              <p className="text-xs text-muted-foreground line-clamp-1">{resumo.subtema}</p>
+                              <p className="text-sm text-muted-foreground line-clamp-1">{resumo.subtema}</p>
                             )}
                           </div>
-                          <ExternalLink className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                          <ExternalLink className="w-5 h-5 text-muted-foreground flex-shrink-0 group-hover:text-orange-500 transition-colors" />
                         </div>
                       </CardContent>
                     </Card>
