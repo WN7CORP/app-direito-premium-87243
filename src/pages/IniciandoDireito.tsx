@@ -156,37 +156,25 @@ export default function IniciandoDireito() {
       </div>
 
       {/* Conteúdo */}
-      <div className="max-w-[600px] lg:max-w-4xl mx-auto px-4 py-6">
-        <div className="bg-card/50 backdrop-blur-sm border border-border rounded-lg p-6 mb-8">
-          <h2 className="text-lg font-semibold text-foreground mb-2 flex items-center gap-2">
-            <BookOpen className="w-5 h-5 text-primary" />
-            Sobre este Curso
-          </h2>
-          <p className="text-muted-foreground leading-relaxed">
-            O "Iniciando o Direito" é o curso perfeito para quem está começando a estudar Direito. 
-            Explore cada área jurídica através de videoaulas didáticas e conteúdo detalhado gerado 
-            especialmente para facilitar seu aprendizado. Escolha uma área abaixo para começar!
-          </p>
-        </div>
-
+      <div className="max-w-[600px] lg:max-w-4xl mx-auto px-3 py-4">
         {/* Grid de Áreas - 2 por linha */}
-        <div className="space-y-4">
-          <h2 className="text-xl font-bold text-foreground mb-4">Áreas do Direito</h2>
+        <div className="space-y-3">
+          <h2 className="text-xl font-bold text-foreground">Áreas do Direito</h2>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-3">
             {areas.map((areaData, index) => (
               <div 
                 key={areaData.area} 
-                className="animate-fade-in-up" 
+                className="animate-fade-in" 
                 style={{
-                  animationDelay: `${index * 0.1}s`,
+                  animationDelay: `${index * 0.08}s`,
                   animationFillMode: 'backwards'
                 }}
               >
                 {/* Card da área */}
                 <div 
                   onClick={() => navigate(`/iniciando-direito/${encodeURIComponent(areaData.area)}/sobre`)} 
-                  className="relative overflow-hidden backdrop-blur-sm border-2 rounded-xl p-6 shadow-xl transition-all duration-500 group hover:scale-[1.03] cursor-pointer h-full"
+                  className="relative overflow-hidden backdrop-blur-sm border-2 rounded-xl p-4 shadow-lg transition-all duration-300 group hover:scale-[1.02] cursor-pointer h-full"
                   style={{
                     background: `linear-gradient(135deg, hsl(var(--card)) 0%, hsl(var(--card)) 70%, ${areaData.corHex}30 100%)`,
                     borderColor: `${areaData.corHex}40`,
@@ -212,44 +200,42 @@ export default function IniciandoDireito() {
                   />
                   
                   <div className="relative z-10">
-                    <div className="flex items-start justify-between mb-3">
+                    <div className="flex items-start justify-between mb-2">
                       <div className="flex-1">
-                        <h3 className="text-lg font-bold text-foreground group-hover:text-primary transition-colors duration-300">
+                        <h3 className="text-base font-bold text-foreground group-hover:text-primary transition-colors duration-300 leading-tight">
                           {areaData.area}
                         </h3>
-                        <p className="text-sm text-muted-foreground mt-1">
-                          {areaData.totalTemas} {areaData.totalTemas === 1 ? 'tema' : 'temas'} disponíveis
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {areaData.totalTemas} {areaData.totalTemas === 1 ? 'tema' : 'temas'}
                         </p>
                       </div>
                       <span 
-                        className="text-white px-3 py-1.5 rounded-full text-xs font-semibold shadow-md animate-bounce-in" 
+                        className="text-white px-2 py-1 rounded-full text-xs font-bold shadow-md" 
                         style={{
-                          backgroundColor: areaData.corHex,
-                          animationDelay: `${index * 0.1 + 0.3}s`,
-                          animationFillMode: 'backwards'
+                          backgroundColor: areaData.corHex
                         }}
                       >
                         {index + 1}
                       </span>
                     </div>
 
-                    {/* Preview dos 3 primeiros temas */}
-                    <div className="space-y-2 mt-4 pt-4 border-t border-border/50">
-                      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
+                    {/* Preview dos 2 primeiros temas */}
+                    <div className="space-y-1.5 mt-3 pt-3 border-t border-border/50">
+                      <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide mb-1">
                         Primeiros temas:
                       </p>
-                      {areaData.primeirosTemas.map((tema, i) => (
-                        <div key={i} className="flex items-start gap-2 text-sm text-muted-foreground group-hover:text-foreground transition-colors">
-                          <BookOpen className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: areaData.corHex }} />
+                      {areaData.primeirosTemas.slice(0, 2).map((tema, i) => (
+                        <div key={i} className="flex items-start gap-1.5 text-xs text-muted-foreground group-hover:text-foreground transition-colors">
+                          <BookOpen className="w-3 h-3 flex-shrink-0 mt-0.5" style={{ color: areaData.corHex }} />
                           <span className="flex-1 line-clamp-1">{tema}</span>
                         </div>
                       ))}
                     </div>
 
                     {/* Botão "Ver curso" */}
-                    <div className="mt-5 pt-4 border-t border-border/30">
+                    <div className="mt-3 pt-3 border-t border-border/30">
                       <button 
-                        className="relative w-full px-5 py-3 rounded-lg font-semibold text-sm transition-all duration-300 overflow-hidden group/btn flex items-center justify-center gap-2"
+                        className="relative w-full px-3 py-2 rounded-lg font-semibold text-xs transition-all duration-300 overflow-hidden group/btn flex items-center justify-center gap-1.5"
                         style={{
                           backgroundColor: `${areaData.corHex}20`,
                           color: areaData.corHex,
@@ -270,8 +256,9 @@ export default function IniciandoDireito() {
                           e.currentTarget.style.boxShadow = 'none';
                         }}
                       >
+                        <GraduationCap className="w-3.5 h-3.5 relative z-10" />
                         <span className="relative z-10">Ver curso</span>
-                        <ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover/btn:translate-x-1 relative z-10" />
+                        <ArrowRight className="w-3.5 h-3.5 transition-transform duration-300 group-hover/btn:translate-x-1 relative z-10" />
                       </button>
                     </div>
                   </div>
@@ -279,6 +266,25 @@ export default function IniciandoDireito() {
               </div>
             ))}
           </div>
+        </div>
+
+        {/* Sobre este Curso - Movido para depois das áreas */}
+        <div 
+          className="bg-card/50 backdrop-blur-sm border border-border rounded-lg p-5 mt-6 animate-fade-in"
+          style={{
+            animationDelay: `${areas.length * 0.08 + 0.2}s`,
+            animationFillMode: 'backwards'
+          }}
+        >
+          <h2 className="text-base font-semibold text-foreground mb-2 flex items-center gap-2">
+            <BookOpen className="w-4 h-4 text-primary" />
+            Sobre este Curso
+          </h2>
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            O "Iniciando o Direito" é o curso perfeito para quem está começando a estudar Direito. 
+            Explore cada área jurídica através de videoaulas didáticas e conteúdo detalhado gerado 
+            especialmente para facilitar seu aprendizado. Escolha uma área acima para começar!
+          </p>
         </div>
       </div>
     </div>;
