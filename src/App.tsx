@@ -171,6 +171,8 @@ import IniciandoDireitoTemas from "./pages/IniciandoDireitoTemas";
 import IniciandoDireitoAula from "./pages/IniciandoDireitoAula";
 import MapaMentalAreas from "./pages/MapaMentalAreas";
 import MapaMentalTemas from "./pages/MapaMentalTemas";
+import CentralConteudos from "./pages/CentralConteudos";
+import CentralConteudosArea from "./pages/CentralConteudosArea";
 import LegislacaoPenalEspecial from "./pages/LegislacaoPenalEspecial";
 import LepView from "./pages/LepView";
 import JuizadosEspeciaisView from "./pages/JuizadosEspeciaisView";
@@ -314,8 +316,12 @@ const App = () => {
               <Route path="/faculdade/questoes" element={<QuestoesFaculdade />} />
               <Route path="/faculdade/questoes/quiz" element={<QuizFaculdade />} />
               <Route path="/admin/gerar-questoes" element={<GerarQuestoesAdmin />} />
-              <Route path="/mapa-mental" element={<MapaMentalAreas />} />
-              <Route path="/mapa-mental/area/:area" element={<MapaMentalTemas />} />
+            <Route path="/mapa-mental" element={<MapaMentalAreas />} />
+            <Route path="/mapa-mental/area/:area" element={<MapaMentalTemas />} />
+            
+            {/* Central de Conteúdos */}
+            <Route path="/central-conteudos" element={<CentralConteudos />} />
+            <Route path="/central-conteudos/:area" element={<CentralConteudosArea />} />
               <Route path="/acesso-desktop" element={<AcessoDesktop />} />
               <Route path="/analisar" element={<Analisar />} />
               <Route path="/analisar/resultado" element={<AnalisarResultado />} />
