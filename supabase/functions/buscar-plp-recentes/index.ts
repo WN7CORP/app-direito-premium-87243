@@ -20,14 +20,11 @@ serve(async (req) => {
     
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Verificar cache (últimas CACHE_VALIDITY_HOURS horas)
-    const cacheValidSince = new Date(Date.now() - CACHE_VALIDITY_HOURS * 60 * 60 * 1000).toISOString();
-    
+    // Tentar retornar diretamente do cache, usando a ordem de cache mais recente
     const { data: cacheData, error: cacheError } = await supabase
       .from('cache_plp_recentes')
       .select('*')
-      .gte('updated_at', cacheValidSince)
-      .order('data_apresentacao', { ascending: false })
+      .order('ordem_cache', { ascending: false })
       .limit(CACHE_LIMIT);
 
     // Se o cache tem dados válidos, retornar (sem exigir percentual de fotos)
