@@ -111,11 +111,14 @@ export const Header = () => {
           <div className="flex items-center gap-3 md:gap-2">
             <img 
               src="/logo.webp" 
+              srcSet="/logo-32.webp 32w, /logo-64.webp 64w, /logo-128.webp 128w"
+              sizes="(max-width: 768px) 40px, 32px"
               alt="Direito - Estudos Premium" 
               className="w-10 h-10 md:w-8 md:h-8 rounded-lg object-cover" 
               width="40"
               height="40"
               loading="eager"
+              decoding="async"
             />
             <h1 className="md:text-lg text-foreground font-sans tracking-tight font-thin text-base">
               Direito - Estudos Premium
