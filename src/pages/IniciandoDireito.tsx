@@ -188,114 +188,62 @@ export default function IniciandoDireito() {
           </p>
         </div>
 
-        {/* Grid de Áreas - 2 por linha */}
+        {/* Grid de Áreas - Compacto e Colorido */}
         <div className="space-y-4">
           <h2 className="text-xl font-bold text-foreground mb-4">Áreas do Direito</h2>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
             {areas.map((areaData, index) => (
-              <div 
-                key={areaData.area} 
-                className="animate-fade-in-up" 
+              <button
+                key={areaData.area}
+                onClick={() => navigate(`/iniciando-direito/${encodeURIComponent(areaData.area)}/sobre`)}
+                className="group relative bg-card border-2 rounded-xl p-4 transition-all duration-300 hover:scale-105 hover:shadow-xl flex flex-col items-center justify-center gap-2 min-h-[130px] overflow-hidden animate-fade-in"
                 style={{
-                  animationDelay: `${index * 0.1}s`,
-                  animationFillMode: 'backwards'
+                  borderColor: areaData.corHex + '60',
+                  animationDelay: `${index * 50}ms`
                 }}
               >
-                {/* Card da área */}
+                {/* Gradiente de fundo sutil */}
                 <div 
-                  onClick={() => navigate(`/iniciando-direito/${encodeURIComponent(areaData.area)}/sobre`)} 
-                  className="relative overflow-hidden backdrop-blur-sm border-2 rounded-xl p-6 shadow-xl transition-all duration-500 group hover:scale-[1.03] cursor-pointer h-full"
+                  className="absolute inset-0 opacity-5 group-hover:opacity-10 transition-opacity duration-300"
                   style={{
-                    background: `linear-gradient(135deg, hsl(var(--card)) 0%, hsl(var(--card)) 70%, ${areaData.corHex}30 100%)`,
-                    borderColor: `${areaData.corHex}40`,
-                    transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)'
+                    background: `linear-gradient(135deg, ${areaData.corHex}, transparent)`
                   }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.borderColor = areaData.corHex;
-                    e.currentTarget.style.boxShadow = CORES_AREAS[areaData.area]?.glow || '0 0 30px rgba(107, 114, 128, 0.5)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.borderColor = `${areaData.corHex}40`;
-                    e.currentTarget.style.boxShadow = '';
+                />
+                
+                {/* Ícone */}
+                <div 
+                  className="relative rounded-full p-2.5 transition-transform duration-300 group-hover:scale-110"
+                  style={{
+                    backgroundColor: areaData.corHex + '20'
                   }}
                 >
-                  {/* Shimmer effect */}
-                  <div 
-                    className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" 
-                    style={{
-                      background: `linear-gradient(90deg, transparent, ${areaData.corHex}20, transparent)`,
-                      backgroundSize: '200% 100%',
-                      animation: 'shimmer 2s infinite'
-                    }} 
+                  <GraduationCap 
+                    className="w-6 h-6 transition-transform duration-300 group-hover:rotate-12" 
+                    style={{ color: areaData.corHex }}
                   />
-                  
-                  <div className="relative z-10">
-                    <div className="flex items-start justify-between mb-3">
-                      <div className="flex-1">
-                        <h3 className="text-lg font-bold text-foreground group-hover:text-primary transition-colors duration-300">
-                          {areaData.area}
-                        </h3>
-                        <p className="text-sm text-muted-foreground mt-1">
-                          {areaData.totalTemas} {areaData.totalTemas === 1 ? 'tema' : 'temas'} disponíveis
-                        </p>
-                      </div>
-                      <span 
-                        className="text-white px-3 py-1.5 rounded-full text-xs font-semibold shadow-md animate-bounce-in" 
-                        style={{
-                          backgroundColor: areaData.corHex,
-                          animationDelay: `${index * 0.1 + 0.3}s`,
-                          animationFillMode: 'backwards'
-                        }}
-                      >
-                        {index + 1}
-                      </span>
-                    </div>
-
-                    {/* Preview dos 3 primeiros temas */}
-                    <div className="space-y-2 mt-4 pt-4 border-t border-border/50">
-                      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
-                        Primeiros temas:
-                      </p>
-                      {areaData.primeirosTemas.map((tema, i) => (
-                        <div key={i} className="flex items-start gap-2 text-sm text-muted-foreground group-hover:text-foreground transition-colors">
-                          <BookOpen className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: areaData.corHex }} />
-                          <span className="flex-1 line-clamp-1">{tema}</span>
-                        </div>
-                      ))}
-                    </div>
-
-                    {/* Botão "Ver curso" */}
-                    <div className="mt-5 pt-4 border-t border-border/30">
-                      <button 
-                        className="relative w-full px-5 py-3 rounded-lg font-semibold text-sm transition-all duration-300 overflow-hidden group/btn flex items-center justify-center gap-2"
-                        style={{
-                          backgroundColor: `${areaData.corHex}20`,
-                          color: areaData.corHex,
-                          border: `2px solid ${areaData.corHex}40`
-                        }}
-                        onMouseEnter={(e) => {
-                          e.stopPropagation();
-                          e.currentTarget.style.backgroundColor = `${areaData.corHex}30`;
-                          e.currentTarget.style.borderColor = areaData.corHex;
-                          e.currentTarget.style.transform = 'translateY(-2px)';
-                          e.currentTarget.style.boxShadow = `0 8px 20px ${areaData.corHex}40`;
-                        }}
-                        onMouseLeave={(e) => {
-                          e.stopPropagation();
-                          e.currentTarget.style.backgroundColor = `${areaData.corHex}20`;
-                          e.currentTarget.style.borderColor = `${areaData.corHex}40`;
-                          e.currentTarget.style.transform = 'translateY(0)';
-                          e.currentTarget.style.boxShadow = 'none';
-                        }}
-                      >
-                        <span className="relative z-10">Ver curso</span>
-                        <ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover/btn:translate-x-1 relative z-10" />
-                      </button>
-                    </div>
-                  </div>
                 </div>
-              </div>
+
+                {/* Nome da área */}
+                <div className="relative text-center">
+                  <h3 className="font-bold text-xs leading-tight text-foreground">
+                    {areaData.area.replace('Direito ', '')}
+                  </h3>
+                  <p 
+                    className="text-[10px] font-semibold mt-1 flex items-center justify-center gap-1"
+                    style={{ color: areaData.corHex }}
+                  >
+                    <span>{areaData.totalTemas}</span>
+                    <span className="text-muted-foreground">aulas</span>
+                  </p>
+                </div>
+
+                {/* Glow effect on hover */}
+                <div 
+                  className="absolute inset-0 opacity-0 group-hover:opacity-20 blur-xl transition-opacity duration-300 pointer-events-none"
+                  style={{ backgroundColor: areaData.corHex }}
+                />
+              </button>
             ))}
           </div>
         </div>
