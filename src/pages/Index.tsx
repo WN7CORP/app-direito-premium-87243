@@ -391,7 +391,7 @@ const Index = () => {
 
         {/* OAB */}
         <div className="space-y-3 -mx-1">
-          <div className="bg-gradient-to-br from-[hsl(0,75%,45%)] to-[hsl(350,70%,35%)] rounded-2xl md:rounded-xl p-5 md:p-4 relative overflow-hidden shadow-xl">
+          <div className="bg-gradient-to-br from-[hsl(0,0%,15%)] to-[hsl(0,0%,10%)] rounded-2xl md:rounded-xl p-5 md:p-4 relative overflow-hidden shadow-xl">
             <div className="absolute inset-0 bg-gradient-to-tl from-black/60 via-black/30 to-transparent pointer-events-none" />
             
             <div className="flex items-center gap-3 mb-4 relative z-10">
