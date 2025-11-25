@@ -62,8 +62,8 @@ export default function CentralConteudosArea() {
     try {
       const areaBusca = decodeURIComponent(area);
 
-      // Buscar todos os conteúdos em paralelo (exceto videoaulas detalhadas)
-      const [videoaulasPlaylistsRes, bibliotecaRes, flashcardsRes, mapaRes, cursosRes, resumosRes] = await Promise.all([
+      // Buscar todos os conteúdos em paralelo
+      const [videoaulasRes, bibliotecaRes, flashcardsRes, mapaRes, cursosRes, resumosRes] = await Promise.all([
         supabase.from("VIDEO AULAS-NOVO" as any).select("*").ilike("area", `%${areaBusca}%`),
         supabase.from("BIBLIOTECA-ESTUDOS" as any).select("*").ilike("Área", `%${areaBusca}%`),
         supabase.rpc("get_flashcard_temas", { p_area: areaBusca }),
@@ -72,36 +72,9 @@ export default function CentralConteudosArea() {
         supabase.from("RESUMO" as any).select("*").ilike("area", `%${areaBusca}%`)
       ]);
 
-      // Buscar vídeos individuais de cada playlist
-      const videoaulasDetalhadas = [];
-      const playlists = (videoaulasPlaylistsRes.data || []) as any[];
-      
-      for (const playlist of playlists.slice(0, 10)) { // Limitar a 10 playlists para performance
-        try {
-          const { data: videoData } = await supabase.functions.invoke('buscar-videos-playlist', {
-            body: { playlistLink: playlist.link }
-          });
-          
-          if (videoData?.videos && Array.isArray(videoData.videos)) {
-            // Adicionar apenas os primeiros 5 vídeos de cada playlist
-            const videosComPlaylist = videoData.videos.slice(0, 5).map((video: any) => ({
-              ...video,
-              playlistArea: playlist.area,
-              playlistTema: playlist.tema,
-              playlistLink: playlist.link,
-              categoria: playlist.categoria
-            }));
-            videoaulasDetalhadas.push(...videosComPlaylist);
-          }
-        } catch (err) {
-          console.error('Erro ao buscar vídeos da playlist:', err);
-          // Fallback: adicionar a playlist em si
-          videoaulasDetalhadas.push(playlist);
-        }
-      }
-
+      // VIDEO AULAS-NOVO já contém vídeos individuais detalhados, não playlists
       setConteudos({
-        videoaulas: videoaulasDetalhadas.length > 0 ? videoaulasDetalhadas : playlists,
+        videoaulas: videoaulasRes.data || [],
         biblioteca: bibliotecaRes.data || [],
         flashcards: flashcardsRes.data || [],
         mapaMental: mapaRes.data || [],
@@ -190,40 +163,33 @@ export default function CentralConteudosArea() {
               </AccordionTrigger>
               <AccordionContent>
                 <div className="grid grid-cols-1 gap-3 pt-2 pb-4">
-                  {conteudos.videoaulas.map((video: any, index: number) => {
-                    // Determinar se é uma playlist ou um vídeo individual
-                    const titulo = video.title || video.tema || video.playlistTema || video.area;
-                    const subtitulo = video.playlistTema || video.categoria || "Videoaula";
-                    const linkFinal = video.link || (video.playlistLink ? `${video.playlistLink}&index=${index + 1}` : "");
-                    
-                    return (
-                      <Card
-                        key={video.id || `video-${index}`}
-                        className="cursor-pointer hover:bg-accent/50 transition-all duration-200 border-2 hover:border-red-500/30 group"
-                        onClick={() => navigate(`/videoaulas/player?link=${encodeURIComponent(linkFinal)}`)}
-                      >
-                        <CardContent className="p-5">
-                          <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 rounded-lg bg-red-500/10 flex items-center justify-center flex-shrink-0 group-hover:bg-red-500/20 transition-colors">
-                              <svg className="w-6 h-6 text-red-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                <path d="M23 7l-7 5 7 5V7z" />
-                                <rect x="1" y="5" width="15" height="14" rx="2" ry="2" />
-                              </svg>
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <h4 className="font-semibold text-base mb-1 line-clamp-2">
-                                {titulo}
-                              </h4>
-                              <p className="text-sm text-muted-foreground line-clamp-1">
-                                {subtitulo}
-                              </p>
-                            </div>
-                            <ExternalLink className="w-5 h-5 text-muted-foreground flex-shrink-0 group-hover:text-red-500 transition-colors" />
+                  {conteudos.videoaulas.map((video: any, index: number) => (
+                    <Card
+                      key={video.link || index}
+                      className="cursor-pointer hover:bg-accent/50 transition-all duration-200 border-2 hover:border-red-500/30 group"
+                      onClick={() => navigate(`/videoaulas/player?link=${encodeURIComponent(video.link)}`)}
+                    >
+                      <CardContent className="p-5">
+                        <div className="flex items-center gap-4">
+                          <div className="w-12 h-12 rounded-lg bg-red-500/10 flex items-center justify-center flex-shrink-0 group-hover:bg-red-500/20 transition-colors">
+                            <svg className="w-6 h-6 text-red-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                              <path d="M23 7l-7 5 7 5V7z" />
+                              <rect x="1" y="5" width="15" height="14" rx="2" ry="2" />
+                            </svg>
                           </div>
-                        </CardContent>
-                      </Card>
-                    );
-                  })}
+                          <div className="flex-1 min-w-0">
+                            <h4 className="font-semibold text-base mb-1 line-clamp-2">
+                              {video.titulo}
+                            </h4>
+                            <p className="text-sm text-muted-foreground line-clamp-1">
+                              {video.categoria} • {video.tempo}
+                            </p>
+                          </div>
+                          <ExternalLink className="w-5 h-5 text-muted-foreground flex-shrink-0 group-hover:text-red-500 transition-colors" />
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
                 </div>
               </AccordionContent>
             </AccordionItem>
