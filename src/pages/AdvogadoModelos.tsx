@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Search, ExternalLink, FileText } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -62,7 +61,7 @@ const AdvogadoModelos = () => {
   };
 
   return (
-    <div className="px-3 py-4 max-w-6xl mx-auto pb-20">
+    <div className="px-4 py-4 max-w-4xl mx-auto pb-20">
       <div className="mb-6">
         <h1 className="text-xl md:text-2xl font-bold mb-1">Modelos de Petições</h1>
         <p className="text-sm text-muted-foreground">
@@ -82,15 +81,13 @@ const AdvogadoModelos = () => {
       </div>
 
       {isLoading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {[...Array(6)].map((_, i) => (
-            <Card key={i}>
-              <CardContent className="p-4">
-                <Skeleton className="h-12 w-12 rounded-full mb-3" />
-                <Skeleton className="h-5 w-3/4 mb-2" />
-                <Skeleton className="h-4 w-1/2" />
-              </CardContent>
-            </Card>
+        <div className="space-y-2">
+          {[...Array(8)].map((_, i) => (
+            <div key={i} className="flex items-center gap-3 p-3 border border-border rounded-lg">
+              <Skeleton className="h-9 w-9 rounded-lg flex-shrink-0" />
+              <Skeleton className="h-5 flex-1" />
+              <Skeleton className="h-4 w-20" />
+            </div>
           ))}
         </div>
       ) : filteredModelos.length === 0 ? (
@@ -101,26 +98,26 @@ const AdvogadoModelos = () => {
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="space-y-2">
           {filteredModelos.map((modelo) => (
-            <Card
+            <button
               key={modelo.id}
-              className="cursor-pointer hover:scale-105 hover:shadow-xl transition-all border-2 border-transparent hover:border-accent/50 group"
               onClick={() => handleOpenLink(modelo["Link"])}
+              className="w-full flex items-center gap-3 p-3 rounded-lg border border-border bg-card hover:bg-accent/5 hover:border-accent/50 transition-all group text-left"
             >
-              <CardContent className="p-5">
-                <div className="flex items-center justify-center w-12 h-12 rounded-full bg-amber-600 shadow-lg shadow-amber-500/50 mb-3">
-                  <FileText className="w-6 h-6 text-white" />
-                </div>
-                <h3 className="font-bold text-base mb-2 line-clamp-2 min-h-[3rem]">
-                  {modelo["Petições"]}
-                </h3>
-                <div className="flex items-center text-sm text-muted-foreground group-hover:text-primary transition-colors">
-                  <ExternalLink className="w-4 h-4 mr-1" />
-                  Abrir no Drive
-                </div>
-              </CardContent>
-            </Card>
+              <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-amber-600/10 flex-shrink-0 group-hover:bg-amber-600/20 transition-colors">
+                <FileText className="w-5 h-5 text-amber-600" />
+              </div>
+              
+              <span className="flex-1 font-medium text-sm md:text-base text-foreground truncate">
+                {modelo["Petições"]}
+              </span>
+              
+              <div className="flex items-center gap-1 text-xs text-muted-foreground group-hover:text-primary transition-colors flex-shrink-0">
+                <span className="hidden sm:inline">Abrir</span>
+                <ExternalLink className="w-4 h-4" />
+              </div>
+            </button>
           ))}
         </div>
       )}
