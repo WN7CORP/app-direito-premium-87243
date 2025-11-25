@@ -18,22 +18,34 @@ const PopularProposicoesManual = () => {
       if (alreadyPopulated || isPopulating) return;
 
       try {
-        // Verificar se já existem dados no cache
+        // Verificar se existem dados no cache E se estão completos (com autor e foto)
         const { data: plsData } = await supabase
           .from('cache_proposicoes_recentes')
-          .select('id_proposicao')
-          .limit(1);
+          .select('id_proposicao, autor_principal_nome, autor_principal_foto')
+          .limit(10);
 
         const { data: plpsData } = await supabase
           .from('cache_plp_recentes')
-          .select('id_proposicao')
-          .limit(1);
+          .select('id_proposicao, autor_principal_nome, autor_principal_foto')
+          .limit(5);
 
-        // Se já tem dados, não precisa popular
-        if ((plsData && plsData.length > 0) || (plpsData && plpsData.length > 0)) {
-          console.log('✅ Cache já possui dados, não é necessário popular');
+        // Verificar se os dados estão COMPLETOS (com autor e foto)
+        const plsDadosCompletos = plsData && plsData.length > 0 && 
+          plsData.some(p => p.autor_principal_nome && p.autor_principal_foto);
+        
+        const plpsDadosCompletos = plpsData && plpsData.length > 0 && 
+          plpsData.some(p => p.autor_principal_nome && p.autor_principal_foto);
+
+        // Se já tem dados completos, não precisa popular
+        if (plsDadosCompletos || plpsDadosCompletos) {
+          console.log('✅ Cache já possui dados completos, não é necessário popular');
           setAlreadyPopulated(true);
           return;
+        }
+
+        // Se tem dados mas estão incompletos, limpar cache antes
+        if ((plsData && plsData.length > 0) || (plpsData && plpsData.length > 0)) {
+          console.log('⚠️ Cache possui dados incompletos, forçando limpeza e repopulação...');
         }
 
         // Cache vazio, popular agora

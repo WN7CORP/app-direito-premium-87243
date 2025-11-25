@@ -30,12 +30,11 @@ serve(async (req) => {
       .order('data_apresentacao', { ascending: false })
       .limit(CACHE_LIMIT);
 
-    // Se o cache tem dados válidos, retornar
+    // Se o cache tem dados válidos, retornar (sem exigir percentual de fotos)
     if (!cacheError && cacheData && cacheData.length >= 10) {
       const comFoto = cacheData.filter(p => p.autor_principal_foto).length;
-      const percentualComFoto = (comFoto / cacheData.length) * 100;
       
-      console.log(`✅ Retornando do cache: ${cacheData.length} proposições (${comFoto} com fotos - ${percentualComFoto.toFixed(0)}%)`);
+      console.log(`✅ Retornando do cache: ${cacheData.length} proposições (${comFoto} com fotos)`);
       return new Response(JSON.stringify({ proposicoes: cacheData, fromCache: true }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
@@ -57,7 +56,6 @@ serve(async (req) => {
         const { data: cachedData } = await supabase
           .from('cache_proposicoes_recentes')
           .select('*')
-          .eq('sigla_tipo', 'PL')
           .gte('data_apresentacao', dataInicio)
           .order('data_apresentacao', { ascending: false });
       
@@ -342,7 +340,6 @@ serve(async (req) => {
     const { data: todasDoDia } = await supabase
       .from('cache_proposicoes_recentes')
       .select('*')
-      .eq('sigla_tipo', 'PL')
       .gte('data_apresentacao', dataInicio)
       .order('ordem_cache', { ascending: false });
 
