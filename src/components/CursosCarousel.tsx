@@ -1,14 +1,16 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCursosCache } from "@/hooks/useCursosCache";
+import { Play, ArrowRight } from "lucide-react";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { SmartLoadingIndicator } from "@/components/chat/SmartLoadingIndicator";
 
-interface CursoDestaque {
-  id: string;
-  tema: string;
+interface CursoPreview {
   area: string;
-  thumbnailUrl: string;
+  tema: string;
+  ordem: number;
   corHex: string;
+  capaAula?: string;
 }
 
 const CORES_AREAS: Record<string, string> = {
@@ -17,51 +19,38 @@ const CORES_AREAS: Record<string, string> = {
   "Direito Constitucional": "#10b981",
   "Direito Administrativo": "#a855f7",
   "Direito Trabalhista": "#f59e0b",
-  "Direito do Trabalho": "#f59e0b",
   "Direito Empresarial": "#ec4899",
   "Direito Tributário": "#6366f1",
   "Direito Processual Civil": "#06b6d4",
-  "Processo Civil": "#06b6d4",
   "Direito Processual Penal": "#f97316"
 };
 
 export const CursosCarousel = () => {
   const navigate = useNavigate();
   const { cursos, loading: cursosLoading } = useCursosCache();
-  const [cursosDestaque, setCursosDestaque] = useState<CursoDestaque[]>([]);
-  const [areaAtual, setAreaAtual] = useState<string>("");
+  const [cursosDestaque, setCursosDestaque] = useState<CursoPreview[]>([]);
 
   useEffect(() => {
     if (!cursosLoading && cursos.length > 0) {
-      // Agrupar cursos por área
-      const cursosPorArea = new Map<string, any[]>();
+      // Pegar todas as áreas disponíveis
+      const areas = [...new Set(cursos.map((c: any) => c.area))];
       
-      cursos.forEach((curso: any) => {
-        const area = curso.area;
-        if (!cursosPorArea.has(area)) {
-          cursosPorArea.set(area, []);
-        }
-        cursosPorArea.get(area)!.push(curso);
-      });
-
-      // Pegar uma área aleatória a cada visita
-      const areas = Array.from(cursosPorArea.keys());
-      const areaAleatoria = areas[Math.floor(Math.random() * areas.length)];
-      const cursosArea = cursosPorArea.get(areaAleatoria) || [];
+      // Escolher uma área aleatória ou rotacionar
+      const areaEscolhida = areas[Math.floor(Math.random() * areas.length)];
       
-      // Pegar até 4 cursos dessa área para destaque
-      const cursosParaDestaque: CursoDestaque[] = cursosArea
-        .slice(0, 4)
-        .map((curso: any) => ({
-          id: curso.id,
-          tema: curso.tema,
-          area: curso.area,
-          thumbnailUrl: curso.thumbnailUrl,
-          corHex: CORES_AREAS[curso.area] || "#6b7280"
+      // Pegar as primeiras 6 aulas dessa área
+      const cursosArea = cursos
+        .filter((c: any) => c.area === areaEscolhida)
+        .slice(0, 6)
+        .map((c: any) => ({
+          area: c.area,
+          tema: c.tema,
+          ordem: c.ordem,
+          corHex: CORES_AREAS[c.area] || "#6b7280",
+          capaAula: c['capa-aula']
         }));
-
-      setCursosDestaque(cursosParaDestaque);
-      setAreaAtual(areaAleatoria);
+      
+      setCursosDestaque(cursosArea);
     }
   }, [cursosLoading, cursos]);
 
@@ -73,57 +62,82 @@ export const CursosCarousel = () => {
     return null;
   }
 
+  const areaAtual = cursosDestaque[0]?.area;
+
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 animate-fade-in">
-      {cursosDestaque.map((curso, idx) => (
-        <button
-          key={curso.id}
-          onClick={() => navigate(`/iniciando-direito/${encodeURIComponent(curso.area)}/aula/${encodeURIComponent(curso.tema)}`)}
-          className="group relative bg-card/80 backdrop-blur-sm border-2 rounded-2xl overflow-hidden transition-all duration-500 hover:scale-105 hover:shadow-2xl"
-          style={{
-            borderColor: curso.corHex + '80',
-            animationDelay: `${idx * 100}ms`
-          }}
-        >
-          {/* Capa do curso */}
-          <div className="relative aspect-video w-full overflow-hidden bg-muted">
-            <img 
-              src={curso.thumbnailUrl} 
-              alt={curso.tema}
-              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-            />
-            {/* Overlay gradiente */}
+    <ScrollArea className="w-full">
+      <div className="flex gap-3 md:gap-4 pb-4">
+        {cursosDestaque.map((curso, idx) => (
+          <div
+            key={idx}
+            onClick={() => navigate(`/iniciando-direito/${encodeURIComponent(curso.area)}/aula/${encodeURIComponent(curso.tema)}`)}
+            className="flex-shrink-0 w-[320px] cursor-pointer hover:scale-105 transition-all duration-300 group rounded-xl overflow-hidden shadow-lg hover:shadow-2xl border border-accent/30 bg-gradient-to-br from-[hsl(var(--gradient-red-start))] to-[hsl(var(--gradient-red-end))]"
+          >
+            {/* Container da imagem - limpo, sem texto sobreposto */}
             <div 
-              className="absolute inset-0 opacity-0 group-hover:opacity-60 transition-opacity duration-500"
+              className="relative overflow-hidden"
               style={{
-                background: `linear-gradient(to top, ${curso.corHex}80, transparent)`
+                backgroundColor: curso.corHex + '20'
               }}
-            />
-          </div>
-
-          {/* Informações do curso */}
-          <div className="p-4 space-y-2">
-            <h3 className="font-bold text-sm leading-tight text-foreground line-clamp-2 text-left">
-              {curso.tema}
-            </h3>
-            <p 
-              className="text-xs font-semibold text-left"
-              style={{ color: curso.corHex }}
             >
-              {curso.area.replace('Direito ', '')}
-            </p>
-          </div>
+              {/* Imagem da capa */}
+              {curso.capaAula ? (
+                <img 
+                  src={curso.capaAula} 
+                  alt={curso.tema}
+                  className="w-full h-auto object-contain transition-transform duration-500 group-hover:scale-105"
+                />
+              ) : (
+                <div 
+                  className="w-full aspect-[3/4]"
+                  style={{
+                    background: `linear-gradient(135deg, ${curso.corHex}30, ${curso.corHex}10)`
+                  }}
+                />
+              )}
+              
+              {/* Icon de Play - centralizado */}
+              <div className="absolute inset-0 flex items-center justify-center z-10">
+                <div 
+                  className="rounded-full p-4 shadow-2xl backdrop-blur-sm"
+                  style={{ backgroundColor: curso.corHex + '40' }}
+                >
+                  <Play className="w-8 h-8 text-white fill-white" />
+                </div>
+              </div>
 
-          {/* Glow effect on hover */}
-          <div 
-            className="absolute inset-0 opacity-0 group-hover:opacity-20 blur-2xl transition-opacity duration-500 pointer-events-none"
-            style={{ 
-              backgroundColor: curso.corHex,
-              boxShadow: `0 0 60px ${curso.corHex}`
-            }}
-          />
-        </button>
-      ))}
-    </div>
+              {/* Aula número badge - apenas sobre a imagem */}
+              <div className="absolute top-4 right-4 z-10">
+                <div 
+                  className="px-3 py-1 rounded-full text-xs font-bold text-white shadow-lg backdrop-blur-sm"
+                  style={{ backgroundColor: curso.corHex + (curso.capaAula ? '90' : '') }}
+                >
+                  Aula {curso.ordem}
+                </div>
+              </div>
+
+              {/* Hover overlay sutil */}
+              <div 
+                className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                style={{
+                  background: `linear-gradient(to top, ${curso.corHex}20 0%, transparent 40%)`
+                }}
+              />
+            </div>
+
+            {/* Informações ABAIXO da capa */}
+            <div className="p-3" style={{ backgroundColor: 'hsl(355, 50%, 40%)' }}>
+              <p className="text-xs text-white/80 mb-1">
+                {curso.area}
+              </p>
+              <h3 className="font-bold text-sm leading-tight line-clamp-2 text-white">
+                {curso.tema}
+              </h3>
+            </div>
+          </div>
+        ))}
+      </div>
+      <ScrollBar orientation="horizontal" />
+    </ScrollArea>
   );
 };

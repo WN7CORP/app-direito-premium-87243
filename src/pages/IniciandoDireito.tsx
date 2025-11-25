@@ -141,6 +141,25 @@ export default function IniciandoDireito() {
       {/* Header */}
       <div className="bg-card border-b border-border sticky top-0 z-10">
         <div className="max-w-[600px] lg:max-w-4xl mx-auto px-4 py-4">
+          <div className="flex items-center justify-between mb-3">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleRefresh}
+              disabled={isRefreshing}
+              className="gap-2"
+            >
+              <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+              Atualizar
+            </Button>
+            
+            {lastUpdate && (
+              <span className="text-xs text-muted-foreground">
+                Atualizado {formatDistanceToNow(lastUpdate, { addSuffix: true, locale: ptBR })}
+              </span>
+            )}
+          </div>
+          
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center animate-scale-in shadow-lg">
               <GraduationCap className="w-6 h-6 text-primary-foreground animate-pulse" />
@@ -157,71 +176,7 @@ export default function IniciandoDireito() {
 
       {/* Conteúdo */}
       <div className="max-w-[600px] lg:max-w-4xl mx-auto px-4 py-6">
-        {/* Grid de Áreas - Elegante e Espaçoso */}
-        <div className="space-y-6 mb-8">
-          <h2 className="text-xl font-bold text-foreground mb-4 animate-fade-in">Áreas do Direito</h2>
-          
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {areas.map((areaData, index) => (
-              <button
-                key={areaData.area}
-                onClick={() => navigate(`/iniciando-direito/${encodeURIComponent(areaData.area)}/sobre`)}
-                className="group relative bg-card/50 backdrop-blur-sm border-3 rounded-2xl p-6 transition-all duration-500 hover:scale-105 hover:shadow-2xl flex flex-col items-center justify-center gap-4 min-h-[180px] overflow-hidden animate-fade-in opacity-0"
-                style={{
-                  borderWidth: '3px',
-                  borderColor: areaData.corHex + '80',
-                  animation: `fade-in 0.5s ease-out ${index * 100}ms forwards, scale-in 0.4s ease-out ${index * 100}ms forwards`
-                }}
-              >
-                {/* Gradiente de fundo sutil */}
-                <div 
-                  className="absolute inset-0 opacity-0 group-hover:opacity-20 transition-opacity duration-500"
-                  style={{
-                    background: `linear-gradient(135deg, ${areaData.corHex}40, transparent)`
-                  }}
-                />
-                
-                {/* Ícone grande centralizado */}
-                <div 
-                  className="relative rounded-full p-4 transition-all duration-300 group-hover:scale-110 group-hover:rotate-6 shadow-lg"
-                  style={{
-                    backgroundColor: areaData.corHex + '25'
-                  }}
-                >
-                  <GraduationCap 
-                    className="w-10 h-10 transition-all duration-300" 
-                    style={{ color: areaData.corHex }}
-                  />
-                </div>
-
-                {/* Nome da área */}
-                <div className="relative text-center space-y-2">
-                  <h3 className="font-bold text-base leading-tight text-foreground">
-                    {areaData.area.replace('Direito ', '')}
-                  </h3>
-                  <p 
-                    className="text-sm font-bold"
-                    style={{ color: areaData.corHex }}
-                  >
-                    {areaData.totalTemas} aulas
-                  </p>
-                </div>
-
-                {/* Glow effect on hover */}
-                <div 
-                  className="absolute inset-0 opacity-0 group-hover:opacity-30 blur-2xl transition-opacity duration-500 pointer-events-none"
-                  style={{ 
-                    backgroundColor: areaData.corHex,
-                    boxShadow: `0 0 60px ${areaData.corHex}`
-                  }}
-                />
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Sobre este Curso */}
-        <div className="bg-card/50 backdrop-blur-sm border border-border rounded-lg p-6 animate-fade-in" style={{ animationDelay: '400ms' }}>
+        <div className="bg-card/50 backdrop-blur-sm border border-border rounded-lg p-6 mb-8">
           <h2 className="text-lg font-semibold text-foreground mb-2 flex items-center gap-2">
             <BookOpen className="w-5 h-5 text-primary" />
             Sobre este Curso
@@ -231,6 +186,118 @@ export default function IniciandoDireito() {
             Explore cada área jurídica através de videoaulas didáticas e conteúdo detalhado gerado 
             especialmente para facilitar seu aprendizado. Escolha uma área abaixo para começar!
           </p>
+        </div>
+
+        {/* Grid de Áreas - 2 por linha */}
+        <div className="space-y-4">
+          <h2 className="text-xl font-bold text-foreground mb-4">Áreas do Direito</h2>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {areas.map((areaData, index) => (
+              <div 
+                key={areaData.area} 
+                className="animate-fade-in-up" 
+                style={{
+                  animationDelay: `${index * 0.1}s`,
+                  animationFillMode: 'backwards'
+                }}
+              >
+                {/* Card da área */}
+                <div 
+                  onClick={() => navigate(`/iniciando-direito/${encodeURIComponent(areaData.area)}/sobre`)} 
+                  className="relative overflow-hidden backdrop-blur-sm border-2 rounded-xl p-6 shadow-xl transition-all duration-500 group hover:scale-[1.03] cursor-pointer h-full"
+                  style={{
+                    background: `linear-gradient(135deg, hsl(var(--card)) 0%, hsl(var(--card)) 70%, ${areaData.corHex}30 100%)`,
+                    borderColor: `${areaData.corHex}40`,
+                    transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.borderColor = areaData.corHex;
+                    e.currentTarget.style.boxShadow = CORES_AREAS[areaData.area]?.glow || '0 0 30px rgba(107, 114, 128, 0.5)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.borderColor = `${areaData.corHex}40`;
+                    e.currentTarget.style.boxShadow = '';
+                  }}
+                >
+                  {/* Shimmer effect */}
+                  <div 
+                    className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" 
+                    style={{
+                      background: `linear-gradient(90deg, transparent, ${areaData.corHex}20, transparent)`,
+                      backgroundSize: '200% 100%',
+                      animation: 'shimmer 2s infinite'
+                    }} 
+                  />
+                  
+                  <div className="relative z-10">
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex-1">
+                        <h3 className="text-lg font-bold text-foreground group-hover:text-primary transition-colors duration-300">
+                          {areaData.area}
+                        </h3>
+                        <p className="text-sm text-muted-foreground mt-1">
+                          {areaData.totalTemas} {areaData.totalTemas === 1 ? 'tema' : 'temas'} disponíveis
+                        </p>
+                      </div>
+                      <span 
+                        className="text-white px-3 py-1.5 rounded-full text-xs font-semibold shadow-md animate-bounce-in" 
+                        style={{
+                          backgroundColor: areaData.corHex,
+                          animationDelay: `${index * 0.1 + 0.3}s`,
+                          animationFillMode: 'backwards'
+                        }}
+                      >
+                        {index + 1}
+                      </span>
+                    </div>
+
+                    {/* Preview dos 3 primeiros temas */}
+                    <div className="space-y-2 mt-4 pt-4 border-t border-border/50">
+                      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
+                        Primeiros temas:
+                      </p>
+                      {areaData.primeirosTemas.map((tema, i) => (
+                        <div key={i} className="flex items-start gap-2 text-sm text-muted-foreground group-hover:text-foreground transition-colors">
+                          <BookOpen className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: areaData.corHex }} />
+                          <span className="flex-1 line-clamp-1">{tema}</span>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Botão "Ver curso" */}
+                    <div className="mt-5 pt-4 border-t border-border/30">
+                      <button 
+                        className="relative w-full px-5 py-3 rounded-lg font-semibold text-sm transition-all duration-300 overflow-hidden group/btn flex items-center justify-center gap-2"
+                        style={{
+                          backgroundColor: `${areaData.corHex}20`,
+                          color: areaData.corHex,
+                          border: `2px solid ${areaData.corHex}40`
+                        }}
+                        onMouseEnter={(e) => {
+                          e.stopPropagation();
+                          e.currentTarget.style.backgroundColor = `${areaData.corHex}30`;
+                          e.currentTarget.style.borderColor = areaData.corHex;
+                          e.currentTarget.style.transform = 'translateY(-2px)';
+                          e.currentTarget.style.boxShadow = `0 8px 20px ${areaData.corHex}40`;
+                        }}
+                        onMouseLeave={(e) => {
+                          e.stopPropagation();
+                          e.currentTarget.style.backgroundColor = `${areaData.corHex}20`;
+                          e.currentTarget.style.borderColor = `${areaData.corHex}40`;
+                          e.currentTarget.style.transform = 'translateY(0)';
+                          e.currentTarget.style.boxShadow = 'none';
+                        }}
+                      >
+                        <span className="relative z-10">Ver curso</span>
+                        <ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover/btn:translate-x-1 relative z-10" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </div>;
