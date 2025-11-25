@@ -20,10 +20,12 @@ serve(async (req) => {
     
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Tentar retornar diretamente do cache, usando a ordem de cache mais recente
+    // Tentar retornar diretamente do cache com dados completos (com autor e foto)
     const { data: cacheData, error: cacheError } = await supabase
       .from('cache_proposicoes_recentes')
       .select('*')
+      .not('autor_principal_nome', 'is', null)
+      .not('autor_principal_foto', 'is', null)
       .order('ordem_cache', { ascending: false })
       .limit(CACHE_LIMIT);
 
@@ -53,6 +55,8 @@ serve(async (req) => {
         const { data: cachedData } = await supabase
           .from('cache_proposicoes_recentes')
           .select('*')
+          .not('autor_principal_nome', 'is', null)
+          .not('autor_principal_foto', 'is', null)
           .gte('data_apresentacao', dataInicio)
           .order('data_apresentacao', { ascending: false });
       
@@ -333,10 +337,12 @@ serve(async (req) => {
 
     console.log(`💾 Cache atualizado: ${proposicoesProcessadas.length} novas proposições (total hoje: ${totalProcessadosAtual})`);
 
-    // Retornar todas as proposições do dia
+    // Retornar todas as proposições do dia com dados completos
     const { data: todasDoDia } = await supabase
       .from('cache_proposicoes_recentes')
       .select('*')
+      .not('autor_principal_nome', 'is', null)
+      .not('autor_principal_foto', 'is', null)
       .gte('data_apresentacao', dataInicio)
       .order('ordem_cache', { ascending: false });
 
