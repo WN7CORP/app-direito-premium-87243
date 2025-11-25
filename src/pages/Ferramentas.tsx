@@ -5,33 +5,27 @@ const Ferramentas = () => {
   const ferramentas = [{
     id: "noticias",
     title: "Notícias Jurídicas",
-    description: "Acompanhe as principais notícias do mundo jurídico",
+    description: "Principais notícias do mundo jurídico",
     icon: Newspaper,
     route: "/noticias-juridicas"
   }, {
     id: "novidades",
     title: "Novidades",
-    description: "Veja todas as atualizações e melhorias do app",
+    description: "Atualizações e melhorias do app",
     icon: Sparkles,
     route: "/novidades"
   }, {
     id: "assistente-ia",
     title: "Assistente IA",
-    description: "Assistente jurídica no WhatsApp disponível 24/7",
+    description: "Assistente jurídica 24/7 no WhatsApp",
     icon: MessageCircle,
     route: "/assistente-pessoal"
   }, {
-    id: "analisador",
-    title: "Analisador de Documentos",
-    description: "Análise completa de documentos jurídicos",
+    id: "modelos",
+    title: "Modelos de Petições",
+    description: "Mais de 30 mil modelos prontos",
     icon: FileText,
-    route: "/analisar"
-  }, {
-    id: "ajuda",
-    title: "Ajuda",
-    description: "Central de ajuda e suporte",
-    icon: HelpCircle,
-    route: "/ajuda"
+    route: "/advogado/modelos"
   }];
   return <div className="flex flex-col min-h-screen bg-background pb-6">
       <div className="flex-1 px-3 md:px-6 py-4 md:py-6 space-y-6">
@@ -47,7 +41,7 @@ const Ferramentas = () => {
         </div>
 
         {/* Lista de Ferramentas */}
-        <div className="flex flex-col gap-3">
+        <div className="grid grid-cols-2 gap-3">
           {ferramentas.map(ferramenta => {
           const Icon = ferramenta.icon;
           return <button key={ferramenta.id} onClick={() => navigate(ferramenta.route)} className="bg-gradient-to-br from-[hsl(0,75%,55%)] to-[hsl(350,70%,45%)] rounded-xl p-4 text-left transition-all hover:scale-[1.02] hover:shadow-2xl flex items-center gap-4 relative overflow-hidden shadow-xl min-h-[88px]">
