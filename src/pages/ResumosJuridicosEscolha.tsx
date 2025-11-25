@@ -24,28 +24,28 @@ const ResumosJuridicosEscolha = () => {
   ];
 
   return (
-    <div className="px-3 py-4 max-w-4xl mx-auto animate-fade-in pb-24">
-      <div className="mb-6">
-        <h1 className="text-xl md:text-2xl font-bold mb-1">Resumos Jurídicos</h1>
-        <p className="text-sm text-muted-foreground">
+    <div className="px-3 py-3 max-w-3xl mx-auto animate-fade-in pb-20">
+      <div className="mb-4">
+        <h1 className="text-lg md:text-xl font-bold mb-0.5">Resumos Jurídicos</h1>
+        <p className="text-xs md:text-sm text-muted-foreground">
           Escolha como deseja criar ou acessar seus resumos
         </p>
       </div>
 
-      <div className="grid grid-cols-2 gap-3 md:gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         {opcoes.map((opcao) => (
           <Card
             key={opcao.id}
             className="cursor-pointer transition-all hover:scale-[1.02] hover:shadow-lg overflow-hidden group"
             onClick={() => navigate(opcao.rota)}
           >
-            <div className={`h-2 bg-gradient-to-r ${opcao.cor}`} />
-            <CardContent className="p-6">
-              <div className="flex items-center gap-4">
-                <div className="text-5xl">{opcao.emoji}</div>
-                <div className="flex-1">
-                  <h3 className="font-semibold text-lg mb-1">{opcao.titulo}</h3>
-                  <p className="text-sm text-muted-foreground">
+            <div className={`h-1.5 bg-gradient-to-r ${opcao.cor}`} />
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="text-3xl md:text-4xl flex-shrink-0">{opcao.emoji}</div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-semibold text-base md:text-lg mb-0.5">{opcao.titulo}</h3>
+                  <p className="text-xs md:text-sm text-muted-foreground line-clamp-2">
                     {opcao.descricao}
                   </p>
                 </div>
