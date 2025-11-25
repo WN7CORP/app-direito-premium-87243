@@ -71,7 +71,7 @@ export const CursosCarousel = () => {
           <div
             key={idx}
             onClick={() => navigate(`/iniciando-direito/${encodeURIComponent(curso.area)}/aula/${encodeURIComponent(curso.tema)}`)}
-            className="flex-shrink-0 w-[320px] cursor-pointer hover:scale-105 transition-all duration-300 group rounded-xl overflow-hidden shadow-lg hover:shadow-2xl border border-accent/30 bg-gradient-to-br from-[hsl(var(--gradient-red-start))] to-[hsl(var(--gradient-red-end))]"
+            className="flex-shrink-0 w-[320px] cursor-pointer hover:scale-105 transition-all duration-300 group rounded-xl overflow-hidden shadow-lg hover:shadow-2xl border border-border/50"
           >
             {/* Container da imagem - limpo, sem texto sobreposto */}
             <div 
@@ -126,7 +126,7 @@ export const CursosCarousel = () => {
             </div>
 
             {/* Informações ABAIXO da capa */}
-            <div className="p-3" style={{ backgroundColor: 'hsl(0, 0%, 18%)' }}>
+            <div className="p-3" style={{ backgroundColor: 'hsl(0, 0%, 28%)' }}>
               <p className="text-xs text-white/80 mb-1">
                 {curso.area}
               </p>
