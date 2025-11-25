@@ -1,5 +1,8 @@
 project_id = "izspjvegxdfgkgibpyst"
 
+[functions.gerar-estrutura-aula]
+verify_jwt = false
+
 [functions.buscar-proposicoes-recentes]
 verify_jwt = false
 
