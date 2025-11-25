@@ -11,3 +11,7 @@ verify_jwt = false
 
 [functions.buscar-deputados]
 verify_jwt = false
+
+[functions.popular-proposicoes-manual]
+verify_jwt = false
+

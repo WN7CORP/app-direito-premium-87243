@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import ProposicoesRecentesCarousel from "@/components/ProposicoesRecentesCarousel";
 import ProposicoesPlpCarousel from "@/components/ProposicoesPlpCarousel";
 import LeisOrdinariasCarousel from "@/components/LeisOrdinariasCarousel";
+import PopularProposicoesManual from "@/components/PopularProposicoesManual";
 
 const VadeMecumTodas = () => {
   const navigate = useNavigate();
@@ -113,6 +114,9 @@ const VadeMecumTodas = () => {
           </form>
         )}
       </div>
+      
+      {/* Componente para popular proposições automaticamente se o cache estiver vazio */}
+      <PopularProposicoesManual />
       
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {categories.map((category, index) => {
