@@ -75,6 +75,9 @@ const NoticiaCard = ({ titulo, capa, portal, categoria, dataHora, analise_ia, on
               src={capa}
               alt={titulo}
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              loading="lazy"
+              width="207"
+              height="117"
               onError={(e) => {
                 e.currentTarget.style.display = 'none';
               }}
