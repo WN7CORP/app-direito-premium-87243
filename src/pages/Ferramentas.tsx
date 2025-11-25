@@ -62,24 +62,21 @@ const Ferramentas = () => {
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
           {ferramentas.map(ferramenta => {
           const Icon = ferramenta.icon;
-          return <button key={ferramenta.id} onClick={() => navigate(ferramenta.route)} className="bg-gradient-to-br from-[hsl(0,75%,55%)] to-[hsl(350,70%,45%)] rounded-xl p-4 text-left transition-all hover:scale-[1.02] hover:shadow-2xl flex flex-col gap-3 relative overflow-hidden shadow-xl min-h-[130px]">
-                <div className="absolute inset-0 bg-gradient-to-tl from-black/60 via-black/30 to-transparent pointer-events-none" />
-                <div className="bg-white/20 rounded-lg p-3 relative z-10 shadow-lg w-fit">
-                  <Icon className="w-6 h-6 text-white" />
-                </div>
-                <div className="flex-1 relative z-10">
-                  <h3 className="text-base font-bold text-white mb-1" style={{
-                textShadow: '2px 2px 4px rgba(0,0,0,0.6)'
-              }}>
-                    {ferramenta.title}
-                  </h3>
-                  <p className="text-white/80 text-sm" style={{
-                textShadow: '1px 1px 3px rgba(0,0,0,0.5)'
-              }}>
-                    {ferramenta.description}
-                  </p>
-                </div>
-              </button>;
+          return <button 
+              key={ferramenta.id} 
+              onClick={() => navigate(ferramenta.route)} 
+              className="bg-card border border-border rounded-xl p-3 text-left transition-all hover:bg-accent hover:scale-105 flex flex-col gap-2 shadow-lg"
+            >
+              <Icon className="w-5 h-5 text-primary" />
+              <div>
+                <h4 className="text-sm font-bold text-foreground mb-0.5">
+                  {ferramenta.title}
+                </h4>
+                <p className="text-muted-foreground text-xs">
+                  {ferramenta.description}
+                </p>
+              </div>
+            </button>;
         })}
         </div>
       </div>
