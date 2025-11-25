@@ -174,7 +174,7 @@ export default function IniciandoDireito() {
                 {/* Card da área */}
                 <div 
                   onClick={() => navigate(`/iniciando-direito/${encodeURIComponent(areaData.area)}/sobre`)} 
-                  className="relative overflow-hidden backdrop-blur-sm border-2 rounded-xl p-4 shadow-lg transition-all duration-300 group hover:scale-[1.02] cursor-pointer flex flex-col h-full bg-muted/30"
+                  className="relative overflow-hidden backdrop-blur-sm border-2 rounded-xl p-4 shadow-lg transition-all duration-300 group hover:scale-[1.02] cursor-pointer flex flex-col h-full bg-muted/50"
                   style={{
                     background: `linear-gradient(135deg, hsl(var(--card)) 0%, hsl(var(--card)) 70%, ${areaData.corHex}30 100%)`,
                     borderColor: `${areaData.corHex}40`,
