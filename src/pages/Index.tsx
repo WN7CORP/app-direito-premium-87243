@@ -306,12 +306,6 @@ const Index = () => {
               
               <div className="grid grid-cols-2 gap-2 md:gap-3 relative z-10">
                 {[{
-                  id: "central-conteudos",
-                  title: "Central de Conteúdos",
-                  description: "Tudo organizado por área",
-                  icon: Flame,
-                  route: "/central-conteudos"
-                }, {
                   id: "bibliotecas",
                   title: "Bibliotecas",
                   description: "Códigos e legislações completas",

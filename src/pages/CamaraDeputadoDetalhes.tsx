@@ -113,19 +113,19 @@ const CamaraDeputadoDetalhes = () => {
                 {deputado.ultimoStatus?.nomeEleitoral}
               </p>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div className="flex items-center gap-2">
                   <Flag className="w-4 h-4 text-green-500" />
-                  <span className="text-sm sm:text-base">{deputado.ultimoStatus?.siglaPartido}</span>
+                  <span>{deputado.ultimoStatus?.siglaPartido}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <MapPin className="w-4 h-4 text-blue-500" />
-                  <span className="text-sm sm:text-base">{deputado.ultimoStatus?.siglaUf}</span>
+                  <span>{deputado.ultimoStatus?.siglaUf}</span>
                 </div>
                 {deputado.ultimoStatus?.email && (
-                  <div className="flex items-center gap-2 col-span-1 sm:col-span-2">
-                    <Mail className="w-4 h-4 text-amber-500 flex-shrink-0" />
-                    <a href={`mailto:${deputado.ultimoStatus.email}`} className="hover:underline text-xs sm:text-sm break-all">
+                  <div className="flex items-center gap-2">
+                    <Mail className="w-4 h-4 text-amber-500" />
+                    <a href={`mailto:${deputado.ultimoStatus.email}`} className="hover:underline text-sm">
                       {deputado.ultimoStatus.email}
                     </a>
                   </div>
@@ -148,19 +148,19 @@ const CamaraDeputadoDetalhes = () => {
             <CardTitle>Informações Gerais</CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-4">
               <div>
                 <p className="text-sm text-muted-foreground">Data de Nascimento</p>
-                <p className="text-sm sm:text-base font-medium">{new Date(deputado.dataNascimento).toLocaleDateString('pt-BR')}</p>
+                <p className="font-medium">{new Date(deputado.dataNascimento).toLocaleDateString('pt-BR')}</p>
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Município de Nascimento</p>
-                <p className="text-sm sm:text-base font-medium">{deputado.municipioNascimento} - {deputado.ufNascimento}</p>
+                <p className="font-medium">{deputado.municipioNascimento} - {deputado.ufNascimento}</p>
               </div>
               {deputado.escolaridade && (
-                <div className="col-span-1 sm:col-span-2">
+                <div>
                   <p className="text-sm text-muted-foreground">Escolaridade</p>
-                  <p className="text-sm sm:text-base font-medium">{deputado.escolaridade}</p>
+                  <p className="font-medium">{deputado.escolaridade}</p>
                 </div>
               )}
             </div>
