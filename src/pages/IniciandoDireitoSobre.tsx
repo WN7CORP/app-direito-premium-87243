@@ -150,6 +150,15 @@ export default function IniciandoDireitoSobre() {
               Iniciar Aula
             </button>
 
+            {/* Botão Voltar para Módulos - abaixo do Iniciar */}
+            <button
+              onClick={() => navigate('/iniciando-direito')}
+              className="mt-3 w-full py-3 rounded-xl font-medium text-muted-foreground border border-border hover:border-primary hover:text-foreground transition-all duration-300 flex items-center justify-center gap-2"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Voltar para módulos
+            </button>
+
             {/* Info adicional */}
             <div className="mt-4 pt-4 border-t border-border/50 flex items-center justify-center gap-4 text-sm text-muted-foreground">
               <div className="flex items-center gap-1">
@@ -159,15 +168,6 @@ export default function IniciandoDireitoSobre() {
             </div>
           </div>
         </div>
-
-        {/* Botão Voltar */}
-        <button
-          onClick={() => navigate('/iniciando-direito')}
-          className="mt-6 w-full flex items-center justify-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Voltar para áreas
-        </button>
       </div>
     </div>
   );

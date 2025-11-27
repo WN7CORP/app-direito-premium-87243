@@ -114,7 +114,7 @@ const CursosModulos = () => {
               setSelectedModulo(modulo.modulo);
               navigate(`/cursos/aulas?area=${encodeURIComponent(area!)}&modulo=${modulo.modulo}`);
             }}>
-                  <div className="relative h-[180px] bg-gradient-to-br from-muted to-muted/50 overflow-hidden">
+                  <div className="relative h-[200px] bg-gradient-to-br from-muted to-muted/50 overflow-hidden">
                     {modulo.capa ? <img src={modulo.capa} alt={`Módulo ${modulo.modulo}`} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" /> : <div className="flex items-center justify-center h-full">
                         <BookOpen className="w-16 h-16 text-accent transition-transform duration-500 group-hover:scale-110 group-hover:rotate-6" />
                       </div>}
@@ -125,8 +125,8 @@ const CursosModulos = () => {
                       </div>
                     </div>
                   </div>
-                  <CardContent className="p-4 flex flex-col min-h-[120px]">
-                    <h3 className="font-bold text-foreground text-sm mb-3 line-clamp-2 leading-tight group-hover:text-accent transition-colors duration-300">
+                  <CardContent className="p-5 flex flex-col min-h-[140px]">
+                    <h3 className="font-bold text-foreground text-base mb-3 line-clamp-2 leading-tight group-hover:text-accent transition-colors duration-300">
                       {modulo.nome}
                     </h3>
                     <div className="mt-auto space-y-3">
