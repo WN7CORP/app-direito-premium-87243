@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Play, BookOpen, Scale } from "lucide-react";
 import { useCursosCache } from "@/hooks/useCursosCache";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Card, CardContent } from "@/components/ui/card";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import type { CarouselApi } from "@/components/ui/carousel";
@@ -105,7 +105,7 @@ export default function IniciandoDireitoTodos() {
           
           {/* Menu de alternância */}
           <ScrollArea className="w-full">
-            <div className="flex gap-2 pb-2">
+            <div className="flex gap-2 pb-2 px-1">
               {categorias.map((categoria) => (
                 <Button
                   key={categoria}
@@ -118,6 +118,7 @@ export default function IniciandoDireitoTodos() {
                 </Button>
               ))}
             </div>
+            <ScrollBar orientation="horizontal" />
           </ScrollArea>
         </div>
       </div>
