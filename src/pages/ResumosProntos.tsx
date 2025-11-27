@@ -215,23 +215,20 @@ const ResumosProntos = () => {
             </p>
 
             {/* Estatísticas */}
-            <div className="flex items-center justify-center gap-3 mb-10 max-w-sm mx-auto">
+            <div className="flex flex-wrap items-center justify-center gap-4 md:gap-6 mb-10 px-4">
               <div className="flex items-baseline gap-1.5">
-                <span className="text-3xl font-bold text-white">{areas?.length || 0}</span>
+                <span className="text-3xl md:text-4xl font-bold text-white">{areas?.length || 0}</span>
                 <span className="text-sm text-white/80">Áreas</span>
               </div>
               <div className="w-px h-10 bg-white/30" />
               <div className="flex items-baseline gap-1.5">
-                <span className="text-3xl font-bold text-white">{totalResumos}+</span>
+                <span className="text-3xl md:text-4xl font-bold text-white">{totalResumos}+</span>
                 <span className="text-sm text-white/80">Resumos</span>
               </div>
-            </div>
-
-            {/* Ano Atualizado */}
-            <div className="flex items-center justify-center gap-2 mb-10">
-              <div className="text-center bg-white/10 backdrop-blur-sm rounded-full px-5 py-2">
-                <span className="text-2xl font-bold text-white">2026</span>
-                <span className="text-sm text-white/80 ml-2">Atualizado</span>
+              <div className="w-px h-10 bg-white/30" />
+              <div className="flex items-baseline gap-1.5 bg-white/10 backdrop-blur-sm rounded-full px-4 py-2">
+                <span className="text-2xl md:text-3xl font-bold text-white">2026</span>
+                <span className="text-sm text-white/80">Atualizado</span>
               </div>
             </div>
 
