@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, PlayCircle, BookOpen, Scale } from "lucide-react";
+import { ArrowLeft, Play, BookOpen, Scale } from "lucide-react";
 import { useCursosCache } from "@/hooks/useCursosCache";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card, CardContent } from "@/components/ui/card";
@@ -87,7 +87,39 @@ export default function IniciandoDireitoTodos() {
   return <div className="min-h-screen bg-gradient-to-br from-background via-card to-background pb-20">
       {/* Header */}
       <div className="bg-card border-b border-border sticky top-0 z-10">
-        
+        <div className="max-w-[600px] lg:max-w-6xl mx-auto px-4 py-4">
+          <div className="flex items-center gap-3 mb-4">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => navigate(-1)}
+              className="flex-shrink-0"
+            >
+              <ArrowLeft className="w-5 h-5" />
+            </Button>
+            <div>
+              <p className="text-xs text-muted-foreground uppercase tracking-wide">VOLTAR</p>
+              <h1 className="text-xl font-bold text-foreground">Início</h1>
+            </div>
+          </div>
+          
+          {/* Menu de alternância */}
+          <ScrollArea className="w-full">
+            <div className="flex gap-2 pb-2">
+              {categorias.map((categoria) => (
+                <Button
+                  key={categoria}
+                  variant={activeTab === categoria ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setActiveTab(categoria)}
+                  className="whitespace-nowrap flex-shrink-0"
+                >
+                  {categoria === "todos" ? "Todos" : categoria}
+                </Button>
+              ))}
+            </div>
+          </ScrollArea>
+        </div>
       </div>
 
       {/* Conteúdo */}
@@ -144,7 +176,9 @@ export default function IniciandoDireitoTodos() {
                                 </div>
                               </div>
                               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-                                <PlayCircle className={`w-16 h-16 ${corArea.replace('bg-', 'text-')} opacity-70 group-hover:opacity-90 group-hover:scale-110 transition-all duration-300 drop-shadow-2xl`} />
+                                <div className={`${corArea} rounded-full p-4 opacity-80 group-hover:opacity-95 group-hover:scale-110 transition-all duration-300 shadow-2xl backdrop-blur-sm`}>
+                                  <Play className="w-8 h-8 text-white fill-white" />
+                                </div>
                               </div>
                             </div>
 
@@ -154,7 +188,7 @@ export default function IniciandoDireitoTodos() {
                               </h3>
                               
                               <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                                <PlayCircle className="w-3.5 h-3.5" />
+                                <Play className="w-3.5 h-3.5" />
                                 <span>Videoaula + Conteúdo</span>
                               </div>
                             </CardContent>
@@ -198,7 +232,9 @@ export default function IniciandoDireitoTodos() {
                             </div>
                           </div>
                           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-                            <PlayCircle className={`w-16 h-16 ${corArea.replace('bg-', 'text-')} opacity-70 group-hover:opacity-90 group-hover:scale-110 transition-all duration-300 drop-shadow-2xl`} />
+                            <div className={`${corArea} rounded-full p-4 opacity-80 group-hover:opacity-95 group-hover:scale-110 transition-all duration-300 shadow-2xl backdrop-blur-sm`}>
+                              <Play className="w-8 h-8 text-white fill-white" />
+                            </div>
                           </div>
                         </div>}
 
@@ -209,7 +245,7 @@ export default function IniciandoDireitoTodos() {
                         </h3>
                         
                         <div className="flex items-center gap-2 text-xs text-muted-foreground group-hover:text-foreground transition-colors">
-                          <PlayCircle className="w-3.5 h-3.5" />
+                          <Play className="w-3.5 h-3.5" />
                           <span>Videoaula + Conteúdo Detalhado</span>
                         </div>
 
