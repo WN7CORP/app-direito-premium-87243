@@ -53,6 +53,7 @@ export default function IniciandoDireito() {
   const navigate = useNavigate();
   const [areas, setAreas] = useState<AreaData[]>([]);
   const [loading, setLoading] = useState(true);
+  const [visibleElements, setVisibleElements] = useState<Set<string>>(new Set());
   
   const { cursos, loading: cursosLoading } = useCursosCache();
 
@@ -61,6 +62,25 @@ export default function IniciandoDireito() {
       processarAreas();
     }
   }, [cursos, cursosLoading]);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setVisibleElements((prev) => new Set(prev).add(entry.target.id));
+          }
+        });
+      },
+      { threshold: 0.1, rootMargin: '50px' }
+    );
+
+    // Observar todas as seções
+    const sections = document.querySelectorAll('[data-animate]');
+    sections.forEach((section) => observer.observe(section));
+
+    return () => observer.disconnect();
+  }, [loading]);
 
   const processarAreas = () => {
     const areasMap = new Map<string, number>();
@@ -108,32 +128,38 @@ export default function IniciandoDireito() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-accent/5">
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-primary via-primary/90 to-accent pt-20 pb-32 px-4">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(255,255,255,0.1),transparent_50%)]" />
+      <section 
+        id="hero-section"
+        data-animate
+        className={`relative overflow-hidden bg-gradient-to-br from-primary via-primary/90 to-accent pt-20 pb-32 px-4 transition-all duration-1000 ${
+          visibleElements.has('hero-section') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+        }`}
+      >
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(255,255,255,0.1),transparent_50%)] animate-pulse" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,rgba(255,255,255,0.08),transparent_40%)]" />
         
         <div className="container mx-auto max-w-4xl relative z-10">
-          <div className="text-center space-y-6 animate-fade-in">
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm rounded-full border border-white/20">
-              <Sparkles className="w-4 h-4 text-white" />
+          <div className="text-center space-y-6">
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm rounded-full border border-white/20 animate-fade-in">
+              <Sparkles className="w-4 h-4 text-white animate-pulse" />
               <span className="text-white text-sm font-medium">Comece sua jornada jurídica</span>
             </div>
             
-            <h1 className="text-4xl md:text-6xl font-bold text-white tracking-tight">
+            <h1 className="text-4xl md:text-6xl font-bold text-white tracking-tight animate-scale-in">
               Iniciando o Direito
             </h1>
             
-            <p className="text-xl md:text-2xl text-white/90 max-w-2xl mx-auto">
+            <p className="text-xl md:text-2xl text-white/90 max-w-2xl mx-auto animate-fade-in" style={{ animationDelay: '0.2s' }}>
               Sua jornada no mundo jurídico começa aqui
             </p>
             
-            <div className="flex flex-wrap justify-center gap-6 pt-4">
-              <div className="text-center">
+            <div className="flex flex-wrap justify-center gap-6 pt-4 animate-fade-in" style={{ animationDelay: '0.4s' }}>
+              <div className="text-center transform hover:scale-110 transition-transform duration-300">
                 <div className="text-3xl font-bold text-white">{areas.length}</div>
                 <div className="text-sm text-white/80">Áreas</div>
               </div>
               <div className="w-px bg-white/20" />
-              <div className="text-center">
+              <div className="text-center transform hover:scale-110 transition-transform duration-300">
                 <div className="text-3xl font-bold text-white">{totalTemas}+</div>
                 <div className="text-sm text-white/80">Temas</div>
               </div>
@@ -141,25 +167,32 @@ export default function IniciandoDireito() {
 
             <Button 
               size="lg" 
-              className="bg-white text-primary hover:bg-white/90 shadow-xl mt-8 px-8 py-6 text-lg font-semibold group"
+              className="bg-white text-primary hover:bg-white/90 hover:scale-105 shadow-xl mt-8 px-8 py-6 text-lg font-semibold group transition-all duration-300 animate-fade-in"
+              style={{ animationDelay: '0.6s' }}
               onClick={scrollToModules}
             >
               Começar Agora
-              <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-2 transition-transform duration-300" />
             </Button>
           </div>
         </div>
       </section>
 
       {/* Módulos do Curso */}
-      <section id="modulos" className="py-16 px-4">
+      <section 
+        id="modulos" 
+        data-animate
+        className={`py-16 px-4 transition-all duration-1000 ${
+          visibleElements.has('modulos') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+        }`}
+      >
         <div className="container mx-auto max-w-5xl">
           <div className="text-center space-y-4 mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground flex items-center justify-center gap-3">
-              <BookOpen className="w-8 h-8 text-primary" />
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground flex items-center justify-center gap-3 animate-fade-in">
+              <BookOpen className="w-8 h-8 text-primary animate-pulse" />
               Módulos do Curso
             </h2>
-            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+            <p className="text-muted-foreground text-lg max-w-2xl mx-auto animate-fade-in" style={{ animationDelay: '0.1s' }}>
               Explore cada área do Direito de forma estruturada e didática
             </p>
           </div>
@@ -168,10 +201,17 @@ export default function IniciandoDireito() {
             {areas.map((area, index) => (
               <Card 
                 key={area.area}
-                className="group cursor-pointer transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl border-2 overflow-hidden animate-fade-in"
+                id={`card-${index}`}
+                data-animate
+                className={`group cursor-pointer transition-all duration-500 hover:scale-[1.02] hover:shadow-2xl border-2 overflow-hidden ${
+                  visibleElements.has(`card-${index}`) 
+                    ? 'opacity-100 translate-x-0' 
+                    : index % 2 === 0 
+                      ? 'opacity-0 -translate-x-10' 
+                      : 'opacity-0 translate-x-10'
+                }`}
                 style={{
-                  animationDelay: `${index * 0.1}s`,
-                  animationFillMode: 'backwards'
+                  transitionDelay: `${index * 0.15}s`
                 }}
                 onClick={() => handleAreaClick(area.area)}
               >
@@ -179,7 +219,7 @@ export default function IniciandoDireito() {
                 <CardContent className="p-4 sm:p-6 md:p-8">
                   <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 items-start">
                     <div className="flex-shrink-0">
-                      <div className={`w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-br ${area.color} flex items-center justify-center text-2xl sm:text-3xl shadow-lg ${area.glow}`}>
+                      <div className={`w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-br ${area.color} flex items-center justify-center text-2xl sm:text-3xl shadow-lg ${area.glow} transform group-hover:rotate-6 group-hover:scale-110 transition-all duration-300`}>
                         {area.icon}
                       </div>
                     </div>
@@ -188,7 +228,7 @@ export default function IniciandoDireito() {
                       <div className="flex items-start justify-between gap-2 sm:gap-4 flex-wrap">
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-2 sm:gap-3 mb-2 flex-wrap">
-                            <span className={`text-xs sm:text-sm font-bold px-2 sm:px-3 py-1 rounded-full bg-gradient-to-r ${area.color} text-white whitespace-nowrap`}>
+                            <span className={`text-xs sm:text-sm font-bold px-2 sm:px-3 py-1 rounded-full bg-gradient-to-r ${area.color} text-white whitespace-nowrap transform group-hover:scale-110 transition-transform duration-300`}>
                               Módulo {index + 1}
                             </span>
                           </div>
@@ -210,11 +250,11 @@ export default function IniciandoDireito() {
                         
                         <Button 
                           variant="ghost" 
-                          className="group/btn font-semibold text-sm sm:text-base w-full sm:w-auto"
+                          className="group/btn font-semibold text-sm sm:text-base w-full sm:w-auto hover:scale-105 transition-all duration-300"
                           size="sm"
                         >
                           Acessar Módulo
-                          <ArrowRight className="ml-2 w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
+                          <ArrowRight className="ml-2 w-4 h-4 group-hover/btn:translate-x-2 transition-transform duration-300" />
                         </Button>
                       </div>
                     </div>
@@ -227,13 +267,19 @@ export default function IniciandoDireito() {
       </section>
 
       {/* O que você vai aprender */}
-      <section className="py-16 px-4 bg-muted/30">
+      <section 
+        id="learning-section"
+        data-animate
+        className={`py-16 px-4 bg-muted/30 transition-all duration-1000 ${
+          visibleElements.has('learning-section') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+        }`}
+      >
         <div className="container mx-auto max-w-4xl">
           <div className="text-center space-y-4 mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground">
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground animate-fade-in">
               O que você vai aprender
             </h2>
-            <p className="text-muted-foreground text-lg">
+            <p className="text-muted-foreground text-lg animate-fade-in" style={{ animationDelay: '0.1s' }}>
               Desenvolva uma base sólida no conhecimento jurídico
             </p>
           </div>
@@ -242,13 +288,18 @@ export default function IniciandoDireito() {
             {LEARNING_TOPICS.map((topic, index) => (
               <div 
                 key={index}
-                className="flex items-start gap-4 p-4 md:p-6 bg-card rounded-xl border shadow-sm animate-fade-in hover:shadow-md transition-shadow"
+                id={`topic-${index}`}
+                data-animate
+                className={`flex items-start gap-4 p-4 md:p-6 bg-card rounded-xl border shadow-sm hover:shadow-lg hover:scale-[1.02] transition-all duration-300 ${
+                  visibleElements.has(`topic-${index}`) 
+                    ? 'opacity-100 translate-x-0' 
+                    : 'opacity-0 -translate-x-5'
+                }`}
                 style={{
-                  animationDelay: `${index * 0.1}s`,
-                  animationFillMode: 'backwards'
+                  transitionDelay: `${index * 0.1}s`
                 }}
               >
-                <CheckCircle2 className="w-6 h-6 text-primary flex-shrink-0 mt-1" />
+                <CheckCircle2 className="w-6 h-6 text-primary flex-shrink-0 mt-1 animate-scale-in" style={{ animationDelay: `${index * 0.1}s` }} />
                 <p className="text-foreground text-lg">{topic}</p>
               </div>
             ))}
@@ -257,12 +308,18 @@ export default function IniciandoDireito() {
       </section>
 
       {/* Sobre o Curso */}
-      <section className="py-16 px-4">
+      <section 
+        id="about-section"
+        data-animate
+        className={`py-16 px-4 transition-all duration-1000 ${
+          visibleElements.has('about-section') ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
+        }`}
+      >
         <div className="container mx-auto max-w-4xl">
-          <Card className="border-2">
+          <Card className="border-2 hover:shadow-2xl transition-shadow duration-500">
             <CardContent className="p-8 md:p-12 space-y-6">
               <div className="text-center space-y-4">
-                <GraduationCap className="w-12 h-12 text-primary mx-auto" />
+                <GraduationCap className="w-12 h-12 text-primary mx-auto animate-pulse" />
                 <h2 className="text-2xl md:text-3xl font-bold text-foreground">
                   Sobre este Curso
                 </h2>
@@ -287,7 +344,7 @@ export default function IniciandoDireito() {
                   variant="outline" 
                   size="lg"
                   onClick={scrollToModules}
-                  className="font-semibold"
+                  className="font-semibold hover:scale-105 transition-transform duration-300"
                 >
                   <ArrowRight className="mr-2 w-5 h-5 rotate-180" />
                   Voltar aos Módulos
