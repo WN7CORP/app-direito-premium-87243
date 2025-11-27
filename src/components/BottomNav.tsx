@@ -25,19 +25,19 @@ export const BottomNav = () => {
       path: "/",
     },
     {
-      id: "cursos",
-      label: "Cursos",
-      icon: MonitorSmartphone,
-      path: "/iniciando-direito",
+      id: "ferramentas",
+      label: "Ferramentas",
+      icon: Wrench,
+      path: "/ferramentas",
     },
   ];
 
   const rightNavItems = [
     {
-      id: "ferramentas",
-      label: "Ferramentas",
-      icon: Wrench,
-      path: "/ferramentas",
+      id: "cursos",
+      label: "Cursos",
+      icon: MonitorSmartphone,
+      path: "/iniciando-direito",
     },
     {
       id: "novidades",
@@ -80,12 +80,15 @@ export const BottomNav = () => {
           </div>
 
           {/* Botão Central da Professora - Maior e Sobreposto */}
-          <button
-            onClick={handleProfessoraClick}
-            className="absolute left-1/2 -translate-x-1/2 -top-8 z-50 w-16 h-16 rounded-full bg-gradient-to-br from-primary to-primary/80 shadow-2xl hover:scale-110 transition-all duration-300 flex items-center justify-center"
-          >
-            <GraduationCap className="w-8 h-8 text-primary-foreground" />
-          </button>
+          <div className="absolute left-1/2 -translate-x-1/2 -top-8 z-50 flex flex-col items-center gap-1">
+            <button
+              onClick={handleProfessoraClick}
+              className="w-16 h-16 rounded-full bg-gradient-to-br from-primary to-primary/80 shadow-2xl hover:scale-110 transition-all duration-300 flex items-center justify-center"
+            >
+              <GraduationCap className="w-8 h-8 text-primary-foreground" />
+            </button>
+            <span className="text-[10px] font-medium text-primary">Professora</span>
+          </div>
 
           {/* Itens da Direita */}
           <div className="flex items-center gap-0.5 flex-1 justify-end">
