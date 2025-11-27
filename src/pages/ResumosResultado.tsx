@@ -23,23 +23,29 @@ const ResumosResultado = () => {
   const handleExportPDF = async () => {
     setExportingPDF(true);
     try {
-      const { data, error } = await supabase.functions.invoke('exportar-pdf-educacional', {
+      const { data, error } = await supabase.functions.invoke('exportar-resumo-pdf', {
         body: { 
-          content: resumo,
-          filename: `resumo-juridico-${Date.now()}`,
-          title: titulo || "Resumo Jurídico",
-          darkMode: false,
+          resumo,
+          titulo: titulo || "Resumo Jurídico",
         }
       });
       
       if (error) throw error;
       
-      window.open(data.pdfUrl, '_blank');
-      
-      toast({
-        title: "PDF gerado!",
-        description: "O PDF foi aberto em uma nova aba.",
-      });
+      if (data?.pdfDataUrl) {
+        // Criar link de download a partir do base64
+        const link = document.createElement('a');
+        link.href = data.pdfDataUrl;
+        link.download = `resumo-${titulo?.substring(0, 30).replace(/[^a-zA-Z0-9]/g, '_') || 'juridico'}.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        toast({
+          title: "PDF exportado!",
+          description: "O arquivo foi gerado e baixado com sucesso.",
+        });
+      }
     } catch (error) {
       console.error('Erro ao exportar PDF:', error);
       toast({

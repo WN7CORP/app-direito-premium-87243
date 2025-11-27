@@ -250,48 +250,19 @@ serve(async (req) => {
 
     // Gerar PDF como ArrayBuffer
     const pdfArrayBuffer = pdf.output('arraybuffer');
-    const pdfUint8Array = new Uint8Array(pdfArrayBuffer);
-
+    
     console.log("PDF ABNT formatado com Markdown gerado com sucesso");
 
-    // Criar cliente Supabase com service role
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    // Converter para base64
+    const uint8Array = new Uint8Array(pdfArrayBuffer);
+    const base64 = btoa(String.fromCharCode(...uint8Array));
+    const pdfDataUrl = `data:application/pdf;base64,${base64}`;
 
-    const filename = `resumo-${Date.now()}-${titulo.substring(0, 30).replace(/[^a-zA-Z0-9]/g, '_')}.pdf`;
-    const bucketName = "pdfs-educacionais";
-
-    // Upload usando Supabase client (Blob para compatibilidade)
-    const pdfBlob = new Blob([pdfUint8Array], { type: 'application/pdf' });
-
-    const { data: uploadData, error: uploadError } = await supabase.storage
-      .from(bucketName)
-      .upload(filename, pdfBlob, {
-        contentType: 'application/pdf',
-        cacheControl: '3600',
-        upsert: false
-      });
-
-    if (uploadError) {
-      console.error("Erro ao fazer upload:", uploadError);
-      throw new Error(`Erro ao fazer upload do PDF: ${uploadError.message}`);
-    }
-
-    console.log("PDF enviado com sucesso:", uploadData.path);
-
-    // Gerar URL pública (bucket é público)
-    const { data: publicUrlData } = supabase.storage
-      .from(bucketName)
-      .getPublicUrl(filename);
-
-    const publicUrl = publicUrlData.publicUrl;
-    console.log("URL pública gerada:", publicUrl);
+    console.log("PDF convertido para base64 com sucesso");
 
     return new Response(
       JSON.stringify({ 
-        pdfUrl: publicUrl,
+        pdfDataUrl,
         message: "PDF gerado com sucesso!"
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
