@@ -169,6 +169,7 @@ import IniciandoDireito from "./pages/IniciandoDireito";
 import IniciandoDireitoSobre from "./pages/IniciandoDireitoSobre";
 import IniciandoDireitoTemas from "./pages/IniciandoDireitoTemas";
 import IniciandoDireitoAula from "./pages/IniciandoDireitoAula";
+import IniciandoDireitoTodos from "./pages/IniciandoDireitoTodos";
 import MapaMentalAreas from "./pages/MapaMentalAreas";
 import MapaMentalTemas from "./pages/MapaMentalTemas";
 import LegislacaoPenalEspecial from "./pages/LegislacaoPenalEspecial";
@@ -414,6 +415,7 @@ const App = () => {
             <Route path="/simulados/tjsp" element={<SimuladosTJSP />} />
             <Route path="/popular-simulado-tjsp" element={<PopularSimuladoTJSP />} />
               <Route path="/iniciando-direito" element={<IniciandoDireito />} />
+              <Route path="/iniciando-direito/todos" element={<IniciandoDireitoTodos />} />
               <Route path="/iniciando-direito/:area/sobre" element={<IniciandoDireitoSobre />} />
               <Route path="/iniciando-direito/:area/temas" element={<IniciandoDireitoTemas />} />
               <Route path="/iniciando-direito/:area/aula/:tema" element={<IniciandoDireitoAula />} />
