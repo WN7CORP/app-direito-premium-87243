@@ -174,7 +174,7 @@ export default function IniciandoDireito() {
               size="lg" 
               className="bg-white text-primary hover:bg-white/90 hover:scale-105 shadow-xl mt-6 md:mt-8 px-6 md:px-8 py-5 md:py-6 text-base md:text-lg font-semibold group transition-all duration-300 animate-fade-in"
               style={{ animationDelay: '0.6s' }}
-              onClick={scrollToModules}
+              onClick={() => navigate('/iniciando-direito/todos')}
             >
               Começar Agora
               <ArrowRight className="ml-2 w-4 h-4 md:w-5 md:h-5 group-hover:translate-x-2 transition-transform duration-300" />
