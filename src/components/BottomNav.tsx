@@ -48,9 +48,9 @@ export const BottomNav = () => {
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-40 border-t border-border bg-card">
       <div className="max-w-2xl mx-auto px-1 py-2">
-        <div className="flex items-center justify-between relative">
+        <div className="flex items-center justify-center gap-4 relative">
           {/* Itens da Esquerda */}
-          <div className="flex items-center gap-0.5 flex-1">
+          <div className="flex items-center gap-2">
             {leftNavItems.map((item) => {
               const Icon = item.icon;
               const active = isActive(item.path);
@@ -74,18 +74,18 @@ export const BottomNav = () => {
           </div>
 
           {/* Botão Central da Professora - Maior e Sobreposto */}
-          <div className="absolute left-1/2 -translate-x-1/2 -top-8 z-50 flex flex-col items-center gap-1">
+          <div className="flex flex-col items-center -mt-8">
             <button
               onClick={handleProfessoraClick}
               className="w-16 h-16 rounded-full bg-gradient-to-br from-primary to-primary/80 shadow-2xl hover:scale-110 transition-all duration-300 flex items-center justify-center"
             >
               <GraduationCap className="w-8 h-8 text-primary-foreground" />
             </button>
-            <span className="text-[10px] font-medium text-primary">Professora</span>
+            <span className="text-[10px] font-medium text-primary mt-1">Professora</span>
           </div>
 
           {/* Itens da Direita */}
-          <div className="flex items-center gap-0.5 flex-1 justify-end">
+          <div className="flex items-center gap-2">
             {rightNavItems.map((item) => {
               const Icon = item.icon;
               const active = isActive(item.path);
