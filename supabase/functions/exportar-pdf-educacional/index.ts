@@ -90,12 +90,17 @@ serve(async (req) => {
     
     for (const line of lines) {
       // Processar formatação com fontes e tamanhos ABNT
+      // Função auxiliar para remover emojis
+      const removeEmojis = (text: string) => {
+        return text.replace(/[\u{1F300}-\u{1F9FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]|[\u{1F600}-\u{1F64F}]|[\u{1F680}-\u{1F6FF}]|[\u{1F1E0}-\u{1F1FF}]|[\u{2300}-\u{23FF}]|[\u{2B50}]|[\u{231A}-\u{231B}]|[\u{25AA}-\u{25AB}]|[\u{25B6}]|[\u{25C0}]|[\u{25FB}-\u{25FE}]|[\u{2614}-\u{2615}]|[\u{2648}-\u{2653}]|[\u{267F}]|[\u{2693}]|[\u{26A1}]|[\u{26AA}-\u{26AB}]|[\u{26BD}-\u{26BE}]|[\u{26C4}-\u{26C5}]|[\u{26CE}]|[\u{26D4}]|[\u{26EA}]|[\u{26F2}-\u{26F3}]|[\u{26F5}]|[\u{26FA}]|[\u{26FD}]/gu, '').trim();
+      };
+      
       if (line.startsWith('# ')) {
         checkAndAddPage(20);
         doc.setFontSize(14);
         doc.setFont("times", "bold");
         if (darkMode) doc.setTextColor(255, 255, 255);
-        const text = line.replace('# ', '').replace(/[📄🎯📋⚖️🔍📌💼💡🏛️⚡🎓🌟📋📍📊✅]/g, '').trim();
+        const text = removeEmojis(line.replace('# ', ''));
         const splitText = doc.splitTextToSize(text, maxWidth);
         
         splitText.forEach((textLine: string, index: number) => {
@@ -109,7 +114,7 @@ serve(async (req) => {
         doc.setFontSize(12);
         doc.setFont("times", "bold");
         if (darkMode) doc.setTextColor(240, 240, 240);
-        const text = line.replace('## ', '').replace(/[📄🎯📋⚖️🔍📌💼💡🏛️⚡🎓🌟📋📍📊✅]/g, '').trim();
+        const text = removeEmojis(line.replace('## ', ''));
         const splitText = doc.splitTextToSize(text, maxWidth);
         
         splitText.forEach((textLine: string, index: number) => {
@@ -123,7 +128,7 @@ serve(async (req) => {
         doc.setFontSize(12);
         doc.setFont("times", "bold");
         if (darkMode) doc.setTextColor(230, 230, 230);
-        const text = line.replace('### ', '').replace(/[📄🎯📋⚖️🔍📌💼💡🏛️⚡🎓🌟📋📍📊✅]/g, '').trim();
+        const text = removeEmojis(line.replace('### ', ''));
         const splitText = doc.splitTextToSize(text, maxWidth);
         
         splitText.forEach((textLine: string, index: number) => {
@@ -182,7 +187,7 @@ serve(async (req) => {
         doc.setFontSize(14);
         doc.setFont("times", "italic");
         if (darkMode) doc.setTextColor(180, 180, 180);
-        const text = line.replace(/^>\s*\*?/, '').replace(/\*$/g, '').replace(/[📄🎯📋⚖️🔍📌💼💡🏛️⚡🎓🌟📋📍📊✅]/g, '').trim();
+        const text = removeEmojis(line.replace(/^>\s*\*?/, '').replace(/\*$/g, ''));
         const splitText = doc.splitTextToSize(text, maxWidth - 20);
         
         splitText.forEach((textLine: string, index: number) => {
@@ -201,58 +206,18 @@ serve(async (req) => {
         doc.setFont("times", "normal");
         if (darkMode) doc.setTextColor(200, 200, 200);
         
-        // Remover emojis e processar negrito **texto**
-        let processedLine = line.replace(/[📄🎯📋⚖️🔍📌💼💡🏛️⚡🎓🌟📋📍📊✅⚠️]/g, '').trim();
+        // Função para remover TODOS os emojis Unicode
+        const removeAllEmojis = (text: string) => {
+          return text.replace(/[\u{1F300}-\u{1F9FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]|[\u{1F600}-\u{1F64F}]|[\u{1F680}-\u{1F6FF}]|[\u{1F1E0}-\u{1F1FF}]|[\u{2300}-\u{23FF}]|[\u{2B50}]|[\u{231A}-\u{231B}]|[\u{25AA}-\u{25AB}]|[\u{25B6}]|[\u{25C0}]|[\u{25FB}-\u{25FE}]|[\u{2614}-\u{2615}]|[\u{2648}-\u{2653}]|[\u{267F}]|[\u{2693}]|[\u{26A1}]|[\u{26AA}-\u{26AB}]|[\u{26BD}-\u{26BE}]|[\u{26C4}-\u{26C5}]|[\u{26CE}]|[\u{26D4}]|[\u{26EA}]|[\u{26F2}-\u{26F3}]|[\u{26F5}]|[\u{26FA}]|[\u{26FD}]/gu, '').trim();
+        };
         
-        // Processar negrito com quebra de linha adequada
-        const boldRegex = /\*\*(.*?)\*\*/g;
-        const parts: { text: string; bold: boolean }[] = [];
-        let lastIndex = 0;
-        let match;
-
-        while ((match = boldRegex.exec(processedLine)) !== null) {
-          if (match.index > lastIndex) {
-            parts.push({ text: processedLine.substring(lastIndex, match.index), bold: false });
-          }
-          parts.push({ text: match[1], bold: true });
-          lastIndex = match.index + match[0].length;
-        }
+        let processedLine = removeAllEmojis(line);
         
-        if (lastIndex < processedLine.length) {
-          parts.push({ text: processedLine.substring(lastIndex), bold: false });
-        }
-
-        // Se tem partes com negrito ou se não tem nada, processar diferente
-        if (parts.length > 0 && parts.some(p => p.bold)) {
-          // Renderizar com negrito inline
-          let currentX = marginLeft;
-          
-          for (const part of parts) {
-            const words = part.text.split(' ');
-            
-            for (let i = 0; i < words.length; i++) {
-              const word = words[i] + (i < words.length - 1 ? ' ' : '');
-              if (!word.trim()) continue;
-              
-              doc.setFont("times", part.bold ? "bold" : "normal");
-              if (darkMode) doc.setTextColor(part.bold ? 255 : 200, part.bold ? 255 : 200, part.bold ? 255 : 200);
-              
-              const wordWidth = doc.getTextWidth(word);
-              
-              // Verificar se a palavra cabe na linha atual
-              if (currentX + wordWidth > pageWidth - marginRight) {
-                y += 8;
-                checkAndAddPage(12);
-                currentX = marginLeft;
-              }
-              
-              doc.text(word, currentX, y);
-              currentX += wordWidth;
-            }
-          }
-          y += 9;
-        } else {
-          // Texto normal sem negrito
+        // Detectar formatações: negrito **texto**, itálico *texto* ou _texto_, código `texto`
+        const hasFormatting = /\*\*.*?\*\*|\*.*?\*|_.*?_|`.*?`/.test(processedLine);
+        
+        if (!hasFormatting) {
+          // Texto simples sem formatação
           const splitText = doc.splitTextToSize(processedLine, maxWidth);
           splitText.forEach((textLine: string, index: number) => {
             if (index > 0) {
@@ -261,6 +226,83 @@ serve(async (req) => {
             }
             doc.text(textLine, marginLeft, y);
           });
+          y += 9;
+        } else {
+          // Texto com formatação - processar linha por linha
+          // Primeiro, obter o texto limpo para calcular quebras de linha
+          const plainText = processedLine
+            .replace(/\*\*(.*?)\*\*/g, '$1')
+            .replace(/\*(.*?)\*/g, '$1')
+            .replace(/_(.*?)_/g, '$1')
+            .replace(/`(.*?)`/g, '$1');
+          
+          const textLines = doc.splitTextToSize(plainText, maxWidth);
+          
+          // Para cada linha de texto, renderizar com formatação
+          textLines.forEach((textLine: string, lineIndex: number) => {
+            if (lineIndex > 0) {
+              y += 8;
+              checkAndAddPage(12);
+            }
+            
+            // Encontrar a parte correspondente no texto original
+            let currentX = marginLeft;
+            let remainingText = processedLine;
+            let lineRendered = '';
+            
+            // Processar tokens de formatação
+            const formatRegex = /(\*\*.*?\*\*|\*.*?\*|_.*?_|`.*?`|[^*_`]+)/g;
+            let match;
+            
+            while ((match = formatRegex.exec(remainingText)) !== null) {
+              const token = match[0];
+              let text = token;
+              let bold = false;
+              let italic = false;
+              let code = false;
+              
+              // Identificar tipo de formatação
+              if (token.startsWith('**') && token.endsWith('**')) {
+                text = token.slice(2, -2);
+                bold = true;
+              } else if ((token.startsWith('*') && token.endsWith('*') && !token.startsWith('**')) ||
+                         (token.startsWith('_') && token.endsWith('_'))) {
+                text = token.slice(1, -1);
+                italic = true;
+              } else if (token.startsWith('`') && token.endsWith('`')) {
+                text = token.slice(1, -1);
+                code = true;
+              }
+              
+              // Verificar se este texto está na linha atual
+              if (lineRendered.length + text.length <= textLine.length) {
+                // Aplicar estilo
+                if (bold) {
+                  doc.setFont("times", "bold");
+                  if (darkMode) doc.setTextColor(255, 255, 255);
+                } else if (italic) {
+                  doc.setFont("times", "italic");
+                  if (darkMode) doc.setTextColor(220, 220, 220);
+                } else if (code) {
+                  doc.setFont("courier", "normal");
+                  if (darkMode) doc.setTextColor(200, 220, 255);
+                } else {
+                  doc.setFont("times", "normal");
+                  if (darkMode) doc.setTextColor(200, 200, 200);
+                }
+                
+                const textWidth = doc.getTextWidth(text);
+                doc.text(text, currentX, y);
+                currentX += textWidth;
+                lineRendered += text;
+              }
+            }
+            
+            // Resetar estilo
+            doc.setFont("times", "normal");
+            if (darkMode) doc.setTextColor(200, 200, 200);
+          });
+          
           y += 9;
         }
       }
