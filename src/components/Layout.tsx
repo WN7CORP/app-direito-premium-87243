@@ -63,6 +63,7 @@ export const Layout = ({ children }: LayoutProps) => {
     location.pathname === "/cursos/aulas" ||
     location.pathname === "/aprender/estagios/buscar" ||
     location.pathname.startsWith("/meu-brasil/jurista/") ||
+    location.pathname === "/iniciando-direito" ||
     location.pathname.startsWith("/iniciando-direito/") ||
     location.pathname.startsWith("/mapa-mental") ||
     location.pathname === "/ajuda" ||
