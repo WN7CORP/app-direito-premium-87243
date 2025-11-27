@@ -88,37 +88,14 @@ export default function IniciandoDireitoTodos() {
       {/* Header */}
       <div className="bg-card border-b border-border sticky top-0 z-10">
         <div className="max-w-[600px] lg:max-w-6xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between gap-3 mb-4">
-            <div className="flex items-center gap-3">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => navigate("/")}
-                className="flex-shrink-0"
-              >
-                <ArrowLeft className="w-5 h-5" />
-              </Button>
-              <div>
-                <p className="text-xs text-muted-foreground uppercase tracking-wide">VOLTAR</p>
-                <h1 className="text-xl font-bold text-foreground">Início</h1>
-              </div>
-            </div>
-          </div>
+          
           
           {/* Menu de alternância */}
           <ScrollArea className="w-full">
             <div className="flex gap-2 pb-2 px-1">
-              {categorias.map((categoria) => (
-                <Button
-                  key={categoria}
-                  variant={activeTab === categoria ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setActiveTab(categoria)}
-                  className="whitespace-nowrap flex-shrink-0"
-                >
+              {categorias.map(categoria => <Button key={categoria} variant={activeTab === categoria ? "default" : "outline"} size="sm" onClick={() => setActiveTab(categoria)} className="whitespace-nowrap flex-shrink-0">
                   {categoria === "todos" ? "Todos" : categoria}
-                </Button>
-              ))}
+                </Button>)}
             </div>
             <ScrollBar orientation="horizontal" />
           </ScrollArea>
