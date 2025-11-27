@@ -29,6 +29,9 @@ const ResumosProntos = () => {
 
   // Intersection Observer para animações
   useEffect(() => {
+    // Inicializar elementos visíveis com o hero section
+    setVisibleElements(new Set(['hero', 'areas-title', 'search']));
+    
     observerRef.current = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
@@ -40,14 +43,20 @@ const ResumosProntos = () => {
           }
         });
       },
-      { threshold: 0.1, rootMargin: '50px' }
+      { threshold: 0.05, rootMargin: '100px' }
     );
 
-    document.querySelectorAll('[data-animate]').forEach((el) => {
-      observerRef.current?.observe(el);
-    });
+    // Pequeno delay para garantir que os elementos foram renderizados
+    const timer = setTimeout(() => {
+      document.querySelectorAll('[data-animate]').forEach((el) => {
+        observerRef.current?.observe(el);
+      });
+    }, 100);
 
-    return () => observerRef.current?.disconnect();
+    return () => {
+      clearTimeout(timer);
+      observerRef.current?.disconnect();
+    };
   }, [areaSelecionada]);
 
   // Scroll suave para seção de áreas
@@ -99,6 +108,7 @@ const ResumosProntos = () => {
         .map(([area, count]) => ({ area, count }))
         .sort((a, b) => a.area.localeCompare(b.area));
       
+      console.log('📊 Áreas carregadas:', areasArray.length, areasArray);
       return areasArray;
     },
   });
@@ -161,6 +171,13 @@ const ResumosProntos = () => {
   const areasFiltradas = areas?.filter(a => 
     a.area.toLowerCase().includes(searchArea.toLowerCase())
   );
+
+  console.log('🔍 Debug Resumos:', { 
+    areas: areas?.length, 
+    areasFiltradas: areasFiltradas?.length,
+    loadingAreas,
+    searchArea 
+  });
 
   const temasFiltrados = temas?.filter(t =>
     t.tema.toLowerCase().includes(searchTema.toLowerCase())
@@ -269,16 +286,17 @@ const ResumosProntos = () => {
                   <Skeleton key={i} className="h-40 w-full rounded-2xl" />
                 ))}
               </div>
-            ) : (
+            ) : areasFiltradas && areasFiltradas.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {areasFiltradas?.map((area, idx) => (
+                {areasFiltradas.map((area, idx) => (
                   <div
                     key={area.area}
                     data-animate={`area-${idx}`}
-                    className={`transition-all duration-700 ${
-                      visibleElements.has(`area-${idx}`) ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
-                    }`}
-                    style={{ transitionDelay: `${idx * 100}ms` }}
+                    className="transition-all duration-700 opacity-100 translate-y-0"
+                    style={{ 
+                      transitionDelay: `${idx * 100}ms`,
+                      animation: `fadeInUp 0.6s ease-out ${idx * 0.1}s both`
+                    }}
                   >
                     <Card
                       className="group cursor-pointer hover:shadow-2xl hover:shadow-purple-500/20 transition-all duration-300 hover:scale-105 border-2 hover:border-purple-500 bg-gradient-to-br from-card to-card/80 h-full"
@@ -308,6 +326,12 @@ const ResumosProntos = () => {
                     </Card>
                   </div>
                 ))}
+              </div>
+            ) : (
+              <div className="text-center py-12">
+                <p className="text-muted-foreground text-lg">
+                  {searchArea ? 'Nenhuma área encontrada com esse termo.' : 'Nenhuma área disponível no momento.'}
+                </p>
               </div>
             )}
           </div>
@@ -391,10 +415,11 @@ const ResumosProntos = () => {
                 <div
                   key={tema.tema}
                   data-animate={`tema-${idx}`}
-                  className={`transition-all duration-700 ${
-                    visibleElements.has(`tema-${idx}`) ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-10'
-                  }`}
-                  style={{ transitionDelay: `${idx * 100}ms` }}
+                  className="transition-all duration-700 opacity-100 translate-x-0"
+                  style={{ 
+                    transitionDelay: `${idx * 100}ms`,
+                    animation: `slideInLeft 0.6s ease-out ${idx * 0.1}s both`
+                  }}
                 >
                   <Card
                     className="group cursor-pointer hover:shadow-xl hover:shadow-purple-500/10 transition-all duration-300 hover:scale-[1.02] border-l-4 border-l-purple-500 hover:border-l-blue-500"

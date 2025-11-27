@@ -492,3 +492,26 @@ All colors MUST be HSL.
 .animate-shake {
   animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
 }
+
+/* Animações de entrada para cards */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
