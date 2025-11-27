@@ -161,7 +161,7 @@ export default function IniciandoDireitoTodos() {
             }} className="w-full">
                     <CarouselContent className="-ml-3 md:-ml-4">
                       {temasArea.map((temaData, index) => <CarouselItem key={`${area}-${index}`} className="pl-3 md:pl-4 basis-[70%] md:basis-[300px]">
-                          <Card className="h-full cursor-pointer transition-all duration-300 overflow-hidden hover:shadow-2xl hover:scale-105 bg-card/95 border-border/50 group" onClick={() => navigate(`/iniciando-direito/${encodeURIComponent(temaData.area)}/aula/${encodeURIComponent(temaData.tema)}`)}>
+                          <Card className="h-full cursor-pointer transition-all duration-300 overflow-hidden hover:shadow-2xl hover:scale-105 bg-card border-border/50 group" onClick={() => navigate(`/iniciando-direito/${encodeURIComponent(temaData.area)}/aula/${encodeURIComponent(temaData.tema)}`)}>
                             {/* Imagem de capa */}
                             <div className="relative h-[200px] overflow-hidden bg-muted">
                               {temaData['capa-aula'] ? <>
@@ -182,7 +182,7 @@ export default function IniciandoDireitoTodos() {
                               </div>
                             </div>
 
-                            <CardContent className="p-5 bg-muted/80">
+                            <CardContent className="p-5 bg-muted">
                               <h3 className="text-base font-bold text-foreground group-hover:text-primary transition-colors duration-300 mb-3 line-clamp-2 leading-tight">
                                 {temaData.tema}
                               </h3>
