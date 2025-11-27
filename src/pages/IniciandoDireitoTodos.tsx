@@ -84,8 +84,8 @@ export default function IniciandoDireitoTodos() {
   const categorias = ["todos", ...areas];
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-card to-background pb-20">
+  return (
+    <div className="min-h-screen bg-background pb-20">
         <div className="bg-card border-b border-border sticky top-0 z-10">
           <div className="max-w-[600px] lg:max-w-4xl mx-auto px-4 py-4">
             <p className="text-muted-foreground">Carregando...</p>
@@ -164,25 +164,27 @@ export default function IniciandoDireitoTodos() {
                   }}
                 >
                   {/* Header da Área */}
-                  <div className="flex items-center justify-between mb-6 px-2">
-                    <div className="flex items-center gap-4">
-                      <div className={`w-12 h-12 rounded-full ${corArea} flex items-center justify-center shadow-lg`}>
-                        <BookOpen className="w-6 h-6 text-white" />
+                  <div className="flex items-center justify-between gap-3 mb-4 px-2">
+                    <div className="flex items-center gap-3 min-w-0 flex-1">
+                      <div className={`w-10 h-10 md:w-12 md:h-12 rounded-full ${corArea} flex items-center justify-center shadow-lg flex-shrink-0`}>
+                        <BookOpen className="w-5 h-5 md:w-6 md:h-6 text-white" />
                       </div>
-                      <div>
-                        <h2 className="text-2xl font-bold text-foreground">{area}</h2>
-                        <p className="text-sm text-muted-foreground">
-                          {temasArea.length} {temasArea.length === 1 ? 'tema disponível' : 'temas disponíveis'}
+                      <div className="min-w-0 flex-1">
+                        <h2 className="text-lg md:text-xl font-bold text-foreground truncate">{area}</h2>
+                        <p className="text-xs md:text-sm text-muted-foreground">
+                          {temasArea.length} {temasArea.length === 1 ? 'tema' : 'temas'}
                         </p>
                       </div>
                     </div>
                     <Button
                       onClick={() => setActiveTab(area)}
+                      size="sm"
                       variant="outline"
-                      className="gap-2 hover:bg-primary hover:text-primary-foreground transition-colors"
+                      className="gap-1 md:gap-2 hover:bg-primary hover:text-primary-foreground transition-colors flex-shrink-0 text-xs md:text-sm px-3 md:px-4"
                     >
-                      Ver todos
-                      <ArrowLeft className="w-4 h-4 rotate-180" />
+                      <span className="hidden sm:inline">Ver todos</span>
+                      <span className="sm:hidden">Ver</span>
+                      <ArrowLeft className="w-3 h-3 md:w-4 md:h-4 rotate-180" />
                     </Button>
                   </div>
 
@@ -199,7 +201,7 @@ export default function IniciandoDireitoTodos() {
                       {temasArea.map((temaData, index) => (
                         <CarouselItem key={`${area}-${index}`} className="pl-3 md:pl-4 basis-[70%] md:basis-[300px]">
                           <Card 
-                            className="h-full cursor-pointer transition-all duration-300 overflow-hidden hover:shadow-2xl hover:scale-105 bg-card group"
+                            className="h-full cursor-pointer transition-all duration-300 overflow-hidden hover:shadow-2xl hover:scale-105 bg-card/95 border-border/50 group"
                             onClick={() => navigate(`/iniciando-direito/${encodeURIComponent(temaData.area)}/aula/${encodeURIComponent(temaData.tema)}`)}
                           >
                             {/* Imagem de capa */}
