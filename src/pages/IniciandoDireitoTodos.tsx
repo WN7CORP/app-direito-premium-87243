@@ -167,7 +167,7 @@ export default function IniciandoDireitoTodos() {
                   <div className="flex items-center justify-between gap-3 mb-4 px-2">
                     <div className="flex items-center gap-3 min-w-0 flex-1">
                       <div className={`w-10 h-10 md:w-12 md:h-12 rounded-full ${corArea} flex items-center justify-center shadow-lg flex-shrink-0`}>
-                        <BookOpen className="w-5 h-5 md:w-6 md:h-6 text-white" />
+                        <Scale className="w-5 h-5 md:w-6 md:h-6 text-white" />
                       </div>
                       <div className="min-w-0 flex-1">
                         <h2 className="text-lg md:text-xl font-bold text-foreground truncate">{area}</h2>
@@ -231,7 +231,7 @@ export default function IniciandoDireitoTodos() {
                               </div>
                             </div>
 
-                            <CardContent className="p-5">
+                            <CardContent className="p-5 bg-muted/80">
                               <h3 className="text-base font-bold text-foreground group-hover:text-primary transition-colors duration-300 mb-3 line-clamp-2 leading-tight">
                                 {temaData.tema}
                               </h3>
