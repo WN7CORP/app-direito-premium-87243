@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { BookOpen, Play } from "lucide-react";
+import { BookOpen, Play, ArrowLeft } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 
 interface AulaIntroCardProps {
@@ -11,6 +11,7 @@ interface AulaIntroCardProps {
   aulaDescricao?: string;
   capaUrl?: string;
   onIniciar: () => void;
+  onVoltar?: () => void;
 }
 
 export const AulaIntroCard = ({ 
@@ -19,7 +20,8 @@ export const AulaIntroCard = ({
   aulaTema, 
   aulaDescricao,
   capaUrl,
-  onIniciar 
+  onIniciar,
+  onVoltar
 }: AulaIntroCardProps) => {
   const [show, setShow] = useState(true);
 
@@ -37,7 +39,21 @@ export const AulaIntroCard = ({
           exit={{ opacity: 0 }}
           className="fixed inset-0 bg-background/95 backdrop-blur-sm z-50 flex items-center justify-center p-4"
         >
-          <Card className="max-w-2xl w-full bg-gradient-to-br from-card via-muted/30 to-card border-2 border-primary/20 shadow-2xl overflow-hidden">
+          <Card className="max-w-2xl w-full bg-gradient-to-br from-card via-muted/30 to-card border-2 border-primary/20 shadow-2xl overflow-hidden relative">
+            {/* Botão Voltar */}
+            {onVoltar && (
+              <motion.button
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.3 }}
+                onClick={onVoltar}
+                className="absolute top-4 left-4 z-10 flex items-center gap-2 px-4 py-2 rounded-lg bg-background/80 hover:bg-background border border-border/50 text-foreground hover:text-primary transition-all duration-200 shadow-md hover:shadow-lg"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                <span className="text-sm font-medium">Voltar</span>
+              </motion.button>
+            )}
+            
             <motion.div
               initial={{ scale: 0.9, y: 20 }}
               animate={{ scale: 1, y: 0 }}
