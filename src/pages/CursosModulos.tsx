@@ -106,7 +106,7 @@ const CursosModulos = () => {
         duration: 15
       }} className="w-full max-w-6xl mx-auto" setApi={setApi}>
           <CarouselContent className="-ml-3 md:-ml-4">
-            {modulos.map((modulo, index) => <CarouselItem key={modulo.modulo} className="pl-3 md:pl-4 basis-[280px] md:basis-[320px] py-[23px]">
+            {modulos.map((modulo, index) => <CarouselItem key={modulo.modulo} className="pl-3 md:pl-4 basis-[300px] md:basis-[340px] py-[23px]">
                 <Card className={`h-full cursor-pointer transition-all duration-300 overflow-hidden animate-fade-in bg-gradient-to-br from-card to-card/80 ${selectedModulo === modulo.modulo ? 'scale-105 shadow-2xl shadow-accent/40 border-2 border-accent' : 'scale-95 opacity-70 hover:opacity-90 shadow-xl border-2 border-border/50 hover:border-accent/30'}`} style={{
               animationDelay: `${0.1 + index * 0.1}s`,
               animationFillMode: 'backwards'
@@ -114,25 +114,25 @@ const CursosModulos = () => {
               setSelectedModulo(modulo.modulo);
               navigate(`/cursos/aulas?area=${encodeURIComponent(area!)}&modulo=${modulo.modulo}`);
             }}>
-                  <div className="relative h-[200px] bg-gradient-to-br from-muted to-muted/50 overflow-hidden">
+                  <div className="relative h-[220px] bg-gradient-to-br from-muted to-muted/50 overflow-hidden">
                     {modulo.capa ? <img src={modulo.capa} alt={`Módulo ${modulo.modulo}`} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" /> : <div className="flex items-center justify-center h-full">
                         <BookOpen className="w-16 h-16 text-accent transition-transform duration-500 group-hover:scale-110 group-hover:rotate-6" />
                       </div>}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-                    <div className="absolute top-3 right-3">
-                      <div className="bg-accent text-accent-foreground px-4 py-1.5 rounded-full text-xs font-bold shadow-lg">
+                  </div>
+                  <CardContent className="p-6 flex flex-col min-h-[160px]">
+                    <div className="mb-3">
+                      <div className="inline-block bg-accent text-accent-foreground px-4 py-1.5 rounded-full text-xs font-bold shadow-lg">
                         Módulo {modulo.modulo}
                       </div>
                     </div>
-                  </div>
-                  <CardContent className="p-5 flex flex-col min-h-[140px]">
-                    <h3 className="font-bold text-foreground text-base mb-3 line-clamp-2 leading-tight group-hover:text-accent transition-colors duration-300">
+                    <h3 className="font-bold text-foreground text-base mb-4 line-clamp-2 leading-tight group-hover:text-accent transition-colors duration-300">
                       {modulo.nome}
                     </h3>
                     <div className="mt-auto space-y-3">
                       <div className="flex items-center gap-2">
                         <div className="flex items-center gap-2 bg-accent/10 border border-accent/20 px-3 py-1.5 rounded-full">
-                          <BookOpen className="w-3.5 h-3.5 text-accent" />
+                          <BookOpen className="w-4 h-4 text-accent" />
                           <span className="font-bold text-accent text-sm">{modulo.totalAulas}</span>
                           <span className="text-muted-foreground text-xs">{modulo.totalAulas === 1 ? 'aula' : 'aulas'}</span>
                         </div>

@@ -83,7 +83,15 @@ export default function IniciandoDireitoTemas() {
       <div className="bg-card border-b border-border sticky top-0 z-10">
         <div className="max-w-[600px] lg:max-w-4xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between mb-3">
-            
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate(`/iniciando-direito/${encodeURIComponent(areaDecoded)}`)}
+              className="gap-2 text-muted-foreground hover:text-foreground"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Voltar ao módulo
+            </Button>
           </div>
           
           <div className="flex items-center gap-3">
