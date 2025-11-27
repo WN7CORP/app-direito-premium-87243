@@ -215,20 +215,20 @@ const ResumosProntos = () => {
             </p>
 
             {/* Estatísticas */}
-            <div className="flex items-center justify-center gap-8 mb-10 flex-wrap">
-              <div className="text-center transform hover:scale-110 transition-transform duration-300">
-                <div className="text-3xl font-bold text-white">{areas?.length || 0}</div>
-                <div className="text-sm text-white/80">Áreas</div>
+            <div className="inline-flex items-center justify-center gap-4 mb-10 bg-white/5 backdrop-blur-sm rounded-full px-6 py-3">
+              <div className="text-center">
+                <span className="text-2xl font-bold text-white">{areas?.length || 0}</span>
+                <span className="text-sm text-white/80 ml-1">Áreas</span>
               </div>
-              <div className="w-px h-12 bg-white/20" />
-              <div className="text-center transform hover:scale-110 transition-transform duration-300">
-                <div className="text-3xl font-bold text-white">{totalResumos}+</div>
-                <div className="text-sm text-white/80">Resumos</div>
+              <div className="w-px h-8 bg-white/20" />
+              <div className="text-center">
+                <span className="text-2xl font-bold text-white">{totalResumos}+</span>
+                <span className="text-sm text-white/80 ml-1">Resumos</span>
               </div>
-              <div className="w-px h-12 bg-white/20" />
-              <div className="text-center transform hover:scale-110 transition-transform duration-300">
-                <div className="text-3xl font-bold text-white">2026</div>
-                <div className="text-sm text-white/80">Atualizado</div>
+              <div className="w-px h-8 bg-white/20" />
+              <div className="text-center">
+                <span className="text-2xl font-bold text-white">2026</span>
+                <span className="text-sm text-white/80 ml-1">Atualizado</span>
               </div>
             </div>
 
