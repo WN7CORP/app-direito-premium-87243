@@ -88,18 +88,20 @@ export default function IniciandoDireitoTodos() {
       {/* Header */}
       <div className="bg-card border-b border-border sticky top-0 z-10">
         <div className="max-w-[600px] lg:max-w-6xl mx-auto px-4 py-4">
-          <div className="flex items-center gap-3 mb-4">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => navigate(-1)}
-              className="flex-shrink-0"
-            >
-              <ArrowLeft className="w-5 h-5" />
-            </Button>
-            <div>
-              <p className="text-xs text-muted-foreground uppercase tracking-wide">VOLTAR</p>
-              <h1 className="text-xl font-bold text-foreground">Início</h1>
+          <div className="flex items-center justify-between gap-3 mb-4">
+            <div className="flex items-center gap-3">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => navigate("/")}
+                className="flex-shrink-0"
+              >
+                <ArrowLeft className="w-5 h-5" />
+              </Button>
+              <div>
+                <p className="text-xs text-muted-foreground uppercase tracking-wide">VOLTAR</p>
+                <h1 className="text-xl font-bold text-foreground">Início</h1>
+              </div>
             </div>
           </div>
           
