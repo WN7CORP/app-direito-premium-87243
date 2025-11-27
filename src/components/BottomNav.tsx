@@ -42,7 +42,7 @@ export const BottomNav = () => {
   ];
 
   const handleProfessoraClick = () => {
-    window.dispatchEvent(new CustomEvent('open-professora'));
+    navigate('/chat-professora');
   };
 
   return (
