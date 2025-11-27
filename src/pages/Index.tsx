@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
-import { Crown, Gavel, FileText, Scale, GraduationCap, BookOpen as BookOpenIcon, Library, Hammer, Target, Search, Headphones, Play, Loader2, Newspaper, ArrowRight, Sparkles, Scroll, Brain, Monitor, Video, BookOpen, Calendar, Settings, Flame } from "lucide-react";
+import { Crown, Gavel, FileText, Scale, GraduationCap, BookOpen as BookOpenIcon, Library, Hammer, Target, Search, Headphones, Play, Loader2, Newspaper, ArrowRight, Sparkles, Scroll, Brain, Monitor, Video, BookOpen, Calendar, Settings, Flame, MonitorSmartphone } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import useEmblaCarousel from 'embla-carousel-react';
@@ -255,11 +255,11 @@ const Index = () => {
                 icon: Scale,
                 route: "/vade-mecum"
               }, {
-                id: "professora",
-                title: "Professora",
-                description: "Tire dúvidas jurídicas rapidamente",
-                icon: GraduationCap,
-                route: "/chat-professora"
+                id: "cursos",
+                title: "Cursos",
+                description: "Aprenda Direito do básico ao avançado",
+                icon: MonitorSmartphone,
+                route: "/iniciando-direito"
               }].map(item => {
                 const Icon = item.icon;
                 return (

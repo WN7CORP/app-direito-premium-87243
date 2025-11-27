@@ -34,12 +34,6 @@ export const BottomNav = () => {
 
   const rightNavItems = [
     {
-      id: "cursos",
-      label: "Cursos",
-      icon: MonitorSmartphone,
-      path: "/iniciando-direito",
-    },
-    {
       id: "novidades",
       label: "Novidades",
       icon: Sparkles,
