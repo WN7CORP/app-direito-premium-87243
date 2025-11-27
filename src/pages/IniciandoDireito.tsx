@@ -1,278 +1,306 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { GraduationCap, BookOpen, CheckCircle2, ArrowRight, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, BookOpen, GraduationCap, ArrowRight, RefreshCw } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
 import { useCursosCache } from "@/hooks/useCursosCache";
-import { toast } from "sonner";
-import { formatDistanceToNow } from "date-fns";
-import { ptBR } from "date-fns/locale";
+
 interface AreaData {
   area: string;
-  totalTemas: number;
-  primeirosTemas: string[];
-  cor: string;
-  corHex: string;
+  temasCount: number;
+  color: string;
+  glow: string;
+  description: string;
+  icon: string;
 }
-const CORES_AREAS: Record<string, { hex: string; glow: string }> = {
+
+const CORES_AREAS: Record<string, { color: string; glow: string; description: string; icon: string }> = {
   "Direito Penal": { 
-    hex: "#ef4444",
-    glow: "0 0 30px rgba(239, 68, 68, 0.5)"
+    color: "from-red-500 to-rose-600", 
+    glow: "shadow-red-500/20",
+    description: "Fundamentos do Direito Penal, crimes e suas penalidades",
+    icon: "⚖️"
   },
   "Direito Civil": { 
-    hex: "#3b82f6",
-    glow: "0 0 30px rgba(59, 130, 246, 0.5)"
-  },
-  "Direito Constitucional": { 
-    hex: "#10b981",
-    glow: "0 0 30px rgba(16, 185, 129, 0.5)"
-  },
-  "Direito Administrativo": { 
-    hex: "#a855f7",
-    glow: "0 0 30px rgba(168, 85, 247, 0.5)"
-  },
-  "Direito Trabalhista": { 
-    hex: "#f59e0b",
-    glow: "0 0 30px rgba(245, 158, 11, 0.5)"
-  },
-  "Direito Empresarial": { 
-    hex: "#ec4899",
-    glow: "0 0 30px rgba(236, 72, 153, 0.5)"
-  },
-  "Direito Tributário": { 
-    hex: "#6366f1",
-    glow: "0 0 30px rgba(99, 102, 241, 0.5)"
-  },
-  "Direito Processual Civil": { 
-    hex: "#06b6d4",
-    glow: "0 0 30px rgba(6, 182, 212, 0.5)"
-  },
-  "Processo Civil": { 
-    hex: "#06b6d4",
-    glow: "0 0 30px rgba(6, 182, 212, 0.5)"
-  },
-  "Direito Processual Penal": { 
-    hex: "#f97316",
-    glow: "0 0 30px rgba(249, 115, 22, 0.5)"
+    color: "from-blue-500 to-cyan-600", 
+    glow: "shadow-blue-500/20",
+    description: "Relações entre particulares, contratos e responsabilidades",
+    icon: "📋"
   },
   "Direito do Trabalho": { 
-    hex: "#f59e0b",
-    glow: "0 0 30px rgba(245, 158, 11, 0.5)"
+    color: "from-amber-500 to-orange-600", 
+    glow: "shadow-amber-500/20",
+    description: "Relações trabalhistas, direitos e deveres",
+    icon: "💼"
+  },
+  "Direito Constitucional": { 
+    color: "from-emerald-500 to-green-600", 
+    glow: "shadow-emerald-500/20",
+    description: "Fundamentos da Constituição Federal",
+    icon: "🏛️"
   }
 };
+
+const LEARNING_TOPICS = [
+  "Fundamentos essenciais de cada área do Direito",
+  "Conceitos práticos aplicáveis ao dia a dia",
+  "Estrutura e organização do sistema jurídico brasileiro",
+  "Base sólida para aprofundamento em temas específicos",
+  "Metodologia didática e acessível para todos os níveis"
+];
+
 export default function IniciandoDireito() {
   const navigate = useNavigate();
   const [areas, setAreas] = useState<AreaData[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const { cursos, loading: cursosLoading, invalidateCache, lastUpdate } = useCursosCache();
+  
+  const { cursos, loading: cursosLoading } = useCursosCache();
 
   useEffect(() => {
-    if (!cursosLoading) {
+    if (!cursosLoading && cursos.length > 0) {
       processarAreas();
     }
-  }, [cursosLoading, cursos]);
+  }, [cursos, cursosLoading]);
 
   const processarAreas = () => {
-    if (cursos.length === 0) {
-      setAreas([]);
-      setLoading(false);
-      return;
-    }
-
-    // Agrupar por área
-    const areasMap = new Map<string, {
-      temas: string[];
-      total: number;
-    }>();
+    const areasMap = new Map<string, number>();
     
     cursos.forEach((curso: any) => {
-      const area = curso.area;
-      if (!areasMap.has(area)) {
-        areasMap.set(area, {
-          temas: [],
-          total: 0
-        });
+      if (curso.area) {
+        areasMap.set(curso.area, (areasMap.get(curso.area) || 0) + 1);
       }
-      const areaData = areasMap.get(area)!;
-      areaData.temas.push(curso.tema);
-      areaData.total++;
     });
 
-    // Converter para array
-    const areasArray: AreaData[] = Array.from(areasMap.entries()).map(([area, dados]) => {
-      const corData = CORES_AREAS[area] || { hex: '#6b7280', glow: '0 0 30px rgba(107, 114, 128, 0.5)' };
-      return {
-        area,
-        totalTemas: dados.total,
-        primeirosTemas: dados.temas.slice(0, 3),
-        cor: `bg-[${corData.hex}]`,
-        corHex: corData.hex
-      };
-    });
-    
-    setAreas(areasArray);
+    const areasProcessadas: AreaData[] = Array.from(areasMap.entries()).map(([area, count]) => ({
+      area,
+      temasCount: count,
+      color: CORES_AREAS[area]?.color || "from-gray-500 to-gray-600",
+      glow: CORES_AREAS[area]?.glow || "shadow-gray-500/20",
+      description: CORES_AREAS[area]?.description || "Explore os fundamentos desta área do Direito",
+      icon: CORES_AREAS[area]?.icon || "📚"
+    }));
+
+    setAreas(areasProcessadas);
     setLoading(false);
   };
 
-  const handleRefresh = async () => {
-    setIsRefreshing(true);
-    toast.info("Atualizando cursos...", { duration: 1500 });
-    
-    // Aguardar um momento para feedback visual
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    invalidateCache();
-    
-    // Aguardar carregamento
-    setTimeout(() => {
-      setIsRefreshing(false);
-      toast.success("Cursos atualizados!", { duration: 2000 });
-    }, 1500);
+  const handleAreaClick = (area: string) => {
+    navigate(`/iniciando-direito/${encodeURIComponent(area)}/sobre`);
   };
+
+  const scrollToModules = () => {
+    document.getElementById('modulos')?.scrollIntoView({ behavior: 'smooth' });
+  };
+
   if (loading) {
-    return <div className="min-h-screen bg-gradient-to-br from-background via-card to-background flex items-center justify-center">
-        <div className="text-center">
-          <GraduationCap className="w-16 h-16 text-primary mx-auto mb-4 animate-pulse" />
-          <p className="text-muted-foreground">Carregando áreas do Direito...</p>
-        </div>
-      </div>;
-  }
-  return <div className="min-h-screen bg-gradient-to-br from-background via-card to-background pb-20">
-      {/* Header */}
-      <div className="bg-card border-b border-border sticky top-0 z-10">
-        <div className="max-w-[600px] lg:max-w-4xl mx-auto px-4 py-4">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center animate-scale-in shadow-lg">
-              <GraduationCap className="w-6 h-6 text-primary-foreground animate-pulse" />
-            </div>
-            <div className="animate-fade-in-up">
-              <h1 className="text-2xl font-bold text-foreground bg-gradient-to-r from-foreground to-primary bg-clip-text">
-                Iniciando o Direito
-              </h1>
-              <p className="text-sm text-muted-foreground">Sua jornada no mundo jurídico começa aqui</p>
-            </div>
-          </div>
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 via-background to-accent/5">
+        <div className="text-center space-y-4">
+          <GraduationCap className="w-16 h-16 text-primary mx-auto animate-pulse" />
+          <p className="text-muted-foreground">Carregando módulos do curso...</p>
         </div>
       </div>
+    );
+  }
 
-      {/* Conteúdo */}
-      <div className="max-w-[600px] lg:max-w-4xl mx-auto px-3 py-4">
-        {/* Grid de Áreas - 2 por linha */}
-        <div className="space-y-3">
-          <h2 className="text-xl font-bold text-foreground">Áreas do Direito</h2>
-          
-          <div className="grid grid-cols-2 gap-3">
-            {areas.map((areaData, index) => (
-              <div 
-                key={areaData.area} 
-                className="animate-fade-in" 
+  const totalTemas = areas.reduce((acc, area) => acc + area.temasCount, 0);
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-accent/5">
+      {/* Hero Section */}
+      <section className="relative overflow-hidden bg-gradient-to-br from-primary via-primary/90 to-accent pt-20 pb-32 px-4">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(255,255,255,0.1),transparent_50%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,rgba(255,255,255,0.08),transparent_40%)]" />
+        
+        <div className="container mx-auto max-w-4xl relative z-10">
+          <div className="text-center space-y-6 animate-fade-in">
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm rounded-full border border-white/20">
+              <Sparkles className="w-4 h-4 text-white" />
+              <span className="text-white text-sm font-medium">Comece sua jornada jurídica</span>
+            </div>
+            
+            <h1 className="text-4xl md:text-6xl font-bold text-white tracking-tight">
+              Iniciando o Direito
+            </h1>
+            
+            <p className="text-xl md:text-2xl text-white/90 max-w-2xl mx-auto">
+              Sua jornada no mundo jurídico começa aqui
+            </p>
+            
+            <div className="flex flex-wrap justify-center gap-6 pt-4">
+              <div className="text-center">
+                <div className="text-3xl font-bold text-white">{areas.length}</div>
+                <div className="text-sm text-white/80">Áreas</div>
+              </div>
+              <div className="w-px bg-white/20" />
+              <div className="text-center">
+                <div className="text-3xl font-bold text-white">{totalTemas}+</div>
+                <div className="text-sm text-white/80">Temas</div>
+              </div>
+              <div className="w-px bg-white/20" />
+              <div className="text-center">
+                <div className="text-3xl font-bold text-white">100%</div>
+                <div className="text-sm text-white/80">Gratuito</div>
+              </div>
+            </div>
+
+            <Button 
+              size="lg" 
+              className="bg-white text-primary hover:bg-white/90 shadow-xl mt-8 px-8 py-6 text-lg font-semibold group"
+              onClick={scrollToModules}
+            >
+              Começar Agora
+              <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+            </Button>
+          </div>
+        </div>
+      </section>
+
+      {/* Módulos do Curso */}
+      <section id="modulos" className="py-16 px-4">
+        <div className="container mx-auto max-w-5xl">
+          <div className="text-center space-y-4 mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground flex items-center justify-center gap-3">
+              <BookOpen className="w-8 h-8 text-primary" />
+              Módulos do Curso
+            </h2>
+            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+              Explore cada área do Direito de forma estruturada e didática
+            </p>
+          </div>
+
+          <div className="grid gap-6 md:gap-8">
+            {areas.map((area, index) => (
+              <Card 
+                key={area.area}
+                className="group cursor-pointer transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl border-2 overflow-hidden animate-fade-in"
                 style={{
-                  animationDelay: `${index * 0.08}s`,
+                  animationDelay: `${index * 0.1}s`,
+                  animationFillMode: 'backwards'
+                }}
+                onClick={() => handleAreaClick(area.area)}
+              >
+                <div className={`h-2 bg-gradient-to-r ${area.color}`} />
+                <CardContent className="p-6 md:p-8">
+                  <div className="flex flex-col md:flex-row gap-6 items-start">
+                    <div className="flex-shrink-0">
+                      <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${area.color} flex items-center justify-center text-3xl shadow-lg ${area.glow}`}>
+                        {area.icon}
+                      </div>
+                    </div>
+                    
+                    <div className="flex-1 space-y-3">
+                      <div className="flex items-start justify-between gap-4">
+                        <div>
+                          <div className="flex items-center gap-3 mb-2">
+                            <span className={`text-sm font-bold px-3 py-1 rounded-full bg-gradient-to-r ${area.color} text-white`}>
+                              Módulo {index + 1}
+                            </span>
+                          </div>
+                          <h3 className="text-2xl font-bold text-foreground group-hover:text-primary transition-colors">
+                            {area.area}
+                          </h3>
+                        </div>
+                      </div>
+                      
+                      <p className="text-muted-foreground leading-relaxed">
+                        {area.description}
+                      </p>
+                      
+                      <div className="flex items-center justify-between pt-4">
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <BookOpen className="w-4 h-4" />
+                          <span className="font-medium">{area.temasCount} temas disponíveis</span>
+                        </div>
+                        
+                        <Button 
+                          variant="ghost" 
+                          className="group/btn font-semibold"
+                        >
+                          Acessar Módulo
+                          <ArrowRight className="ml-2 w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* O que você vai aprender */}
+      <section className="py-16 px-4 bg-muted/30">
+        <div className="container mx-auto max-w-4xl">
+          <div className="text-center space-y-4 mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground">
+              O que você vai aprender
+            </h2>
+            <p className="text-muted-foreground text-lg">
+              Desenvolva uma base sólida no conhecimento jurídico
+            </p>
+          </div>
+
+          <div className="grid gap-4 md:gap-6">
+            {LEARNING_TOPICS.map((topic, index) => (
+              <div 
+                key={index}
+                className="flex items-start gap-4 p-4 md:p-6 bg-card rounded-xl border shadow-sm animate-fade-in hover:shadow-md transition-shadow"
+                style={{
+                  animationDelay: `${index * 0.1}s`,
                   animationFillMode: 'backwards'
                 }}
               >
-                {/* Card da área */}
-                <div 
-                  onClick={() => navigate(`/iniciando-direito/${encodeURIComponent(areaData.area)}/sobre`)} 
-                  className="relative overflow-hidden backdrop-blur-sm border-2 rounded-xl p-4 shadow-lg transition-all duration-300 group hover:scale-[1.02] cursor-pointer flex flex-col h-full bg-muted/50"
-                  style={{
-                    background: `linear-gradient(135deg, hsl(var(--card)) 0%, hsl(var(--card)) 70%, ${areaData.corHex}30 100%)`,
-                    borderColor: `${areaData.corHex}40`,
-                    transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.borderColor = areaData.corHex;
-                    e.currentTarget.style.boxShadow = CORES_AREAS[areaData.area]?.glow || '0 0 30px rgba(107, 114, 128, 0.5)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.borderColor = `${areaData.corHex}40`;
-                    e.currentTarget.style.boxShadow = '';
-                  }}
-                >
-                  {/* Shimmer effect */}
-                  <div 
-                    className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" 
-                    style={{
-                      background: `linear-gradient(90deg, transparent, ${areaData.corHex}20, transparent)`,
-                      backgroundSize: '200% 100%',
-                      animation: 'shimmer 2s infinite'
-                    }} 
-                  />
-                  
-                  <div className="relative z-10 flex flex-col h-full">
-                    <div className="flex items-start justify-between mb-2">
-                      <div className="flex-1">
-                        <h3 className="text-base font-bold text-foreground group-hover:text-primary transition-colors duration-300 leading-tight">
-                          {areaData.area}
-                        </h3>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {areaData.totalTemas} {areaData.totalTemas === 1 ? 'tema' : 'temas'}
-                        </p>
-                      </div>
-                      <span 
-                        className="text-white px-2 py-1 rounded-full text-xs font-bold shadow-md" 
-                        style={{
-                          backgroundColor: areaData.corHex
-                        }}
-                      >
-                        {index + 1}
-                      </span>
-                    </div>
-
-                    {/* Botão "Ver curso" - alinhado na parte inferior */}
-                    <div className="mt-auto pt-3">
-                      <button 
-                        className="relative w-full px-3 py-2 rounded-lg font-semibold text-xs transition-all duration-300 overflow-hidden group/btn flex items-center justify-center gap-1.5"
-                        style={{
-                          backgroundColor: `${areaData.corHex}20`,
-                          color: areaData.corHex,
-                          border: `2px solid ${areaData.corHex}40`
-                        }}
-                        onMouseEnter={(e) => {
-                          e.stopPropagation();
-                          e.currentTarget.style.backgroundColor = `${areaData.corHex}30`;
-                          e.currentTarget.style.borderColor = areaData.corHex;
-                          e.currentTarget.style.transform = 'translateY(-2px)';
-                          e.currentTarget.style.boxShadow = `0 8px 20px ${areaData.corHex}40`;
-                        }}
-                        onMouseLeave={(e) => {
-                          e.stopPropagation();
-                          e.currentTarget.style.backgroundColor = `${areaData.corHex}20`;
-                          e.currentTarget.style.borderColor = `${areaData.corHex}40`;
-                          e.currentTarget.style.transform = 'translateY(0)';
-                          e.currentTarget.style.boxShadow = 'none';
-                        }}
-                      >
-                        <GraduationCap className="w-3.5 h-3.5 relative z-10" />
-                        <span className="relative z-10">Ver curso</span>
-                        <ArrowRight className="w-3.5 h-3.5 transition-transform duration-300 group-hover/btn:translate-x-1 relative z-10" />
-                      </button>
-                    </div>
-                  </div>
-                </div>
+                <CheckCircle2 className="w-6 h-6 text-primary flex-shrink-0 mt-1" />
+                <p className="text-foreground text-lg">{topic}</p>
               </div>
             ))}
           </div>
         </div>
+      </section>
 
-        {/* Sobre este Curso - Movido para depois das áreas */}
-        <div 
-          className="bg-card/50 backdrop-blur-sm border border-border rounded-lg p-5 mt-6 animate-fade-in"
-          style={{
-            animationDelay: `${areas.length * 0.08 + 0.2}s`,
-            animationFillMode: 'backwards'
-          }}
-        >
-          <h2 className="text-base font-semibold text-foreground mb-2 flex items-center gap-2">
-            <BookOpen className="w-4 h-4 text-primary" />
-            Sobre este Curso
-          </h2>
-          <p className="text-sm text-muted-foreground leading-relaxed">
-            O "Iniciando o Direito" é o curso perfeito para quem está começando a estudar Direito. 
-            Explore cada área jurídica através de videoaulas didáticas e conteúdo detalhado gerado 
-            especialmente para facilitar seu aprendizado. Escolha uma área acima para começar!
-          </p>
+      {/* Sobre o Curso */}
+      <section className="py-16 px-4">
+        <div className="container mx-auto max-w-4xl">
+          <Card className="border-2">
+            <CardContent className="p-8 md:p-12 space-y-6">
+              <div className="text-center space-y-4">
+                <GraduationCap className="w-12 h-12 text-primary mx-auto" />
+                <h2 className="text-2xl md:text-3xl font-bold text-foreground">
+                  Sobre este Curso
+                </h2>
+              </div>
+              
+              <div className="prose prose-lg max-w-none text-muted-foreground space-y-4">
+                <p className="text-center leading-relaxed">
+                  O curso <strong className="text-foreground">Iniciando o Direito</strong> foi desenvolvido para proporcionar 
+                  uma base sólida e acessível sobre as principais áreas do Direito brasileiro. 
+                  Com uma metodologia didática e exemplos práticos, você compreenderá os 
+                  conceitos fundamentais de cada área.
+                </p>
+                
+                <p className="text-center leading-relaxed">
+                  Ideal para estudantes, concurseiros e qualquer pessoa interessada em 
+                  entender melhor o sistema jurídico nacional.
+                </p>
+              </div>
+
+              <div className="text-center pt-6">
+                <Button 
+                  variant="outline" 
+                  size="lg"
+                  onClick={scrollToModules}
+                  className="font-semibold"
+                >
+                  <ArrowRight className="mr-2 w-5 h-5 rotate-180" />
+                  Voltar aos Módulos
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         </div>
-      </div>
-    </div>;
+      </section>
+    </div>
+  );
 }
