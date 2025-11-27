@@ -210,7 +210,7 @@ const ResumosProntos = () => {
               </div>
               <div className="w-px h-12 bg-white/20" />
               <div className="text-center transform hover:scale-110 transition-transform duration-300">
-                <div className="text-3xl font-bold text-white">2025</div>
+                <div className="text-3xl font-bold text-white">2026</div>
                 <div className="text-sm text-white/80">Atualizado</div>
               </div>
             </div>
