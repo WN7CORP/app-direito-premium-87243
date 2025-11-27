@@ -175,7 +175,7 @@ const Bibliotecas = () => {
                   </div>
                 )}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
-                <div className="absolute top-2 right-2 bg-accent text-accent-foreground px-2 py-1 md:px-3 md:py-1.5 rounded-full text-xs md:text-sm font-bold shadow-lg">
+                <div className="absolute top-2 right-2 bg-red-500/90 text-white px-2 py-1 md:px-3 md:py-1.5 rounded-full text-xs md:text-sm font-bold shadow-lg">
                   {count} {count === 1 ? "livro" : "livros"}
                 </div>
               </div>
