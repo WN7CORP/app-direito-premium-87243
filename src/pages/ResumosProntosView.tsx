@@ -164,13 +164,18 @@ const ResumosProntosView = () => {
       });
       if (error) throw error;
       
-      // Abrir PDF em nova aba
-      if (data?.pdfUrl) {
-        window.open(data.pdfUrl, '_blank');
+      if (data?.pdfDataUrl) {
+        // Criar link de download a partir do base64
+        const link = document.createElement('a');
+        link.href = data.pdfDataUrl;
+        link.download = `resumo-${resumo.subtema.substring(0, 30).replace(/[^a-zA-Z0-9]/g, '_')}.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
         
         toast({
           title: "PDF exportado!",
-          description: "Link válido por 24 horas. Abrindo em nova aba..."
+          description: "O arquivo foi gerado e baixado com sucesso."
         });
       }
     } catch (error: any) {
