@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, PlayCircle, BookOpen } from "lucide-react";
+import { ArrowLeft, PlayCircle, BookOpen, Scale } from "lucide-react";
 import { useCursosCache } from "@/hooks/useCursosCache";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card, CardContent } from "@/components/ui/card";
@@ -34,6 +34,7 @@ export default function IniciandoDireitoTodos() {
   const navigate = useNavigate();
   const [temas, setTemas] = useState<TemaData[]>([]);
   const [areas, setAreas] = useState<string[]>([]);
+  const [temasPorArea, setTemasPorArea] = useState<Record<string, TemaData[]>>({});
   const [activeTab, setActiveTab] = useState("todos");
   const [loading, setLoading] = useState(true);
   const [api, setApi] = useState<CarouselApi>();
@@ -61,7 +62,17 @@ export default function IniciandoDireitoTodos() {
         return a.ordem - b.ordem;
       });
       
+      // Agrupar temas por área
+      const agrupados: Record<string, TemaData[]> = {};
+      todosTemas.forEach((tema) => {
+        if (!agrupados[tema.area]) {
+          agrupados[tema.area] = [];
+        }
+        agrupados[tema.area].push(tema);
+      });
+      
       setTemas(todosTemas);
+      setTemasPorArea(agrupados);
       setLoading(false);
     }
   }, [cursos, cursosLoading]);
@@ -137,77 +148,108 @@ export default function IniciandoDireitoTodos() {
       {/* Conteúdo */}
       <div className="max-w-[600px] lg:max-w-6xl mx-auto px-4 py-6">
         {activeTab === "todos" ? (
-          /* Carrossel para "Todos" */
-          <Carousel 
-            opts={{
-              align: "start",
-              loop: false,
-              skipSnaps: false,
-              duration: 15
-            }}
-            className="w-full"
-            setApi={setApi}
-          >
-            <CarouselContent className="-ml-3 md:-ml-4">
-              {temasFiltrados.map((temaData, index) => {
-                const corArea = CORES_AREAS[temaData.area] || 'bg-gray-600';
-                
-                return (
-                  <CarouselItem key={`${temaData.area}-${index}`} className="pl-3 md:pl-4 basis-[300px] md:basis-[340px]">
-                    <Card 
-                      className="h-full cursor-pointer transition-all duration-300 overflow-hidden hover:shadow-2xl hover:scale-105 bg-card group"
-                      onClick={() => navigate(`/iniciando-direito/${encodeURIComponent(temaData.area)}/aula/${encodeURIComponent(temaData.tema)}`)}
-                    >
-                      {/* Imagem de capa */}
-                      <div className="relative h-[200px] overflow-hidden bg-muted">
-                        {temaData['capa-aula'] ? (
-                          <>
-                            <img 
-                              src={temaData['capa-aula']} 
-                              alt={temaData.tema} 
-                              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" 
-                              loading={index < 6 ? "eager" : "lazy"}
-                            />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
-                          </>
-                        ) : (
-                          <div className="flex items-center justify-center h-full">
-                            <BookOpen className="w-16 h-16 text-accent/50" />
-                          </div>
-                        )}
-                        <div className="absolute top-3 left-3">
-                          <div className={`${corArea} text-white px-3 py-1.5 rounded-full text-xs font-semibold shadow-lg`}>
-                            {temaData.area}
-                          </div>
-                        </div>
-                        <div className="absolute top-3 right-3">
-                          <div className="bg-black/60 backdrop-blur-sm text-white px-3 py-1.5 rounded-full text-xs font-semibold">
-                            Aula {temaData.ordem}
-                          </div>
-                        </div>
-                        <div className="absolute bottom-3 left-3">
-                          <PlayCircle className="w-10 h-10 text-white opacity-90 group-hover:opacity-100 group-hover:scale-110 transition-all duration-300 drop-shadow-lg" />
-                        </div>
+          /* Múltiplos Carrosséis por Área */
+          <div className="space-y-12">
+            {areas.map((area, areaIndex) => {
+              const temasArea = temasPorArea[area] || [];
+              const corArea = CORES_AREAS[area] || 'bg-gray-600';
+              
+              return (
+                <div 
+                  key={area} 
+                  className="animate-fade-in"
+                  style={{
+                    animationDelay: `${areaIndex * 0.15}s`,
+                    animationFillMode: 'backwards'
+                  }}
+                >
+                  {/* Header da Área */}
+                  <div className="flex items-center justify-between mb-6 px-2">
+                    <div className="flex items-center gap-4">
+                      <div className={`w-12 h-12 rounded-full ${corArea} flex items-center justify-center shadow-lg`}>
+                        <BookOpen className="w-6 h-6 text-white" />
                       </div>
+                      <div>
+                        <h2 className="text-2xl font-bold text-foreground">{area}</h2>
+                        <p className="text-sm text-muted-foreground">
+                          {temasArea.length} {temasArea.length === 1 ? 'tema disponível' : 'temas disponíveis'}
+                        </p>
+                      </div>
+                    </div>
+                    <Button
+                      onClick={() => setActiveTab(area)}
+                      variant="outline"
+                      className="gap-2 hover:bg-primary hover:text-primary-foreground transition-colors"
+                    >
+                      Ver todos
+                      <ArrowLeft className="w-4 h-4 rotate-180" />
+                    </Button>
+                  </div>
 
-                      <CardContent className="p-5">
-                        <h3 className="text-base font-bold text-foreground group-hover:text-primary transition-colors duration-300 mb-3 line-clamp-2 leading-tight">
-                          {temaData.tema}
-                        </h3>
-                        
-                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                          <PlayCircle className="w-3.5 h-3.5" />
-                          <span>Videoaula + Conteúdo</span>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </CarouselItem>
-                );
-              })}
-            </CarouselContent>
-            <CarouselPrevious className="left-0 md:-left-4" />
-            <CarouselNext className="right-0 md:-right-4" />
-          </Carousel>
+                  {/* Carrossel da Área */}
+                  <Carousel
+                    opts={{
+                      align: "start",
+                      loop: false,
+                      dragFree: true,
+                    }}
+                    className="w-full"
+                  >
+                    <CarouselContent className="-ml-3 md:-ml-4">
+                      {temasArea.map((temaData, index) => (
+                        <CarouselItem key={`${area}-${index}`} className="pl-3 md:pl-4 basis-[70%] md:basis-[300px]">
+                          <Card 
+                            className="h-full cursor-pointer transition-all duration-300 overflow-hidden hover:shadow-2xl hover:scale-105 bg-card group"
+                            onClick={() => navigate(`/iniciando-direito/${encodeURIComponent(temaData.area)}/aula/${encodeURIComponent(temaData.tema)}`)}
+                          >
+                            {/* Imagem de capa */}
+                            <div className="relative h-[200px] overflow-hidden bg-muted">
+                              {temaData['capa-aula'] ? (
+                                <>
+                                  <img 
+                                    src={temaData['capa-aula']} 
+                                    alt={temaData.tema} 
+                                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" 
+                                    loading={areaIndex === 0 && index < 4 ? "eager" : "lazy"}
+                                  />
+                                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
+                                </>
+                              ) : (
+                                <div className="flex items-center justify-center h-full">
+                                  <BookOpen className="w-16 h-16 text-accent/50" />
+                                </div>
+                              )}
+                              <div className="absolute top-3 right-3">
+                                <div className="bg-black/60 backdrop-blur-sm text-white px-3 py-1.5 rounded-full text-xs font-semibold">
+                                  Aula {temaData.ordem}
+                                </div>
+                              </div>
+                              <div className="absolute bottom-3 left-3">
+                                <PlayCircle className="w-10 h-10 text-white opacity-90 group-hover:opacity-100 group-hover:scale-110 transition-all duration-300 drop-shadow-lg" />
+                              </div>
+                            </div>
+
+                            <CardContent className="p-5">
+                              <h3 className="text-base font-bold text-foreground group-hover:text-primary transition-colors duration-300 mb-3 line-clamp-2 leading-tight">
+                                {temaData.tema}
+                              </h3>
+                              
+                              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                <PlayCircle className="w-3.5 h-3.5" />
+                                <span>Videoaula + Conteúdo</span>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        </CarouselItem>
+                      ))}
+                    </CarouselContent>
+                    <CarouselPrevious className="left-0" />
+                    <CarouselNext className="right-0" />
+                  </Carousel>
+                </div>
+              );
+            })}
+          </div>
         ) : (
           /* Timeline para áreas específicas */
           <div className="max-w-[600px] mx-auto">
