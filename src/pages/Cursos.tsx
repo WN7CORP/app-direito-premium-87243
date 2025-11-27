@@ -175,13 +175,18 @@ const Cursos = () => {
                   className="w-full text-left bg-card border border-border rounded-lg p-5 hover:border-primary hover:shadow-lg transition-all group"
                 >
                   <div className="flex items-start justify-between mb-3">
-                    <div className="flex-1">
-                      <h3 className="text-lg font-bold text-foreground group-hover:text-primary transition-colors">
-                        {area.area}
-                      </h3>
-                      <p className="text-sm text-muted-foreground mt-1">
-                        {area.totalAulas} {area.totalAulas === 1 ? 'tema' : 'temas'} disponíveis
-                      </p>
+                    <div className="flex items-center gap-3 flex-1">
+                      <div className={`bg-gradient-to-br ${area.cor} p-2.5 rounded-lg`}>
+                        <GraduationCap className="w-5 h-5 text-white" />
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="text-lg font-bold text-foreground group-hover:text-primary transition-colors">
+                          {area.area}
+                        </h3>
+                        <p className="text-sm text-muted-foreground mt-1">
+                          {area.totalAulas} {area.totalAulas === 1 ? 'tema' : 'temas'} disponíveis
+                        </p>
+                      </div>
                     </div>
                     <span className={`bg-gradient-to-br ${area.cor} text-white px-3 py-1 rounded-full text-xs font-semibold`}>
                       {index + 1}
@@ -249,6 +254,11 @@ const Cursos = () => {
                     </div>
                   )}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                  <div className="absolute top-4 right-4">
+                    <div className="bg-primary/90 backdrop-blur-sm p-2 rounded-full">
+                      <GraduationCap className="w-6 h-6 text-primary-foreground" />
+                    </div>
+                  </div>
                   <div className="absolute bottom-4 left-4 right-4">
                     <h3 className="text-xl font-bold text-white mb-1 drop-shadow-lg">
                       {area.area}
