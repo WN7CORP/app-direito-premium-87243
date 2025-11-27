@@ -1,5 +1,6 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -253,57 +254,43 @@ serve(async (req) => {
 
     console.log("PDF ABNT formatado com Markdown gerado com sucesso");
 
-    // Upload para Supabase Storage
+    // Criar cliente Supabase com service role
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     const filename = `resumo-${Date.now()}-${titulo.substring(0, 30).replace(/[^a-zA-Z0-9]/g, '_')}.pdf`;
     const bucketName = "pdfs-educacionais";
 
-    const uploadResponse = await fetch(
-      `${supabaseUrl}/storage/v1/object/${bucketName}/${filename}`,
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${supabaseServiceKey}`,
-          "Content-Type": "application/pdf",
-        },
-        body: pdfUint8Array,
-      }
-    );
+    // Upload usando Supabase client
+    const { data: uploadData, error: uploadError } = await supabase.storage
+      .from(bucketName)
+      .upload(filename, pdfUint8Array, {
+        contentType: 'application/pdf',
+        cacheControl: '3600',
+        upsert: false
+      });
 
-    if (!uploadResponse.ok) {
-      const errorText = await uploadResponse.text();
-      console.error("Erro ao fazer upload:", errorText);
-      throw new Error("Erro ao fazer upload do PDF");
+    if (uploadError) {
+      console.error("Erro ao fazer upload:", uploadError);
+      throw new Error(`Erro ao fazer upload do PDF: ${uploadError.message}`);
     }
 
-    // Gerar URL assinada (válida por 24 horas)
-    const signedUrlResponse = await fetch(
-      `${supabaseUrl}/storage/v1/object/sign/${bucketName}/${filename}`,
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${supabaseServiceKey}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ expiresIn: 86400 }), // 24 horas
-      }
-    );
+    console.log("PDF enviado com sucesso:", uploadData.path);
 
-    if (!signedUrlResponse.ok) {
-      throw new Error("Erro ao gerar URL assinada");
-    }
+    // Gerar URL pública (bucket é público)
+    const { data: publicUrlData } = supabase.storage
+      .from(bucketName)
+      .getPublicUrl(filename);
 
-    const { signedURL } = await signedUrlResponse.json();
-    const fullSignedUrl = `${supabaseUrl}/storage/v1${signedURL}`;
-
-    console.log("PDF salvo e URL gerada:", fullSignedUrl);
+    const publicUrl = publicUrlData.publicUrl;
+    console.log("URL pública gerada:", publicUrl);
 
     return new Response(
       JSON.stringify({ 
-        pdfUrl: fullSignedUrl,
-        message: "PDF gerado com sucesso! Link válido por 24 horas."
+        pdfUrl: publicUrl,
+        message: "PDF gerado com sucesso!"
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
