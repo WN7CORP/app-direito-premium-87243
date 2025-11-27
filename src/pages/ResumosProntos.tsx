@@ -299,16 +299,16 @@ const ResumosProntos = () => {
                     }}
                   >
                     <Card
-                      className="group cursor-pointer hover:shadow-2xl hover:shadow-purple-500/20 transition-all duration-300 hover:scale-[1.01] border border-border/80 bg-gradient-to-br from-card to-card/80 min-h-[104px] md:min-h-[112px] flex"
+                      className="group cursor-pointer hover:shadow-2xl hover:shadow-purple-500/20 transition-all duration-300 hover:scale-[1.01] border border-border/80 bg-gradient-to-br from-card to-card/80 min-h-[116px] md:min-h-[124px] flex"
                       onClick={() => {
                         setAreaSelecionada(area.area);
                         window.scrollTo({ top: 0, behavior: 'smooth' });
                       }}
                     >
-                      <CardContent className="flex-1 flex items-center gap-4 p-4 md:p-5">
+                      <CardContent className="flex-1 flex items-center gap-4 p-5 md:p-6">
                         {/* Ícone do livro */}
                         <div className="flex-shrink-0">
-                          <div className="w-11 h-11 md:w-12 md:h-12 rounded-xl bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center shadow-lg transform group-hover:scale-110 group-hover:rotate-6 transition-all duration-300">
+                          <div className="w-12 h-12 md:w-14 md:h-14 rounded-xl bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center shadow-lg transform group-hover:scale-110 group-hover:rotate-6 transition-all duration-300">
                             <BookOpen className="w-6 h-6 md:w-7 md:h-7 text-white" />
                           </div>
                         </div>
@@ -316,10 +316,10 @@ const ResumosProntos = () => {
                         {/* Texto */}
                         <div className="flex-1 min-w-0">
                           <div className="flex items-start justify-between gap-2">
-                            <h3 className="font-bold text-base md:text-lg mb-1 group-hover:text-purple-400 transition-colors line-clamp-2">
+                            <h3 className="font-bold text-base md:text-lg mb-1.5 group-hover:text-purple-400 transition-colors line-clamp-2">
                               {area.area}
                             </h3>
-                            <span className="ml-2 px-2 py-0.5 rounded-full text-[11px] md:text-xs font-semibold bg-purple-500/15 text-purple-300 whitespace-nowrap">
+                            <span className="ml-2 px-2.5 py-1 rounded-full text-xs md:text-sm font-semibold bg-purple-500/15 text-purple-300 whitespace-nowrap">
                               {area.count}
                             </span>
                           </div>
@@ -427,7 +427,7 @@ const ResumosProntos = () => {
                   }}
                 >
                   <Card
-                    className="group cursor-pointer hover:shadow-xl hover:shadow-purple-500/10 transition-all duration-300 hover:scale-[1.01] border border-border/80 bg-card/95 min-h-[110px] md:min-h-[120px]"
+                    className="group cursor-pointer hover:shadow-xl hover:shadow-purple-500/10 transition-all duration-300 hover:scale-[1.01] border border-border/80 bg-card/95 min-h-[120px] md:min-h-[130px]"
                     onClick={() =>
                       navigate(
                         `/resumos-juridicos/prontos/${encodeURIComponent(
@@ -436,26 +436,26 @@ const ResumosProntos = () => {
                       )
                     }
                   >
-                    <CardContent className="p-4 md:p-5">
+                    <CardContent className="p-5 md:p-6">
                       <div className="flex items-start justify-between gap-3 md:gap-4">
                         <div className="flex items-start gap-3 md:gap-4 flex-1 min-w-0">
                           {/* Número do tema */}
-                          <div className="flex-shrink-0 w-10 h-10 md:w-11 md:h-11 bg-gradient-to-br from-purple-500 to-blue-500 rounded-xl flex items-center justify-center text-white font-bold text-base md:text-lg shadow-lg group-hover:scale-110 transition-transform">
+                          <div className="flex-shrink-0 w-11 h-11 md:w-12 md:h-12 bg-gradient-to-br from-purple-500 to-blue-500 rounded-xl flex items-center justify-center text-white font-bold text-base md:text-lg shadow-lg group-hover:scale-110 transition-transform">
                             {idx + 1}
                           </div>
                           
                           {/* Conteúdo */}
                           <div className="flex-1 min-w-0">
-                            <h3 className="font-bold text-sm md:text-base lg:text-lg mb-1 md:mb-2 group-hover:text-purple-400 transition-colors line-clamp-2">
+                            <h3 className="font-bold text-sm md:text-base lg:text-lg mb-1.5 md:mb-2 group-hover:text-purple-400 transition-colors line-clamp-2">
                               {tema.tema}
                             </h3>
-                            <div className="flex items-center flex-wrap gap-2 text-[11px] md:text-xs text-muted-foreground">
+                            <div className="flex items-center flex-wrap gap-2 md:gap-3 text-xs md:text-sm text-muted-foreground">
                               <span className="flex items-center gap-1">
-                                <BookOpen className="w-3.5 h-3.5" />
+                                <BookOpen className="w-3.5 h-3.5 md:w-4 md:h-4" />
                                 {tema.count} {tema.count === 1 ? "subtema" : "subtemas"}
                               </span>
                               <span className="flex items-center gap-1">
-                                <TrendingUp className="w-3.5 h-3.5" />
+                                <TrendingUp className="w-3.5 h-3.5 md:w-4 md:h-4" />
                                 Pronto para estudo
                               </span>
                             </div>
@@ -463,8 +463,8 @@ const ResumosProntos = () => {
                         </div>
 
                         {/* Ícone de livro à direita */}
-                        <div className="flex-shrink-0 w-8 h-8 md:w-9 md:h-9 rounded-full bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary/20 transition-colors">
-                          <BookOpen className="w-4 h-4 md:w-5 md:h-5" />
+                        <div className="flex-shrink-0 w-9 h-9 md:w-10 md:h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary/20 transition-colors">
+                          <BookOpen className="w-5 h-5 md:w-5 md:h-5" />
                         </div>
                       </div>
                     </CardContent>
