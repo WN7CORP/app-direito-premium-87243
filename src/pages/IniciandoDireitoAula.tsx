@@ -249,6 +249,7 @@ export default function IniciandoDireitoAula() {
           aulaDescricao={aula['descricao-aula'] || aula.conteudo?.substring(0, 150) + '...'}
           capaUrl={(aula as any)['capa-aula']}
           onIniciar={() => setSearchParams({ iniciada: 'true' })}
+          onVoltar={() => navigate('/iniciando-direito/todos')}
         />
       </>
     );
