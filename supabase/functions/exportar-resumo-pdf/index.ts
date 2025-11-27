@@ -263,10 +263,12 @@ serve(async (req) => {
     const filename = `resumo-${Date.now()}-${titulo.substring(0, 30).replace(/[^a-zA-Z0-9]/g, '_')}.pdf`;
     const bucketName = "pdfs-educacionais";
 
-    // Upload usando Supabase client
+    // Upload usando Supabase client (Blob para compatibilidade)
+    const pdfBlob = new Blob([pdfUint8Array], { type: 'application/pdf' });
+
     const { data: uploadData, error: uploadError } = await supabase.storage
       .from(bucketName)
-      .upload(filename, pdfUint8Array, {
+      .upload(filename, pdfBlob, {
         contentType: 'application/pdf',
         cacheControl: '3600',
         upsert: false
