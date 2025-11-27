@@ -131,7 +131,7 @@ export default function IniciandoDireito() {
       <section 
         id="hero-section"
         data-animate
-        className={`relative overflow-hidden bg-gradient-to-br from-primary via-primary/90 to-accent pt-20 pb-32 px-4 transition-all duration-1000 ${
+        className={`relative overflow-hidden bg-gradient-to-br from-red-600 via-red-700 to-rose-800 pt-20 pb-32 px-4 transition-all duration-1000 ${
           visibleElements.has('hero-section') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
         }`}
       >
@@ -162,6 +162,11 @@ export default function IniciandoDireito() {
               <div className="text-center transform hover:scale-110 transition-transform duration-300">
                 <div className="text-3xl font-bold text-white">{totalTemas}+</div>
                 <div className="text-sm text-white/80">Temas</div>
+              </div>
+              <div className="w-px bg-white/20" />
+              <div className="text-center transform hover:scale-110 transition-transform duration-300">
+                <div className="text-3xl font-bold text-white">2025</div>
+                <div className="text-sm text-white/80">Atualizado</div>
               </div>
             </div>
 
