@@ -86,7 +86,9 @@ export const Layout = ({ children }: LayoutProps) => {
     location.pathname.startsWith("/camara-deputados") ||
     // Esconder em páginas de OAB "O que estudar"
     location.pathname.startsWith("/oab/o-que-estudar") ||
-    // Esconder em páginas de resumos jurídicos prontos
+    // Esconder na página principal de resumos jurídicos prontos
+    location.pathname === "/resumos-juridicos/prontos" ||
+    // Esconder em páginas de resumos jurídicos prontos detalhadas
     location.pathname.startsWith("/resumos-juridicos/prontos/");
   
   // Esconder Header em páginas com header próprio
