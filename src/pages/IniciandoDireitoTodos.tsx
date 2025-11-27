@@ -143,8 +143,8 @@ export default function IniciandoDireitoTodos() {
                                   Aula {temaData.ordem}
                                 </div>
                               </div>
-                              <div className="absolute bottom-3 left-3">
-                                <PlayCircle className="w-10 h-10 text-white opacity-90 group-hover:opacity-100 group-hover:scale-110 transition-all duration-300 drop-shadow-lg" />
+                              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+                                <PlayCircle className={`w-16 h-16 ${corArea.replace('bg-', 'text-')} opacity-70 group-hover:opacity-90 group-hover:scale-110 transition-all duration-300 drop-shadow-2xl`} />
                               </div>
                             </div>
 
@@ -197,8 +197,8 @@ export default function IniciandoDireitoTodos() {
                               Aula {temaData.ordem}
                             </div>
                           </div>
-                          <div className="absolute bottom-3 left-3 right-3">
-                            <PlayCircle className="w-10 h-10 text-white opacity-90 group-hover:opacity-100 group-hover:scale-110 transition-all duration-300 drop-shadow-lg" />
+                          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+                            <PlayCircle className={`w-16 h-16 ${corArea.replace('bg-', 'text-')} opacity-70 group-hover:opacity-90 group-hover:scale-110 transition-all duration-300 drop-shadow-2xl`} />
                           </div>
                         </div>}
 
