@@ -258,7 +258,7 @@ const Index = () => {
                 id: "cursos",
                 title: "Cursos",
                 description: "Aprenda Direito do básico ao avançado",
-                icon: MonitorSmartphone,
+                icon: GraduationCap,
                 route: "/iniciando-direito"
               }].map(item => {
                 const Icon = item.icon;
