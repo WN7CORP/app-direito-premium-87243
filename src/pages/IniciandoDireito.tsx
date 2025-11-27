@@ -137,11 +137,6 @@ export default function IniciandoDireito() {
                 <div className="text-3xl font-bold text-white">{totalTemas}+</div>
                 <div className="text-sm text-white/80">Temas</div>
               </div>
-              <div className="w-px bg-white/20" />
-              <div className="text-center">
-                <div className="text-3xl font-bold text-white">100%</div>
-                <div className="text-sm text-white/80">Gratuito</div>
-              </div>
             </div>
 
             <Button 
@@ -169,7 +164,7 @@ export default function IniciandoDireito() {
             </p>
           </div>
 
-          <div className="grid gap-6 md:gap-8">
+          <div className="grid gap-4 md:gap-6 lg:gap-8">
             {areas.map((area, index) => (
               <Card 
                 key={area.area}
@@ -181,41 +176,42 @@ export default function IniciandoDireito() {
                 onClick={() => handleAreaClick(area.area)}
               >
                 <div className={`h-2 bg-gradient-to-r ${area.color}`} />
-                <CardContent className="p-6 md:p-8">
-                  <div className="flex flex-col md:flex-row gap-6 items-start">
+                <CardContent className="p-4 sm:p-6 md:p-8">
+                  <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 items-start">
                     <div className="flex-shrink-0">
-                      <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${area.color} flex items-center justify-center text-3xl shadow-lg ${area.glow}`}>
+                      <div className={`w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-br ${area.color} flex items-center justify-center text-2xl sm:text-3xl shadow-lg ${area.glow}`}>
                         {area.icon}
                       </div>
                     </div>
                     
-                    <div className="flex-1 space-y-3">
-                      <div className="flex items-start justify-between gap-4">
-                        <div>
-                          <div className="flex items-center gap-3 mb-2">
-                            <span className={`text-sm font-bold px-3 py-1 rounded-full bg-gradient-to-r ${area.color} text-white`}>
+                    <div className="flex-1 space-y-3 min-w-0">
+                      <div className="flex items-start justify-between gap-2 sm:gap-4 flex-wrap">
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-2 sm:gap-3 mb-2 flex-wrap">
+                            <span className={`text-xs sm:text-sm font-bold px-2 sm:px-3 py-1 rounded-full bg-gradient-to-r ${area.color} text-white whitespace-nowrap`}>
                               Módulo {index + 1}
                             </span>
                           </div>
-                          <h3 className="text-2xl font-bold text-foreground group-hover:text-primary transition-colors">
+                          <h3 className="text-xl sm:text-2xl font-bold text-foreground group-hover:text-primary transition-colors break-words">
                             {area.area}
                           </h3>
                         </div>
                       </div>
                       
-                      <p className="text-muted-foreground leading-relaxed">
+                      <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
                         {area.description}
                       </p>
                       
-                      <div className="flex items-center justify-between pt-4">
-                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                          <BookOpen className="w-4 h-4" />
+                      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 pt-2 sm:pt-4">
+                        <div className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground">
+                          <BookOpen className="w-4 h-4 flex-shrink-0" />
                           <span className="font-medium">{area.temasCount} temas disponíveis</span>
                         </div>
                         
                         <Button 
                           variant="ghost" 
-                          className="group/btn font-semibold"
+                          className="group/btn font-semibold text-sm sm:text-base w-full sm:w-auto"
+                          size="sm"
                         >
                           Acessar Módulo
                           <ArrowRight className="ml-2 w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
