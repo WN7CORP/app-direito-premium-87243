@@ -1,13 +1,13 @@
 import { useNavigate } from "react-router-dom";
-import { MessageCircle, FileText, Newspaper, Sparkles, Film, GraduationCap, BookOpen } from "lucide-react";
+import { MessageCircle, FileText, Newspaper, Sparkles, Film, GraduationCap, BookOpen, Monitor } from "lucide-react";
 const Ferramentas = () => {
   const navigate = useNavigate();
   const ferramentas = [{
-    id: "noticias",
-    title: "Notícias Jurídicas",
-    description: "Principais notícias do mundo jurídico",
-    icon: Newspaper,
-    route: "/noticias-juridicas"
+    id: "desktop",
+    title: "Acesso Desktop",
+    description: "Solicite acesso à plataforma desktop",
+    icon: Monitor,
+    route: "/acesso-desktop"
   }, {
     id: "novidades",
     title: "Novidades",
@@ -20,6 +20,12 @@ const Ferramentas = () => {
     description: "Assistente jurídica disponível 24 horas por dia no WhatsApp",
     icon: MessageCircle,
     route: "/assistente-pessoal"
+  }, {
+    id: "noticias",
+    title: "Notícias Jurídicas",
+    description: "Principais notícias do mundo jurídico",
+    icon: Newspaper,
+    route: "/noticias-juridicas"
   }, {
     id: "modelos",
     title: "Modelos de Petições",
