@@ -75,9 +75,13 @@ import ResumosProntosView from "./pages/ResumosProntosView";
 import ResumosResultado from "./pages/ResumosResultado";
 import PlanoEstudos from "./pages/PlanoEstudos";
 import PlanoEstudosResultado from "./pages/PlanoEstudosResultado";
+import FlashcardsEscolha from "./pages/FlashcardsEscolha";
 import FlashcardsAreas from "./pages/FlashcardsAreas";
 import FlashcardsTemas from "./pages/FlashcardsTemas";
 import FlashcardsEstudar from "./pages/FlashcardsEstudar";
+import FlashcardsArtigosLei from "./pages/FlashcardsArtigosLei";
+import FlashcardsArtigosLeiTemas from "./pages/FlashcardsArtigosLeiTemas";
+import FlashcardsArtigosLeiEstudar from "./pages/FlashcardsArtigosLeiEstudar";
 import Simulados from "./pages/Simulados";
 import SimuladosExames from "./pages/SimuladosExames";
 import SimuladosPersonalizado from "./pages/SimuladosPersonalizado";
@@ -327,9 +331,13 @@ const App = () => {
               <Route path="/resumos-juridicos/resultado" element={<ResumosResultado />} />
               <Route path="/plano-estudos" element={<PlanoEstudos />} />
               <Route path="/plano-estudos/resultado" element={<PlanoEstudosResultado />} />
-              <Route path="/flashcards" element={<FlashcardsAreas />} />
+              <Route path="/flashcards" element={<FlashcardsEscolha />} />
+              <Route path="/flashcards/areas" element={<FlashcardsAreas />} />
               <Route path="/flashcards/temas" element={<FlashcardsTemas />} />
               <Route path="/flashcards/estudar" element={<FlashcardsEstudar />} />
+              <Route path="/flashcards/artigos-lei" element={<FlashcardsArtigosLei />} />
+              <Route path="/flashcards/artigos-lei/temas" element={<FlashcardsArtigosLeiTemas />} />
+              <Route path="/flashcards/artigos-lei/estudar" element={<FlashcardsArtigosLeiEstudar />} />
               <Route path="/oab" element={<OAB />} />
               <Route path="/oab-funcoes" element={<OABFuncoes />} />
               <Route path="/oab/o-que-estudar" element={<OABOQueEstudar />} />

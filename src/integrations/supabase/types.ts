@@ -2931,6 +2931,36 @@ export type Database = {
         }
         Relationships: []
       }
+      "FLASHCARDS - ARTIGOS LEI": {
+        Row: {
+          area: string | null
+          "audio-pergunta": string | null
+          "audio-resposta": string | null
+          exemplo: string | null
+          pergunta: string | null
+          resposta: string | null
+          tema: number | null
+        }
+        Insert: {
+          area?: string | null
+          "audio-pergunta"?: string | null
+          "audio-resposta"?: string | null
+          exemplo?: string | null
+          pergunta?: string | null
+          resposta?: string | null
+          tema?: number | null
+        }
+        Update: {
+          area?: string | null
+          "audio-pergunta"?: string | null
+          "audio-resposta"?: string | null
+          exemplo?: string | null
+          pergunta?: string | null
+          resposta?: string | null
+          tema?: number | null
+        }
+        Relationships: []
+      }
       "IMAGEM - DESKTOP": {
         Row: {
           Imagem: number
