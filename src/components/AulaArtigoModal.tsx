@@ -144,7 +144,7 @@ export const AulaArtigoModal = ({
     }
   };
 
-  const moduloAtualObj = aulaEstrutura?.modulos.find(m => m.id === moduloAtual);
+  const moduloAtualObj = aulaEstrutura?.modulos[moduloAtual - 1];
   const totalModulos = aulaEstrutura?.modulos.length || 3;
 
   const calcularProgresso = () => {

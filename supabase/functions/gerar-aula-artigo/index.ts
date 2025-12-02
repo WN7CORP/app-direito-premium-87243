@@ -66,6 +66,7 @@ ARTIGO: ${numeroArtigo}
 TEXTO: ${conteudoArtigo}
 
 Gere 3 módulos com esta estrutura para cada:
+- id: número sequencial (1, 2, 3)
 - nome: título curto
 - icone: BookOpen, Scale ou Gavel
 - teoria: texto explicativo (300-400 palavras, use markdown)
