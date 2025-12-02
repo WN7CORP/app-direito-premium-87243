@@ -125,6 +125,45 @@ export type Database = {
         }
         Relationships: []
       }
+      aulas_artigos: {
+        Row: {
+          aproveitamento_medio: number | null
+          codigo_tabela: string
+          conteudo_artigo: string
+          created_at: string
+          created_by: string | null
+          estrutura_completa: Json
+          id: string
+          numero_artigo: string
+          updated_at: string
+          visualizacoes: number | null
+        }
+        Insert: {
+          aproveitamento_medio?: number | null
+          codigo_tabela: string
+          conteudo_artigo: string
+          created_at?: string
+          created_by?: string | null
+          estrutura_completa: Json
+          id?: string
+          numero_artigo: string
+          updated_at?: string
+          visualizacoes?: number | null
+        }
+        Update: {
+          aproveitamento_medio?: number | null
+          codigo_tabela?: string
+          conteudo_artigo?: string
+          created_at?: string
+          created_by?: string | null
+          estrutura_completa?: Json
+          id?: string
+          numero_artigo?: string
+          updated_at?: string
+          visualizacoes?: number | null
+        }
+        Relationships: []
+      }
       aulas_interativas: {
         Row: {
           aproveitamento_medio: number | null

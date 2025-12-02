@@ -39,6 +39,7 @@ interface ArtigoActionsMenuProps {
   onOpenTermos?: () => void;
   onOpenQuestoes?: () => void;
   onPerguntar?: () => void;
+  onOpenAulaArtigo?: () => void;
   loadingFlashcards?: boolean;
   isCommentPlaying?: boolean;
 }
@@ -54,6 +55,7 @@ export const ArtigoActionsMenu = ({
   onOpenTermos,
   onOpenQuestoes,
   onPerguntar,
+  onOpenAulaArtigo,
   loadingFlashcards = false,
   isCommentPlaying = false,
 }: ArtigoActionsMenuProps) => {
@@ -83,6 +85,14 @@ export const ArtigoActionsMenu = ({
   };
 
   const recursos = [
+    {
+      icon: GraduationCap,
+      label: "Aula Interativa",
+      description: "Aprenda tudo sobre este artigo com aula completa",
+      action: onOpenAulaArtigo,
+      show: !!onOpenAulaArtigo,
+      highlight: true
+    },
     {
       icon: Lightbulb,
       label: "Explicar",
@@ -161,17 +171,22 @@ export const ArtigoActionsMenu = ({
         <div className="space-y-2 py-4">
           {recursos.map((recurso, index) => {
             const Icon = recurso.icon;
+            const isHighlight = 'highlight' in recurso && recurso.highlight;
             return (
               <button
                 key={index}
                 onClick={() => recurso.action && handleAction(recurso.action)}
                 disabled={recurso.disabled}
-                className="action-button w-full flex items-start gap-3 px-4 py-3 bg-gradient-to-r from-[hsl(45,93%,58%)]/10 to-[hsl(45,93%,58%)]/20 hover:from-[hsl(45,93%,58%)]/20 hover:to-[hsl(45,93%,58%)]/30 text-foreground rounded-xl transition-all duration-200 hover:scale-[1.02] border border-[hsl(45,93%,58%)]/40 shadow-sm hover:shadow-md disabled:opacity-50 disabled:hover:scale-100 text-left"
+                className={`action-button w-full flex items-start gap-3 px-4 py-3 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-sm hover:shadow-md disabled:opacity-50 disabled:hover:scale-100 text-left ${
+                  isHighlight 
+                    ? 'bg-gradient-to-r from-[hsl(45,93%,58%)] to-[hsl(45,88%,52%)] text-black border-none'
+                    : 'bg-gradient-to-r from-[hsl(45,93%,58%)]/10 to-[hsl(45,93%,58%)]/20 hover:from-[hsl(45,93%,58%)]/20 hover:to-[hsl(45,93%,58%)]/30 text-foreground border border-[hsl(45,93%,58%)]/40'
+                }`}
               >
-                <Icon className="w-5 h-5 text-[hsl(45,93%,58%)] mt-0.5 flex-shrink-0" />
+                <Icon className={`w-5 h-5 mt-0.5 flex-shrink-0 ${isHighlight ? 'text-black' : 'text-[hsl(45,93%,58%)]'}`} />
                 <div className="flex-1 min-w-0">
-                  <div className="font-semibold text-sm text-foreground">{recurso.label}</div>
-                  <div className="text-xs text-muted-foreground mt-0.5">{recurso.description}</div>
+                  <div className={`font-semibold text-sm ${isHighlight ? 'text-black' : 'text-foreground'}`}>{recurso.label}</div>
+                  <div className={`text-xs mt-0.5 ${isHighlight ? 'text-black/70' : 'text-muted-foreground'}`}>{recurso.description}</div>
                 </div>
               </button>
             );
