@@ -23,17 +23,26 @@ const PlanoEstudosResultado = () => {
   const planoData: PlanoEstudosData = processarPlanoEstudos(plano);
 
   const handleExportPDF = () => {
-    exportarPlanoPDF({
-      plano: planoData,
-      materia,
-      totalHoras,
-      dataGeracao: new Date().toLocaleDateString('pt-BR'),
-    });
-    
-    toast({
-      title: "PDF exportado!",
-      description: "O arquivo foi baixado com sucesso.",
-    });
+    try {
+      exportarPlanoPDF({
+        plano: planoData,
+        materia,
+        totalHoras,
+        dataGeracao: new Date().toLocaleDateString('pt-BR'),
+      });
+      
+      toast({
+        title: "PDF gerado!",
+        description: "O download deve iniciar automaticamente.",
+      });
+    } catch (error) {
+      console.error("Erro ao exportar PDF:", error);
+      toast({
+        title: "Erro ao exportar",
+        description: "Tente novamente em alguns instantes.",
+        variant: "destructive",
+      });
+    }
   };
 
   const getMaterialIcon = (tipo: string) => {
