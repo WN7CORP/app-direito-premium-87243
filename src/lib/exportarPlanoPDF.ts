@@ -1,5 +1,6 @@
 import jsPDF from "jspdf";
 import { PlanoEstudosData } from "./planoEstudosParser";
+import { supabase } from "@/integrations/supabase/client";
 
 interface ExportarPlanoPDFOptions {
   plano: PlanoEstudosData;
@@ -8,12 +9,12 @@ interface ExportarPlanoPDFOptions {
   dataGeracao?: string;
 }
 
-export const exportarPlanoPDF = ({
+export const exportarPlanoPDF = async ({
   plano,
   materia,
   totalHoras,
   dataGeracao = new Date().toLocaleDateString("pt-BR"),
-}: ExportarPlanoPDFOptions) => {
+}: ExportarPlanoPDFOptions): Promise<string | null> => {
   const doc = new jsPDF();
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
@@ -257,20 +258,35 @@ export const exportarPlanoPDF = ({
     );
   }
 
-  // Download - força download no navegador
-  const fileName = `plano-estudos-${materia.toLowerCase().replace(/\s+/g, "-")}.pdf`;
-  
-  // Usa output blob para garantir download em todos os navegadores
+  // Gera blob do PDF
   const pdfBlob = doc.output('blob');
-  const blobUrl = URL.createObjectURL(pdfBlob);
-  
-  const link = document.createElement('a');
-  link.href = blobUrl;
-  link.download = fileName;
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  
-  // Limpa a URL do blob após download
-  setTimeout(() => URL.revokeObjectURL(blobUrl), 100);
+  const timestamp = Date.now();
+  const fileName = `plano-estudos-${materia.toLowerCase().replace(/\s+/g, "-")}-${timestamp}.pdf`;
+  const filePath = `planos-temporarios/${fileName}`;
+
+  // Upload para Supabase Storage
+  const { error: uploadError } = await supabase.storage
+    .from('pdfs-educacionais')
+    .upload(filePath, pdfBlob, {
+      contentType: 'application/pdf',
+      upsert: true,
+    });
+
+  if (uploadError) {
+    console.error('Erro ao fazer upload do PDF:', uploadError);
+    return null;
+  }
+
+  // Obtém URL pública
+  const { data: urlData } = supabase.storage
+    .from('pdfs-educacionais')
+    .getPublicUrl(filePath);
+
+  if (urlData?.publicUrl) {
+    // Abre em nova aba do navegador
+    window.open(urlData.publicUrl, '_blank');
+    return urlData.publicUrl;
+  }
+
+  return null;
 };
