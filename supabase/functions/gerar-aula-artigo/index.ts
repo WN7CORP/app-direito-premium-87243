@@ -208,10 +208,49 @@ Formato JSON esperado:
     const data = await response.json();
     let estruturaText = data.candidates?.[0]?.content?.parts?.[0]?.text;
     
+    if (!estruturaText) {
+      throw new Error('Resposta vazia da IA');
+    }
+    
     // Clean markdown if present
     estruturaText = estruturaText.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
     
-    const estrutura = JSON.parse(estruturaText);
+    // Fix common JSON issues from AI responses
+    estruturaText = estruturaText
+      // Fix unescaped newlines inside strings
+      .replace(/(?<!\\)\n(?=.*")/g, '\\n')
+      // Fix unescaped quotes inside strings (careful approach)
+      .replace(/:\s*"([^"]*?)(?<!\\)"(?=[^"]*?"[,}\]])/g, (match: string) => match)
+      // Remove control characters
+      .replace(/[\x00-\x1F\x7F]/g, (char: string) => {
+        if (char === '\n' || char === '\r' || char === '\t') return char;
+        return '';
+      });
+    
+    let estrutura;
+    try {
+      estrutura = JSON.parse(estruturaText);
+    } catch (parseError: any) {
+      console.error('Erro ao parsear JSON, tentando correção:', parseError.message);
+      
+      // More aggressive cleanup
+      estruturaText = estruturaText
+        .replace(/\n/g, ' ')
+        .replace(/\r/g, '')
+        .replace(/\t/g, ' ')
+        .replace(/\s+/g, ' ')
+        // Try to fix trailing commas
+        .replace(/,\s*}/g, '}')
+        .replace(/,\s*]/g, ']');
+      
+      try {
+        estrutura = JSON.parse(estruturaText);
+      } catch (finalError: any) {
+        console.error('Falha definitiva no parsing:', finalError.message);
+        console.error('Texto problemático (primeiros 500 chars):', estruturaText.substring(0, 500));
+        throw new Error('A IA gerou uma resposta inválida. Tente novamente.');
+      }
+    }
     
     console.log('✅ Estrutura gerada com sucesso:', estrutura.titulo);
 
