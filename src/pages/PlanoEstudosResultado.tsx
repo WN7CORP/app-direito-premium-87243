@@ -1,21 +1,19 @@
 import { useLocation, useNavigate } from "react-router-dom";
-import { ArrowLeft, Download, Calendar } from "lucide-react";
+import { ArrowLeft, FileDown, Clock, BookOpen, Target, Lightbulb, CheckSquare, RefreshCw, GraduationCap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { supabase } from "@/integrations/supabase/client";
-import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { parsePlanoEstudos } from "@/lib/planoEstudosParser";
 import { PlanoEstudosAccordion } from "@/components/PlanoEstudosAccordion";
+import { formatarMarkdownParaExportacao, downloadMarkdown } from "@/lib/exportarMarkdown";
 
 const PlanoEstudosResultado = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { toast } = useToast();
   const { plano, materia, totalHoras } = location.state || {};
-  const [exportingPDF, setExportingPDF] = useState(false);
 
   if (!plano) {
     navigate("/plano-estudos");
@@ -24,92 +22,108 @@ const PlanoEstudosResultado = () => {
 
   const planoParseado = parsePlanoEstudos(plano);
 
-  const handleExportPDF = async () => {
-    setExportingPDF(true);
-    try {
-      const { data, error } = await supabase.functions.invoke('exportar-pdf-educacional', {
-        body: { 
-          content: plano,
-          filename: `plano-estudos-${materia?.toLowerCase().replace(/\s+/g, '-')}`,
-          title: `Plano de Estudos: ${materia}`,
-          darkMode: true, // Ativar modo escuro com margens ABNT
-        }
-      });
-      
-      if (error) throw error;
-      
-      window.open(data.pdfUrl, '_blank');
-      
-      toast({
-        title: "PDF gerado!",
-        description: "O PDF com fundo escuro foi aberto em uma nova aba.",
-      });
-    } catch (error) {
-      console.error('Erro ao exportar PDF:', error);
-      toast({
-        title: "Erro ao gerar PDF",
-        description: "Não foi possível gerar o PDF. Tente novamente.",
-        variant: "destructive",
-      });
-    } finally {
-      setExportingPDF(false);
-    }
+  const handleExportMarkdown = () => {
+    const dataGeracao = new Date().toLocaleDateString('pt-BR');
+    const markdownContent = formatarMarkdownParaExportacao(planoParseado, {
+      materia,
+      totalHoras,
+      dataGeracao,
+    });
+    
+    const filename = `plano-estudos-${materia?.toLowerCase().replace(/\s+/g, '-')}`;
+    downloadMarkdown(markdownContent, filename);
+    
+    toast({
+      title: "Markdown exportado!",
+      description: "O arquivo .md foi baixado com sucesso.",
+    });
   };
 
   return (
-    <div className="px-3 py-4 max-w-4xl mx-auto animate-fade-in">
-      <div className="mb-6 flex items-center gap-3">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => navigate("/plano-estudos")}
-        >
-          <ArrowLeft className="w-5 h-5" />
-        </Button>
-        <div>
-          <h1 className="text-xl md:text-2xl font-bold">Plano Criado</h1>
-          <p className="text-sm text-muted-foreground">
-            Seu cronograma personalizado está pronto
-          </p>
+    <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
+      {/* Header Fixo */}
+      <header className="sticky top-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border/50 px-4 py-3">
+        <div className="max-w-4xl mx-auto flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3 min-w-0">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => navigate("/plano-estudos")}
+              className="shrink-0"
+            >
+              <ArrowLeft className="w-5 h-5" />
+            </Button>
+            <div className="min-w-0">
+              <h1 className="text-lg md:text-xl font-bold truncate">Plano de Estudos</h1>
+              <p className="text-xs text-muted-foreground hidden sm:block">
+                Seu cronograma personalizado
+              </p>
+            </div>
+          </div>
+          <Button 
+            onClick={handleExportMarkdown} 
+            size="sm"
+            className="shrink-0 gap-2"
+          >
+            <FileDown className="w-4 h-4" />
+            <span className="hidden sm:inline">Exportar</span>
+            <span className="sm:hidden">.md</span>
+          </Button>
         </div>
-      </div>
+      </header>
 
-      <div className="space-y-4">
-        {/* Info card */}
-        <Card className="bg-accent/10 border-accent/20">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Matéria</p>
-                <p className="font-semibold text-foreground">{materia}</p>
+      {/* Conteúdo Principal */}
+      <main className="px-4 py-6 max-w-4xl mx-auto space-y-4 pb-24 md:pb-6">
+        {/* Card de Informações */}
+        <Card className="overflow-hidden border-0 shadow-lg">
+          <div className="bg-gradient-to-r from-primary to-primary/80 p-4 md:p-6">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-white/20 backdrop-blur-sm">
+                <GraduationCap className="w-6 h-6 text-primary-foreground" />
               </div>
-              <div className="text-right">
-                <p className="text-sm text-muted-foreground">Carga Total</p>
-                <div className="flex items-center gap-1">
-                  <Calendar className="w-4 h-4 text-accent" />
-                  <p className="font-semibold text-accent">{totalHoras}h</p>
-                </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-xs text-primary-foreground/70 uppercase tracking-wider font-medium">
+                  Matéria
+                </p>
+                <p className="font-bold text-lg text-primary-foreground truncate">
+                  {materia}
+                </p>
               </div>
             </div>
-          </CardContent>
+            <div className="grid grid-cols-2 gap-3 mt-4">
+              <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3">
+                <div className="flex items-center gap-2">
+                  <Clock className="w-4 h-4 text-primary-foreground/70" />
+                  <span className="text-xs text-primary-foreground/70">Carga Total</span>
+                </div>
+                <p className="font-bold text-xl text-primary-foreground mt-1">{totalHoras}h</p>
+              </div>
+              <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3">
+                <div className="flex items-center gap-2">
+                  <BookOpen className="w-4 h-4 text-primary-foreground/70" />
+                  <span className="text-xs text-primary-foreground/70">Semanas</span>
+                </div>
+                <p className="font-bold text-xl text-primary-foreground mt-1">
+                  {planoParseado.semanas.length || '-'}
+                </p>
+              </div>
+            </div>
+          </div>
         </Card>
-
-        {/* Botão de exportar */}
-        <Button onClick={handleExportPDF} disabled={exportingPDF} className="w-full" size="lg">
-          <Download className="w-4 h-4 mr-2" />
-          {exportingPDF ? "Gerando PDF..." : "Exportar PDF"}
-        </Button>
 
         {/* Objetivo e Visão Geral */}
         {(planoParseado.objetivo || planoParseado.visaoGeral) && (
-          <Card className="border-accent/20">
-            <CardContent className="p-6 space-y-4">
+          <Card className="border-0 shadow-md overflow-hidden">
+            <CardContent className="p-0">
               {planoParseado.objetivo && (
-                <div>
-                  <h2 className="text-lg font-bold mb-2 flex items-center gap-2">
-                    <span className="text-accent">🎯</span> Objetivo
-                  </h2>
-                  <div className="prose prose-sm max-w-none dark:prose-invert">
+                <div className="p-4 md:p-6 border-b border-border/50">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-amber-500/10">
+                      <Target className="w-5 h-5 text-amber-500" />
+                    </div>
+                    <h2 className="text-lg font-bold">Objetivo</h2>
+                  </div>
+                  <div className="prose prose-sm max-w-none dark:prose-invert text-muted-foreground">
                     <ReactMarkdown remarkPlugins={[remarkGfm]}>
                       {planoParseado.objetivo}
                     </ReactMarkdown>
@@ -117,11 +131,14 @@ const PlanoEstudosResultado = () => {
                 </div>
               )}
               {planoParseado.visaoGeral && (
-                <div>
-                  <h2 className="text-lg font-bold mb-2 flex items-center gap-2">
-                    <span className="text-accent">📋</span> Visão Geral
-                  </h2>
-                  <div className="prose prose-sm max-w-none dark:prose-invert">
+                <div className="p-4 md:p-6 bg-muted/30">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-blue-500/10">
+                      <BookOpen className="w-5 h-5 text-blue-500" />
+                    </div>
+                    <h2 className="text-lg font-bold">Visão Geral</h2>
+                  </div>
+                  <div className="prose prose-sm max-w-none dark:prose-invert text-muted-foreground">
                     <ReactMarkdown remarkPlugins={[remarkGfm]}>
                       {planoParseado.visaoGeral}
                     </ReactMarkdown>
@@ -132,83 +149,127 @@ const PlanoEstudosResultado = () => {
           </Card>
         )}
 
-        {/* Cronograma com Accordion */}
+        {/* Cronograma Semanal */}
         {planoParseado.semanas.length > 0 && (
-          <Card className="border-accent/20">
-            <CardContent className="p-6">
-              <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
-                <span className="text-accent">📚</span> Cronograma Semanal
-              </h2>
-              <PlanoEstudosAccordion semanas={planoParseado.semanas} />
+          <div className="space-y-3">
+            <div className="flex items-center gap-3 px-1">
+              <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-primary/10">
+                <BookOpen className="w-5 h-5 text-primary" />
+              </div>
+              <h2 className="text-lg font-bold">Cronograma Semanal</h2>
+            </div>
+            <PlanoEstudosAccordion semanas={planoParseado.semanas} />
+          </div>
+        )}
+
+        {/* Materiais de Estudo */}
+        {planoParseado.materiaisEstudo && (
+          <Card className="border-0 shadow-md overflow-hidden">
+            <CardContent className="p-4 md:p-6">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-emerald-500/10">
+                  <BookOpen className="w-5 h-5 text-emerald-500" />
+                </div>
+                <h2 className="text-lg font-bold">Materiais de Estudo</h2>
+              </div>
+              <div className="prose prose-sm max-w-none dark:prose-invert text-muted-foreground bg-muted/30 rounded-lg p-4">
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                  {planoParseado.materiaisEstudo}
+                </ReactMarkdown>
+              </div>
             </CardContent>
           </Card>
         )}
 
-        {/* Outras Seções */}
-        {(planoParseado.materiaisEstudo || planoParseado.estrategias || planoParseado.checklist || planoParseado.revisaoFinal) && (
-          <Card className="border-accent/20">
-            <CardContent className="p-6 space-y-6">
-              {planoParseado.materiaisEstudo && (
-                <div>
-                  <h2 className="text-lg font-bold mb-2 flex items-center gap-2">
-                    <span className="text-accent">📚</span> Materiais de Estudo
-                  </h2>
-                  <div className="prose prose-sm max-w-none dark:prose-invert">
-                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                      {planoParseado.materiaisEstudo}
-                    </ReactMarkdown>
-                  </div>
+        {/* Estratégias */}
+        {planoParseado.estrategias && (
+          <Card className="border-0 shadow-md overflow-hidden">
+            <CardContent className="p-4 md:p-6">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-purple-500/10">
+                  <Lightbulb className="w-5 h-5 text-purple-500" />
                 </div>
-              )}
-              {planoParseado.estrategias && (
-                <div>
-                  <h2 className="text-lg font-bold mb-2 flex items-center gap-2">
-                    <span className="text-accent">💡</span> Estratégias
-                  </h2>
-                  <div className="prose prose-sm max-w-none dark:prose-invert">
-                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                      {planoParseado.estrategias}
-                    </ReactMarkdown>
-                  </div>
-                </div>
-              )}
-              {planoParseado.checklist && (
-                <div>
-                  <h2 className="text-lg font-bold mb-2 flex items-center gap-2">
-                    <span className="text-accent">✅</span> Checklist
-                  </h2>
-                  <div className="prose prose-sm max-w-none dark:prose-invert">
-                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                      {planoParseado.checklist}
-                    </ReactMarkdown>
-                  </div>
-                </div>
-              )}
-              {planoParseado.revisaoFinal && (
-                <div>
-                  <h2 className="text-lg font-bold mb-2 flex items-center gap-2">
-                    <span className="text-accent">🔄</span> Revisão Final
-                  </h2>
-                  <div className="prose prose-sm max-w-none dark:prose-invert">
-                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                      {planoParseado.revisaoFinal}
-                    </ReactMarkdown>
-                  </div>
-                </div>
-              )}
+                <h2 className="text-lg font-bold">Estratégias</h2>
+              </div>
+              <div className="prose prose-sm max-w-none dark:prose-invert text-muted-foreground bg-muted/30 rounded-lg p-4">
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                  {planoParseado.estrategias}
+                </ReactMarkdown>
+              </div>
             </CardContent>
           </Card>
         )}
 
-        {/* Botão para novo plano */}
-        <Button
-          onClick={() => navigate("/plano-estudos")}
-          variant="outline"
-          className="w-full"
-        >
-          Criar Novo Plano
-        </Button>
-      </div>
+        {/* Checklist */}
+        {planoParseado.checklist && (
+          <Card className="border-0 shadow-md overflow-hidden">
+            <CardContent className="p-4 md:p-6">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-green-500/10">
+                  <CheckSquare className="w-5 h-5 text-green-500" />
+                </div>
+                <h2 className="text-lg font-bold">Checklist</h2>
+              </div>
+              <div className="prose prose-sm max-w-none dark:prose-invert text-muted-foreground bg-muted/30 rounded-lg p-4">
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                  {planoParseado.checklist}
+                </ReactMarkdown>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Revisão Final */}
+        {planoParseado.revisaoFinal && (
+          <Card className="border-0 shadow-md overflow-hidden">
+            <CardContent className="p-4 md:p-6">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-orange-500/10">
+                  <RefreshCw className="w-5 h-5 text-orange-500" />
+                </div>
+                <h2 className="text-lg font-bold">Revisão Final</h2>
+              </div>
+              <div className="prose prose-sm max-w-none dark:prose-invert text-muted-foreground bg-muted/30 rounded-lg p-4">
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                  {planoParseado.revisaoFinal}
+                </ReactMarkdown>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Botão Desktop - Novo Plano */}
+        <div className="hidden md:block">
+          <Button
+            onClick={() => navigate("/plano-estudos")}
+            variant="outline"
+            className="w-full"
+            size="lg"
+          >
+            Criar Novo Plano
+          </Button>
+        </div>
+      </main>
+
+      {/* Footer Fixo Mobile */}
+      <footer className="fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur-sm border-t border-border/50 p-4 md:hidden">
+        <div className="flex gap-3 max-w-4xl mx-auto">
+          <Button
+            onClick={() => navigate("/plano-estudos")}
+            variant="outline"
+            className="flex-1"
+          >
+            Novo Plano
+          </Button>
+          <Button 
+            onClick={handleExportMarkdown}
+            className="flex-1 gap-2"
+          >
+            <FileDown className="w-4 h-4" />
+            Exportar .md
+          </Button>
+        </div>
+      </footer>
     </div>
   );
 };
