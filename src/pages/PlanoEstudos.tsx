@@ -25,14 +25,14 @@ const PlanoEstudos = () => {
   const simulateProgress = () => {
     let currentStep = 0;
     const interval = setInterval(() => {
-      if (currentStep < progressSteps.length) {
+      if (currentStep < progressSteps.length - 1) {
         setProgress(progressSteps[currentStep].progress);
         setStatusMessage(progressSteps[currentStep].message);
         currentStep++;
       } else {
         clearInterval(interval);
       }
-    }, 1200);
+    }, 800);
     return interval;
   };
 
@@ -81,13 +81,16 @@ const PlanoEstudos = () => {
         setProgress(100);
         setStatusMessage("✅ Plano pronto!");
 
-        navigate("/plano-estudos/resultado", {
-          state: {
-            plano: result.plano,
-            materia: data.materia || "Plano de Estudos",
-            totalHoras: result.totalHoras,
-          },
-        });
+        // Navegar rapidamente após feedback visual
+        setTimeout(() => {
+          navigate("/plano-estudos/resultado", {
+            state: {
+              plano: result.plano,
+              materia: data.materia || "Plano de Estudos",
+              totalHoras: result.totalHoras,
+            },
+          });
+        }, 300);
       }
     } catch (error: any) {
       clearInterval(progressInterval);

@@ -7,7 +7,7 @@ import remarkGfm from "remark-gfm";
 import { useToast } from "@/hooks/use-toast";
 import { parsePlanoEstudos } from "@/lib/planoEstudosParser";
 import { PlanoEstudosAccordion } from "@/components/PlanoEstudosAccordion";
-import { formatarMarkdownParaExportacao, downloadMarkdown } from "@/lib/exportarMarkdown";
+import { exportarPlanoPDF } from "@/lib/exportarPlanoPDF";
 
 const PlanoEstudosResultado = () => {
   const location = useLocation();
@@ -22,20 +22,17 @@ const PlanoEstudosResultado = () => {
 
   const planoParseado = parsePlanoEstudos(plano);
 
-  const handleExportMarkdown = () => {
-    const dataGeracao = new Date().toLocaleDateString('pt-BR');
-    const markdownContent = formatarMarkdownParaExportacao(planoParseado, {
+  const handleExportPDF = () => {
+    exportarPlanoPDF({
+      plano: planoParseado,
       materia,
       totalHoras,
-      dataGeracao,
+      dataGeracao: new Date().toLocaleDateString('pt-BR'),
     });
     
-    const filename = `plano-estudos-${materia?.toLowerCase().replace(/\s+/g, '-')}`;
-    downloadMarkdown(markdownContent, filename);
-    
     toast({
-      title: "Markdown exportado!",
-      description: "O arquivo .md foi baixado com sucesso.",
+      title: "PDF exportado!",
+      description: "O arquivo foi baixado com sucesso.",
     });
   };
 
@@ -61,13 +58,13 @@ const PlanoEstudosResultado = () => {
             </div>
           </div>
           <Button 
-            onClick={handleExportMarkdown} 
+            onClick={handleExportPDF} 
             size="sm"
             className="shrink-0 gap-2"
           >
             <FileDown className="w-4 h-4" />
-            <span className="hidden sm:inline">Exportar</span>
-            <span className="sm:hidden">.md</span>
+            <span className="hidden sm:inline">Exportar PDF</span>
+            <span className="sm:hidden">PDF</span>
           </Button>
         </div>
       </header>
@@ -262,11 +259,11 @@ const PlanoEstudosResultado = () => {
             Novo Plano
           </Button>
           <Button 
-            onClick={handleExportMarkdown}
+            onClick={handleExportPDF}
             className="flex-1 gap-2"
           >
             <FileDown className="w-4 h-4" />
-            Exportar .md
+            Exportar PDF
           </Button>
         </div>
       </footer>
