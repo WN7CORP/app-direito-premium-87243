@@ -15,3 +15,5 @@ verify_jwt = false
 [functions.popular-proposicoes-manual]
 verify_jwt = false
 
+[functions.gerar-aula-artigo]
+verify_jwt = false

@@ -28,6 +28,7 @@ import { ArtigoActionsMenu } from "@/components/ArtigoActionsMenu";
 import { formatForWhatsApp } from "@/lib/formatWhatsApp";
 import { useProgressiveLoad } from "@/hooks/useProgressiveLoad";
 import { getCodigoFromTable } from "@/lib/codigoMappings";
+import { AulaArtigoModal } from "@/components/AulaArtigoModal";
 interface Article {
   id: number;
   "Número do Artigo": string | null;
@@ -84,6 +85,10 @@ const CodigoView = () => {
   const [questoesData, setQuestoesData] = useState({ artigo: "", numeroArtigo: "" });
   const [perguntaModalOpen, setPerguntaModalOpen] = useState(false);
   const [perguntaData, setPerguntaData] = useState({ artigo: "", numeroArtigo: "" });
+  
+  // Aula Artigo state
+  const [aulaArtigoModalOpen, setAulaArtigoModalOpen] = useState(false);
+  const [aulaArtigoData, setAulaArtigoData] = useState({ artigo: "", numeroArtigo: "" });
   
   // Tabs state
   const [activeTab, setActiveTab] = useState<'artigos' | 'playlist' | 'ranking'>('artigos');
@@ -486,6 +491,16 @@ const CodigoView = () => {
       {/* Pergunta Modal */}
       <PerguntaModal isOpen={perguntaModalOpen} onClose={() => setPerguntaModalOpen(false)} artigo={perguntaData.artigo} numeroArtigo={perguntaData.numeroArtigo} />
 
+      {/* Aula Artigo Modal */}
+      <AulaArtigoModal
+        isOpen={aulaArtigoModalOpen}
+        onClose={() => setAulaArtigoModalOpen(false)}
+        codigoTabela={tableName}
+        codigoNome={codeName}
+        numeroArtigo={aulaArtigoData.numeroArtigo}
+        conteudoArtigo={aulaArtigoData.artigo}
+      />
+
       {/* Flashcards Modal */}
       {flashcardsModalOpen && (
         <div className="fixed inset-0 bg-background/95 backdrop-blur-sm z-50 flex items-center justify-center p-4">
@@ -662,6 +677,10 @@ const CodigoView = () => {
                     onPerguntar={() => {
                       setPerguntaData({ artigo: article["Artigo"]!, numeroArtigo: article["Número do Artigo"]! });
                       setPerguntaModalOpen(true);
+                    }}
+                    onOpenAulaArtigo={() => {
+                      setAulaArtigoData({ artigo: article["Artigo"]!, numeroArtigo: article["Número do Artigo"]! });
+                      setAulaArtigoModalOpen(true);
                     }}
                     loadingFlashcards={loadingFlashcards}
                     isCommentPlaying={stickyPlayerOpen && currentAudio.isComment && currentAudio.title.includes(article["Número do Artigo"]!)}
