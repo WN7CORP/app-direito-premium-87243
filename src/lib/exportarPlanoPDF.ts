@@ -1,30 +1,8 @@
 import jsPDF from "jspdf";
-
-interface DiaData {
-  diaSemana: string;
-  conteudo: string;
-}
-
-interface SemanaData {
-  numero: number;
-  titulo: string;
-  dias: DiaData[];
-  conteudoCompleto: string;
-}
-
-interface PlanoParseado {
-  objetivo: string;
-  visaoGeral: string;
-  semanas: SemanaData[];
-  materiaisEstudo: string;
-  estrategias: string;
-  checklist: string;
-  revisaoFinal: string;
-  outrasSecoes: string;
-}
+import { PlanoEstudosData } from "./planoEstudosParser";
 
 interface ExportarPlanoPDFOptions {
-  plano: PlanoParseado;
+  plano: PlanoEstudosData;
   materia: string;
   totalHoras?: number;
   dataGeracao?: string;
@@ -80,14 +58,14 @@ export const exportarPlanoPDF = ({
     });
   };
 
-  const addSection = (title: string, icon: string = "") => {
+  const addSection = (title: string) => {
     addNewPageIfNeeded(25);
     yPosition += 8;
     
     doc.setFillColor(245, 245, 250);
     doc.roundedRect(margin - 5, yPosition - 6, contentWidth + 10, 12, 2, 2, "F");
     
-    addText(`${icon} ${title}`.trim(), {
+    addText(title, {
       fontSize: 13,
       fontStyle: "bold",
       color: [59, 59, 59],
@@ -95,78 +73,8 @@ export const exportarPlanoPDF = ({
     yPosition += 4;
   };
 
-  const processMarkdownContent = (content: string, baseIndent: number = 0) => {
-    const lines = content.split("\n");
-
-    lines.forEach((line) => {
-      const trimmedLine = line.trim();
-      if (!trimmedLine) {
-        yPosition += 3;
-        return;
-      }
-
-      // Headers (##, ###)
-      if (trimmedLine.startsWith("### ")) {
-        addNewPageIfNeeded(15);
-        yPosition += 4;
-        addText(trimmedLine.replace("### ", ""), {
-          fontSize: 11,
-          fontStyle: "bold",
-          indent: baseIndent,
-        });
-        return;
-      }
-
-      if (trimmedLine.startsWith("## ")) {
-        addNewPageIfNeeded(15);
-        yPosition += 6;
-        addText(trimmedLine.replace("## ", ""), {
-          fontSize: 12,
-          fontStyle: "bold",
-          indent: baseIndent,
-        });
-        return;
-      }
-
-      // Bullet points
-      if (trimmedLine.startsWith("- ") || trimmedLine.startsWith("• ")) {
-        const bulletText = trimmedLine.replace(/^[-•]\s*/, "");
-        const processedText = processInlineMarkdown(bulletText);
-        addText(`• ${processedText}`, { indent: baseIndent + 5 });
-        return;
-      }
-
-      // Checkbox items
-      if (trimmedLine.startsWith("- [ ]") || trimmedLine.startsWith("- [x]")) {
-        const isChecked = trimmedLine.startsWith("- [x]");
-        const checkboxText = trimmedLine.replace(/^-\s*\[[ x]\]\s*/, "");
-        const checkbox = isChecked ? "☑" : "☐";
-        addText(`${checkbox} ${checkboxText}`, { indent: baseIndent + 5 });
-        return;
-      }
-
-      // Numbered lists
-      const numberedMatch = trimmedLine.match(/^(\d+)\.\s+(.+)/);
-      if (numberedMatch) {
-        addText(`${numberedMatch[1]}. ${processInlineMarkdown(numberedMatch[2])}`, {
-          indent: baseIndent + 5,
-        });
-        return;
-      }
-
-      // Regular text with inline markdown
-      const processedText = processInlineMarkdown(trimmedLine);
-      addText(processedText, { indent: baseIndent });
-    });
-  };
-
-  const processInlineMarkdown = (text: string): string => {
-    // Remove ** for bold (jsPDF doesn't support inline bold easily)
-    return text.replace(/\*\*([^*]+)\*\*/g, "$1").replace(/\*([^*]+)\*/g, "$1");
-  };
-
   // ========== HEADER ==========
-  doc.setFillColor(79, 70, 229); // Indigo
+  doc.setFillColor(79, 70, 229);
   doc.rect(0, 0, pageWidth, 45, "F");
 
   doc.setTextColor(255, 255, 255);
@@ -179,28 +87,29 @@ export const exportarPlanoPDF = ({
   doc.text(materia, pageWidth / 2, 28, { align: "center" });
 
   doc.setFontSize(10);
-  const metaInfo = `Data: ${dataGeracao}${totalHoras ? ` | Carga horária: ${totalHoras}h` : ""}`;
+  const cargaInfo = plano.visaoGeral.cargaTotal || (totalHoras ? `${totalHoras}h` : '');
+  const metaInfo = `Data: ${dataGeracao}${cargaInfo ? ` | Carga horaria: ${cargaInfo}` : ""}`;
   doc.text(metaInfo, pageWidth / 2, 38, { align: "center" });
 
   yPosition = 55;
 
   // ========== OBJETIVO ==========
   if (plano.objetivo) {
-    addSection("OBJETIVO", "🎯");
-    processMarkdownContent(plano.objetivo);
+    addSection("OBJETIVO");
+    addText(plano.objetivo);
   }
 
   // ========== VISÃO GERAL ==========
-  if (plano.visaoGeral) {
-    addSection("VISÃO GERAL", "📋");
-    processMarkdownContent(plano.visaoGeral);
+  if (plano.visaoGeral.descricao) {
+    addSection("VISAO GERAL");
+    addText(plano.visaoGeral.descricao);
   }
 
   // ========== CRONOGRAMA SEMANAL ==========
-  if (plano.semanas && plano.semanas.length > 0) {
-    addSection("CRONOGRAMA SEMANAL", "📅");
+  if (plano.cronograma && plano.cronograma.length > 0) {
+    addSection("CRONOGRAMA SEMANAL");
 
-    plano.semanas.forEach((semana, index) => {
+    plano.cronograma.forEach((semana) => {
       addNewPageIfNeeded(20);
       yPosition += 5;
       
@@ -208,7 +117,7 @@ export const exportarPlanoPDF = ({
       doc.setFillColor(238, 242, 255);
       doc.roundedRect(margin, yPosition - 5, contentWidth, 10, 2, 2, "F");
       
-      addText(`Semana ${index + 1}: ${semana.titulo}`, {
+      addText(`Semana ${semana.semana}: ${semana.titulo}`, {
         fontSize: 11,
         fontStyle: "bold",
         color: [67, 56, 202],
@@ -218,21 +127,26 @@ export const exportarPlanoPDF = ({
       // Dias da semana
       semana.dias.forEach((dia) => {
         addNewPageIfNeeded(15);
-        addText(`📆 ${dia.diaSemana}`, {
+        addText(`${dia.dia} (${dia.cargaHoraria})`, {
           fontSize: 10,
           fontStyle: "bold",
           indent: 5,
         });
 
-        // Parse conteudo para extrair tópicos
-        const linhas = dia.conteudo.split('\n').filter(l => l.trim());
-        linhas.forEach((linha) => {
-          const textoLimpo = linha.replace(/^[-•*]\s*/, '').trim();
-          if (textoLimpo) {
-            addText(`• ${textoLimpo}`, {
-              fontSize: 10,
-              indent: 12,
-              color: [71, 71, 71],
+        // Tópicos do dia
+        dia.topicos.forEach((topico) => {
+          addNewPageIfNeeded(10);
+          const textoTopico = topico.horario ? `${topico.horario} - ${topico.titulo}` : topico.titulo;
+          addText(textoTopico, {
+            fontSize: 10,
+            indent: 12,
+            color: [71, 71, 71],
+          });
+          if (topico.descricao) {
+            addText(topico.descricao, {
+              fontSize: 9,
+              indent: 15,
+              color: [100, 100, 100],
             });
           }
         });
@@ -242,27 +156,85 @@ export const exportarPlanoPDF = ({
   }
 
   // ========== MATERIAIS ==========
-  if (plano.materiaisEstudo) {
-    addSection("MATERIAIS DE ESTUDO", "📚");
-    processMarkdownContent(plano.materiaisEstudo);
+  if (plano.materiais && plano.materiais.length > 0) {
+    addSection("MATERIAIS DE ESTUDO");
+    plano.materiais.forEach((material) => {
+      addNewPageIfNeeded(15);
+      addText(`[${material.tipo}] ${material.titulo}`, {
+        fontSize: 10,
+        fontStyle: "bold",
+        indent: 5,
+      });
+      if (material.autor) {
+        addText(`Por: ${material.autor}`, {
+          fontSize: 9,
+          indent: 10,
+          color: [100, 100, 100],
+        });
+      }
+      if (material.detalhes) {
+        addText(material.detalhes, {
+          fontSize: 9,
+          indent: 10,
+          color: [80, 80, 80],
+        });
+      }
+      yPosition += 2;
+    });
   }
 
   // ========== ESTRATÉGIAS ==========
-  if (plano.estrategias) {
-    addSection("ESTRATÉGIAS", "💡");
-    processMarkdownContent(plano.estrategias);
+  if (plano.estrategias && plano.estrategias.length > 0) {
+    addSection("ESTRATEGIAS DE ESTUDO");
+    plano.estrategias.forEach((estrategia, idx) => {
+      addNewPageIfNeeded(15);
+      addText(`${idx + 1}. ${estrategia.titulo}`, {
+        fontSize: 10,
+        fontStyle: "bold",
+        indent: 5,
+      });
+      addText(estrategia.descricao, {
+        fontSize: 9,
+        indent: 10,
+        color: [71, 71, 71],
+      });
+      yPosition += 2;
+    });
   }
 
   // ========== CHECKLIST ==========
-  if (plano.checklist) {
-    addSection("CHECKLIST DE REVISÃO", "✅");
-    processMarkdownContent(plano.checklist);
+  if (plano.checklist && plano.checklist.length > 0) {
+    addSection("CHECKLIST DE METAS");
+    plano.checklist.forEach((item) => {
+      addNewPageIfNeeded(10);
+      addText(`[ ] Semana ${item.semana}: ${item.meta}`, {
+        fontSize: 10,
+        indent: 5,
+      });
+    });
   }
 
   // ========== REVISÃO FINAL ==========
-  if (plano.revisaoFinal) {
-    addSection("REVISÃO FINAL", "🏁");
-    processMarkdownContent(plano.revisaoFinal);
+  if (plano.revisaoFinal.descricao) {
+    addSection("REVISAO FINAL");
+    addText(plano.revisaoFinal.descricao);
+    
+    if (plano.revisaoFinal.simulado) {
+      yPosition += 5;
+      addNewPageIfNeeded(15);
+      doc.setFillColor(255, 245, 230);
+      doc.roundedRect(margin, yPosition - 3, contentWidth, 15, 2, 2, "F");
+      
+      addText("Simulado Final", {
+        fontSize: 10,
+        fontStyle: "bold",
+        color: [180, 100, 50],
+      });
+      addText(`Duracao: ${plano.revisaoFinal.simulado.duracao} | Formato: ${plano.revisaoFinal.simulado.formato}`, {
+        fontSize: 9,
+        color: [100, 100, 100],
+      });
+    }
   }
 
   // ========== FOOTER (todas as páginas) ==========
@@ -272,7 +244,7 @@ export const exportarPlanoPDF = ({
     doc.setFontSize(9);
     doc.setTextColor(150, 150, 150);
     doc.text(
-      `Página ${i} de ${totalPages}`,
+      `Pagina ${i} de ${totalPages}`,
       pageWidth / 2,
       pageHeight - 10,
       { align: "center" }

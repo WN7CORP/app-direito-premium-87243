@@ -1,13 +1,12 @@
 import { useLocation, useNavigate } from "react-router-dom";
-import { ArrowLeft, FileDown, Clock, BookOpen, Target, Lightbulb, CheckSquare, RefreshCw, GraduationCap } from "lucide-react";
+import { ArrowLeft, FileDown, Clock, BookOpen, Target, Lightbulb, CheckSquare, RefreshCw, GraduationCap, Book, Video, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
 import { useToast } from "@/hooks/use-toast";
-import { parsePlanoEstudos } from "@/lib/planoEstudosParser";
+import { processarPlanoEstudos, PlanoEstudosData } from "@/lib/planoEstudosParser";
 import { PlanoEstudosAccordion } from "@/components/PlanoEstudosAccordion";
 import { exportarPlanoPDF } from "@/lib/exportarPlanoPDF";
+import { Badge } from "@/components/ui/badge";
 
 const PlanoEstudosResultado = () => {
   const location = useLocation();
@@ -20,11 +19,12 @@ const PlanoEstudosResultado = () => {
     return null;
   }
 
-  const planoParseado = parsePlanoEstudos(plano);
+  // Processa os dados estruturados
+  const planoData: PlanoEstudosData = processarPlanoEstudos(plano);
 
   const handleExportPDF = () => {
     exportarPlanoPDF({
-      plano: planoParseado,
+      plano: planoData,
       materia,
       totalHoras,
       dataGeracao: new Date().toLocaleDateString('pt-BR'),
@@ -34,6 +34,13 @@ const PlanoEstudosResultado = () => {
       title: "PDF exportado!",
       description: "O arquivo foi baixado com sucesso.",
     });
+  };
+
+  const getMaterialIcon = (tipo: string) => {
+    const tipoLower = tipo.toLowerCase();
+    if (tipoLower.includes('livro')) return Book;
+    if (tipoLower.includes('vídeo') || tipoLower.includes('video')) return Video;
+    return FileText;
   };
 
   return (
@@ -87,13 +94,15 @@ const PlanoEstudosResultado = () => {
                 </p>
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-3 mt-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-4">
               <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3">
                 <div className="flex items-center gap-2">
                   <Clock className="w-4 h-4 text-primary-foreground/70" />
                   <span className="text-xs text-primary-foreground/70">Carga Total</span>
                 </div>
-                <p className="font-bold text-xl text-primary-foreground mt-1">{totalHoras}h</p>
+                <p className="font-bold text-xl text-primary-foreground mt-1">
+                  {planoData.visaoGeral.cargaTotal || `${totalHoras}h`}
+                </p>
               </div>
               <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3">
                 <div className="flex items-center gap-2">
@@ -101,66 +110,83 @@ const PlanoEstudosResultado = () => {
                   <span className="text-xs text-primary-foreground/70">Semanas</span>
                 </div>
                 <p className="font-bold text-xl text-primary-foreground mt-1">
-                  {planoParseado.semanas.length || '-'}
+                  {planoData.cronograma.length || '-'}
+                </p>
+              </div>
+              <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 hidden md:block">
+                <div className="flex items-center gap-2">
+                  <Clock className="w-4 h-4 text-primary-foreground/70" />
+                  <span className="text-xs text-primary-foreground/70">Frequência</span>
+                </div>
+                <p className="font-bold text-lg text-primary-foreground mt-1">
+                  {planoData.visaoGeral.frequencia || '-'}
+                </p>
+              </div>
+              <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 hidden md:block">
+                <div className="flex items-center gap-2">
+                  <Clock className="w-4 h-4 text-primary-foreground/70" />
+                  <span className="text-xs text-primary-foreground/70">Intensidade</span>
+                </div>
+                <p className="font-bold text-lg text-primary-foreground mt-1">
+                  {planoData.visaoGeral.intensidade || '-'}
                 </p>
               </div>
             </div>
           </div>
         </Card>
 
-        {/* Objetivo e Visão Geral */}
-        {(planoParseado.objetivo || planoParseado.visaoGeral) && (
+        {/* Objetivo */}
+        {planoData.objetivo && (
           <Card className="border-0 shadow-md overflow-hidden">
-            <CardContent className="p-0">
-              {planoParseado.objetivo && (
-                <div className="p-4 md:p-6 border-b border-border/50">
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-amber-500/10">
-                      <Target className="w-5 h-5 text-amber-500" />
-                    </div>
-                    <h2 className="text-lg font-bold">Objetivo</h2>
-                  </div>
-                  <div className="prose prose-sm max-w-none dark:prose-invert text-muted-foreground">
-                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                      {planoParseado.objetivo}
-                    </ReactMarkdown>
-                  </div>
+            <CardContent className="p-4 md:p-6">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-amber-500/10">
+                  <Target className="w-5 h-5 text-amber-500" />
                 </div>
-              )}
-              {planoParseado.visaoGeral && (
-                <div className="p-4 md:p-6 bg-muted/30">
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-blue-500/10">
-                      <BookOpen className="w-5 h-5 text-blue-500" />
-                    </div>
-                    <h2 className="text-lg font-bold">Visão Geral</h2>
-                  </div>
-                  <div className="prose prose-sm max-w-none dark:prose-invert text-muted-foreground">
-                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                      {planoParseado.visaoGeral}
-                    </ReactMarkdown>
-                  </div>
+                <h2 className="text-lg font-bold">Objetivo</h2>
+              </div>
+              <p className="text-muted-foreground leading-relaxed">
+                {planoData.objetivo}
+              </p>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Visão Geral */}
+        {planoData.visaoGeral.descricao && (
+          <Card className="border-0 shadow-md overflow-hidden">
+            <CardContent className="p-4 md:p-6 bg-muted/30">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-blue-500/10">
+                  <BookOpen className="w-5 h-5 text-blue-500" />
                 </div>
-              )}
+                <h2 className="text-lg font-bold">Visão Geral</h2>
+              </div>
+              <p className="text-muted-foreground leading-relaxed">
+                {planoData.visaoGeral.descricao}
+              </p>
             </CardContent>
           </Card>
         )}
 
         {/* Cronograma Semanal */}
-        {planoParseado.semanas.length > 0 && (
+        {planoData.cronograma.length > 0 && (
           <div className="space-y-3">
             <div className="flex items-center gap-3 px-1">
               <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-primary/10">
                 <BookOpen className="w-5 h-5 text-primary" />
               </div>
               <h2 className="text-lg font-bold">Cronograma Semanal</h2>
+              <Badge variant="secondary" className="ml-auto">
+                {planoData.cronograma.length} semanas
+              </Badge>
             </div>
-            <PlanoEstudosAccordion semanas={planoParseado.semanas} />
+            <PlanoEstudosAccordion semanas={planoData.cronograma} />
           </div>
         )}
 
         {/* Materiais de Estudo */}
-        {planoParseado.materiaisEstudo && (
+        {planoData.materiais.length > 0 && (
           <Card className="border-0 shadow-md overflow-hidden">
             <CardContent className="p-4 md:p-6">
               <div className="flex items-center gap-3 mb-4">
@@ -169,55 +195,97 @@ const PlanoEstudosResultado = () => {
                 </div>
                 <h2 className="text-lg font-bold">Materiais de Estudo</h2>
               </div>
-              <div className="prose prose-sm max-w-none dark:prose-invert text-muted-foreground bg-muted/30 rounded-lg p-4">
-                <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                  {planoParseado.materiaisEstudo}
-                </ReactMarkdown>
+              <div className="space-y-3">
+                {planoData.materiais.map((material, idx) => {
+                  const IconComponent = getMaterialIcon(material.tipo);
+                  return (
+                    <div key={idx} className="flex items-start gap-3 p-3 bg-muted/30 rounded-lg">
+                      <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-emerald-500/10 shrink-0">
+                        <IconComponent className="w-4 h-4 text-emerald-500" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <Badge variant="outline" className="text-xs">
+                            {material.tipo}
+                          </Badge>
+                          <span className="font-medium text-foreground">
+                            {material.titulo}
+                          </span>
+                        </div>
+                        {material.autor && (
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Por: {material.autor}
+                          </p>
+                        )}
+                        {material.detalhes && (
+                          <p className="text-sm text-muted-foreground mt-1">
+                            {material.detalhes}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </CardContent>
           </Card>
         )}
 
         {/* Estratégias */}
-        {planoParseado.estrategias && (
+        {planoData.estrategias.length > 0 && (
           <Card className="border-0 shadow-md overflow-hidden">
             <CardContent className="p-4 md:p-6">
               <div className="flex items-center gap-3 mb-4">
                 <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-purple-500/10">
                   <Lightbulb className="w-5 h-5 text-purple-500" />
                 </div>
-                <h2 className="text-lg font-bold">Estratégias</h2>
+                <h2 className="text-lg font-bold">Estratégias de Estudo</h2>
               </div>
-              <div className="prose prose-sm max-w-none dark:prose-invert text-muted-foreground bg-muted/30 rounded-lg p-4">
-                <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                  {planoParseado.estrategias}
-                </ReactMarkdown>
+              <div className="space-y-3">
+                {planoData.estrategias.map((estrategia, idx) => (
+                  <div key={idx} className="p-3 bg-muted/30 rounded-lg">
+                    <p className="font-medium text-foreground mb-1">
+                      {idx + 1}. {estrategia.titulo}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      {estrategia.descricao}
+                    </p>
+                  </div>
+                ))}
               </div>
             </CardContent>
           </Card>
         )}
 
         {/* Checklist */}
-        {planoParseado.checklist && (
+        {planoData.checklist.length > 0 && (
           <Card className="border-0 shadow-md overflow-hidden">
             <CardContent className="p-4 md:p-6">
               <div className="flex items-center gap-3 mb-4">
                 <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-green-500/10">
                   <CheckSquare className="w-5 h-5 text-green-500" />
                 </div>
-                <h2 className="text-lg font-bold">Checklist</h2>
+                <h2 className="text-lg font-bold">Checklist de Metas</h2>
               </div>
-              <div className="prose prose-sm max-w-none dark:prose-invert text-muted-foreground bg-muted/30 rounded-lg p-4">
-                <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                  {planoParseado.checklist}
-                </ReactMarkdown>
+              <div className="space-y-2">
+                {planoData.checklist.map((item, idx) => (
+                  <div key={idx} className="flex items-start gap-3 p-3 bg-muted/30 rounded-lg">
+                    <div className="flex items-center justify-center w-6 h-6 rounded-full bg-green-500/20 shrink-0 mt-0.5">
+                      <span className="text-xs font-bold text-green-600">{item.semana}</span>
+                    </div>
+                    <p className="text-sm text-foreground">
+                      <span className="font-medium">Semana {item.semana}:</span>{' '}
+                      <span className="text-muted-foreground">{item.meta}</span>
+                    </p>
+                  </div>
+                ))}
               </div>
             </CardContent>
           </Card>
         )}
 
         {/* Revisão Final */}
-        {planoParseado.revisaoFinal && (
+        {planoData.revisaoFinal.descricao && (
           <Card className="border-0 shadow-md overflow-hidden">
             <CardContent className="p-4 md:p-6">
               <div className="flex items-center gap-3 mb-4">
@@ -226,11 +294,18 @@ const PlanoEstudosResultado = () => {
                 </div>
                 <h2 className="text-lg font-bold">Revisão Final</h2>
               </div>
-              <div className="prose prose-sm max-w-none dark:prose-invert text-muted-foreground bg-muted/30 rounded-lg p-4">
-                <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                  {planoParseado.revisaoFinal}
-                </ReactMarkdown>
-              </div>
+              <p className="text-muted-foreground mb-3">
+                {planoData.revisaoFinal.descricao}
+              </p>
+              {planoData.revisaoFinal.simulado && (
+                <div className="bg-muted/30 rounded-lg p-4">
+                  <p className="font-medium text-foreground mb-2">📝 Simulado Final</p>
+                  <div className="text-sm text-muted-foreground space-y-1">
+                    <p><strong>Duração:</strong> {planoData.revisaoFinal.simulado.duracao}</p>
+                    <p><strong>Formato:</strong> {planoData.revisaoFinal.simulado.formato}</p>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
         )}

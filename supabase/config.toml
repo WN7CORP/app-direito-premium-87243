@@ -17,3 +17,6 @@ verify_jwt = false
 
 [functions.gerar-aula-artigo]
 verify_jwt = false
+
+[functions.gerar-plano-estudos]
+verify_jwt = false
