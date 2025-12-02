@@ -20,3 +20,6 @@ verify_jwt = false
 
 [functions.gerar-plano-estudos]
 verify_jwt = false
+
+[functions.gerar-aula-livro]
+verify_jwt = false

@@ -52,6 +52,7 @@ import BibliotecaOAB from "./pages/BibliotecaOAB";
 import BibliotecaOABLivro from "./pages/BibliotecaOABLivro";
 import BibliotecaEstudos from "./pages/BibliotecaEstudos";
 import BibliotecaEstudosLivro from "./pages/BibliotecaEstudosLivro";
+import AulaLivro from "./pages/AulaLivro";
 import BibliotecaClassicos from "./pages/BibliotecaClassicos";
 import BibliotecaClassicosLivro from "./pages/BibliotecaClassicosLivro";
 import BibliotecaForaDaToga from "./pages/BibliotecaForaDaToga";
@@ -304,6 +305,7 @@ const App = () => {
             <Route path="/biblioteca-oab/:livroId" element={<BibliotecaOABLivro />} />
             <Route path="/biblioteca-estudos" element={<BibliotecaEstudos />} />
             <Route path="/biblioteca-estudos/:livroId" element={<BibliotecaEstudosLivro />} />
+            <Route path="/biblioteca-estudos/:livroId/aula" element={<AulaLivro />} />
             <Route path="/biblioteca-classicos" element={<BibliotecaClassicos />} />
             <Route path="/biblioteca-classicos/:livroId" element={<BibliotecaClassicosLivro />} />
             <Route path="/biblioteca-fora-da-toga" element={<BibliotecaForaDaToga />} />

@@ -2,7 +2,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Download, Loader2, BookOpen, Monitor, Video } from "lucide-react";
+import { Download, Loader2, BookOpen, Monitor, Video, GraduationCap } from "lucide-react";
 import { useState } from "react";
 import PDFViewerModal from "@/components/PDFViewerModal";
 import PDFReaderModeSelector from "@/components/PDFReaderModeSelector";
@@ -87,18 +87,27 @@ const BibliotecaEstudosLivro = () => {
               )}
             </div>
 
-            {livro.Link && (
-              <div className="flex justify-center mb-6">
+            <div className="flex justify-center gap-3 mb-6">
+              {livro.Link && (
                 <Button
                   onClick={() => setShowModeSelector(true)}
                   size="lg"
-                  className="min-w-[200px] shadow-lg hover:shadow-accent/50 transition-all"
+                  className="shadow-lg hover:shadow-accent/50 transition-all"
                 >
                   <BookOpen className="w-5 h-5 mr-2" />
                   Ler agora
                 </Button>
-              </div>
-            )}
+              )}
+              <Button
+                onClick={() => navigate(`/biblioteca-estudos/${livroId}/aula`)}
+                size="lg"
+                variant="outline"
+                className="border-primary text-primary hover:bg-primary hover:text-primary-foreground shadow-lg transition-all"
+              >
+                <GraduationCap className="w-5 h-5 mr-2" />
+                Aula
+              </Button>
+            </div>
 
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
               <TabsList className="grid w-full grid-cols-4 mb-6">

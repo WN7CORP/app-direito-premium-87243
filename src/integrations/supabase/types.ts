@@ -203,6 +203,48 @@ export type Database = {
         }
         Relationships: []
       }
+      aulas_livros: {
+        Row: {
+          aproveitamento_medio: number | null
+          area: string | null
+          created_at: string
+          descricao: string | null
+          estrutura_completa: Json
+          id: string
+          livro_id: number
+          tema: string
+          titulo: string
+          updated_at: string
+          visualizacoes: number | null
+        }
+        Insert: {
+          aproveitamento_medio?: number | null
+          area?: string | null
+          created_at?: string
+          descricao?: string | null
+          estrutura_completa: Json
+          id?: string
+          livro_id: number
+          tema: string
+          titulo: string
+          updated_at?: string
+          visualizacoes?: number | null
+        }
+        Update: {
+          aproveitamento_medio?: number | null
+          area?: string | null
+          created_at?: string
+          descricao?: string | null
+          estrutura_completa?: Json
+          id?: string
+          livro_id?: number
+          tema?: string
+          titulo?: string
+          updated_at?: string
+          visualizacoes?: number | null
+        }
+        Relationships: []
+      }
       aulas_progresso: {
         Row: {
           aula_id: string | null
