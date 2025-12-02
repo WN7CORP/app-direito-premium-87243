@@ -16,6 +16,9 @@ interface NoticiaCardProps {
 }
 
 const NoticiaCard = ({ titulo, capa, portal, categoria, dataHora, analise_ia, onClick }: NoticiaCardProps) => {
+  // Normaliza categorias
+  const categoriaNormalizada = categoria === "Concurso Público" || categoria === "Concurso" ? "Concursos" : categoria;
+  
   const formatarDataHora = (data: string) => {
     try {
       if (!data) return 'Sem data';
@@ -86,8 +89,8 @@ const NoticiaCard = ({ titulo, capa, portal, categoria, dataHora, analise_ia, on
         <div className="p-2.5 space-y-1.5">
           {/* Categoria e Badge de Análise */}
           <div className="flex items-center gap-1.5 flex-wrap">
-            <Badge className={`${getCategoryColor(categoria)} text-white text-[10px] px-1.5 py-0.5`}>
-              {categoria}
+            <Badge className={`${getCategoryColor(categoriaNormalizada)} text-white text-[10px] px-1.5 py-0.5`}>
+              {categoriaNormalizada}
             </Badge>
             {analise_ia && (
               <Badge variant="outline" className="text-[10px] px-1.5 py-0.5 bg-primary/10 text-primary border-primary/30">
