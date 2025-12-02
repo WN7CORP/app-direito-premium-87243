@@ -59,121 +59,26 @@ serve(async (req) => {
 
     console.log('📝 Gerando nova aula para o artigo...');
 
-    const prompt = `Você é um professor jurídico expert. Crie uma AULA INTERATIVA COMPLETA sobre o seguinte artigo de lei:
+    const prompt = `Crie uma aula sobre este artigo de lei:
 
-**CÓDIGO:** ${codigoTabela}
-**ARTIGO:** ${numeroArtigo}
-**TEXTO DO ARTIGO:**
-${conteudoArtigo}
+CÓDIGO: ${codigoTabela}
+ARTIGO: ${numeroArtigo}
+TEXTO: ${conteudoArtigo}
 
-A aula deve ter EXATAMENTE 3 módulos, focados especificamente neste artigo:
+Gere 3 módulos com esta estrutura para cada:
+- nome: título curto
+- icone: BookOpen, Scale ou Gavel
+- teoria: texto explicativo (300-400 palavras, use markdown)
+- exemploPratico: {cenario, analise, solucao} - textos curtos
+- quizRapido: 2 questões simples [{question, options, correctAnswer, explicacao}]
+- resumo: 4 pontos-chave
+- matching: 4 termos [{termo, definicao}] - definição máx 60 chars
+- flashcards: 4 cards [{frente, verso, exemplo}]
+- questoes: 4 questões [{question, options, correctAnswer, explicacao}]
 
-**MÓDULO 1 - Compreensão do Artigo:**
-- Análise detalhada de cada elemento do artigo
-- Termos técnicos e seus significados
-- Contexto histórico e legislativo
+Ao final, provaFinal com 6 questões [{question, options, correctAnswer, explicacao, tempoLimite: 45}]
 
-**MÓDULO 2 - Aplicação Prática:**
-- Casos reais de aplicação
-- Jurisprudência relevante (STF, STJ)
-- Situações do cotidiano
-
-**MÓDULO 3 - Questões e Exceções:**
-- Casos especiais e exceções
-- Conflitos com outras normas
-- Questões de concursos sobre este artigo
-
-ESTRUTURA DE CADA MÓDULO:
-1. Nome do módulo (título curto e descritivo)
-2. Ícone do módulo (escolha entre: BookOpen, Scale, Gavel, FileText, Users, Building)
-
-3. CONTEÚDO TEÓRICO RICO EM MARKDOWN (600-800 palavras):
-   - Use ## para títulos de seções
-   - Use ### para subtítulos
-   - Use **negrito** e *itálico* para ênfase
-   - Use listas ordenadas (1., 2.) e não ordenadas (-)
-   - OBRIGATORIAMENTE inclua 3-4 CARDS ESPECIAIS no formato:
-     > ⚠️ **ATENÇÃO**: Ponto crítico do artigo
-     > 💡 **IMPORTANTE**: Conceito-chave fundamental
-     > 📌 **DICA PRÁTICA**: Aplicação no mundo real
-     > ⚖️ **JURISPRUDÊNCIA**: Decisão relevante dos tribunais
-   - Organize em seções claras com títulos
-
-4. EXEMPLO PRÁTICO DETALHADO:
-   - Cenário realista envolvendo o artigo (100-150 palavras)
-   - Análise jurídica aplicando o artigo (150-200 palavras)
-   - Solução fundamentada no artigo (100-150 palavras)
-   
-5. QUIZ RÁPIDO DE FIXAÇÃO:
-   - 3 questões simples (V/F ou múltipla escolha)
-   - Focadas no artigo específico
-   
-6. RESUMO EM TÓPICOS:
-   - 5-7 pontos-chave do módulo
-
-7. 6 termos-chave para matching (definições máx 80 chars)
-8. 7 flashcards sobre o artigo
-9. 7 questões de múltipla escolha com explicações
-
-Ao final dos 3 módulos, crie uma PROVA FINAL com 12 questões desafiadoras sobre o artigo.
-
-IMPORTANTE: 
-- Retorne APENAS JSON puro, sem markdown, sem \`\`\`json
-- O campo "teoria" deve conter markdown rico e formatado
-- Os cards especiais (>, ⚠️, 💡, 📌, ⚖️) são OBRIGATÓRIOS
-- Todas as questões devem ser ESPECÍFICAS sobre este artigo
-
-Formato JSON esperado:
-{
-  "titulo": "Art. ${numeroArtigo} - ${codigoTabela}",
-  "descricao": "Aula completa sobre o Art. ${numeroArtigo}",
-  "area": "Direito",
-  "modulos": [
-    {
-      "id": 1,
-      "nome": "Nome do Módulo",
-      "icone": "BookOpen",
-      "teoria": "## Conceitos Fundamentais\\n\\nTexto rico em markdown...",
-      "exemploPratico": {
-        "cenario": "Descrição do caso real...",
-        "analise": "Análise jurídica detalhada...",
-        "solucao": "Solução fundamentada..."
-      },
-      "quizRapido": [
-        {
-          "question": "Questão simples?",
-          "options": ["Verdadeiro", "Falso"],
-          "correctAnswer": 0,
-          "explicacao": "Breve explicação"
-        }
-      ],
-      "resumo": ["Ponto 1", "Ponto 2", "Ponto 3", "Ponto 4", "Ponto 5"],
-      "matching": [
-        {"termo": "Termo", "definicao": "Definição curta (máx 80 chars)"}
-      ],
-      "flashcards": [
-        {"frente": "Pergunta", "verso": "Resposta completa", "exemplo": "Exemplo"}
-      ],
-      "questoes": [
-        {
-          "question": "Questão detalhada?",
-          "options": ["A", "B", "C", "D"],
-          "correctAnswer": 0,
-          "explicacao": "Explicação detalhada"
-        }
-      ]
-    }
-  ],
-  "provaFinal": [
-    {
-      "question": "Questão desafiadora?",
-      "options": ["A", "B", "C", "D"],
-      "correctAnswer": 0,
-      "explicacao": "Explicação detalhada",
-      "tempoLimite": 45
-    }
-  ]
-}`;
+Retorne JSON válido com: titulo, descricao, area, modulos[], provaFinal[]`;
 
     const systemPrompt = 'Você é um professor jurídico expert que cria aulas estruturadas e didáticas focadas em artigos específicos de lei. Sempre retorne APENAS JSON puro válido, sem markdown, sem ```json.';
     const fullPrompt = `${systemPrompt}\n\n${prompt}`;
@@ -193,7 +98,8 @@ Formato JSON esperado:
           }],
           generationConfig: {
             temperature: 0.7,
-            maxOutputTokens: 32000,
+            maxOutputTokens: 16000,
+            responseMimeType: "application/json",
           }
         })
       }
