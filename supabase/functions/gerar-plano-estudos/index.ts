@@ -78,141 +78,82 @@ serve(async (req) => {
       if (visionResponse.ok) {
         const visionData = await visionResponse.json();
         conteudoArquivo = visionData.candidates?.[0]?.content?.parts?.[0]?.text || '';
-        console.log("Conteúdo extraído do arquivo");
+        console.log("Conteúdo extraído do arquivo, tamanho:", conteudoArquivo.length);
       }
     }
 
-    // Gerar plano de estudos estruturado
-    const prompt = `Você é um especialista em planejamento de estudos para Direito.
+    // Gerar plano de estudos estruturado em JSON
+    const prompt = `Você é um especialista em planejamento de estudos para concursos e OAB.
 
 INFORMAÇÕES DO PLANO:
-- Matéria: ${materia}
+- Matéria/Tema: ${materia}
 - Horas disponíveis por dia: ${horasPorDia}h
-- Dias da semana: ${diasFormatados}
-- Duração: ${duracaoSemanas} semanas
-- Total de horas: ${totalHoras}h
+- Dias da semana disponíveis: ${diasFormatados}
+- Duração total: ${duracaoSemanas} semanas
+- Carga horária total: ${totalHoras}h
 
-${conteudoArquivo ? `CONTEÚDO DA EMENTA/MATERIAL:\n${conteudoArquivo}\n\n` : ""}
+${conteudoArquivo ? `CONTEÚDO DO MATERIAL ENVIADO PELO USUÁRIO:\n${conteudoArquivo}\n\nBaseie o plano de estudos no conteúdo acima, distribuindo os tópicos de forma lógica e progressiva.\n` : ""}
 
-CRIE UM PLANO DE ESTUDOS ESTRUTURADO E COMPLETO:
-
-# 📅 Plano de Estudos: ${materia}
-
----
-
-## 🎯 Objetivo do Plano
-[Descrição clara do que será aprendido e os objetivos de aprendizagem ao final do período]
-
----
-
-## 📊 Visão Geral do Cronograma
-- **Carga horária total**: ${totalHoras}h
-- **Duração**: ${duracaoSemanas} semanas
-- **Frequência**: ${diasSemana.length} dias por semana
-- **Intensidade diária**: ${horasPorDia}h por dia
-
----
-
-## 📚 Cronograma Semanal Detalhado
-
-### Semana 1: [Tema/Módulo da Semana]
-
-${diasSemana.map((dia: string) => `**${diasSemanaMap[dia]} (${horasPorDia}h)**
-- 08:00-09:30: [Tópico específico com detalhes]
-- 09:45-11:00: [Tópico específico com detalhes]
-${horasPorDia >= 4 ? "- 14:00-16:00: [Exercícios práticos e revisão]\n" : ""}${horasPorDia >= 6 ? "- 16:15-18:00: [Leitura complementar e aprofundamento]\n" : ""}`).join("\n\n")}
-
-[Continue este padrão para TODAS as ${duracaoSemanas} semanas, variando os temas e tópicos]
-
-${duracaoSemanas >= 2 ? `\n### Semana 2: [Tema/Módulo da Semana]\n[Repita a estrutura com novos tópicos]\n` : ""}
-${duracaoSemanas >= 3 ? `\n### Semana 3: [Tema/Módulo da Semana]\n[Repita a estrutura com novos tópicos]\n` : ""}
-${duracaoSemanas >= 4 ? `\n### Semana 4: [Tema/Módulo da Semana]\n[Repita a estrutura com novos tópicos]\n` : ""}
-
----
-
-## 📖 Materiais de Estudo Recomendados
-
-### 📚 Bibliografia Principal
-- [Livro 1]: [Autor] - Capítulos relevantes
-- [Livro 2]: [Autor] - Seções recomendadas
-- [Código/Lei]: Artigos específicos
-
-### 🎥 Recursos Complementares
-- [Vídeo-aulas, podcasts ou cursos online recomendados]
-- [Plataformas de questões e simulados]
-
-### 📝 Materiais de Apoio
-- [Resumos, mapas mentais, flashcards]
-
----
-
-## 💡 Estratégias e Dicas de Estudo
-
-### 📋 Técnicas Recomendadas
-1. **Revisão Espaçada**: [Explicação de como aplicar]
-2. **Mapas Mentais**: [Como organizar o conteúdo visualmente]
-3. **Resolução de Questões**: [Importância e frequência]
-4. **Flashcards**: [Tópicos que se beneficiam desta técnica]
-
-### ⏰ Gestão do Tempo
-- Reserve os primeiros 15min para revisão do dia anterior
-- Faça pausas de 10min a cada 50min de estudo
-- Dedique a última sessão da semana para revisão geral
-
-### 🎯 Metas Semanais
-- Semana 1: [Meta específica]
-- Semana 2: [Meta específica]
-[Continue para todas as semanas]
-
----
-
-## ✅ Checklist de Progresso
-
-### Marcos de Aprendizagem
-- [ ] Semana 1: [Competência ou tópico dominado]
-- [ ] Semana 2: [Competência ou tópico dominado]
-[Continue para todas as semanas]
-
-### Avaliações Sugeridas
-- Semana ${Math.ceil(duracaoSemanas / 2)}: Simulado parcial
-- Semana ${duracaoSemanas}: Simulado completo
-
----
-
-## 🔄 Revisão Final (Última Semana)
-
-**Ciclo de Revisão**
-${diasSemana.slice(0, 3).map((dia: string) => `- ${diasSemanaMap[dia]}: [Tópicos específicos para revisar]`).join("\n")}
-
-**Simulado Final**
-- Data sugerida: Último ${diasSemanaMap[diasSemana[diasSemana.length - 1]]}
-- Tempo: ${horasPorDia}h
-- Formato: [Questões dissertativas e objetivas]
-
----
-
-## 📈 Acompanhamento e Ajustes
-
-**Como avaliar seu progresso:**
-- Revise semanalmente se está cumprindo as metas
-- Ajuste o ritmo se necessário (sem comprometer a qualidade)
-- Anote dúvidas para pesquisar ou tirar com professores
-
-**Sinais de que está no caminho certo:**
-✅ Consegue explicar os conceitos com suas próprias palavras
-✅ Resolve questões com segurança crescente
-✅ Identifica conexões entre diferentes tópicos
+GERE UM PLANO DE ESTUDOS COMPLETO E DETALHADO no formato JSON abaixo.
 
 REGRAS IMPORTANTES:
-- Seja EXTREMAMENTE específico nos tópicos de cada dia
-- Distribua o conteúdo de forma equilibrada e progressiva
-- Inclua tempo para revisão e prática
-- Sugira materiais reais e acessíveis
-- Use markdown profissional com emojis, listas e estrutura clara
-- Adapte a profundidade conforme as horas disponíveis
-- Crie um cronograma realista e executável`;
+1. Distribua TODO o conteúdo de forma equilibrada ao longo das ${duracaoSemanas} semanas
+2. Cada dia deve ter tópicos específicos com horários realistas
+3. Inclua revisões periódicas e exercícios práticos
+4. Seja MUITO específico nos tópicos - nada genérico
+5. Os horários devem somar ${horasPorDia}h por dia
+6. Crie EXATAMENTE ${duracaoSemanas} semanas no cronograma
+7. Cada semana deve ter EXATAMENTE ${diasSemana.length} dias (${diasFormatados})
 
-    console.log("Gerando plano estruturado com Gemini");
+Retorne APENAS o JSON válido, sem texto adicional:
+
+{
+  "objetivo": "Descrição clara e objetiva do que será aprendido ao final do plano (2-3 frases)",
+  "visaoGeral": {
+    "cargaTotal": "${totalHoras}h",
+    "duracao": "${duracaoSemanas} semanas",
+    "frequencia": "${diasSemana.length} dias por semana",
+    "intensidade": "${horasPorDia}h por dia",
+    "descricao": "Breve descrição da metodologia e abordagem do plano"
+  },
+  "cronograma": [
+    {
+      "semana": 1,
+      "titulo": "Título descritivo do tema principal da semana",
+      "dias": [
+        {
+          "dia": "${diasSemanaMap[diasSemana[0]]}",
+          "cargaHoraria": "${horasPorDia}h",
+          "topicos": [
+            { "horario": "08:00-09:30", "titulo": "Tópico específico 1", "descricao": "Detalhes do que estudar" },
+            { "horario": "09:45-11:00", "titulo": "Tópico específico 2", "descricao": "Detalhes do que estudar" }
+          ]
+        }
+      ]
+    }
+  ],
+  "materiais": [
+    { "tipo": "Livro", "titulo": "Nome do livro", "autor": "Autor", "detalhes": "Capítulos recomendados" },
+    { "tipo": "Vídeo", "titulo": "Nome do curso/canal", "detalhes": "Aulas específicas" },
+    { "tipo": "Legislação", "titulo": "Nome da lei/código", "detalhes": "Artigos importantes" }
+  ],
+  "estrategias": [
+    { "titulo": "Nome da técnica", "descricao": "Como aplicar esta técnica no estudo" }
+  ],
+  "checklist": [
+    { "semana": 1, "meta": "Meta específica para a semana 1" },
+    { "semana": 2, "meta": "Meta específica para a semana 2" }
+  ],
+  "revisaoFinal": {
+    "descricao": "Orientações para a revisão final",
+    "simulado": {
+      "duracao": "${horasPorDia}h",
+      "formato": "Descrição do formato do simulado"
+    }
+  }
+}`;
+
+    console.log("Gerando plano estruturado JSON com Gemini");
 
     const aiResponse = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${DIREITO_PREMIUM_API_KEY}`,
@@ -226,8 +167,9 @@ REGRAS IMPORTANTES:
             parts: [{ text: prompt }]
           }],
           generationConfig: {
-            temperature: 0.5,
-            maxOutputTokens: 3500,
+            temperature: 0.3,
+            maxOutputTokens: 8000,
+            responseMimeType: "application/json",
           }
         }),
       }
@@ -240,16 +182,26 @@ REGRAS IMPORTANTES:
     }
 
     const aiData = await aiResponse.json();
-    const plano = aiData.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    const planoTexto = aiData.candidates?.[0]?.content?.parts?.[0]?.text || '';
 
-    console.log("Plano gerado com sucesso, tamanho:", plano.length);
+    console.log("Resposta recebida, tamanho:", planoTexto.length);
+
+    // Parse do JSON
+    let planoJSON;
+    try {
+      planoJSON = JSON.parse(planoTexto);
+      console.log("JSON parseado com sucesso. Semanas:", planoJSON.cronograma?.length || 0);
+    } catch (parseError) {
+      console.error("Erro ao parsear JSON:", parseError);
+      console.log("Texto recebido (primeiros 500 chars):", planoTexto.substring(0, 500));
+      throw new Error("Falha ao processar resposta da IA");
+    }
 
     return new Response(
       JSON.stringify({
-        plano,
+        plano: planoJSON,
         totalHoras,
-        topicos: [], // Poderia extrair do plano se necessário
-        materiais: [], // Poderia extrair do plano se necessário
+        materia,
       }),
       {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
