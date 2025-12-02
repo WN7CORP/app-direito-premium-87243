@@ -134,7 +134,7 @@ const Index = () => {
         {/* Notícias em Destaque - Carrossel */}
         <div className="space-y-3 -mx-1">
           <div className="flex items-center justify-between px-1">
-            <h2 className="md:text-lg text-foreground font-normal text-base">Notícias em Destaque</h2>
+            <h2 className="md:text-lg text-foreground font-normal text-base">Concursos e Notícias</h2>
             <div className="flex gap-2">
               
               <Button size="sm" onClick={() => navigate('/noticias-juridicas')} className="bg-primary/70 hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-300 rounded-full px-3 text-xs flex items-center gap-1">
