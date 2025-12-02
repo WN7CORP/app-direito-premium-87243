@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { ArrowLeft, FileDown, Clock, BookOpen, Target, Lightbulb, CheckSquare, RefreshCw, GraduationCap, Book, Video, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -22,19 +23,26 @@ const PlanoEstudosResultado = () => {
   // Processa os dados estruturados
   const planoData: PlanoEstudosData = processarPlanoEstudos(plano);
 
-  const handleExportPDF = () => {
+  const [isExporting, setIsExporting] = useState(false);
+
+  const handleExportPDF = async () => {
+    setIsExporting(true);
     try {
-      exportarPlanoPDF({
+      const url = await exportarPlanoPDF({
         plano: planoData,
         materia,
         totalHoras,
         dataGeracao: new Date().toLocaleDateString('pt-BR'),
       });
       
-      toast({
-        title: "PDF gerado!",
-        description: "O download deve iniciar automaticamente.",
-      });
+      if (url) {
+        toast({
+          title: "PDF aberto!",
+          description: "O PDF foi aberto em uma nova aba.",
+        });
+      } else {
+        throw new Error("Falha ao gerar URL");
+      }
     } catch (error) {
       console.error("Erro ao exportar PDF:", error);
       toast({
@@ -42,6 +50,8 @@ const PlanoEstudosResultado = () => {
         description: "Tente novamente em alguns instantes.",
         variant: "destructive",
       });
+    } finally {
+      setIsExporting(false);
     }
   };
 
