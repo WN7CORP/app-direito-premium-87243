@@ -28,7 +28,7 @@ import { ArtigoActionsMenu } from "@/components/ArtigoActionsMenu";
 import { formatForWhatsApp } from "@/lib/formatWhatsApp";
 import { useProgressiveLoad } from "@/hooks/useProgressiveLoad";
 import { getCodigoFromTable } from "@/lib/codigoMappings";
-import { AulaArtigoModal } from "@/components/AulaArtigoModal";
+import { AulaArtigoBreakdown } from "@/components/aula-v2/AulaArtigoBreakdown";
 interface Article {
   id: number;
   "Número do Artigo": string | null;
@@ -491,8 +491,8 @@ const CodigoView = () => {
       {/* Pergunta Modal */}
       <PerguntaModal isOpen={perguntaModalOpen} onClose={() => setPerguntaModalOpen(false)} artigo={perguntaData.artigo} numeroArtigo={perguntaData.numeroArtigo} />
 
-      {/* Aula Artigo Modal */}
-      <AulaArtigoModal
+      {/* Aula Artigo Modal V2 */}
+      <AulaArtigoBreakdown
         isOpen={aulaArtigoModalOpen}
         onClose={() => setAulaArtigoModalOpen(false)}
         codigoTabela={tableName}
