@@ -88,10 +88,11 @@ export const InteractiveSlide = ({
 
   return (
     <motion.div
-      initial={{ opacity: 0, x: 50 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: -50 }}
-      className="min-h-[calc(100vh-8rem)] flex flex-col p-4 max-w-2xl mx-auto"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.15 }}
+      className="min-h-[calc(100vh-8rem)] flex flex-col p-4 pb-24 md:pb-4 max-w-2xl mx-auto"
     >
       {/* Progress dots */}
       <div className="flex justify-center gap-1.5 mb-6">
@@ -112,12 +113,7 @@ export const InteractiveSlide = ({
       {/* Slide content */}
       <div className="flex-1 flex flex-col">
         {/* Header with icon */}
-        <motion.div
-          initial={{ scale: 0.8, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ delay: 0.1 }}
-          className="flex items-center gap-3 mb-6"
-        >
+        <div className="flex items-center gap-3 mb-6">
           <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${gradientColor} flex items-center justify-center shadow-lg`}>
             <Icon className="w-6 h-6 text-white" />
           </div>
@@ -133,15 +129,10 @@ export const InteractiveSlide = ({
               <h2 className="text-lg font-semibold text-foreground">{slide.titulo}</h2>
             )}
           </div>
-        </motion.div>
+        </div>
 
         {/* Main content */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className={`rounded-2xl border p-5 md:p-6 ${bgColor} flex-1`}
-        >
+        <div className={`rounded-2xl border p-5 md:p-6 ${bgColor} flex-1`}>
           {!isQuickCheck ? (
             <p className="text-foreground leading-relaxed whitespace-pre-line">
               {slide.conteudo}
@@ -170,11 +161,8 @@ export const InteractiveSlide = ({
                   }
                   
                   return (
-                    <motion.button
+                    <button
                       key={index}
-                      initial={{ opacity: 0, x: -10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 0.3 + index * 0.1 }}
                       onClick={() => handleOptionSelect(index)}
                       disabled={showFeedback}
                       className={`w-full p-4 rounded-xl border text-left transition-all ${optionStyle}`}
@@ -201,7 +189,7 @@ export const InteractiveSlide = ({
                         </div>
                         <span className="text-foreground">{opcao}</span>
                       </div>
-                    </motion.button>
+                    </button>
                   );
                 })}
               </div>
@@ -230,18 +218,14 @@ export const InteractiveSlide = ({
               </AnimatePresence>
             </div>
           )}
-        </motion.div>
+        </div>
       </div>
 
-      {/* Navigation buttons */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.4 }}
-        className="flex gap-3 mt-6"
-      >
-        {canGoBack && (
-          <Button
+      {/* Navigation buttons - fixed on mobile */}
+      <div className="fixed bottom-0 left-0 right-0 p-4 bg-background/95 backdrop-blur-sm border-t border-border md:relative md:bg-transparent md:border-0 md:p-0 md:mt-6 z-10">
+        <div className="flex gap-3 max-w-2xl mx-auto">
+          {canGoBack && (
+            <Button
             variant="outline"
             onClick={onPrevious}
             className="flex-1 h-12 rounded-xl"
@@ -257,10 +241,11 @@ export const InteractiveSlide = ({
             className="flex-1 h-12 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-xl"
           >
             Continuar
-            <ChevronRight className="w-5 h-5 ml-1" />
-          </Button>
-        )}
-      </motion.div>
+              <ChevronRight className="w-5 h-5 ml-1" />
+            </Button>
+          )}
+        </div>
+      </div>
     </motion.div>
   );
 };
