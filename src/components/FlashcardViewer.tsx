@@ -208,13 +208,13 @@ export const FlashcardViewer = ({
               <p className="text-xs text-muted-foreground mt-4 text-center">Clique para ver a resposta</p>
             </div>
 
-            <div onClick={handleFlip} className="min-h-[300px] bg-card border-2 border-[hsl(270,60%,55%)] rounded-xl p-4 sm:p-8 cursor-pointer hover:shadow-lg transition-shadow relative break-words">
+            <div onClick={handleFlip} className="min-h-[300px] bg-card border-2 border-[hsl(270,60%,55%)] rounded-xl p-4 sm:p-8 cursor-pointer hover:shadow-lg transition-shadow relative break-words flex flex-col">
               {tema && (
-                <p className="text-xs text-[hsl(270,70%,75%)] mb-3 absolute top-4 left-4">
+                <p className="text-xs text-[hsl(270,70%,75%)] absolute top-4 left-4">
                   {tema}
                 </p>
               )}
-              <div className="space-y-4 mt-6">
+              <div className="flex-1 flex flex-col items-center justify-center">
                 <div className="text-center space-y-3">
                   <p className="font-semibold text-foreground leading-relaxed text-base">
                     {currentCard.back}
@@ -227,7 +227,7 @@ export const FlashcardViewer = ({
                   )}
                 </div>
                 
-                {currentCard.exemplo && <div className="bg-background/50 rounded-lg p-4 border border-[hsl(270,60%,55%)]/20">
+                {currentCard.exemplo && <div className="bg-background/50 rounded-lg p-4 border border-[hsl(270,60%,55%)]/20 mt-4">
                     <p className="text-xs font-semibold mb-2 text-[hsl(270,60%,55%)] flex items-center gap-2">
                       <span>💡</span> Exemplo Prático:
                     </p>
@@ -235,11 +235,10 @@ export const FlashcardViewer = ({
                       {currentCard.exemplo}
                     </p>
                   </div>}
-                
-                <p className="text-xs text-muted-foreground text-center mt-4">
-                  Clique para voltar
-                </p>
               </div>
+              <p className="text-xs text-muted-foreground text-center mt-4">
+                Clique para voltar
+              </p>
             </div>
           </ReactCardFlip>
         </motion.div>

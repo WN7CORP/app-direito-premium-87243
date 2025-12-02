@@ -89,7 +89,9 @@ export const Layout = ({ children }: LayoutProps) => {
     // Esconder na página principal de resumos jurídicos prontos
     location.pathname === "/resumos-juridicos/prontos" ||
     // Esconder em páginas de resumos jurídicos prontos detalhadas
-    location.pathname.startsWith("/resumos-juridicos/prontos/");
+    location.pathname.startsWith("/resumos-juridicos/prontos/") ||
+    // Esconder na página de estudo de flashcards de artigos de lei
+    location.pathname === "/flashcards/artigos-lei/estudar";
   
   // Esconder Header em páginas com header próprio
   const hideHeader = location.pathname === "/professora" || location.pathname === "/chat-professora";
