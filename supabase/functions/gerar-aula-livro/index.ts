@@ -1,6 +1,6 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -16,8 +16,10 @@ serve(async (req) => {
     const { livro_id } = await req.json();
     
     if (!livro_id) {
-      throw new Error('livro_id é obrigatório');
+      throw new Error('ID do livro é obrigatório');
     }
+
+    console.log('📚 Processando aula V2 para livro:', livro_id);
 
     const DIREITO_PREMIUM_API_KEY = Deno.env.get('DIREITO_PREMIUM_API_KEY');
     if (!DIREITO_PREMIUM_API_KEY) {
@@ -25,12 +27,43 @@ serve(async (req) => {
     }
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const supabase = createClient(supabaseUrl, supabaseKey);
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    console.log('Buscando dados do livro:', livro_id);
+    // Check if lesson already exists
+    const { data: existingAula, error: fetchError } = await supabase
+      .from('aulas_livros')
+      .select('*')
+      .eq('livro_id', livro_id)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
 
-    // Buscar dados do livro
+    if (existingAula && !fetchError) {
+      const estrutura = existingAula.estrutura_completa as any;
+      
+      // Only return if it's V2 structure
+      if (estrutura?.versao === 2) {
+        console.log('✅ Aula V2 encontrada no cache, retornando...');
+        
+        await supabase
+          .from('aulas_livros')
+          .update({ visualizacoes: (existingAula.visualizacoes || 0) + 1 })
+          .eq('id', existingAula.id);
+
+        return new Response(JSON.stringify({
+          ...estrutura,
+          cached: true,
+          aulaId: existingAula.id
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      } else {
+        console.log('⚠️ Aula antiga encontrada (V1), gerando nova V2...');
+      }
+    }
+
+    // Fetch book data
     const { data: livro, error: livroError } = await supabase
       .from('BIBLIOTECA-ESTUDOS')
       .select('*')
@@ -38,126 +71,106 @@ serve(async (req) => {
       .single();
 
     if (livroError || !livro) {
+      console.error('Erro ao buscar livro:', livroError);
       throw new Error('Livro não encontrado');
     }
 
-    const tema = livro.Tema || '';
-    const area = livro['Área'] || 'Direito';
+    console.log('📖 Livro encontrado:', livro.Tema);
 
-    console.log('Livro encontrado:', tema);
-
-    // Buscar resumos relacionados ao tema
+    // Fetch related summaries
     const { data: resumos, error: resumosError } = await supabase
       .from('RESUMO')
-      .select('tema, conteudo, subtema')
-      .or(`tema.ilike.%${tema}%,subtema.ilike.%${tema}%`)
-      .limit(10);
+      .select('*')
+      .eq('area', livro['Área'])
+      .eq('tema', livro.Tema)
+      .order('subtema', { ascending: true });
 
-    let conteudoResumosText = '';
-    if (resumos && resumos.length > 0) {
-      console.log(`Encontrados ${resumos.length} resumos relacionados`);
-      conteudoResumosText = resumos.map(r => 
-        `### ${r.subtema || r.tema}\n${r.conteudo || ''}`
-      ).join('\n\n---\n\n');
-    } else {
-      console.log('Nenhum resumo encontrado, usando apenas título do livro');
+    if (resumosError) {
+      console.error('Erro ao buscar resumos:', resumosError);
     }
 
-    // Construir prompt SIMPLIFICADO para evitar truncamento
-    const prompt = `Você é um professor jurídico expert. Crie uma aula COMPLETA sobre: "${tema}"
+    console.log('📋 Resumos encontrados:', resumos?.length || 0);
 
-${conteudoResumosText ? `
-CONTEÚDO BASE:
-${conteudoResumosText.substring(0, 4000)}
-` : ''}
+    // Build content for AI
+    let conteudoCompleto = `LIVRO: ${livro.Tema}\nÁREA: ${livro['Área']}\n\n`;
+    
+    if (livro.Sobre) {
+      conteudoCompleto += `SOBRE O LIVRO:\n${livro.Sobre}\n\n`;
+    }
 
-ÁREA: ${area}
+    if (resumos && resumos.length > 0) {
+      conteudoCompleto += `SUBTEMAS E CONTEÚDOS:\n`;
+      resumos.slice(0, 5).forEach((r, i) => {
+        conteudoCompleto += `\n--- SUBTEMA ${i + 1}: ${r.subtema} ---\n`;
+        if (r.conteudo) conteudoCompleto += `${r.conteudo.substring(0, 800)}\n`;
+      });
+    }
 
-Crie uma aula com 3 MÓDULOS (exatamente 3). Seja conciso mas educativo.
+    console.log('📝 Gerando nova aula V2 para o livro...');
 
-ESTRUTURA EXATA DE CADA MÓDULO:
-1. Nome do módulo (título curto)
-2. Ícone: BookOpen, Scale, Gavel, FileText, Users ou Shield
+    const prompt = `Você é um professor jurídico especialista. Crie uma aula interativa sobre este livro/tema.
 
-3. TEORIA (400-500 palavras em markdown):
-   - Use ## para títulos
-   - Use listas com -
-   - Inclua 2-3 cards: > ⚠️ **ATENÇÃO**: ou > 💡 **IMPORTANTE**:
+${conteudoCompleto}
 
-4. EXEMPLO PRÁTICO:
-   - cenario: 80-100 palavras
-   - analise: 100-120 palavras
-   - solucao: 80-100 palavras
+Crie uma aula no formato JSON com a estrutura V2 (seções com slides interativos).
 
-5. QUIZ RÁPIDO: 2 questões V/F
+REGRAS:
+- Crie 3-4 seções baseadas nos subtemas do livro
+- CADA seção DEVE ter 7 slides na ordem: texto, termos, explicacao, atencao, exemplo, exemplo, quickcheck
+- Seja conciso mas educativo
 
-6. RESUMO: 4 pontos-chave
-
-7. MATCHING: 4 termos com definições (máx 60 chars cada)
-
-8. FLASHCARDS: 4 cards (frente, verso, exemplo curto)
-
-9. QUESTÕES: 4 múltipla escolha com explicação curta
-
-PROVA FINAL: 8 questões cobrindo todos os módulos.
-
-Retorne SOMENTE o JSON abaixo, sem texto adicional:
+ESTRUTURA JSON:
 
 {
-  "titulo": "Título da Aula",
-  "descricao": "Descrição em 1 frase",
-  "area": "${area}",
-  "tempoEstimado": "30-45 min",
-  "modulos": [
+  "versao": 2,
+  "titulo": "${livro.Tema} - Aula Completa",
+  "tempoEstimado": "30 min",
+  "objetivos": ["Objetivo 1", "Objetivo 2", "Objetivo 3"],
+  "secoes": [
     {
       "id": 1,
-      "nome": "Nome",
-      "icone": "BookOpen",
-      "teoria": "## Título\\n\\nTexto...\\n\\n> ⚠️ **ATENÇÃO**: Ponto...",
-      "exemploPratico": {
-        "cenario": "...",
-        "analise": "...",
-        "solucao": "..."
-      },
-      "quizRapido": [
-        {"question": "?", "options": ["V", "F"], "correctAnswer": 0, "explicacao": "..."}
-      ],
-      "resumo": ["1", "2", "3", "4"],
-      "matching": [
-        {"termo": "Termo", "definicao": "Def curta"}
-      ],
-      "flashcards": [
-        {"frente": "?", "verso": "Resp", "exemplo": "Ex"}
-      ],
-      "questoes": [
-        {"question": "?", "options": ["A", "B", "C", "D"], "correctAnswer": 0, "explicacao": "..."}
+      "tipo": "caput",
+      "trechoOriginal": "Resumo do conceito principal",
+      "titulo": "Nome do Subtema",
+      "slides": [
+        {"tipo": "texto", "titulo": "O conteúdo apresenta...", "conteudo": "Explicação clara"},
+        {"tipo": "termos", "titulo": "Termos Importantes", "conteudo": "", "termos": [{"termo": "TERMO", "definicao": "Definição"}]},
+        {"tipo": "explicacao", "titulo": "Entendendo", "conteudo": "Explicação geral", "topicos": [{"titulo": "Conceito", "detalhe": "Detalhamento"}]},
+        {"tipo": "atencao", "titulo": "Ponto de Atenção", "conteudo": "Observação importante"},
+        {"tipo": "exemplo", "titulo": "Exemplo 1", "conteudo": "Exemplo cotidiano", "contexto": "Situação Cotidiana"},
+        {"tipo": "exemplo", "titulo": "Exemplo 2", "conteudo": "Caso jurídico", "contexto": "Jurisprudência"},
+        {"tipo": "quickcheck", "pergunta": "Pergunta?", "opcoes": ["A", "B", "C", "D"], "resposta": 0, "feedback": "Explicação", "conteudo": ""}
       ]
     }
   ],
+  "atividadesFinais": {
+    "matching": [{"termo": "Termo", "definicao": "Definição curta"}],
+    "flashcards": [{"frente": "Pergunta", "verso": "Resposta", "exemplo": "Ex"}],
+    "questoes": [{"question": "?", "options": ["a)", "b)", "c)", "d)"], "correctAnswer": 0, "explicacao": "...", "fonte": ""}]
+  },
   "provaFinal": [
-    {"question": "?", "options": ["A", "B", "C", "D"], "correctAnswer": 0, "explicacao": "...", "tempoLimite": 45}
+    {"question": "?", "options": ["a)", "b)", "c)", "d)", "e)"], "correctAnswer": 0, "explicacao": "...", "tempoLimite": 60}
   ]
-}`;
+}
 
-    console.log('Enviando prompt para Gemini...');
+IMPORTANTE:
+- Retorne APENAS o JSON válido, sem markdown
+- O slide "termos" deve ter 2-3 termos com definições
+- O slide "explicacao" deve ter 2-3 tópicos
+- "atividadesFinais" deve ter 4-5 itens em cada array
+- "provaFinal" deve ter 5-6 questões`;
 
     const response = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${DIREITO_PREMIUM_API_KEY}`,
       {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          contents: [{
-            parts: [{
-              text: prompt
-            }]
-          }],
+          contents: [{ parts: [{ text: prompt }] }],
           generationConfig: {
             temperature: 0.7,
-            maxOutputTokens: 65536,
-            responseMimeType: "application/json"
+            maxOutputTokens: 30000,
+            responseMimeType: "application/json",
           }
         })
       }
@@ -173,81 +186,68 @@ Retorne SOMENTE o JSON abaixo, sem texto adicional:
     let estruturaText = data.candidates?.[0]?.content?.parts?.[0]?.text;
     
     if (!estruturaText) {
-      console.error('Resposta vazia da Gemini:', JSON.stringify(data));
-      throw new Error('A IA não retornou conteúdo');
+      throw new Error('Resposta vazia da IA');
     }
-
-    console.log('Tamanho da resposta:', estruturaText.length);
     
-    // Limpar markdown se presente
     estruturaText = estruturaText.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
     
     let estrutura;
     try {
       estrutura = JSON.parse(estruturaText);
-    } catch (parseError) {
-      console.error('Erro no parse JSON inicial, tentando corrigir...');
-      console.error('Primeiros 500 chars:', estruturaText.substring(0, 500));
-      console.error('Últimos 500 chars:', estruturaText.substring(estruturaText.length - 500));
+    } catch (parseError: any) {
+      console.error('Erro ao parsear JSON, tentando limpeza:', parseError.message);
       
-      // Tentar encontrar JSON válido
+      const startIndex = estruturaText.indexOf('{');
+      const endIndex = estruturaText.lastIndexOf('}');
+      
+      if (startIndex !== -1 && endIndex !== -1 && endIndex > startIndex) {
+        estruturaText = estruturaText.substring(startIndex, endIndex + 1);
+      }
+      
       try {
-        // Encontrar o último } que fecha o objeto principal
-        let depth = 0;
-        let lastValidEnd = -1;
-        for (let i = 0; i < estruturaText.length; i++) {
-          if (estruturaText[i] === '{') depth++;
-          if (estruturaText[i] === '}') {
-            depth--;
-            if (depth === 0) {
-              lastValidEnd = i;
-            }
-          }
-        }
-        
-        if (lastValidEnd > 0) {
-          const fixedJson = estruturaText.substring(0, lastValidEnd + 1);
-          estrutura = JSON.parse(fixedJson);
-          console.log('JSON corrigido com sucesso');
-        } else {
-          throw new Error('Não foi possível encontrar JSON válido');
-        }
-      } catch (fixError) {
-        console.error('Falha ao corrigir JSON:', fixError);
-        throw new Error('A IA gerou uma resposta incompleta. Tente novamente.');
+        estrutura = JSON.parse(estruturaText);
+      } catch (secondError: any) {
+        console.error('Segunda tentativa falhou:', secondError.message);
+        throw new Error('A IA gerou uma resposta inválida. Tente novamente.');
       }
     }
     
-    console.log('Estrutura gerada com sucesso:', estrutura.titulo, '- Módulos:', estrutura.modulos?.length);
+    // Ensure versao is set
+    estrutura.versao = 2;
+    
+    console.log('✅ Estrutura V2 gerada com sucesso:', estrutura.titulo);
 
-    // Salvar no banco
-    const { data: aulaSalva, error: saveError } = await supabase
+    // Save to database
+    const { data: savedAula, error: saveError } = await supabase
       .from('aulas_livros')
       .insert({
         livro_id: livro_id,
-        tema: tema,
-        area: area,
+        tema: livro.Tema,
+        area: livro['Área'],
         titulo: estrutura.titulo,
-        descricao: estrutura.descricao,
-        estrutura_completa: estrutura
+        descricao: livro.Sobre || '',
+        estrutura_completa: estrutura,
+        visualizacoes: 1
       })
       .select()
       .single();
 
     if (saveError) {
       console.error('Erro ao salvar aula:', saveError);
-      // Retorna a estrutura mesmo sem salvar
-      return new Response(JSON.stringify({ estrutura, saved: false }), {
+      return new Response(JSON.stringify({
+        ...estrutura,
+        cached: false
+      }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
-    console.log('Aula salva com ID:', aulaSalva.id);
+    console.log('💾 Aula V2 salva no banco com ID:', savedAula.id);
 
-    return new Response(JSON.stringify({ 
-      estrutura, 
-      aulaId: aulaSalva.id,
-      saved: true 
+    return new Response(JSON.stringify({
+      ...estrutura,
+      cached: false,
+      aulaId: savedAula.id
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
