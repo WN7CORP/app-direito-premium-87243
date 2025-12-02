@@ -13,26 +13,34 @@ const PlanoEstudos = () => {
   const [progress, setProgress] = useState(0);
   const [statusMessage, setStatusMessage] = useState("");
 
-  const progressSteps = [
-    { progress: 20, message: "Analisando matéria..." },
-    { progress: 40, message: "Processando documento..." },
-    { progress: 60, message: "Criando cronograma..." },
-    { progress: 80, message: "Organizando tópicos..." },
-    { progress: 95, message: "Finalizando plano..." },
-    { progress: 100, message: "✅ Plano pronto!" },
+  const loadingMessages = [
+    "Analisando conteúdo...",
+    "Estruturando cronograma...",
+    "Organizando tópicos por semana...",
+    "Definindo estratégias de estudo...",
+    "Quase lá, finalizando detalhes...",
+    "Preparando materiais recomendados...",
+    "Ajustando carga horária...",
+    "Revisando estrutura final...",
   ];
 
   const simulateProgress = () => {
-    let currentStep = 0;
+    let currentProgress = 0;
+    let messageIndex = 0;
+    
     const interval = setInterval(() => {
-      if (currentStep < progressSteps.length - 1) {
-        setProgress(progressSteps[currentStep].progress);
-        setStatusMessage(progressSteps[currentStep].message);
-        currentStep++;
-      } else {
-        clearInterval(interval);
+      // Incrementa progresso gradualmente até 95%
+      if (currentProgress < 95) {
+        currentProgress += Math.random() * 8 + 2; // incremento entre 2-10%
+        if (currentProgress > 95) currentProgress = 95;
+        setProgress(Math.floor(currentProgress));
       }
-    }, 800);
+      
+      // Alterna mensagens a cada intervalo
+      setStatusMessage(loadingMessages[messageIndex % loadingMessages.length]);
+      messageIndex++;
+    }, 1200);
+    
     return interval;
   };
 

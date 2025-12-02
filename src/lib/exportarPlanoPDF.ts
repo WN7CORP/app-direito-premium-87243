@@ -257,7 +257,20 @@ export const exportarPlanoPDF = ({
     );
   }
 
-  // Download
+  // Download - força download no navegador
   const fileName = `plano-estudos-${materia.toLowerCase().replace(/\s+/g, "-")}.pdf`;
-  doc.save(fileName);
+  
+  // Usa output blob para garantir download em todos os navegadores
+  const pdfBlob = doc.output('blob');
+  const blobUrl = URL.createObjectURL(pdfBlob);
+  
+  const link = document.createElement('a');
+  link.href = blobUrl;
+  link.download = fileName;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  
+  // Limpa a URL do blob após download
+  setTimeout(() => URL.revokeObjectURL(blobUrl), 100);
 };
