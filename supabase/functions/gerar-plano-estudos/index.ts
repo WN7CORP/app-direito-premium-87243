@@ -18,6 +18,69 @@ const diasSemanaMap: { [key: string]: string } = {
   dom: "Domingo",
 };
 
+// Função para tentar reparar JSON truncado
+function tryRepairJSON(jsonStr: string): any {
+  // Primeiro, tenta parsear diretamente
+  try {
+    return JSON.parse(jsonStr);
+  } catch (e) {
+    console.log("JSON inválido, tentando reparar...");
+  }
+
+  // Tenta encontrar o último fechamento válido
+  let repaired = jsonStr.trim();
+  
+  // Remove caracteres após o último } válido
+  const lastBrace = repaired.lastIndexOf('}');
+  if (lastBrace > 0) {
+    repaired = repaired.substring(0, lastBrace + 1);
+  }
+
+  // Conta chaves e colchetes abertos
+  let braceCount = 0;
+  let bracketCount = 0;
+  let inString = false;
+  let escaped = false;
+
+  for (const char of repaired) {
+    if (escaped) {
+      escaped = false;
+      continue;
+    }
+    if (char === '\\') {
+      escaped = true;
+      continue;
+    }
+    if (char === '"') {
+      inString = !inString;
+      continue;
+    }
+    if (!inString) {
+      if (char === '{') braceCount++;
+      if (char === '}') braceCount--;
+      if (char === '[') bracketCount++;
+      if (char === ']') bracketCount--;
+    }
+  }
+
+  // Adiciona fechamentos faltantes
+  while (bracketCount > 0) {
+    repaired += ']';
+    bracketCount--;
+  }
+  while (braceCount > 0) {
+    repaired += '}';
+    braceCount--;
+  }
+
+  try {
+    return JSON.parse(repaired);
+  } catch (e) {
+    console.error("Falha ao reparar JSON:", e);
+    throw new Error("JSON irreparável");
+  }
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -56,8 +119,8 @@ serve(async (req) => {
               parts: [
                 {
                   text: tipoArquivo === "pdf"
-                    ? "Extraia TODO o conteúdo deste documento (ementa, tópicos, cronograma). Mantenha a estrutura."
-                    : "Extraia TODO o texto e informações desta imagem de ementa ou material de estudo."
+                    ? "Extraia os PRINCIPAIS tópicos deste documento (ementa, cronograma). Liste apenas os temas principais, de forma resumida."
+                    : "Extraia os PRINCIPAIS tópicos desta imagem de forma resumida."
                 },
                 {
                   inlineData: {
@@ -69,7 +132,7 @@ serve(async (req) => {
             }],
             generationConfig: {
               temperature: 0.1,
-              maxOutputTokens: 3000,
+              maxOutputTokens: 2000,
             }
           }),
         }
@@ -82,74 +145,68 @@ serve(async (req) => {
       }
     }
 
-    // Gerar plano de estudos estruturado em JSON
+    // Limitar semanas para evitar truncamento
+    const semanasLimitadas = Math.min(duracaoSemanas, 8);
+    const totalHorasLimitado = horasPorDia * diasSemana.length * semanasLimitadas;
+
+    // Prompt simplificado para gerar menos conteúdo
     const prompt = `Você é um especialista em planejamento de estudos para concursos e OAB.
 
 INFORMAÇÕES DO PLANO:
-- Matéria/Tema: ${materia}
-- Horas disponíveis por dia: ${horasPorDia}h
-- Dias da semana disponíveis: ${diasFormatados}
-- Duração total: ${duracaoSemanas} semanas
-- Carga horária total: ${totalHoras}h
+- Matéria: ${materia}
+- Horas por dia: ${horasPorDia}h
+- Dias: ${diasFormatados}
+- Duração: ${semanasLimitadas} semanas
+- Carga total: ${totalHorasLimitado}h
 
-${conteudoArquivo ? `CONTEÚDO DO MATERIAL ENVIADO PELO USUÁRIO:\n${conteudoArquivo}\n\nBaseie o plano de estudos no conteúdo acima, distribuindo os tópicos de forma lógica e progressiva.\n` : ""}
+${conteudoArquivo ? `CONTEÚDO BASE:\n${conteudoArquivo.substring(0, 1500)}\n` : ""}
 
-GERE UM PLANO DE ESTUDOS COMPLETO E DETALHADO no formato JSON abaixo.
+GERE um plano de estudos CONCISO no formato JSON abaixo.
 
-REGRAS IMPORTANTES:
-1. Distribua TODO o conteúdo de forma equilibrada ao longo das ${duracaoSemanas} semanas
-2. Cada dia deve ter tópicos específicos com horários realistas
-3. Inclua revisões periódicas e exercícios práticos
-4. Seja MUITO específico nos tópicos - nada genérico
-5. Os horários devem somar ${horasPorDia}h por dia
-6. Crie EXATAMENTE ${duracaoSemanas} semanas no cronograma
-7. Cada semana deve ter EXATAMENTE ${diasSemana.length} dias (${diasFormatados})
+REGRAS:
+1. Crie EXATAMENTE ${semanasLimitadas} semanas
+2. Cada semana tem ${diasSemana.length} dias
+3. Cada dia tem 2-3 tópicos (não mais)
+4. Descrições curtas (máximo 15 palavras)
+5. Seja objetivo e direto
 
-Retorne APENAS o JSON válido, sem texto adicional:
-
+JSON:
 {
-  "objetivo": "Descrição clara e objetiva do que será aprendido ao final do plano (2-3 frases)",
+  "objetivo": "Descrição em 1 frase do objetivo",
   "visaoGeral": {
-    "cargaTotal": "${totalHoras}h",
-    "duracao": "${duracaoSemanas} semanas",
-    "frequencia": "${diasSemana.length} dias por semana",
-    "intensidade": "${horasPorDia}h por dia",
-    "descricao": "Breve descrição da metodologia e abordagem do plano"
+    "cargaTotal": "${totalHorasLimitado}h",
+    "duracao": "${semanasLimitadas} semanas",
+    "frequencia": "${diasSemana.length} dias/semana",
+    "intensidade": "${horasPorDia}h/dia",
+    "descricao": "Metodologia em 1 frase"
   },
   "cronograma": [
     {
       "semana": 1,
-      "titulo": "Título descritivo do tema principal da semana",
+      "titulo": "Tema da semana",
       "dias": [
         {
           "dia": "${diasSemanaMap[diasSemana[0]]}",
           "cargaHoraria": "${horasPorDia}h",
           "topicos": [
-            { "horario": "08:00-09:30", "titulo": "Tópico específico 1", "descricao": "Detalhes do que estudar" },
-            { "horario": "09:45-11:00", "titulo": "Tópico específico 2", "descricao": "Detalhes do que estudar" }
+            { "horario": "08:00-10:00", "titulo": "Tópico", "descricao": "Breve descrição" }
           ]
         }
       ]
     }
   ],
   "materiais": [
-    { "tipo": "Livro", "titulo": "Nome do livro", "autor": "Autor", "detalhes": "Capítulos recomendados" },
-    { "tipo": "Vídeo", "titulo": "Nome do curso/canal", "detalhes": "Aulas específicas" },
-    { "tipo": "Legislação", "titulo": "Nome da lei/código", "detalhes": "Artigos importantes" }
+    { "tipo": "Livro", "titulo": "Nome", "autor": "Autor", "detalhes": "Info" }
   ],
   "estrategias": [
-    { "titulo": "Nome da técnica", "descricao": "Como aplicar esta técnica no estudo" }
+    { "titulo": "Técnica", "descricao": "Como aplicar" }
   ],
   "checklist": [
-    { "semana": 1, "meta": "Meta específica para a semana 1" },
-    { "semana": 2, "meta": "Meta específica para a semana 2" }
+    { "semana": 1, "meta": "Meta da semana" }
   ],
   "revisaoFinal": {
-    "descricao": "Orientações para a revisão final",
-    "simulado": {
-      "duracao": "${horasPorDia}h",
-      "formato": "Descrição do formato do simulado"
-    }
+    "descricao": "Orientações finais",
+    "simulado": { "duracao": "${horasPorDia}h", "formato": "Formato do simulado" }
   }
 }`;
 
@@ -168,7 +225,7 @@ Retorne APENAS o JSON válido, sem texto adicional:
           }],
           generationConfig: {
             temperature: 0.3,
-            maxOutputTokens: 8000,
+            maxOutputTokens: 65536,
             responseMimeType: "application/json",
           }
         }),
@@ -186,10 +243,10 @@ Retorne APENAS o JSON válido, sem texto adicional:
 
     console.log("Resposta recebida, tamanho:", planoTexto.length);
 
-    // Parse do JSON
+    // Parse do JSON com reparo
     let planoJSON;
     try {
-      planoJSON = JSON.parse(planoTexto);
+      planoJSON = tryRepairJSON(planoTexto);
       console.log("JSON parseado com sucesso. Semanas:", planoJSON.cronograma?.length || 0);
     } catch (parseError) {
       console.error("Erro ao parsear JSON:", parseError);
@@ -200,7 +257,7 @@ Retorne APENAS o JSON válido, sem texto adicional:
     return new Response(
       JSON.stringify({
         plano: planoJSON,
-        totalHoras,
+        totalHoras: totalHorasLimitado,
         materia,
       }),
       {
