@@ -193,7 +193,7 @@ Formato JSON esperado:
           }],
           generationConfig: {
             temperature: 0.7,
-            maxOutputTokens: 8000,
+            maxOutputTokens: 32000,
           }
         })
       }
