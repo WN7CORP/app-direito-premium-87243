@@ -24,7 +24,6 @@ serve(async (req) => {
       throw new Error('DIREITO_PREMIUM_API_KEY não configurada');
     }
 
-    // Initialize Supabase client
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
@@ -42,7 +41,6 @@ serve(async (req) => {
     if (existingAula && !fetchError) {
       console.log('✅ Aula encontrada no cache, retornando...');
       
-      // Increment view count
       await supabase
         .from('aulas_artigos')
         .update({ visualizacoes: (existingAula.visualizacoes || 0) + 1 })
@@ -57,49 +55,177 @@ serve(async (req) => {
       });
     }
 
-    console.log('📝 Gerando nova aula para o artigo...');
+    console.log('📝 Gerando nova aula V2 para o artigo...');
 
-    const prompt = `Crie uma aula sobre este artigo de lei:
+    const prompt = `Você é um professor jurídico especialista. Crie uma aula interativa completa sobre este artigo de lei.
 
 CÓDIGO: ${codigoTabela}
 ARTIGO: ${numeroArtigo}
-TEXTO: ${conteudoArtigo}
+TEXTO COMPLETO DO ARTIGO:
+${conteudoArtigo}
 
-Gere 3 módulos com esta estrutura para cada:
-- id: número sequencial (1, 2, 3)
-- nome: título curto
-- icone: BookOpen, Scale ou Gavel
-- teoria: texto explicativo (300-400 palavras, use markdown)
-- exemploPratico: {cenario, analise, solucao} - textos curtos
-- quizRapido: 2 questões simples [{question, options, correctAnswer, explicacao}]
-- resumo: 4 pontos-chave
-- matching: 4 termos [{termo, definicao}] - definição máx 60 chars
-- flashcards: 4 cards [{frente, verso, exemplo}]
-- questoes: 4 questões [{question, options, correctAnswer, explicacao}]
+INSTRUÇÕES IMPORTANTES:
+1. Analise CADA PARTE do artigo (caput, incisos, parágrafos, alíneas)
+2. Para cada parte, crie uma seção com slides interativos
+3. Cada seção deve ter slides sequenciais que expliquem passo a passo
 
-Ao final, provaFinal com 6 questões [{question, options, correctAnswer, explicacao, tempoLimite: 45}]
+ESTRUTURA JSON A RETORNAR:
 
-Retorne JSON válido com: titulo, descricao, area, modulos[], provaFinal[]`;
+{
+  "versao": 2,
+  "titulo": "Art. ${numeroArtigo} - [Título descritivo do tema]",
+  "tempoEstimado": "[X] min",
+  "objetivos": [
+    "Objetivo 1: O que o aluno vai aprender",
+    "Objetivo 2: Habilidade que vai desenvolver",
+    "Objetivo 3: Aplicação prática"
+  ],
+  "secoes": [
+    {
+      "id": 1,
+      "tipo": "caput", // caput, inciso, paragrafo, alinea
+      "trechoOriginal": "[Texto exato dessa parte do artigo]",
+      "titulo": "[Título resumido desta seção]",
+      "slides": [
+        {
+          "tipo": "texto",
+          "titulo": "O texto diz...",
+          "conteudo": "[Destaque e explique o texto legal de forma clara]"
+        },
+        {
+          "tipo": "explicacao",
+          "titulo": "Isso significa...",
+          "conteudo": "[Explicação didática do significado jurídico]"
+        },
+        {
+          "tipo": "atencao",
+          "titulo": "Ponto de atenção",
+          "conteudo": "[Pegadinhas, exceções, detalhes importantes para provas]"
+        },
+        {
+          "tipo": "exemplo",
+          "titulo": "Na prática...",
+          "conteudo": "[Exemplo concreto de aplicação]"
+        },
+        {
+          "tipo": "quickcheck",
+          "pergunta": "[Pergunta rápida de fixação]",
+          "opcoes": ["Opção A", "Opção B", "Opção C", "Opção D"],
+          "resposta": 0,
+          "feedback": "[Explicação da resposta correta]",
+          "conteudo": ""
+        }
+      ]
+    }
+  ],
+  "atividadesFinais": {
+    "matching": [
+      {"termo": "Termo jurídico 1", "definicao": "Definição curta (max 60 chars)"},
+      {"termo": "Termo jurídico 2", "definicao": "Definição curta"},
+      {"termo": "Termo jurídico 3", "definicao": "Definição curta"},
+      {"termo": "Termo jurídico 4", "definicao": "Definição curta"}
+    ],
+    "flashcards": [
+      {"frente": "Conceito ou pergunta", "verso": "Resposta ou definição", "exemplo": "Exemplo prático"},
+      {"frente": "Conceito 2", "verso": "Resposta 2", "exemplo": "Exemplo 2"},
+      {"frente": "Conceito 3", "verso": "Resposta 3", "exemplo": "Exemplo 3"},
+      {"frente": "Conceito 4", "verso": "Resposta 4", "exemplo": "Exemplo 4"}
+    ],
+    "questoes": [
+      {
+        "question": "Questão estilo concurso 1",
+        "options": ["a) Alternativa A", "b) Alternativa B", "c) Alternativa C", "d) Alternativa D"],
+        "correctAnswer": 0,
+        "explicacao": "Explicação detalhada da resposta",
+        "fonte": "Estilo CESPE/FCC"
+      },
+      {
+        "question": "Questão 2",
+        "options": ["a)", "b)", "c)", "d)"],
+        "correctAnswer": 1,
+        "explicacao": "Explicação",
+        "fonte": "Estilo OAB"
+      },
+      {
+        "question": "Questão 3",
+        "options": ["a)", "b)", "c)", "d)"],
+        "correctAnswer": 2,
+        "explicacao": "Explicação",
+        "fonte": ""
+      },
+      {
+        "question": "Questão 4",
+        "options": ["a)", "b)", "c)", "d)"],
+        "correctAnswer": 0,
+        "explicacao": "Explicação",
+        "fonte": ""
+      }
+    ]
+  },
+  "provaFinal": [
+    {
+      "question": "Questão final 1 - mais complexa",
+      "options": ["a)", "b)", "c)", "d)", "e)"],
+      "correctAnswer": 0,
+      "explicacao": "Explicação completa",
+      "tempoLimite": 60
+    },
+    {
+      "question": "Questão final 2",
+      "options": ["a)", "b)", "c)", "d)", "e)"],
+      "correctAnswer": 1,
+      "explicacao": "Explicação",
+      "tempoLimite": 60
+    },
+    {
+      "question": "Questão final 3",
+      "options": ["a)", "b)", "c)", "d)", "e)"],
+      "correctAnswer": 2,
+      "explicacao": "Explicação",
+      "tempoLimite": 60
+    },
+    {
+      "question": "Questão final 4",
+      "options": ["a)", "b)", "c)", "d)", "e)"],
+      "correctAnswer": 3,
+      "explicacao": "Explicação",
+      "tempoLimite": 60
+    },
+    {
+      "question": "Questão final 5",
+      "options": ["a)", "b)", "c)", "d)", "e)"],
+      "correctAnswer": 0,
+      "explicacao": "Explicação",
+      "tempoLimite": 60
+    },
+    {
+      "question": "Questão final 6",
+      "options": ["a)", "b)", "c)", "d)", "e)"],
+      "correctAnswer": 1,
+      "explicacao": "Explicação",
+      "tempoLimite": 60
+    }
+  ]
+}
 
-    const systemPrompt = 'Você é um professor jurídico expert que cria aulas estruturadas e didáticas focadas em artigos específicos de lei. Sempre retorne APENAS JSON puro válido, sem markdown, sem ```json.';
-    const fullPrompt = `${systemPrompt}\n\n${prompt}`;
+REGRAS:
+- Crie 2-4 seções dependendo da complexidade do artigo
+- Cada seção deve ter 3-5 slides variados
+- Slides tipo "quickcheck" devem ter exatamente 4 opções
+- O campo "resposta" é o índice (0-3) da opção correta
+- Textos devem ser didáticos e focados em concursos
+- Retorne APENAS o JSON, sem markdown`;
 
     const response = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${DIREITO_PREMIUM_API_KEY}`,
       {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          contents: [{
-            parts: [{
-              text: fullPrompt
-            }]
-          }],
+          contents: [{ parts: [{ text: prompt }] }],
           generationConfig: {
             temperature: 0.7,
-            maxOutputTokens: 16000,
+            maxOutputTokens: 20000,
             responseMimeType: "application/json",
           }
         })
@@ -119,7 +245,6 @@ Retorne JSON válido com: titulo, descricao, area, modulos[], provaFinal[]`;
       throw new Error('Resposta vazia da IA');
     }
     
-    // Clean markdown if present
     estruturaText = estruturaText.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
     
     let estrutura;
@@ -128,7 +253,6 @@ Retorne JSON válido com: titulo, descricao, area, modulos[], provaFinal[]`;
     } catch (parseError: any) {
       console.error('Erro ao parsear JSON, tentando limpeza:', parseError.message);
       
-      // Try to find JSON object boundaries
       const startIndex = estruturaText.indexOf('{');
       const endIndex = estruturaText.lastIndexOf('}');
       
@@ -136,9 +260,8 @@ Retorne JSON válido com: titulo, descricao, area, modulos[], provaFinal[]`;
         estruturaText = estruturaText.substring(startIndex, endIndex + 1);
       }
       
-      // Remove problematic characters while preserving JSON structure
       estruturaText = estruturaText
-        .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '') // Remove control chars except \t \n \r
+        .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '')
         .replace(/\r\n/g, '\n')
         .replace(/\r/g, '\n');
       
@@ -147,7 +270,6 @@ Retorne JSON válido com: titulo, descricao, area, modulos[], provaFinal[]`;
       } catch (secondError: any) {
         console.error('Segunda tentativa falhou:', secondError.message);
         
-        // Final attempt: minify JSON by removing all whitespace outside strings
         let inString = false;
         let escaped = false;
         let result = '';
@@ -174,14 +296,12 @@ Retorne JSON válido com: titulo, descricao, area, modulos[], provaFinal[]`;
           }
           
           if (inString) {
-            // Replace newlines inside strings with space
             if (char === '\n' || char === '\r' || char === '\t') {
               result += ' ';
             } else {
               result += char;
             }
           } else {
-            // Outside strings, skip whitespace
             if (!/\s/.test(char)) {
               result += char;
             }
@@ -192,15 +312,16 @@ Retorne JSON válido com: titulo, descricao, area, modulos[], provaFinal[]`;
           estrutura = JSON.parse(result);
         } catch (finalError: any) {
           console.error('Falha definitiva no parsing:', finalError.message);
-          console.error('Texto original (primeiros 300 chars):', estruturaText.substring(0, 300));
           throw new Error('A IA gerou uma resposta inválida. Tente novamente.');
         }
       }
     }
     
-    console.log('✅ Estrutura gerada com sucesso:', estrutura.titulo);
+    // Ensure versao is set
+    estrutura.versao = 2;
+    
+    console.log('✅ Estrutura V2 gerada com sucesso:', estrutura.titulo);
 
-    // Save to database
     const { data: savedAula, error: saveError } = await supabase
       .from('aulas_artigos')
       .insert({
@@ -215,7 +336,6 @@ Retorne JSON válido com: titulo, descricao, area, modulos[], provaFinal[]`;
 
     if (saveError) {
       console.error('Erro ao salvar aula:', saveError);
-      // Return anyway even if save fails
       return new Response(JSON.stringify({
         ...estrutura,
         cached: false
@@ -224,7 +344,7 @@ Retorne JSON válido com: titulo, descricao, area, modulos[], provaFinal[]`;
       });
     }
 
-    console.log('💾 Aula salva no banco com ID:', savedAula.id);
+    console.log('💾 Aula V2 salva no banco com ID:', savedAula.id);
 
     return new Response(JSON.stringify({
       ...estrutura,
