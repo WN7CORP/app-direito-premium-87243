@@ -8,7 +8,9 @@ import {
   CheckCircle2,
   XCircle,
   ChevronRight,
-  ChevronLeft
+  ChevronLeft,
+  BookOpen,
+  Scale
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SlideContent } from "./types";
@@ -25,6 +27,7 @@ interface InteractiveSlideProps {
 
 const iconMap: Record<string, any> = {
   texto: FileText,
+  termos: BookOpen,
   explicacao: Lightbulb,
   atencao: AlertTriangle,
   exemplo: Briefcase,
@@ -33,6 +36,7 @@ const iconMap: Record<string, any> = {
 
 const colorMap: Record<string, string> = {
   texto: "from-blue-500 to-blue-600",
+  termos: "from-indigo-500 to-purple-500",
   explicacao: "from-amber-500 to-orange-500",
   atencao: "from-red-500 to-rose-500",
   exemplo: "from-emerald-500 to-green-500",
@@ -41,6 +45,7 @@ const colorMap: Record<string, string> = {
 
 const bgColorMap: Record<string, string> = {
   texto: "bg-blue-500/10 border-blue-500/20",
+  termos: "bg-indigo-500/10 border-indigo-500/20",
   explicacao: "bg-amber-500/10 border-amber-500/20",
   atencao: "bg-red-500/10 border-red-500/20",
   exemplo: "bg-emerald-500/10 border-emerald-500/20",
@@ -84,7 +89,22 @@ export const InteractiveSlide = ({
   };
 
   const isQuickCheck = slide.tipo === 'quickcheck';
+  const isTermos = slide.tipo === 'termos';
+  const isExplicacao = slide.tipo === 'explicacao';
+  const isExemplo = slide.tipo === 'exemplo';
   const isCorrect = selectedOption === slide.resposta;
+
+  const getSlideLabel = () => {
+    switch (slide.tipo) {
+      case 'texto': return 'O texto diz';
+      case 'termos': return 'Termos importantes';
+      case 'explicacao': return 'Isso significa';
+      case 'atencao': return 'Ponto de atenção';
+      case 'exemplo': return slide.contexto || 'Na prática';
+      case 'quickcheck': return 'Verificação rápida';
+      default: return '';
+    }
+  };
 
   return (
     <motion.div
@@ -119,11 +139,7 @@ export const InteractiveSlide = ({
           </div>
           <div>
             <p className="text-xs text-muted-foreground uppercase tracking-wide">
-              {slide.tipo === 'texto' && 'O texto diz'}
-              {slide.tipo === 'explicacao' && 'Isso significa'}
-              {slide.tipo === 'atencao' && 'Ponto de atenção'}
-              {slide.tipo === 'exemplo' && 'Na prática'}
-              {slide.tipo === 'quickcheck' && 'Verificação rápida'}
+              {getSlideLabel()}
             </p>
             {slide.titulo && (
               <h2 className="text-lg font-semibold text-foreground">{slide.titulo}</h2>
@@ -132,8 +148,74 @@ export const InteractiveSlide = ({
         </div>
 
         {/* Main content */}
-        <div className={`rounded-2xl border p-5 md:p-6 ${bgColor} flex-1`}>
-          {!isQuickCheck ? (
+        <div className={`rounded-2xl border p-5 md:p-6 ${bgColor} flex-1 overflow-y-auto`}>
+          {/* Termos slide */}
+          {isTermos && slide.termos && slide.termos.length > 0 ? (
+            <div className="space-y-4">
+              {slide.termos.map((item, idx) => (
+                <div 
+                  key={idx}
+                  className="bg-card/60 rounded-xl p-4 border border-border/50"
+                >
+                  <div className="flex items-start gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-indigo-500/20 flex items-center justify-center flex-shrink-0">
+                      <Scale className="w-4 h-4 text-indigo-400" />
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-foreground uppercase text-sm tracking-wide">
+                        {item.termo}
+                      </h4>
+                      <p className="text-muted-foreground text-sm mt-1 leading-relaxed">
+                        {item.definicao}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : isExplicacao && slide.topicos && slide.topicos.length > 0 ? (
+            /* Explicacao slide with topics */
+            <div className="space-y-5">
+              {slide.conteudo && (
+                <p className="text-foreground leading-relaxed">
+                  {slide.conteudo}
+                </p>
+              )}
+              <div className="space-y-4 mt-4">
+                {slide.topicos.map((topico, idx) => (
+                  <div 
+                    key={idx}
+                    className="bg-card/60 rounded-xl p-4 border border-amber-500/20"
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className="w-6 h-6 rounded-full bg-amber-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <span className="text-xs font-bold text-amber-400">{idx + 1}</span>
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-foreground text-sm">
+                          {topico.titulo}
+                        </h4>
+                        <p className="text-muted-foreground text-sm mt-1 leading-relaxed">
+                          {topico.detalhe}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : isExemplo && slide.contexto ? (
+            /* Exemplo slide with context badge */
+            <div className="space-y-4">
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/20 border border-emerald-500/30">
+                <Briefcase className="w-3.5 h-3.5 text-emerald-400" />
+                <span className="text-xs font-medium text-emerald-400">{slide.contexto}</span>
+              </div>
+              <p className="text-foreground leading-relaxed whitespace-pre-line">
+                {slide.conteudo}
+              </p>
+            </div>
+          ) : !isQuickCheck ? (
             <p className="text-foreground leading-relaxed whitespace-pre-line">
               {slide.conteudo}
             </p>
@@ -226,21 +308,21 @@ export const InteractiveSlide = ({
         <div className="flex gap-3 max-w-2xl mx-auto">
           {canGoBack && (
             <Button
-            variant="outline"
-            onClick={onPrevious}
-            className="flex-1 h-12 rounded-xl"
-          >
-            <ChevronLeft className="w-5 h-5 mr-1" />
-            Voltar
-          </Button>
-        )}
+              variant="outline"
+              onClick={onPrevious}
+              className="flex-1 h-12 rounded-xl"
+            >
+              <ChevronLeft className="w-5 h-5 mr-1" />
+              Voltar
+            </Button>
+          )}
         
-        {(!isQuickCheck || showFeedback) && (
-          <Button
-            onClick={isQuickCheck ? handleContinue : onNext}
-            className="flex-1 h-12 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-xl"
-          >
-            Continuar
+          {(!isQuickCheck || showFeedback) && (
+            <Button
+              onClick={isQuickCheck ? handleContinue : onNext}
+              className="flex-1 h-12 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-xl"
+            >
+              Continuar
               <ChevronRight className="w-5 h-5 ml-1" />
             </Button>
           )}

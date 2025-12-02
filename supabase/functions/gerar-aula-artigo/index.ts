@@ -55,9 +55,9 @@ serve(async (req) => {
       });
     }
 
-    console.log('📝 Gerando nova aula V2 para o artigo...');
+    console.log('📝 Gerando nova aula V2 APRIMORADA para o artigo...');
 
-    const prompt = `Você é um professor jurídico especialista. Crie uma aula interativa completa sobre este artigo de lei.
+    const prompt = `Você é um professor jurídico especialista. Crie uma aula interativa COMPLETA e DETALHADA sobre este artigo de lei.
 
 CÓDIGO: ${codigoTabela}
 ARTIGO: ${numeroArtigo}
@@ -66,8 +66,15 @@ ${conteudoArtigo}
 
 INSTRUÇÕES IMPORTANTES:
 1. Analise CADA PARTE do artigo (caput, incisos, parágrafos, alíneas)
-2. Para cada parte, crie uma seção com slides interativos
-3. Cada seção deve ter slides sequenciais que expliquem passo a passo
+2. Para cada parte, crie uma seção com slides interativos DETALHADOS
+3. Cada seção DEVE ter a seguinte sequência de slides:
+   - texto: O que diz o artigo
+   - termos: Termos jurídicos importantes com definições
+   - explicacao: Explicação detalhada com tópicos
+   - atencao: Ponto de atenção importante
+   - exemplo 1: Exemplo prático do cotidiano
+   - exemplo 2: Exemplo de jurisprudência ou caso complexo
+   - quickcheck: Verificação rápida
 
 ESTRUTURA JSON A RETORNAR:
 
@@ -83,7 +90,7 @@ ESTRUTURA JSON A RETORNAR:
   "secoes": [
     {
       "id": 1,
-      "tipo": "caput", // caput, inciso, paragrafo, alinea
+      "tipo": "caput",
       "trechoOriginal": "[Texto exato dessa parte do artigo]",
       "titulo": "[Título resumido desta seção]",
       "slides": [
@@ -93,23 +100,45 @@ ESTRUTURA JSON A RETORNAR:
           "conteudo": "[Destaque e explique o texto legal de forma clara]"
         },
         {
+          "tipo": "termos",
+          "titulo": "Termos Importantes",
+          "conteudo": "",
+          "termos": [
+            {"termo": "TERMO 1", "definicao": "Definição clara e objetiva do termo jurídico"},
+            {"termo": "TERMO 2", "definicao": "Definição clara e objetiva"},
+            {"termo": "TERMO 3", "definicao": "Definição clara e objetiva"}
+          ]
+        },
+        {
           "tipo": "explicacao",
-          "titulo": "Isso significa...",
-          "conteudo": "[Explicação didática do significado jurídico]"
+          "titulo": "Entendendo o Artigo",
+          "conteudo": "[Explicação geral introdutória]",
+          "topicos": [
+            {"titulo": "Natureza Jurídica", "detalhe": "Explicação detalhada sobre a natureza jurídica deste dispositivo"},
+            {"titulo": "Elementos Essenciais", "detalhe": "Quais são os requisitos e elementos necessários"},
+            {"titulo": "Aplicabilidade", "detalhe": "Quando e como este artigo se aplica na prática"}
+          ]
         },
         {
           "tipo": "atencao",
-          "titulo": "Ponto de atenção",
-          "conteudo": "[Pegadinhas, exceções, detalhes importantes para provas]"
+          "titulo": "Ponto de Atenção",
+          "conteudo": "[Pegadinhas, exceções, detalhes importantes para provas e prática]"
         },
         {
           "tipo": "exemplo",
-          "titulo": "Na prática...",
-          "conteudo": "[Exemplo concreto de aplicação]"
+          "titulo": "Exemplo Prático 1",
+          "conteudo": "[Situação comum do dia-a-dia que ilustra a aplicação do artigo]",
+          "contexto": "Situação Cotidiana"
+        },
+        {
+          "tipo": "exemplo",
+          "titulo": "Exemplo Prático 2",
+          "conteudo": "[Caso de jurisprudência ou situação mais complexa que demonstra a aplicação]",
+          "contexto": "Jurisprudência / Caso Complexo"
         },
         {
           "tipo": "quickcheck",
-          "pergunta": "[Pergunta rápida de fixação]",
+          "pergunta": "[Pergunta rápida de fixação sobre esta seção]",
           "opcoes": ["Opção A", "Opção B", "Opção C", "Opção D"],
           "resposta": 0,
           "feedback": "[Explicação da resposta correta]",
@@ -208,12 +237,15 @@ ESTRUTURA JSON A RETORNAR:
   ]
 }
 
-REGRAS:
+REGRAS IMPORTANTES:
 - Crie 2-4 seções dependendo da complexidade do artigo
-- Cada seção deve ter 3-5 slides variados
+- CADA seção DEVE ter OBRIGATORIAMENTE 7 slides na ordem: texto, termos, explicacao, atencao, exemplo, exemplo, quickcheck
+- O slide "termos" deve ter 2-4 termos jurídicos relevantes com definições claras
+- O slide "explicacao" deve ter conteudo geral + 2-3 tópicos detalhados
+- DEVE haver DOIS slides "exemplo" por seção: um cotidiano e um de jurisprudência
 - Slides tipo "quickcheck" devem ter exatamente 4 opções
 - O campo "resposta" é o índice (0-3) da opção correta
-- Textos devem ser didáticos e focados em concursos
+- Textos devem ser didáticos, detalhados e focados em concursos
 - Retorne APENAS o JSON, sem markdown`;
 
     const response = await fetch(
@@ -225,7 +257,7 @@ REGRAS:
           contents: [{ parts: [{ text: prompt }] }],
           generationConfig: {
             temperature: 0.7,
-            maxOutputTokens: 20000,
+            maxOutputTokens: 25000,
             responseMimeType: "application/json",
           }
         })
@@ -320,7 +352,7 @@ REGRAS:
     // Ensure versao is set
     estrutura.versao = 2;
     
-    console.log('✅ Estrutura V2 gerada com sucesso:', estrutura.titulo);
+    console.log('✅ Estrutura V2 APRIMORADA gerada com sucesso:', estrutura.titulo);
 
     const { data: savedAula, error: saveError } = await supabase
       .from('aulas_artigos')
@@ -344,7 +376,7 @@ REGRAS:
       });
     }
 
-    console.log('💾 Aula V2 salva no banco com ID:', savedAula.id);
+    console.log('💾 Aula V2 APRIMORADA salva no banco com ID:', savedAula.id);
 
     return new Response(JSON.stringify({
       ...estrutura,

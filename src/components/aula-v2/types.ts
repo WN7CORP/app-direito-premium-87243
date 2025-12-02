@@ -1,10 +1,26 @@
 // Types for the new interactive lesson system v2
 
+export interface TermoDefinicao {
+  termo: string;
+  definicao: string;
+}
+
+export interface TopicoDetalhe {
+  titulo: string;
+  detalhe: string;
+}
+
 export interface SlideContent {
-  tipo: 'texto' | 'explicacao' | 'atencao' | 'exemplo' | 'quickcheck';
+  tipo: 'texto' | 'termos' | 'explicacao' | 'atencao' | 'exemplo' | 'quickcheck';
   titulo?: string;
   conteudo: string;
   icone?: string;
+  // For termos slides
+  termos?: TermoDefinicao[];
+  // For explicacao slides with detailed topics
+  topicos?: TopicoDetalhe[];
+  // For exemplo slides
+  contexto?: string; // e.g., "Situação cotidiana" or "Jurisprudência"
   // For quickcheck slides
   pergunta?: string;
   opcoes?: string[];
