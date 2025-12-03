@@ -7,6 +7,9 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Configuração: máximo de subtemas por chamada para evitar timeout
+const MAX_SUBTEMAS_POR_CHAMADA = 5;
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -19,45 +22,13 @@ serve(async (req) => {
       throw new Error('área, tema e resumos são obrigatórios');
     }
 
-    console.log(`Gerando questões para ${area} > ${tema} (${resumos.length} resumos)`);
+    console.log(`\n📚 Iniciando geração progressiva para ${area} > ${tema}`);
+    console.log(`📝 ${resumos.length} resumos recebidos`);
 
     // Inicializar Supabase client
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
-
-    // Verificar se já existem questões para este tema
-    const { data: existingData, count } = await supabase
-      .from('QUESTOES_GERADAS')
-      .select('*', { count: 'exact', head: true })
-      .eq('area', area)
-      .eq('tema', tema);
-
-    // Se já existe, retornar as questões existentes
-    if (count && count > 0) {
-      console.log(`${count} questões já existem no cache. Retornando...`);
-      const { data: questoesExistentes } = await supabase
-        .from('QUESTOES_GERADAS')
-        .select('*')
-        .eq('area', area)
-        .eq('tema', tema)
-        .eq('aprovada', true);
-
-      return new Response(
-        JSON.stringify({ 
-          questoes_geradas: count,
-          questoes: questoesExistentes,
-          fromCache: true 
-        }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    // Gerar novas questões com Gemini Premium
-    const DIREITO_PREMIUM_API_KEY = Deno.env.get('DIREITO_PREMIUM_API_KEY');
-    if (!DIREITO_PREMIUM_API_KEY) {
-      throw new Error('DIREITO_PREMIUM_API_KEY não configurada');
-    }
 
     // Agrupar resumos por subtema
     const resumosPorSubtema = resumos.reduce((acc: any, resumo: any) => {
@@ -69,23 +40,83 @@ serve(async (req) => {
       return acc;
     }, {});
 
-    const subtemas = Object.keys(resumosPorSubtema);
-    const totalQuestoesEsperadas = subtemas.length * 10;
+    const todosSubtemas = Object.keys(resumosPorSubtema);
+    const totalSubtemas = todosSubtemas.length;
     
-    console.log(`\n📚 ${subtemas.length} subtemas encontrados para ${area} > ${tema}`);
-    console.log(`🎯 Serão geradas ${totalQuestoesEsperadas} questões (10 por subtema)`);
+    console.log(`📊 Total de subtemas no tema: ${totalSubtemas}`);
 
-    const todasQuestoes: any[] = [];
+    // 1. Verificar quais subtemas JÁ têm questões geradas
+    const { data: subtemasExistentes } = await supabase
+      .from('QUESTOES_GERADAS')
+      .select('subtema')
+      .eq('area', area)
+      .eq('tema', tema);
 
-    // Processar cada subtema (gerar 10 questões por subtema)
-    for (let i = 0; i < subtemas.length; i++) {
-      const subtema = subtemas[i];
+    const subtemasJaProcessados = new Set(
+      (subtemasExistentes || []).map((r: any) => r.subtema)
+    );
+    
+    console.log(`✅ Subtemas já processados: ${subtemasJaProcessados.size}/${totalSubtemas}`);
+
+    // 2. Filtrar subtemas que ainda faltam processar
+    const subtemasPendentes = todosSubtemas.filter(
+      subtema => !subtemasJaProcessados.has(subtema)
+    );
+    
+    console.log(`⏳ Subtemas pendentes: ${subtemasPendentes.length}`);
+
+    // 3. Buscar questões já existentes
+    const { data: questoesExistentes } = await supabase
+      .from('QUESTOES_GERADAS')
+      .select('*')
+      .eq('area', area)
+      .eq('tema', tema)
+      .eq('aprovada', true);
+
+    const questoesAtuais = questoesExistentes || [];
+
+    // 4. Se TODOS os subtemas já foram processados, retornar do cache
+    if (subtemasPendentes.length === 0) {
+      console.log(`🎉 Todos os ${totalSubtemas} subtemas já processados! Retornando cache.`);
+      
+      return new Response(
+        JSON.stringify({ 
+          questoes: questoesAtuais,
+          questoes_geradas: questoesAtuais.length,
+          total_subtemas: totalSubtemas,
+          subtemas_processados: totalSubtemas,
+          geracao_completa: true,
+          subtemas_faltantes: 0,
+          fromCache: true 
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // 5. Limitar a MAX_SUBTEMAS_POR_CHAMADA para evitar timeout
+    const subtemasParaProcessar = subtemasPendentes.slice(0, MAX_SUBTEMAS_POR_CHAMADA);
+    
+    console.log(`\n🎯 Processando ${subtemasParaProcessar.length} subtemas nesta chamada:`);
+    subtemasParaProcessar.forEach((s, i) => console.log(`   ${i+1}. ${s}`));
+
+    // Configurar API
+    const DIREITO_PREMIUM_API_KEY = Deno.env.get('DIREITO_PREMIUM_API_KEY');
+    if (!DIREITO_PREMIUM_API_KEY) {
+      throw new Error('DIREITO_PREMIUM_API_KEY não configurada');
+    }
+
+    const questoesGeradasNestaChamada: any[] = [];
+    const allowedKeys = [
+      'area','tema','subtema','enunciado','alternativa_a','alternativa_b','alternativa_c','alternativa_d','resposta_correta','comentario','exemplo_pratico'
+    ];
+
+    // 6. Processar cada subtema E SALVAR IMEDIATAMENTE
+    for (let i = 0; i < subtemasParaProcessar.length; i++) {
+      const subtema = subtemasParaProcessar[i];
       const resumosDoSubtema = resumosPorSubtema[subtema];
       
-      console.log(`\n🎯 Processando subtema ${i+1}/${subtemas.length}: ${subtema}`);
-      console.log(`   ${resumosDoSubtema.length} resumo(s) neste subtema`);
+      console.log(`\n🔄 [${i+1}/${subtemasParaProcessar.length}] Processando: "${subtema}"`);
 
-      // Combinar conteúdo de todos os resumos do subtema
       const conteudoCombinado = resumosDoSubtema
         .map((r: any) => r.conteudo)
         .join('\n\n---\n\n');
@@ -161,11 +192,7 @@ EXEMPLO de exemplo_pratico bom:
               'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-              contents: [
-                {
-                  parts: [{ text: prompt }]
-                }
-              ],
+              contents: [{ parts: [{ text: prompt }] }],
               generationConfig: {
                 temperature: 0.8,
                 maxOutputTokens: 6000,
@@ -177,91 +204,97 @@ EXEMPLO de exemplo_pratico bom:
         if (!aiResponse.ok) {
           const errorText = await aiResponse.text();
           console.error(`❌ Erro Gemini API: ${aiResponse.status} - ${errorText}`);
-          console.error(`Subtema: ${subtema}`);
-          // Continuar para próximo subtema ao invés de falhar tudo
           continue;
         }
 
         const aiData = await aiResponse.json();
         const textoResposta = aiData.candidates?.[0]?.content?.parts?.[0]?.text || '';
         
-        // Extrair JSON da resposta
         const jsonMatch = textoResposta.match(/\{[\s\S]*\}/);
         if (!jsonMatch) {
-          console.error('❌ Resposta não contém JSON válido');
-          console.error(`Subtema: ${subtema}`);
-          console.error(`Texto recebido: ${textoResposta.substring(0, 200)}...`);
+          console.error(`❌ Resposta inválida para subtema "${subtema}"`);
           continue;
         }
 
         const questoesData = JSON.parse(jsonMatch[0]);
         const questoes = questoesData.questoes || [];
-        console.log(`   ✅ ${questoes.length} questões geradas para subtema "${subtema}"`);
-
-        // Adicionar campos com exemplo_pratico
-        const questoesComMetadados = questoes.map((q: any) => ({
-          area: area,
-          tema: tema,
-          subtema: subtema,
-          enunciado: q.enunciado,
-          alternativa_a: q.alternativa_a,
-          alternativa_b: q.alternativa_b,
-          alternativa_c: q.alternativa_c,
-          alternativa_d: q.alternativa_d,
-          resposta_correta: q.resposta_correta,
-          comentario: q.comentario,
-          exemplo_pratico: q.exemplo_pratico || null
-        }));
-
-        todasQuestoes.push(...questoesComMetadados);
         
-        // Log de progresso
-        console.log(`   📊 Progresso: ${todasQuestoes.length}/${totalQuestoesEsperadas} questões geradas (${Math.floor((todasQuestoes.length/totalQuestoesEsperadas)*100)}%)`);
+        console.log(`   ✅ ${questoes.length} questões geradas`);
 
-        // Delay entre subtemas para evitar rate limits
-        if (i + 1 < subtemas.length) {
+        // Preparar questões com metadados
+        const questoesComMetadados = questoes.map((q: any) => {
+          const o: any = {};
+          o.area = area;
+          o.tema = tema;
+          o.subtema = subtema;
+          o.enunciado = q.enunciado;
+          o.alternativa_a = q.alternativa_a;
+          o.alternativa_b = q.alternativa_b;
+          o.alternativa_c = q.alternativa_c;
+          o.alternativa_d = q.alternativa_d;
+          o.resposta_correta = q.resposta_correta;
+          o.comentario = q.comentario;
+          o.exemplo_pratico = q.exemplo_pratico || null;
+          return o;
+        });
+
+        // ⚡ SALVAR IMEDIATAMENTE após cada subtema (não esperar o final!)
+        if (questoesComMetadados.length > 0) {
+          console.log(`   💾 Salvando ${questoesComMetadados.length} questões...`);
+          
+          const { error: insertError } = await supabase
+            .from('QUESTOES_GERADAS')
+            .insert(questoesComMetadados);
+
+          if (insertError) {
+            console.error(`   ❌ Erro ao salvar: ${insertError.message}`);
+          } else {
+            console.log(`   ✅ Questões salvas com sucesso!`);
+            questoesGeradasNestaChamada.push(...questoesComMetadados);
+          }
+        }
+
+        // Delay entre subtemas
+        if (i + 1 < subtemasParaProcessar.length) {
           await new Promise(resolve => setTimeout(resolve, 1500));
         }
       } catch (error) {
         console.error(`❌ Erro ao processar subtema "${subtema}":`, error);
-        // Continuar para próximo subtema
         continue;
       }
     }
 
-    console.log(`\n✨ TOTAL FINAL: ${todasQuestoes.length}/${totalQuestoesEsperadas} questões geradas para ${area} > ${tema}`);
-    console.log('💾 Salvando questões na tabela QUESTOES_GERADAS...');
+    // 7. Calcular status final
+    const subtemasProcessadosAgora = subtemasJaProcessados.size + subtemasParaProcessar.length;
+    const subtemasFaltantes = totalSubtemas - subtemasProcessadosAgora;
+    const geracaoCompleta = subtemasFaltantes <= 0;
 
-    // Sanitizar payload para garantir que nenhuma coluna gerada/default seja enviada
-    const allowedKeys = [
-      'area','tema','subtema','enunciado','alternativa_a','alternativa_b','alternativa_c','alternativa_d','resposta_correta','comentario','exemplo_pratico'
-    ];
-    const sanitizedQuestoes = todasQuestoes.map((q) => {
-      const o: any = {};
-      for (const k of allowedKeys) o[k] = (q as any)[k];
-      return o;
-    });
-
-    if (sanitizedQuestoes.length > 0) {
-      console.log('🔎 Campos do insert:', Object.keys(sanitizedQuestoes[0]));
-    }
-
-    // Salvar questões no banco
-    const { error: insertError } = await supabase
+    // 8. Buscar TODAS as questões atualizadas (existentes + novas)
+    const { data: todasQuestoes } = await supabase
       .from('QUESTOES_GERADAS')
-      .insert(sanitizedQuestoes);
+      .select('*')
+      .eq('area', area)
+      .eq('tema', tema)
+      .eq('aprovada', true);
 
-    if (insertError) {
-      console.error('Erro ao salvar questões:', insertError);
-      throw insertError;
-    }
+    const questoesFinais = todasQuestoes || [];
 
-    console.log('Questões salvas com sucesso!');
+    console.log(`\n📊 RESUMO DA CHAMADA:`);
+    console.log(`   - Questões geradas nesta chamada: ${questoesGeradasNestaChamada.length}`);
+    console.log(`   - Total de questões disponíveis: ${questoesFinais.length}`);
+    console.log(`   - Subtemas processados: ${subtemasProcessadosAgora}/${totalSubtemas}`);
+    console.log(`   - Subtemas faltantes: ${subtemasFaltantes}`);
+    console.log(`   - Geração completa: ${geracaoCompleta ? 'SIM ✅' : 'NÃO ⏳'}`);
 
     return new Response(
       JSON.stringify({ 
-        questoes_geradas: todasQuestoes.length,
-        questoes: todasQuestoes,
+        questoes: questoesFinais,
+        questoes_geradas: questoesGeradasNestaChamada.length,
+        total_questoes: questoesFinais.length,
+        total_subtemas: totalSubtemas,
+        subtemas_processados: subtemasProcessadosAgora,
+        subtemas_faltantes: subtemasFaltantes,
+        geracao_completa: geracaoCompleta,
         fromCache: false 
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
