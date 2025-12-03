@@ -25,103 +25,56 @@ serve(async (req) => {
 
     console.log('Gerando estrutura de aula para:', tema);
 
-    const prompt = `Você é um professor jurídico expert. Crie uma estrutura de aula COMPLETA, INTERATIVA e DIDÁTICA sobre: ${tema}
+    const prompt = `Crie uma estrutura de aula sobre: ${tema}
 
-A aula deve ter EXATAMENTE 3 módulos, cada um com conteúdo RICO e EDUCATIVO:
+REGRAS CRÍTICAS:
+- Retorne APENAS JSON válido, sem markdown
+- Seja CONCISO - cada campo de texto com máximo 200 palavras
+- 3 módulos com conteúdo objetivo
 
-ESTRUTURA DE CADA MÓDULO:
-1. Nome do módulo (título curto e descritivo)
-2. Ícone do módulo (escolha entre: BookOpen, Scale, Gavel, FileText, Users, Building)
-
-3. CONTEÚDO TEÓRICO RICO EM MARKDOWN (600-800 palavras):
-   - Use ## para títulos de seções
-   - Use ### para subtítulos
-   - Use **negrito** e *itálico* para ênfase
-   - Use listas ordenadas (1., 2.) e não ordenadas (-)
-   - OBRIGATORIAMENTE inclua 3-4 CARDS ESPECIAIS no formato:
-     > ⚠️ **ATENÇÃO**: Ponto crítico importante
-     > 💡 **IMPORTANTE**: Conceito-chave fundamental
-     > 📌 **DICA PRÁTICA**: Aplicação no mundo real
-     > ⚖️ **JURISPRUDÊNCIA**: Caso relevante
-   - Organize em seções claras com títulos
-
-4. EXEMPLO PRÁTICO DETALHADO:
-   - Cenário realista (100-150 palavras)
-   - Análise jurídica (150-200 palavras)
-   - Solução fundamentada (100-150 palavras)
-   
-5. QUIZ RÁPIDO DE FIXAÇÃO:
-   - 3 questões simples (V/F ou múltipla escolha)
-   - Para reforço imediato do aprendizado
-   
-6. RESUMO EM TÓPICOS:
-   - 5-7 pontos-chave do módulo
-
-7. 6 termos-chave para matching (definições máx 80 chars)
-8. 7 flashcards completos
-9. 7 questões de múltipla escolha com explicações
-
-Ao final dos 3 módulos, crie uma PROVA FINAL com 12 questões desafiadoras.
-
-IMPORTANTE: 
-- Retorne APENAS JSON puro, sem markdown, sem \`\`\`json
-- O campo "teoria" deve conter markdown rico e formatado
-- Os cards especiais (>, ⚠️, 💡, 📌, ⚖️) são OBRIGATÓRIOS
-- Exemplo prático deve ser realista e aplicável
-- Inclua um campo "imagemPrompt" com uma descrição em inglês para gerar uma imagem de capa educacional relacionada ao tema (ex: "Educational illustration about criminal law, showing justice scales, legal books, and a gavel, modern clean style, blue and gold colors, gradient background")
-
-Formato JSON esperado:
+ESTRUTURA JSON:
 {
-  "titulo": "Título da Aula",
-  "descricao": "Breve descrição do que será aprendido",
-  "area": "${tema.includes('Penal') ? 'Direito Penal' : tema.includes('Civil') ? 'Direito Civil' : tema.includes('Constitucional') ? 'Direito Constitucional' : 'Direito'}",
-  "imagemPrompt": "Educational illustration about [topic], showing [relevant visual elements], modern clean style, professional colors, gradient background",
+  "titulo": "Título curto",
+  "descricao": "Descrição em 1-2 frases",
+  "area": "Direito",
+  "imagemPrompt": "Educational illustration about ${tema}, legal theme, modern style",
   "modulos": [
     {
       "id": 1,
       "nome": "Nome do Módulo",
       "icone": "BookOpen",
-      "teoria": "## Conceitos Fundamentais\n\nTexto rico em markdown...\n\n> ⚠️ **ATENÇÃO**: Ponto crítico...\n\n### Aplicação Prática\n\nMais conteúdo...",
-      "exemploPratico": {
-        "cenario": "Descrição do caso real...",
-        "analise": "Análise jurídica detalhada...",
-        "solucao": "Solução fundamentada..."
-      },
-      "quizRapido": [
-        {
-          "question": "Questão simples?",
-          "options": ["Verdadeiro", "Falso"],
-          "correctAnswer": 0,
-          "explicacao": "Breve explicação"
-        }
-      ],
+      "teoria": "Conteúdo teórico em markdown. Use ## para títulos. Inclua 1-2 cards especiais: > ⚠️ **ATENÇÃO**: ou > 💡 **IMPORTANTE**:",
       "resumo": ["Ponto 1", "Ponto 2", "Ponto 3", "Ponto 4", "Ponto 5"],
       "matching": [
-        {"termo": "Termo", "definicao": "Definição curta (máx 80 chars)"}
-      ],
-      "flashcards": [
-        {"frente": "Pergunta", "verso": "Resposta completa", "exemplo": "Exemplo"}
+        {"termo": "Termo1", "definicao": "Definição curta"},
+        {"termo": "Termo2", "definicao": "Definição curta"},
+        {"termo": "Termo3", "definicao": "Definição curta"},
+        {"termo": "Termo4", "definicao": "Definição curta"}
       ],
       "questoes": [
         {
-          "question": "Questão detalhada?",
+          "question": "Questão?",
           "options": ["A", "B", "C", "D"],
           "correctAnswer": 0,
-          "explicacao": "Explicação detalhada"
+          "explicacao": "Explicação breve"
         }
       ]
     }
   ],
   "provaFinal": [
     {
-      "question": "Questão desafiadora?",
+      "question": "Questão final?",
       "options": ["A", "B", "C", "D"],
       "correctAnswer": 0,
-      "explicacao": "Explicação detalhada",
-      "tempoLimite": 45
+      "explicacao": "Explicação"
     }
   ]
-}`;
+}
+
+IMPORTANTE:
+- Cada módulo: teoria com ~300 palavras, 5 resumos, 4 matchings, 3 questões
+- Prova final: 5 questões
+- JSON PURO, sem \`\`\`json`;
 
     const systemPrompt = 'Você é um professor jurídico expert que cria aulas estruturadas e didáticas. Sempre retorne APENAS JSON puro válido, sem markdown, sem ```json.';
     const fullPrompt = `${systemPrompt}\n\n${prompt}`;
