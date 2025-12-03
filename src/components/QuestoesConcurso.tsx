@@ -55,6 +55,7 @@ const QuestoesConcurso = ({ questoes, onFinish, area, tema }: QuestoesConcursoPr
   const containerRef = useRef<HTMLDivElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
   const narrationAudioRef = useRef<HTMLAudioElement | null>(null);
+  const exemploAudioStartedRef = useRef(false);
 
   const currentQuestion = questoesState[currentIndex];
   const progress = ((currentIndex + 1) / questoesState.length) * 100;
@@ -212,27 +213,36 @@ const QuestoesConcurso = ({ questoes, onFinish, area, tema }: QuestoesConcursoPr
         gerarImagemExemplo(currentQuestion);
       }
       
-      // Verificar se já tem áudio do exemplo no cache local
-      if (currentQuestion.url_audio_exemplo) {
-        // Usar áudio do cache diretamente
-        const audio = new Audio(currentQuestion.url_audio_exemplo);
-        narrationAudioRef.current = audio;
-        setNarrationLoading(true);
-        audio.onended = () => setNarrationLoading(false);
-        audio.onerror = () => setNarrationLoading(false);
-        audio.play().catch(() => setNarrationLoading(false));
-      } else {
-        // Gerar novo áudio e salvar no cache
-        const exemploTexto = `Exemplo prático. ${currentQuestion.exemplo_pratico}`;
-        narrarTexto(exemploTexto, currentQuestion.id, 'exemplo');
+      // Só iniciar áudio se ainda não foi iniciado nesta abertura do drawer
+      if (!exemploAudioStartedRef.current) {
+        exemploAudioStartedRef.current = true;
+        
+        // Verificar se já tem áudio do exemplo no cache local
+        if (currentQuestion.url_audio_exemplo) {
+          // Usar áudio do cache diretamente
+          const audio = new Audio(currentQuestion.url_audio_exemplo);
+          narrationAudioRef.current = audio;
+          setNarrationLoading(true);
+          audio.onended = () => setNarrationLoading(false);
+          audio.onerror = () => setNarrationLoading(false);
+          audio.play().catch(() => setNarrationLoading(false));
+        } else {
+          // Gerar novo áudio e salvar no cache
+          const exemploTexto = `Exemplo prático. ${currentQuestion.exemplo_pratico}`;
+          narrarTexto(exemploTexto, currentQuestion.id, 'exemplo');
+        }
       }
-    } else if (!showExemplo && narrationAudioRef.current) {
-      // Parar narração ao fechar drawer
-      narrationAudioRef.current.pause();
-      narrationAudioRef.current = null;
-      setNarrationLoading(false);
+    } else if (!showExemplo) {
+      // Resetar flag quando fechar o drawer
+      exemploAudioStartedRef.current = false;
+      
+      if (narrationAudioRef.current) {
+        narrationAudioRef.current.pause();
+        narrationAudioRef.current = null;
+        setNarrationLoading(false);
+      }
     }
-  }, [showExemplo, currentQuestion?.exemplo_pratico, currentQuestion?.url_imagem_exemplo, currentQuestion?.url_audio_exemplo, currentQuestion?.id, narrarTexto, gerarImagemExemplo]);
+  }, [showExemplo, currentQuestion?.exemplo_pratico, currentQuestion?.url_imagem_exemplo, currentQuestion?.id, narrarTexto, gerarImagemExemplo]);
 
   const gerarAudioParaQuestao = async (questao: Questao) => {
     if (audioLoading) return;
