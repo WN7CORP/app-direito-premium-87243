@@ -5634,6 +5634,7 @@ export type Database = {
           tema: string
           updated_at: string | null
           url_audio: string | null
+          url_imagem_exemplo: string | null
           versao_geracao: number | null
           vezes_respondida: number | null
         }
@@ -5660,6 +5661,7 @@ export type Database = {
           tema: string
           updated_at?: string | null
           url_audio?: string | null
+          url_imagem_exemplo?: string | null
           versao_geracao?: number | null
           vezes_respondida?: number | null
         }
@@ -5686,6 +5688,7 @@ export type Database = {
           tema?: string
           updated_at?: string | null
           url_audio?: string | null
+          url_imagem_exemplo?: string | null
           versao_geracao?: number | null
           vezes_respondida?: number | null
         }
