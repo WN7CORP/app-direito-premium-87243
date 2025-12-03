@@ -1,8 +1,14 @@
 import { useNavigate } from "react-router-dom";
-import { MessageCircle, FileText, Newspaper, Sparkles, Film, GraduationCap, BookOpen, Monitor } from "lucide-react";
+import { MessageCircle, FileText, Newspaper, Sparkles, Film, GraduationCap, BookOpen, Monitor, Target } from "lucide-react";
 const Ferramentas = () => {
   const navigate = useNavigate();
   const ferramentas = [{
+    id: "questoes",
+    title: "Questões",
+    description: "Pratique com questões de concurso por tema",
+    icon: Target,
+    route: "/ferramentas/questoes"
+  }, {
     id: "desktop",
     title: "Acesso Desktop",
     description: "Solicite acesso à plataforma desktop",
