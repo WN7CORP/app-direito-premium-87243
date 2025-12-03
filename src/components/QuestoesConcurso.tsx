@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { CheckCircle2, XCircle, ChevronRight, Trophy, RotateCcw, BookOpen, Volume2, Pause, Loader2 } from "lucide-react";
@@ -46,12 +46,70 @@ const QuestoesConcurso = ({ questoes, onFinish, area, tema }: QuestoesConcursoPr
   const [questoesState, setQuestoesState] = useState<Questao[]>(questoes);
   const [audioLoading, setAudioLoading] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [shakeError, setShakeError] = useState(false);
+  const [narrationLoading, setNarrationLoading] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
+  const narrationAudioRef = useRef<HTMLAudioElement | null>(null);
 
   const currentQuestion = questoesState[currentIndex];
   const progress = ((currentIndex + 1) / questoesState.length) * 100;
   const isCorrect = selectedAnswer === currentQuestion?.resposta_correta;
+
+  // Shake animation variants
+  const shakeVariants = {
+    shake: {
+      x: [0, -8, 8, -8, 8, -4, 4, 0],
+      transition: { duration: 0.5 }
+    },
+    idle: { x: 0 }
+  };
+
+  // Função para narrar texto dinamicamente
+  const narrarTexto = useCallback(async (texto: string): Promise<void> => {
+    return new Promise(async (resolve) => {
+      try {
+        // Parar narração anterior se existir
+        if (narrationAudioRef.current) {
+          narrationAudioRef.current.pause();
+          narrationAudioRef.current = null;
+        }
+
+        setNarrationLoading(true);
+        
+        const { data, error } = await supabase.functions.invoke('gerar-narracao', {
+          body: { texto }
+        });
+
+        if (error || !data?.audioBase64) {
+          console.error('Erro ao gerar narração:', error);
+          setNarrationLoading(false);
+          resolve();
+          return;
+        }
+
+        const audioUrl = `data:audio/mpeg;base64,${data.audioBase64}`;
+        const audio = new Audio(audioUrl);
+        narrationAudioRef.current = audio;
+        
+        audio.onended = () => {
+          setNarrationLoading(false);
+          resolve();
+        };
+        
+        audio.onerror = () => {
+          setNarrationLoading(false);
+          resolve();
+        };
+
+        await audio.play();
+      } catch (err) {
+        console.error('Erro na narração:', err);
+        setNarrationLoading(false);
+        resolve();
+      }
+    });
+  }, []);
 
   // Scroll para o topo ao mudar de questão
   useEffect(() => {
@@ -80,6 +138,25 @@ const QuestoesConcurso = ({ questoes, onFinish, area, tema }: QuestoesConcursoPr
       gerarAudioParaQuestao(questaoAtual);
     }
   }, [currentIndex]);
+
+  // Narrar exemplo quando drawer abrir
+  useEffect(() => {
+    if (showExemplo && currentQuestion?.exemplo_pratico) {
+      // Parar áudio principal se estiver tocando
+      if (audioRef.current) {
+        audioRef.current.pause();
+        setIsPlaying(false);
+      }
+      
+      const exemploTexto = `Exemplo prático. ${currentQuestion.exemplo_pratico}`;
+      narrarTexto(exemploTexto);
+    } else if (!showExemplo && narrationAudioRef.current) {
+      // Parar narração ao fechar drawer
+      narrationAudioRef.current.pause();
+      narrationAudioRef.current = null;
+      setNarrationLoading(false);
+    }
+  }, [showExemplo, currentQuestion?.exemplo_pratico, narrarTexto]);
 
   const gerarAudioParaQuestao = async (questao: Questao) => {
     if (audioLoading) return;
@@ -160,6 +237,12 @@ const QuestoesConcurso = ({ questoes, onFinish, area, tema }: QuestoesConcursoPr
   const handleSelectAnswer = async (answer: string) => {
     if (showResult) return;
     
+    // Parar áudio do enunciado
+    if (audioRef.current) {
+      audioRef.current.pause();
+      setIsPlaying(false);
+    }
+    
     setSelectedAnswer(answer);
     setShowResult(true);
 
@@ -178,9 +261,32 @@ const QuestoesConcurso = ({ questoes, onFinish, area, tema }: QuestoesConcursoPr
     } catch (error) {
       console.error("Erro ao atualizar stats:", error);
     }
+
+    // Narração de feedback
+    if (correct) {
+      await narrarTexto("Resposta correta!");
+      // Aguarda um pouco e narra o comentário
+      if (currentQuestion.comentario) {
+        setTimeout(() => {
+          narrarTexto(currentQuestion.comentario);
+        }, 500);
+      }
+    } else {
+      // Tremor de tela ao errar
+      setShakeError(true);
+      setTimeout(() => setShakeError(false), 600);
+      
+      await narrarTexto("Resposta incorreta.");
+    }
   };
 
   const handleNext = () => {
+    // Parar qualquer narração em andamento
+    if (narrationAudioRef.current) {
+      narrationAudioRef.current.pause();
+      narrationAudioRef.current = null;
+    }
+    
     if (currentIndex < questoesState.length - 1) {
       setCurrentIndex(prev => prev + 1);
       setSelectedAnswer(null);
@@ -201,6 +307,10 @@ const QuestoesConcurso = ({ questoes, onFinish, area, tema }: QuestoesConcursoPr
     if (audioRef.current) {
       audioRef.current.pause();
       setIsPlaying(false);
+    }
+    if (narrationAudioRef.current) {
+      narrationAudioRef.current.pause();
+      narrationAudioRef.current = null;
     }
   };
 
@@ -257,7 +367,12 @@ const QuestoesConcurso = ({ questoes, onFinish, area, tema }: QuestoesConcursoPr
 
   return (
     <>
-      <div ref={containerRef} className="flex-1 flex flex-col overflow-y-auto">
+      <motion.div 
+        ref={containerRef} 
+        className="flex-1 flex flex-col overflow-y-auto"
+        variants={shakeVariants}
+        animate={shakeError ? "shake" : "idle"}
+      >
         {/* Progress */}
         <div className="px-4 py-3 border-b">
           <div className="flex items-center justify-between text-sm mb-2">
@@ -396,6 +511,9 @@ const QuestoesConcurso = ({ questoes, onFinish, area, tema }: QuestoesConcursoPr
                       <span className="font-semibold text-sm">
                         {isCorrect ? "Parabéns! Resposta correta!" : "Resposta incorreta"}
                       </span>
+                      {narrationLoading && (
+                        <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+                      )}
                     </div>
                     
                     {/* Botão Ver Exemplo */}
@@ -442,7 +560,7 @@ const QuestoesConcurso = ({ questoes, onFinish, area, tema }: QuestoesConcursoPr
             </Button>
           </motion.div>
         )}
-      </div>
+      </motion.div>
 
       {/* Audio element */}
       <audio 
@@ -459,6 +577,9 @@ const QuestoesConcurso = ({ questoes, onFinish, area, tema }: QuestoesConcursoPr
             <DrawerTitle className="flex items-center gap-2">
               <BookOpen className="w-5 h-5 text-primary" />
               Exemplo Prático
+              {narrationLoading && (
+                <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+              )}
             </DrawerTitle>
             <DrawerDescription>
               Veja como esse conceito se aplica na prática
