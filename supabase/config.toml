@@ -41,3 +41,6 @@ verify_jwt = false
 
 [functions.gerar-imagem-hf]
 verify_jwt = false
+
+[functions.gerar-imagem-exemplo]
+verify_jwt = false

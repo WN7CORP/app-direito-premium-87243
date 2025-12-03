@@ -27,6 +27,7 @@ interface Questao {
   subtema: string;
   exemplo_pratico?: string;
   url_audio?: string;
+  url_imagem_exemplo?: string;
 }
 
 interface QuestoesConcursoProps {
@@ -48,6 +49,7 @@ const QuestoesConcurso = ({ questoes, onFinish, area, tema }: QuestoesConcursoPr
   const [isPlaying, setIsPlaying] = useState(false);
   const [shakeError, setShakeError] = useState(false);
   const [narrationLoading, setNarrationLoading] = useState(false);
+  const [imagemLoading, setImagemLoading] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
   const narrationAudioRef = useRef<HTMLAudioElement | null>(null);
@@ -139,13 +141,52 @@ const QuestoesConcurso = ({ questoes, onFinish, area, tema }: QuestoesConcursoPr
     }
   }, [currentIndex]);
 
-  // Narrar exemplo quando drawer abrir
+  // Gerar imagem do exemplo prático
+  const gerarImagemExemplo = useCallback(async (questao: Questao) => {
+    if (!questao.exemplo_pratico || questao.url_imagem_exemplo || imagemLoading) return;
+    
+    setImagemLoading(true);
+    console.log(`Gerando imagem para exemplo da questão ${questao.id}...`);
+
+    try {
+      const { data, error } = await supabase.functions.invoke('gerar-imagem-exemplo', {
+        body: { 
+          questaoId: questao.id, 
+          exemploTexto: questao.exemplo_pratico 
+        }
+      });
+
+      if (error) {
+        console.error('Erro ao gerar imagem:', error);
+        setImagemLoading(false);
+        return;
+      }
+
+      if (data?.url_imagem) {
+        setQuestoesState(prev => prev.map(q => 
+          q.id === questao.id ? { ...q, url_imagem_exemplo: data.url_imagem } : q
+        ));
+        console.log(`Imagem gerada: ${data.url_imagem}, cached: ${data.cached}`);
+      }
+    } catch (err) {
+      console.error('Erro ao chamar função de imagem:', err);
+    } finally {
+      setImagemLoading(false);
+    }
+  }, [imagemLoading]);
+
+  // Narrar exemplo e gerar imagem quando drawer abrir
   useEffect(() => {
     if (showExemplo && currentQuestion?.exemplo_pratico) {
       // Parar áudio principal se estiver tocando
       if (audioRef.current) {
         audioRef.current.pause();
         setIsPlaying(false);
+      }
+      
+      // Gerar imagem se não existir
+      if (!currentQuestion.url_imagem_exemplo) {
+        gerarImagemExemplo(currentQuestion);
       }
       
       const exemploTexto = `Exemplo prático. ${currentQuestion.exemplo_pratico}`;
@@ -156,7 +197,7 @@ const QuestoesConcurso = ({ questoes, onFinish, area, tema }: QuestoesConcursoPr
       narrationAudioRef.current = null;
       setNarrationLoading(false);
     }
-  }, [showExemplo, currentQuestion?.exemplo_pratico, narrarTexto]);
+  }, [showExemplo, currentQuestion?.exemplo_pratico, currentQuestion?.url_imagem_exemplo, narrarTexto, gerarImagemExemplo]);
 
   const gerarAudioParaQuestao = async (questao: Questao) => {
     if (audioLoading) return;
@@ -591,7 +632,24 @@ const QuestoesConcurso = ({ questoes, onFinish, area, tema }: QuestoesConcursoPr
               Veja como esse conceito se aplica na prática
             </DrawerDescription>
           </DrawerHeader>
-          <div className="px-4 pb-4">
+          <div className="px-4 pb-4 space-y-3">
+            {/* Imagem ilustrativa */}
+            {currentQuestion?.url_imagem_exemplo ? (
+              <div className="rounded-xl overflow-hidden border">
+                <img 
+                  src={currentQuestion.url_imagem_exemplo} 
+                  alt="Ilustração do exemplo prático" 
+                  className="w-full h-48 object-cover"
+                />
+              </div>
+            ) : imagemLoading && (
+              <div className="h-48 rounded-xl bg-muted flex items-center justify-center">
+                <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+                <span className="ml-2 text-sm text-muted-foreground">Gerando ilustração...</span>
+              </div>
+            )}
+            
+            {/* Texto do exemplo */}
             <div className="bg-muted/50 rounded-xl p-4 border">
               <p className="text-sm leading-relaxed whitespace-pre-wrap">
                 {currentQuestion?.exemplo_pratico}
