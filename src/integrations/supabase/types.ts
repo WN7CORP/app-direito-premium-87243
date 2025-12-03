@@ -5828,6 +5828,9 @@ export type Database = {
           subtema: string | null
           tema: string | null
           ultima_atualizacao: string | null
+          url_audio_exemplos: string | null
+          url_audio_resumo: string | null
+          url_audio_termos: string | null
         }
         Insert: {
           area?: string | null
@@ -5839,6 +5842,9 @@ export type Database = {
           subtema?: string | null
           tema?: string | null
           ultima_atualizacao?: string | null
+          url_audio_exemplos?: string | null
+          url_audio_resumo?: string | null
+          url_audio_termos?: string | null
         }
         Update: {
           area?: string | null
@@ -5850,6 +5856,9 @@ export type Database = {
           subtema?: string | null
           tema?: string | null
           ultima_atualizacao?: string | null
+          url_audio_exemplos?: string | null
+          url_audio_resumo?: string | null
+          url_audio_termos?: string | null
         }
         Relationships: []
       }

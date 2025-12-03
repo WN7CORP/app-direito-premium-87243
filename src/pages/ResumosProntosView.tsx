@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -7,12 +7,13 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, FileDown, Sparkles, Search, ChevronRight, ArrowUp } from "lucide-react";
+import { ArrowLeft, FileDown, Sparkles, Search, ChevronRight, ArrowUp, Volume2, Pause, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import ReactMarkdown from "react-markdown";
 import { formatForWhatsApp } from "@/lib/formatWhatsApp";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useDeviceType } from "@/hooks/use-device-type";
+
 interface Resumo {
   id: number;
   subtema: string;
@@ -24,21 +25,18 @@ interface Resumo {
     gerado_em?: string;
   };
   "ordem subtema": string;
+  url_audio_resumo?: string | null;
+  url_audio_exemplos?: string | null;
+  url_audio_termos?: string | null;
 }
+
 const ResumosProntosView = () => {
-  const {
-    area,
-    tema
-  } = useParams<{
-    area: string;
-    tema: string;
-  }>();
+  const { area, tema } = useParams<{ area: string; tema: string }>();
   const navigate = useNavigate();
-  const {
-    toast
-  } = useToast();
+  const { toast } = useToast();
   const isMobile = useIsMobile();
   const { isDesktop } = useDeviceType();
+  
   const [searchTerm, setSearchTerm] = useState("");
   const [resumoSelecionado, setResumoSelecionado] = useState<Resumo | null>(null);
   const [showMobilePreview, setShowMobilePreview] = useState(false);
@@ -46,8 +44,20 @@ const ResumosProntosView = () => {
   const [gerandoResumoId, setGerandoResumoId] = useState<number | null>(null);
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [activeTab, setActiveTab] = useState("resumo");
+
+  // Estados de áudio
+  const [audioUrls, setAudioUrls] = useState<Map<string, string>>(new Map());
+  const [loadingAudio, setLoadingAudio] = useState<Record<string, boolean>>({});
+  const [playingAudio, setPlayingAudio] = useState<string | null>(null);
+  
+  // Refs de áudio
+  const audioResumoRef = useRef<HTMLAudioElement | null>(null);
+  const audioExemplosRef = useRef<HTMLAudioElement | null>(null);
+  const audioTermosRef = useRef<HTMLAudioElement | null>(null);
+
   const decodedArea = decodeURIComponent(area || "");
   const decodedTema = decodeURIComponent(tema || "");
+
   useEffect(() => {
     const handleScroll = () => {
       setShowScrollTop(window.scrollY > 300);
@@ -56,7 +66,6 @@ const ResumosProntosView = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Listen to sidebar events
   useEffect(() => {
     const handleSelectResumo = (e: CustomEvent) => {
       const resumo = e.detail;
@@ -68,47 +77,63 @@ const ResumosProntosView = () => {
     window.addEventListener('selectResumo' as any, handleSelectResumo);
     return () => window.removeEventListener('selectResumo' as any, handleSelectResumo);
   }, [resumosGerados, gerandoResumoId]);
-  const {
-    data: resumos,
-    isLoading
-  } = useQuery({
+
+  const { data: resumos, isLoading } = useQuery({
     queryKey: ["resumos-subtemas", decodedArea, decodedTema],
     queryFn: async () => {
-      const {
-        data,
-        error
-      } = await supabase.from("RESUMO").select("*").eq("area", decodedArea).eq("tema", decodedTema).not("subtema", "is", null).order("ordem subtema", {
-        ascending: true
-      });
+      const { data, error } = await supabase
+        .from("RESUMO")
+        .select("*")
+        .eq("area", decodedArea)
+        .eq("tema", decodedTema)
+        .not("subtema", "is", null)
+        .order("ordem subtema", { ascending: true });
+      
       if (error) throw error;
+      
       if (data.length > 0 && !resumoSelecionado) {
         setResumoSelecionado(data[0] as Resumo);
         const gerados = new Map<number, any>();
+        const urls = new Map<string, string>();
+        
         data.forEach((resumo: any) => {
           if (resumo.conteudo_gerado) {
             gerados.set(resumo.id, resumo.conteudo_gerado);
           }
+          // Carregar URLs de áudio existentes
+          if (resumo.url_audio_resumo) {
+            urls.set(`${resumo.id}-resumo`, resumo.url_audio_resumo);
+          }
+          if (resumo.url_audio_exemplos) {
+            urls.set(`${resumo.id}-exemplos`, resumo.url_audio_exemplos);
+          }
+          if (resumo.url_audio_termos) {
+            urls.set(`${resumo.id}-termos`, resumo.url_audio_termos);
+          }
         });
+        
         setResumosGerados(gerados);
+        setAudioUrls(urls);
       }
       return data as Resumo[];
     }
   });
+
   const resumosFiltrados = useMemo(() => {
     if (!resumos) return [];
-    return resumos.filter(resumo => resumo.subtema.toLowerCase().includes(searchTerm.toLowerCase())).sort((a, b) => {
-      const ordemA = parseFloat(a["ordem subtema"] || "0");
-      const ordemB = parseFloat(b["ordem subtema"] || "0");
-      return ordemA - ordemB;
-    });
+    return resumos
+      .filter(resumo => resumo.subtema.toLowerCase().includes(searchTerm.toLowerCase()))
+      .sort((a, b) => {
+        const ordemA = parseFloat(a["ordem subtema"] || "0");
+        const ordemB = parseFloat(b["ordem subtema"] || "0");
+        return ordemA - ordemB;
+      });
   }, [resumos, searchTerm]);
+
   const gerarResumo = async (resumo: Resumo) => {
     setGerandoResumoId(resumo.id);
     try {
-      const {
-        data,
-        error
-      } = await supabase.functions.invoke("gerar-resumo-pronto", {
+      const { data, error } = await supabase.functions.invoke("gerar-resumo-pronto", {
         body: {
           resumoId: resumo.id,
           area: decodedArea,
@@ -138,6 +163,127 @@ const ResumosProntosView = () => {
       setGerandoResumoId(null);
     }
   };
+
+  const gerarAudioResumo = async (tipo: 'resumo' | 'exemplos' | 'termos') => {
+    if (!resumoSelecionado) return;
+    
+    const resumoGerado = resumosGerados.get(resumoSelecionado.id);
+    if (!resumoGerado) return;
+    
+    const audioKey = `${resumoSelecionado.id}-${tipo}`;
+    
+    // Se já tem URL, apenas tocar
+    if (audioUrls.has(audioKey)) {
+      toggleAudio(tipo);
+      return;
+    }
+    
+    let texto = '';
+    switch (tipo) {
+      case 'resumo':
+        texto = resumoGerado.markdown;
+        break;
+      case 'exemplos':
+        texto = resumoGerado.exemplos;
+        break;
+      case 'termos':
+        texto = resumoGerado.termos;
+        break;
+    }
+    
+    if (!texto) {
+      toast({
+        title: "Conteúdo não disponível",
+        description: "Aguarde a geração do conteúdo",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    setLoadingAudio(prev => ({ ...prev, [tipo]: true }));
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('gerar-audio-resumo-natural', {
+        body: { 
+          resumoId: resumoSelecionado.id, 
+          texto, 
+          tipo 
+        }
+      });
+      
+      if (error) throw error;
+      
+      if (data?.url_audio) {
+        setAudioUrls(prev => new Map(prev).set(audioKey, data.url_audio));
+        
+        toast({
+          title: data.cached ? "Áudio carregado!" : "Áudio gerado!",
+          description: "Clique novamente para ouvir"
+        });
+      }
+    } catch (error: any) {
+      console.error('Erro ao gerar áudio:', error);
+      toast({
+        title: "Erro ao gerar narração",
+        description: error.message || "Tente novamente mais tarde",
+        variant: "destructive"
+      });
+    } finally {
+      setLoadingAudio(prev => ({ ...prev, [tipo]: false }));
+    }
+  };
+
+  const stopAllAudios = () => {
+    [audioResumoRef, audioExemplosRef, audioTermosRef].forEach(ref => {
+      if (ref.current) {
+        ref.current.pause();
+        ref.current.currentTime = 0;
+      }
+    });
+    setPlayingAudio(null);
+  };
+
+  const toggleAudio = (tipo: 'resumo' | 'exemplos' | 'termos') => {
+    if (!resumoSelecionado) return;
+    
+    const audioKey = `${resumoSelecionado.id}-${tipo}`;
+    const audioUrl = audioUrls.get(audioKey);
+    
+    if (!audioUrl) {
+      gerarAudioResumo(tipo);
+      return;
+    }
+    
+    const refMap = {
+      resumo: audioResumoRef,
+      exemplos: audioExemplosRef,
+      termos: audioTermosRef
+    };
+    
+    const audioRef = refMap[tipo];
+    
+    if (playingAudio === tipo) {
+      // Pausar
+      if (audioRef.current) {
+        audioRef.current.pause();
+      }
+      setPlayingAudio(null);
+    } else {
+      // Parar outros e tocar este
+      stopAllAudios();
+      
+      if (audioRef.current) {
+        audioRef.current.src = audioUrl;
+        audioRef.current.play();
+        setPlayingAudio(tipo);
+      }
+    }
+  };
+
+  const handleAudioEnded = () => {
+    setPlayingAudio(null);
+  };
+
   const exportarPDF = async (resumo: Resumo) => {
     const resumoGerado = resumosGerados.get(resumo.id);
     if (!resumoGerado?.markdown) {
@@ -153,10 +299,7 @@ const ResumosProntosView = () => {
       description: "Isso pode levar alguns segundos"
     });
     try {
-      const {
-        data,
-        error
-      } = await supabase.functions.invoke("exportar-resumo-pdf", {
+      const { data, error } = await supabase.functions.invoke("exportar-resumo-pdf", {
         body: {
           resumo: resumoGerado.markdown,
           titulo: resumo.subtema
@@ -165,7 +308,6 @@ const ResumosProntosView = () => {
       if (error) throw error;
       
       if (data?.pdfDataUrl) {
-        // Criar link de download a partir do base64
         const link = document.createElement('a');
         link.href = data.pdfDataUrl;
         link.download = `resumo-${resumo.subtema.substring(0, 30).replace(/[^a-zA-Z0-9]/g, '_')}.pdf`;
@@ -187,6 +329,7 @@ const ResumosProntosView = () => {
       });
     }
   };
+
   const compartilharWhatsApp = (resumo: Resumo) => {
     const resumoGerado = resumosGerados.get(resumo.id);
     if (!resumoGerado?.markdown) {
@@ -199,7 +342,6 @@ const ResumosProntosView = () => {
     }
     const textoFormatado = formatForWhatsApp(resumoGerado.markdown);
     
-    // Cabeçalho mais visual para WhatsApp
     const cabecalho = `╔═══════════════════╗
 📚 *RESUMO JURÍDICO*
 ╚═══════════════════╝
@@ -224,15 +366,54 @@ const ResumosProntosView = () => {
       description: "Resumo formatado com emojis e pronto para compartilhar!"
     });
   };
+
+  const renderAudioButton = (tipo: 'resumo' | 'exemplos' | 'termos') => {
+    const isLoading = loadingAudio[tipo];
+    const isPlaying = playingAudio === tipo;
+    const audioKey = resumoSelecionado ? `${resumoSelecionado.id}-${tipo}` : '';
+    const hasAudio = audioUrls.has(audioKey);
+    
+    return (
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={() => hasAudio ? toggleAudio(tipo) : gerarAudioResumo(tipo)}
+        disabled={isLoading}
+        className="gap-2"
+      >
+        {isLoading ? (
+          <>
+            <Loader2 className="w-4 h-4 animate-spin" />
+            Gerando...
+          </>
+        ) : isPlaying ? (
+          <>
+            <Pause className="w-4 h-4" />
+            Pausar
+          </>
+        ) : (
+          <>
+            <Volume2 className="w-4 h-4" />
+            Narrar
+          </>
+        )}
+      </Button>
+    );
+  };
+
   if (isLoading) {
-    return <div className="px-3 py-4 max-w-4xl mx-auto pb-24">
+    return (
+      <div className="px-3 py-4 max-w-4xl mx-auto pb-24">
         <Skeleton className="h-8 w-64 mb-4" />
         <Skeleton className="h-12 w-full mb-4" />
         <Skeleton className="h-96 w-full" />
-      </div>;
+      </div>
+    );
   }
+
   if (!resumos || resumos.length === 0) {
-    return <div className="px-3 py-4 max-w-4xl mx-auto pb-24">
+    return (
+      <div className="px-3 py-4 max-w-4xl mx-auto pb-24">
         <Button variant="ghost" size="sm" onClick={() => navigate(`/resumos-prontos/${area}`)} className="mb-4">
           <ArrowLeft className="w-4 h-4 mr-2" />
           Voltar
@@ -240,18 +421,28 @@ const ResumosProntosView = () => {
         <p className="text-center text-muted-foreground">
           Nenhum resumo encontrado para este tema
         </p>
-      </div>;
+      </div>
+    );
   }
+
+  // Mobile preview
   if (isMobile && showMobilePreview && resumoSelecionado) {
-    return <div className="flex flex-col min-h-screen pb-20">
+    return (
+      <div className="flex flex-col min-h-screen pb-20">
+        {/* Hidden audio elements */}
+        <audio ref={audioResumoRef} onEnded={handleAudioEnded} />
+        <audio ref={audioExemplosRef} onEnded={handleAudioEnded} />
+        <audio ref={audioTermosRef} onEnded={handleAudioEnded} />
+
         <div className="sticky top-0 z-10 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
           <div className="px-3 py-4">
-            
-
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => setShowMobilePreview(false)}
+              onClick={() => {
+                stopAllAudios();
+                setShowMobilePreview(false);
+              }}
               className="mb-3"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
@@ -263,7 +454,8 @@ const ResumosProntosView = () => {
               <h1 className="text-lg font-bold">{resumoSelecionado.subtema}</h1>
             </div>
 
-            {resumosGerados.has(resumoSelecionado.id) && <div className="flex gap-2">
+            {resumosGerados.has(resumoSelecionado.id) && (
+              <div className="flex gap-2">
                 <Button onClick={() => exportarPDF(resumoSelecionado)} variant="outline" className="flex-1" size="sm">
                   <FileDown className="w-4 h-4 mr-2" />
                   PDF
@@ -274,12 +466,14 @@ const ResumosProntosView = () => {
                   </svg>
                   WhatsApp
                 </Button>
-              </div>}
+              </div>
+            )}
           </div>
         </div>
 
         <div className="p-4">
-          {!resumosGerados.has(resumoSelecionado.id) ? <Card>
+          {!resumosGerados.has(resumoSelecionado.id) ? (
+            <Card>
               <CardContent className="p-8">
                 <div className="text-center space-y-4">
                   <div className="inline-flex p-4 rounded-full bg-primary/10">
@@ -297,7 +491,9 @@ const ResumosProntosView = () => {
                   </div>
                 </div>
               </CardContent>
-            </Card> : <Tabs value={activeTab} onValueChange={setActiveTab}>
+            </Card>
+          ) : (
+            <Tabs value={activeTab} onValueChange={setActiveTab}>
               <TabsList className="grid w-full grid-cols-3 mb-4">
                 <TabsTrigger value="resumo">Resumo</TabsTrigger>
                 <TabsTrigger value="exemplos">Exemplos</TabsTrigger>
@@ -306,32 +502,57 @@ const ResumosProntosView = () => {
               
               <TabsContent value="resumo">
                 <Card>
-                  <CardContent className="p-4 resumo-content resumo-markdown">
-                    <ReactMarkdown>{resumosGerados.get(resumoSelecionado.id)?.markdown}</ReactMarkdown>
+                  <CardContent className="p-4">
+                    <div className="flex justify-end mb-3">
+                      {renderAudioButton('resumo')}
+                    </div>
+                    <div className="resumo-content resumo-markdown">
+                      <ReactMarkdown>{resumosGerados.get(resumoSelecionado.id)?.markdown}</ReactMarkdown>
+                    </div>
                   </CardContent>
                 </Card>
               </TabsContent>
               
               <TabsContent value="exemplos">
                 <Card>
-                  <CardContent className="p-4 resumo-content resumo-markdown">
-                    <ReactMarkdown>{resumosGerados.get(resumoSelecionado.id)?.exemplos || "Gerando exemplos..."}</ReactMarkdown>
+                  <CardContent className="p-4">
+                    <div className="flex justify-end mb-3">
+                      {renderAudioButton('exemplos')}
+                    </div>
+                    <div className="resumo-content resumo-markdown">
+                      <ReactMarkdown>{resumosGerados.get(resumoSelecionado.id)?.exemplos || "Gerando exemplos..."}</ReactMarkdown>
+                    </div>
                   </CardContent>
                 </Card>
               </TabsContent>
               
               <TabsContent value="termos">
                 <Card>
-                  <CardContent className="p-4 resumo-content resumo-markdown">
-                    <ReactMarkdown>{resumosGerados.get(resumoSelecionado.id)?.termos || "Gerando termos..."}</ReactMarkdown>
+                  <CardContent className="p-4">
+                    <div className="flex justify-end mb-3">
+                      {renderAudioButton('termos')}
+                    </div>
+                    <div className="resumo-content resumo-markdown">
+                      <ReactMarkdown>{resumosGerados.get(resumoSelecionado.id)?.termos || "Gerando termos..."}</ReactMarkdown>
+                    </div>
                   </CardContent>
                 </Card>
               </TabsContent>
-            </Tabs>}
+            </Tabs>
+          )}
         </div>
-      </div>;
+      </div>
+    );
   }
-  return <div className="min-h-screen pb-20">
+
+  // Desktop/Tablet view
+  return (
+    <div className="min-h-screen pb-20">
+      {/* Hidden audio elements */}
+      <audio ref={audioResumoRef} onEnded={handleAudioEnded} />
+      <audio ref={audioExemplosRef} onEnded={handleAudioEnded} />
+      <audio ref={audioTermosRef} onEnded={handleAudioEnded} />
+
       <div className="sticky top-0 z-10 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="px-3 py-4 max-w-7xl mx-auto">
           <div className="mb-4">
@@ -339,7 +560,8 @@ const ResumosProntosView = () => {
             <h1 className="text-xl md:text-2xl font-bold">{decodedTema}</h1>
           </div>
 
-          {!isMobile && resumoSelecionado && resumosGerados.has(resumoSelecionado.id) && <div className="flex gap-2 mb-4">
+          {!isMobile && resumoSelecionado && resumosGerados.has(resumoSelecionado.id) && (
+            <div className="flex gap-2 mb-4">
               <Button onClick={() => exportarPDF(resumoSelecionado)} variant="outline" className="flex-1">
                 <FileDown className="w-4 h-4 mr-2" />
                 Exportar PDF
@@ -350,7 +572,8 @@ const ResumosProntosView = () => {
                 </svg>
                 WhatsApp
               </Button>
-            </div>}
+            </div>
+          )}
 
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -360,19 +583,23 @@ const ResumosProntosView = () => {
       </div>
 
       <div className="flex max-w-7xl mx-auto">
-        {/* Apenas renderizar sidebar se não for desktop, pois o Layout já cuida disso */}
         {!isDesktop && (
           <div className={isMobile ? "w-full px-3 py-4" : "w-80 border-r px-3 py-4"}>
             <div className="space-y-2">
-              {resumosFiltrados.map(resumo => <Card key={resumo.id} className={`cursor-pointer transition-all hover:shadow-md hover:border-primary ${resumoSelecionado?.id === resumo.id && !isMobile ? "border-primary bg-primary/5" : ""} ${gerandoResumoId === resumo.id ? "opacity-50" : ""}`} onClick={() => {
-              setResumoSelecionado(resumo);
-              if (!resumosGerados.has(resumo.id) && gerandoResumoId === null) {
-                gerarResumo(resumo);
-              }
-              if (isMobile) {
-                setShowMobilePreview(true);
-              }
-            }}>
+              {resumosFiltrados.map(resumo => (
+                <Card 
+                  key={resumo.id} 
+                  className={`cursor-pointer transition-all hover:shadow-md hover:border-primary ${resumoSelecionado?.id === resumo.id && !isMobile ? "border-primary bg-primary/5" : ""} ${gerandoResumoId === resumo.id ? "opacity-50" : ""}`} 
+                  onClick={() => {
+                    setResumoSelecionado(resumo);
+                    if (!resumosGerados.has(resumo.id) && gerandoResumoId === null) {
+                      gerarResumo(resumo);
+                    }
+                    if (isMobile) {
+                      setShowMobilePreview(true);
+                    }
+                  }}
+                >
                   <CardContent className="p-4">
                     <div className="flex items-center gap-3">
                       <div className="flex-shrink-0 w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
@@ -385,25 +612,35 @@ const ResumosProntosView = () => {
                         <h3 className="font-medium text-sm leading-tight">
                           {resumo.subtema}
                         </h3>
-                        {gerandoResumoId === resumo.id && <span className="text-xs text-muted-foreground mt-1 block">
+                        {gerandoResumoId === resumo.id && (
+                          <span className="text-xs text-muted-foreground mt-1 block">
                             Gerando...
-                          </span>}
+                          </span>
+                        )}
                       </div>
 
                       <div className="flex-shrink-0">
-                        {resumosGerados.has(resumo.id) ? <div className="w-7 h-7 rounded-full bg-green-500/20 flex items-center justify-center">
+                        {resumosGerados.has(resumo.id) ? (
+                          <div className="w-7 h-7 rounded-full bg-green-500/20 flex items-center justify-center">
                             <span className="text-green-600 dark:text-green-400 text-base">✓</span>
-                          </div> : <ChevronRight className="w-5 h-5 text-muted-foreground" />}
+                          </div>
+                        ) : (
+                          <ChevronRight className="w-5 h-5 text-muted-foreground" />
+                        )}
                       </div>
                     </div>
                   </CardContent>
-                </Card>)}
+                </Card>
+              ))}
             </div>
           </div>
         )}
 
-        {!isMobile && <div className={isDesktop ? "flex-1 p-6" : "flex-1 p-6"}>
-            {resumoSelecionado ? !resumosGerados.has(resumoSelecionado.id) ? <Card>
+        {!isMobile && (
+          <div className={isDesktop ? "flex-1 p-6" : "flex-1 p-6"}>
+            {resumoSelecionado ? (
+              !resumosGerados.has(resumoSelecionado.id) ? (
+                <Card>
                   <CardContent className="p-8">
                     <div className="text-center space-y-4">
                       <div className="inline-flex p-4 rounded-full bg-primary/10">
@@ -421,7 +658,9 @@ const ResumosProntosView = () => {
                       </div>
                     </div>
                   </CardContent>
-                </Card> : <Tabs value={activeTab} onValueChange={setActiveTab}>
+                </Card>
+              ) : (
+                <Tabs value={activeTab} onValueChange={setActiveTab}>
                   <TabsList className="grid w-full grid-cols-3 mb-4">
                     <TabsTrigger value="resumo">Resumo</TabsTrigger>
                     <TabsTrigger value="exemplos">Exemplos Práticos</TabsTrigger>
@@ -430,39 +669,63 @@ const ResumosProntosView = () => {
                   
                   <TabsContent value="resumo">
                     <Card>
-                      <CardContent className="p-6 resumo-content">
-                        <ReactMarkdown>{resumosGerados.get(resumoSelecionado.id)?.markdown}</ReactMarkdown>
+                      <CardContent className="p-6">
+                        <div className="flex justify-end mb-4">
+                          {renderAudioButton('resumo')}
+                        </div>
+                        <div className="resumo-content">
+                          <ReactMarkdown>{resumosGerados.get(resumoSelecionado.id)?.markdown}</ReactMarkdown>
+                        </div>
                       </CardContent>
                     </Card>
                   </TabsContent>
                   
                   <TabsContent value="exemplos">
                     <Card>
-                      <CardContent className="p-6 resumo-content">
-                        <ReactMarkdown>{resumosGerados.get(resumoSelecionado.id)?.exemplos || "Gerando exemplos..."}</ReactMarkdown>
+                      <CardContent className="p-6">
+                        <div className="flex justify-end mb-4">
+                          {renderAudioButton('exemplos')}
+                        </div>
+                        <div className="resumo-content">
+                          <ReactMarkdown>{resumosGerados.get(resumoSelecionado.id)?.exemplos || "Gerando exemplos..."}</ReactMarkdown>
+                        </div>
                       </CardContent>
                     </Card>
                   </TabsContent>
                   
                   <TabsContent value="termos">
                     <Card>
-                      <CardContent className="p-6 resumo-content">
-                        <ReactMarkdown>{resumosGerados.get(resumoSelecionado.id)?.termos || "Gerando termos..."}</ReactMarkdown>
+                      <CardContent className="p-6">
+                        <div className="flex justify-end mb-4">
+                          {renderAudioButton('termos')}
+                        </div>
+                        <div className="resumo-content">
+                          <ReactMarkdown>{resumosGerados.get(resumoSelecionado.id)?.termos || "Gerando termos..."}</ReactMarkdown>
+                        </div>
                       </CardContent>
                     </Card>
                   </TabsContent>
-                </Tabs> : <div className="text-center text-muted-foreground py-12">
+                </Tabs>
+              )
+            ) : (
+              <div className="text-center text-muted-foreground py-12">
                 Selecione um subtema para visualizar
-              </div>}
-          </div>}
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
-      {showScrollTop && <Button className="fixed bottom-24 right-6 rounded-full w-12 h-12 p-0 shadow-lg z-50" onClick={() => window.scrollTo({
-      top: 0,
-      behavior: 'smooth'
-    })}>
+      {showScrollTop && (
+        <Button 
+          className="fixed bottom-24 right-6 rounded-full w-12 h-12 p-0 shadow-lg z-50" 
+          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+        >
           <ArrowUp className="w-5 h-5" />
-        </Button>}
-    </div>;
+        </Button>
+      )}
+    </div>
+  );
 };
+
 export default ResumosProntosView;

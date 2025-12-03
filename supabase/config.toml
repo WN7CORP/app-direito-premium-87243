@@ -47,3 +47,6 @@ verify_jwt = false
 
 [functions.gerar-audio-generico]
 verify_jwt = false
+
+[functions.gerar-audio-resumo-natural]
+verify_jwt = false
