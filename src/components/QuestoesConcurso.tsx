@@ -277,6 +277,12 @@ const QuestoesConcurso = ({ questoes, onFinish, area, tema }: QuestoesConcursoPr
       setTimeout(() => setShakeError(false), 600);
       
       await narrarTexto("Resposta incorreta.");
+      // Aguarda e narra o comentário também
+      if (currentQuestion.comentario) {
+        setTimeout(() => {
+          narrarTexto(currentQuestion.comentario);
+        }, 500);
+      }
     }
   };
 
