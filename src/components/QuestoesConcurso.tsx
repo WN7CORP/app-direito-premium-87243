@@ -27,6 +27,8 @@ interface Questao {
   subtema: string;
   exemplo_pratico?: string;
   url_audio?: string;
+  url_audio_comentario?: string;
+  url_audio_exemplo?: string;
   url_imagem_exemplo?: string;
 }
 
@@ -45,13 +47,28 @@ const QuestoesConcurso = ({ questoes, onFinish, area, tema }: QuestoesConcursoPr
   const [finished, setFinished] = useState(false);
   const [showExemplo, setShowExemplo] = useState(false);
   const [questoesState, setQuestoesState] = useState<Questao[]>(questoes);
+  
+  // Estados de áudio do enunciado
   const [audioLoading, setAudioLoading] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
+  
+  // Estados de áudio do comentário
+  const [audioComentarioLoading, setAudioComentarioLoading] = useState(false);
+  const [isPlayingComentario, setIsPlayingComentario] = useState(false);
+  
+  // Estados de áudio do exemplo
+  const [audioExemploLoading, setAudioExemploLoading] = useState(false);
+  const [isPlayingExemplo, setIsPlayingExemplo] = useState(false);
+  
+  // Estados gerais
   const [shakeError, setShakeError] = useState(false);
   const [narrationLoading, setNarrationLoading] = useState(false);
   const [imagemLoading, setImagemLoading] = useState(false);
+  
   const containerRef = useRef<HTMLDivElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
+  const audioComentarioRef = useRef<HTMLAudioElement>(null);
+  const audioExemploRef = useRef<HTMLAudioElement>(null);
   const narrationAudioRef = useRef<HTMLAudioElement | null>(null);
 
   const currentQuestion = questoesState[currentIndex];
@@ -67,7 +84,7 @@ const QuestoesConcurso = ({ questoes, onFinish, area, tema }: QuestoesConcursoPr
     idle: { x: 0 }
   };
 
-  // Função para narrar texto dinamicamente
+  // Função para narrar texto dinamicamente (usado apenas para feedback automático)
   const narrarTexto = useCallback(async (texto: string): Promise<void> => {
     return new Promise(async (resolve) => {
       try {
@@ -121,25 +138,39 @@ const QuestoesConcurso = ({ questoes, onFinish, area, tema }: QuestoesConcursoPr
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [currentIndex]);
 
-  // Gerar ou reproduzir áudio ao entrar na questão
+  // Gerar áudio do enunciado em background (NÃO reproduz automaticamente)
   useEffect(() => {
     const questaoAtual = questoesState[currentIndex];
     if (!questaoAtual) return;
 
-    // Parar áudio anterior
+    // Parar áudios anteriores
+    stopAllAudio();
+
+    // Se não tem áudio, gerar em background
+    if (!questaoAtual.url_audio) {
+      gerarAudioGenerico(questaoAtual.id, questaoAtual.enunciado, 'enunciado');
+    }
+  }, [currentIndex]);
+
+  // Função para parar todos os áudios
+  const stopAllAudio = () => {
     if (audioRef.current) {
       audioRef.current.pause();
       setIsPlaying(false);
     }
-
-    if (questaoAtual.url_audio) {
-      // Já tem áudio - reproduz automaticamente
-      playAudio(questaoAtual.url_audio);
-    } else {
-      // Não tem - gerar em background
-      gerarAudioParaQuestao(questaoAtual);
+    if (audioComentarioRef.current) {
+      audioComentarioRef.current.pause();
+      setIsPlayingComentario(false);
     }
-  }, [currentIndex]);
+    if (audioExemploRef.current) {
+      audioExemploRef.current.pause();
+      setIsPlayingExemplo(false);
+    }
+    if (narrationAudioRef.current) {
+      narrationAudioRef.current.pause();
+      narrationAudioRef.current = null;
+    }
+  };
 
   // Gerar imagem do exemplo prático
   const gerarImagemExemplo = useCallback(async (questao: Questao) => {
@@ -175,85 +206,99 @@ const QuestoesConcurso = ({ questoes, onFinish, area, tema }: QuestoesConcursoPr
     }
   }, [imagemLoading]);
 
-  // Narrar exemplo e gerar imagem quando drawer abrir
+  // Gerar áudio genérico (enunciado, comentário ou exemplo)
+  const gerarAudioGenerico = useCallback(async (questaoId: number, texto: string, tipo: 'enunciado' | 'comentario' | 'exemplo') => {
+    const setLoading = tipo === 'enunciado' ? setAudioLoading 
+      : tipo === 'comentario' ? setAudioComentarioLoading 
+      : setAudioExemploLoading;
+
+    setLoading(true);
+    console.log(`Gerando áudio ${tipo} para questão ${questaoId}...`);
+
+    try {
+      const { data, error } = await supabase.functions.invoke('gerar-audio-generico', {
+        body: { questaoId, texto, tipo }
+      });
+
+      if (error) {
+        console.error(`Erro ao gerar áudio ${tipo}:`, error);
+        setLoading(false);
+        return null;
+      }
+
+      if (data?.url_audio) {
+        // Atualizar questão local com URL
+        const coluna = tipo === 'enunciado' ? 'url_audio' 
+          : tipo === 'comentario' ? 'url_audio_comentario' 
+          : 'url_audio_exemplo';
+        
+        setQuestoesState(prev => prev.map(q => 
+          q.id === questaoId ? { ...q, [coluna]: data.url_audio } : q
+        ));
+        console.log(`Áudio ${tipo} gerado: ${data.url_audio}, cached: ${data.cached}`);
+        return data.url_audio;
+      }
+    } catch (err) {
+      console.error(`Erro ao chamar função de áudio ${tipo}:`, err);
+    } finally {
+      setLoading(false);
+    }
+    return null;
+  }, []);
+
+  // Gerar áudio em background quando mostrar resultado (comentário)
+  useEffect(() => {
+    if (showResult && currentQuestion?.comentario && !currentQuestion.url_audio_comentario) {
+      gerarAudioGenerico(currentQuestion.id, currentQuestion.comentario, 'comentario');
+    }
+  }, [showResult, currentQuestion?.id]);
+
+  // Gerar imagem e áudio quando drawer abrir
   useEffect(() => {
     if (showExemplo && currentQuestion?.exemplo_pratico) {
-      // Parar áudio principal se estiver tocando
-      if (audioRef.current) {
-        audioRef.current.pause();
-        setIsPlaying(false);
-      }
+      // Parar outros áudios
+      stopAllAudio();
       
       // Gerar imagem se não existir
       if (!currentQuestion.url_imagem_exemplo) {
         gerarImagemExemplo(currentQuestion);
       }
       
-      const exemploTexto = `Exemplo prático. ${currentQuestion.exemplo_pratico}`;
-      narrarTexto(exemploTexto);
-    } else if (!showExemplo && narrationAudioRef.current) {
-      // Parar narração ao fechar drawer
-      narrationAudioRef.current.pause();
-      narrationAudioRef.current = null;
-      setNarrationLoading(false);
-    }
-  }, [showExemplo, currentQuestion?.exemplo_pratico, currentQuestion?.url_imagem_exemplo, narrarTexto, gerarImagemExemplo]);
-
-  const gerarAudioParaQuestao = async (questao: Questao) => {
-    if (audioLoading) return;
-    
-    setAudioLoading(true);
-    console.log(`Gerando áudio para questão ${questao.id}...`);
-
-    try {
-      const { data, error } = await supabase.functions.invoke('gerar-audio-questao', {
-        body: { 
-          questaoId: questao.id, 
-          texto: questao.enunciado 
-        }
-      });
-
-      if (error) {
-        console.error('Erro ao gerar áudio:', error);
-        setAudioLoading(false);
-        return;
+      // Gerar áudio em background se não existir (NÃO reproduz)
+      if (!currentQuestion.url_audio_exemplo) {
+        gerarAudioGenerico(currentQuestion.id, currentQuestion.exemplo_pratico, 'exemplo');
       }
-
-      if (data?.url_audio) {
-        // Atualizar questão local com URL
-        setQuestoesState(prev => prev.map(q => 
-          q.id === questao.id ? { ...q, url_audio: data.url_audio } : q
-        ));
-        // Reproduzir automaticamente
-        playAudio(data.url_audio);
-      }
-    } catch (err) {
-      console.error('Erro ao chamar função de áudio:', err);
-    } finally {
-      setAudioLoading(false);
     }
-  };
+  }, [showExemplo, currentQuestion?.id]);
 
-  const playAudio = (url: string) => {
-    if (audioRef.current) {
-      audioRef.current.src = url;
-      audioRef.current.play().then(() => {
-        setIsPlaying(true);
-      }).catch((err) => {
-        console.log('Autoplay bloqueado pelo navegador:', err);
-        setIsPlaying(false);
-      });
-    }
-  };
-
-  const toggleAudio = () => {
+  // Play/toggle áudio do enunciado
+  const toggleAudioEnunciado = async () => {
     if (!audioRef.current) return;
+
+    // Parar outros áudios
+    if (audioComentarioRef.current) {
+      audioComentarioRef.current.pause();
+      setIsPlayingComentario(false);
+    }
+    if (audioExemploRef.current) {
+      audioExemploRef.current.pause();
+      setIsPlayingExemplo(false);
+    }
+    if (narrationAudioRef.current) {
+      narrationAudioRef.current.pause();
+    }
 
     if (isPlaying) {
       audioRef.current.pause();
       setIsPlaying(false);
     } else {
-      const url = currentQuestion?.url_audio;
+      let url = currentQuestion?.url_audio;
+      
+      // Se não tem URL ainda, gerar
+      if (!url && !audioLoading) {
+        url = await gerarAudioGenerico(currentQuestion.id, currentQuestion.enunciado, 'enunciado');
+      }
+      
       if (url) {
         if (audioRef.current.src !== url) {
           audioRef.current.src = url;
@@ -261,9 +306,84 @@ const QuestoesConcurso = ({ questoes, onFinish, area, tema }: QuestoesConcursoPr
         audioRef.current.play().then(() => {
           setIsPlaying(true);
         }).catch(console.error);
-      } else if (!audioLoading) {
-        // Se não tem URL ainda, gerar
-        gerarAudioParaQuestao(currentQuestion);
+      }
+    }
+  };
+
+  // Play/toggle áudio do comentário
+  const toggleAudioComentario = async () => {
+    if (!audioComentarioRef.current) return;
+
+    // Parar outros áudios
+    if (audioRef.current) {
+      audioRef.current.pause();
+      setIsPlaying(false);
+    }
+    if (audioExemploRef.current) {
+      audioExemploRef.current.pause();
+      setIsPlayingExemplo(false);
+    }
+    if (narrationAudioRef.current) {
+      narrationAudioRef.current.pause();
+    }
+
+    if (isPlayingComentario) {
+      audioComentarioRef.current.pause();
+      setIsPlayingComentario(false);
+    } else {
+      let url = currentQuestion?.url_audio_comentario;
+      
+      // Se não tem URL ainda, gerar
+      if (!url && !audioComentarioLoading && currentQuestion?.comentario) {
+        url = await gerarAudioGenerico(currentQuestion.id, currentQuestion.comentario, 'comentario');
+      }
+      
+      if (url) {
+        if (audioComentarioRef.current.src !== url) {
+          audioComentarioRef.current.src = url;
+        }
+        audioComentarioRef.current.play().then(() => {
+          setIsPlayingComentario(true);
+        }).catch(console.error);
+      }
+    }
+  };
+
+  // Play/toggle áudio do exemplo
+  const toggleAudioExemplo = async () => {
+    if (!audioExemploRef.current) return;
+
+    // Parar outros áudios
+    if (audioRef.current) {
+      audioRef.current.pause();
+      setIsPlaying(false);
+    }
+    if (audioComentarioRef.current) {
+      audioComentarioRef.current.pause();
+      setIsPlayingComentario(false);
+    }
+    if (narrationAudioRef.current) {
+      narrationAudioRef.current.pause();
+    }
+
+    if (isPlayingExemplo) {
+      audioExemploRef.current.pause();
+      setIsPlayingExemplo(false);
+    } else {
+      let url = currentQuestion?.url_audio_exemplo;
+      
+      // Se não tem URL ainda, gerar
+      if (!url && !audioExemploLoading && currentQuestion?.exemplo_pratico) {
+        url = await gerarAudioGenerico(currentQuestion.id, currentQuestion.exemplo_pratico, 'exemplo');
+      }
+      
+      if (url) {
+        if (audioExemploRef.current.src !== url) {
+          audioExemploRef.current.src = url;
+        }
+        audioExemploRef.current.play().then(() => {
+          setIsPlayingExemplo(true);
+        }).catch(console.error);
       }
     }
   };
@@ -278,11 +398,8 @@ const QuestoesConcurso = ({ questoes, onFinish, area, tema }: QuestoesConcursoPr
   const handleSelectAnswer = async (answer: string) => {
     if (showResult) return;
     
-    // Parar áudio do enunciado
-    if (audioRef.current) {
-      audioRef.current.pause();
-      setIsPlaying(false);
-    }
+    // Parar todos os áudios
+    stopAllAudio();
     
     setSelectedAnswer(answer);
     setShowResult(true);
@@ -303,36 +420,23 @@ const QuestoesConcurso = ({ questoes, onFinish, area, tema }: QuestoesConcursoPr
       console.error("Erro ao atualizar stats:", error);
     }
 
-    // Narração de feedback
+    // Narração AUTOMÁTICA de feedback (apenas correta/incorreta)
     if (correct) {
       await narrarTexto("Resposta correta!");
-      // Aguarda um pouco e narra o comentário
-      if (currentQuestion.comentario) {
-        setTimeout(() => {
-          narrarTexto(currentQuestion.comentario);
-        }, 500);
-      }
     } else {
       // Tremor de tela ao errar
       setShakeError(true);
       setTimeout(() => setShakeError(false), 600);
-      
       await narrarTexto("Resposta incorreta.");
-      // Aguarda e narra o comentário também
-      if (currentQuestion.comentario) {
-        setTimeout(() => {
-          narrarTexto(currentQuestion.comentario);
-        }, 500);
-      }
     }
+    
+    // NÃO narra comentário automaticamente - usuário clica no botão
   };
 
   const handleNext = () => {
-    // Parar qualquer narração em andamento
-    if (narrationAudioRef.current) {
-      narrationAudioRef.current.pause();
-      narrationAudioRef.current = null;
-    }
+    // Parar todos os áudios
+    stopAllAudio();
+    setNarrationLoading(false);
     
     if (currentIndex < questoesState.length - 1) {
       setCurrentIndex(prev => prev + 1);
@@ -351,14 +455,7 @@ const QuestoesConcurso = ({ questoes, onFinish, area, tema }: QuestoesConcursoPr
     setScore({ correct: 0, wrong: 0 });
     setFinished(false);
     setShowExemplo(false);
-    if (audioRef.current) {
-      audioRef.current.pause();
-      setIsPlaying(false);
-    }
-    if (narrationAudioRef.current) {
-      narrationAudioRef.current.pause();
-      narrationAudioRef.current = null;
-    }
+    stopAllAudio();
   };
 
   if (finished) {
@@ -455,9 +552,9 @@ const QuestoesConcurso = ({ questoes, onFinish, area, tema }: QuestoesConcursoPr
                 <div className="flex items-start justify-between gap-3">
                   <p className="text-sm leading-relaxed flex-1">{currentQuestion?.enunciado}</p>
                   
-                  {/* Botão de áudio */}
+                  {/* Botão de áudio do enunciado */}
                   <button 
-                    onClick={toggleAudio}
+                    onClick={toggleAudioEnunciado}
                     disabled={audioLoading}
                     className={cn(
                       "shrink-0 p-2.5 rounded-full transition-all",
@@ -563,18 +660,43 @@ const QuestoesConcurso = ({ questoes, onFinish, area, tema }: QuestoesConcursoPr
                       )}
                     </div>
                     
-                    {/* Botão Ver Exemplo */}
-                    {currentQuestion?.exemplo_pratico && (
-                      <Button 
-                        variant="secondary" 
-                        size="sm"
-                        onClick={() => setShowExemplo(true)}
-                        className="bg-amber-500/20 text-amber-500 hover:bg-amber-500/30 border border-amber-500/40"
+                    <div className="flex items-center gap-2">
+                      {/* Botão Narrar Comentário */}
+                      <button
+                        onClick={toggleAudioComentario}
+                        disabled={audioComentarioLoading}
+                        className={cn(
+                          "p-2 rounded-full transition-all",
+                          audioComentarioLoading
+                            ? "bg-muted cursor-wait"
+                            : isPlayingComentario
+                            ? "bg-primary text-primary-foreground"
+                            : "bg-primary/10 hover:bg-primary/20 text-primary"
+                        )}
+                        title={audioComentarioLoading ? "Gerando áudio..." : isPlayingComentario ? "Pausar" : "Ouvir comentário"}
                       >
-                        <BookOpen className="w-4 h-4 mr-1" />
-                        Ver Exemplo
-                      </Button>
-                    )}
+                        {audioComentarioLoading ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : isPlayingComentario ? (
+                          <Pause className="w-4 h-4" />
+                        ) : (
+                          <Volume2 className="w-4 h-4" />
+                        )}
+                      </button>
+                      
+                      {/* Botão Ver Exemplo */}
+                      {currentQuestion?.exemplo_pratico && (
+                        <Button 
+                          variant="secondary" 
+                          size="sm"
+                          onClick={() => setShowExemplo(true)}
+                          className="bg-amber-500/20 text-amber-500 hover:bg-amber-500/30 border border-amber-500/40"
+                        >
+                          <BookOpen className="w-4 h-4 mr-1" />
+                          Ver Exemplo
+                        </Button>
+                      )}
+                    </div>
                   </div>
                   <p className="text-sm text-muted-foreground leading-relaxed">
                     {currentQuestion.comentario}
@@ -609,24 +731,58 @@ const QuestoesConcurso = ({ questoes, onFinish, area, tema }: QuestoesConcursoPr
         )}
       </motion.div>
 
-      {/* Audio element */}
+      {/* Audio elements */}
       <audio 
         ref={audioRef} 
         onEnded={() => setIsPlaying(false)}
         onPause={() => setIsPlaying(false)}
         onPlay={() => setIsPlaying(true)}
       />
+      <audio 
+        ref={audioComentarioRef} 
+        onEnded={() => setIsPlayingComentario(false)}
+        onPause={() => setIsPlayingComentario(false)}
+        onPlay={() => setIsPlayingComentario(true)}
+      />
+      <audio 
+        ref={audioExemploRef} 
+        onEnded={() => setIsPlayingExemplo(false)}
+        onPause={() => setIsPlayingExemplo(false)}
+        onPlay={() => setIsPlayingExemplo(true)}
+      />
 
       {/* Drawer de Exemplo Prático */}
       <Drawer open={showExemplo} onOpenChange={setShowExemplo}>
         <DrawerContent>
           <DrawerHeader className="text-left">
-            <DrawerTitle className="flex items-center gap-2">
-              <BookOpen className="w-5 h-5 text-primary" />
-              Exemplo Prático
-              {narrationLoading && (
-                <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
-              )}
+            <DrawerTitle className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <BookOpen className="w-5 h-5 text-primary" />
+                Exemplo Prático
+              </div>
+              
+              {/* Botão Narrar Exemplo */}
+              <button
+                onClick={toggleAudioExemplo}
+                disabled={audioExemploLoading}
+                className={cn(
+                  "p-2 rounded-full transition-all",
+                  audioExemploLoading
+                    ? "bg-muted cursor-wait"
+                    : isPlayingExemplo
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-primary/10 hover:bg-primary/20 text-primary"
+                )}
+                title={audioExemploLoading ? "Gerando áudio..." : isPlayingExemplo ? "Pausar" : "Ouvir exemplo"}
+              >
+                {audioExemploLoading ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : isPlayingExemplo ? (
+                  <Pause className="w-4 h-4" />
+                ) : (
+                  <Volume2 className="w-4 h-4" />
+                )}
+              </button>
             </DrawerTitle>
             <DrawerDescription>
               Veja como esse conceito se aplica na prática
