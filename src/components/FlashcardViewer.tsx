@@ -188,7 +188,11 @@ export const FlashcardViewer = ({
           transition={{ duration: 0.3, ease: "easeInOut" }}
         >
           <ReactCardFlip isFlipped={isFlipped} flipDirection="horizontal">
-            <div onClick={handleFlip} className="h-[300px] bg-card border-2 border-[hsl(270,60%,55%)] rounded-xl p-4 sm:p-8 flex flex-col cursor-pointer hover:shadow-lg transition-shadow relative break-words">
+            <div 
+              onClick={handleFlip} 
+              className="h-[300px] bg-card border-2 border-[hsl(270,60%,55%)] rounded-xl p-4 sm:p-8 flex flex-col cursor-pointer hover:shadow-lg transition-shadow relative break-words"
+              style={{ backfaceVisibility: 'hidden' }}
+            >
               {tema && (
                 <p className="text-xs text-[hsl(270,70%,75%)] mb-3 absolute top-4 left-4">
                   {tema}
@@ -208,7 +212,11 @@ export const FlashcardViewer = ({
               <p className="text-xs text-muted-foreground mt-4 text-center">Clique para ver a resposta</p>
             </div>
 
-            <div onClick={handleFlip} className="min-h-[300px] bg-card border-2 border-[hsl(270,60%,55%)] rounded-xl p-4 sm:p-8 cursor-pointer hover:shadow-lg transition-shadow relative break-words flex flex-col">
+            <div 
+              onClick={handleFlip} 
+              className="min-h-[300px] bg-card border-2 border-[hsl(270,60%,55%)] rounded-xl p-4 sm:p-8 cursor-pointer hover:shadow-lg transition-shadow relative break-words flex flex-col"
+              style={{ backfaceVisibility: 'hidden' }}
+            >
               {tema && (
                 <p className="text-xs text-[hsl(270,70%,75%)] absolute top-4 left-4">
                   {tema}
@@ -227,14 +235,16 @@ export const FlashcardViewer = ({
                   )}
                 </div>
                 
-                {currentCard.exemplo && <div className="bg-background/50 rounded-lg p-4 border border-[hsl(270,60%,55%)]/20 mt-4">
+                {currentCard.exemplo && (
+                  <div className="bg-background/50 rounded-lg p-4 border border-[hsl(270,60%,55%)]/20 mt-4">
                     <p className="text-xs font-semibold mb-2 text-[hsl(270,60%,55%)] flex items-center gap-2">
                       <span>💡</span> Exemplo Prático:
                     </p>
                     <p className="text-sm text-foreground leading-relaxed">
                       {currentCard.exemplo}
                     </p>
-                  </div>}
+                  </div>
+                )}
               </div>
               <p className="text-xs text-muted-foreground text-center mt-4">
                 Clique para voltar
