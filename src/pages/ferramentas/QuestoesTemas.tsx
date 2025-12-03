@@ -48,11 +48,12 @@ const QuestoesTemas = () => {
         }
       });
 
-      // Busca questões geradas com subtemas
+      // Busca questões geradas com subtemas (aumentando limite para pegar todos os dados)
       const { data: questoesData } = await supabase
         .from("QUESTOES_GERADAS")
         .select("tema, subtema")
-        .eq("area", area);
+        .eq("area", area)
+        .limit(10000);
 
       // Agrupa subtemas com questões por tema (usando chave normalizada)
       const subtemasComQuestoes: Record<string, Set<string>> = {};
