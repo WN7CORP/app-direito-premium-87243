@@ -72,42 +72,62 @@ serve(async (req) => {
 
     console.log(`Texto limpo: ${textoLimpo.length} caracteres`);
 
-    // Gerar áudio com Hugging Face usando modelo Bark (suporta português)
-    const hfToken = Deno.env.get('HUGGING_FACE_ACCESS_TOKEN');
-    if (!hfToken) {
-      throw new Error('HUGGING_FACE_ACCESS_TOKEN não configurado');
+    // Gerar áudio com Google Cloud TTS
+    const GOOGLE_API_KEY = Deno.env.get('GOOGLE_API_KEY');
+    if (!GOOGLE_API_KEY) {
+      throw new Error('GOOGLE_API_KEY não configurado');
     }
 
-    // Limitar texto para Bark (máximo ~250 chars por vez para melhor qualidade)
-    const textoParaAudio = textoLimpo.substring(0, 2000);
+    console.log('Gerando áudio com Google Cloud TTS...');
 
-    console.log('Gerando áudio com microsoft/speecht5_tts via router.huggingface.co...');
-    
-    // Usar microsoft/speecht5_tts via novo endpoint router.huggingface.co
-    const hfResponse = await fetch('https://router.huggingface.co/hf-inference/models/microsoft/speecht5_tts', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${hfToken}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ 
-        inputs: textoParaAudio,
-      }),
-    });
+    const ttsResponse = await fetch(
+      `https://texttospeech.googleapis.com/v1/text:synthesize?key=${GOOGLE_API_KEY}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          input: { text: textoLimpo },
+          voice: {
+            languageCode: 'pt-BR',
+            name: 'pt-BR-Wavenet-B',
+            ssmlGender: 'MALE'
+          },
+          audioConfig: {
+            audioEncoding: 'MP3',
+            speakingRate: 0.95,
+            pitch: -1.0
+          }
+        })
+      }
+    );
 
-    if (!hfResponse.ok) {
-      const errorText = await hfResponse.text();
-      console.error('Erro HuggingFace:', hfResponse.status, errorText);
-      throw new Error(`Erro ao gerar áudio: ${hfResponse.status} - ${errorText}`);
+    if (!ttsResponse.ok) {
+      const errorText = await ttsResponse.text();
+      console.error('Erro Google TTS:', ttsResponse.status, errorText);
+      throw new Error(`Erro ao gerar áudio: ${ttsResponse.status} - ${errorText}`);
     }
 
-    const audioBlob = await hfResponse.blob();
+    const ttsData = await ttsResponse.json();
+    const audioContent = ttsData.audioContent;
+
+    if (!audioContent) {
+      throw new Error('Google TTS não retornou conteúdo de áudio');
+    }
+
+    // Converter base64 para blob
+    const binaryString = atob(audioContent);
+    const bytes = new Uint8Array(binaryString.length);
+    for (let i = 0; i < binaryString.length; i++) {
+      bytes[i] = binaryString.charCodeAt(i);
+    }
+    const audioBlob = new Blob([bytes], { type: 'audio/mpeg' });
+
     console.log('Áudio gerado, tamanho:', audioBlob.size);
 
     // Upload para Catbox
     const formData = new FormData();
     formData.append('reqtype', 'fileupload');
-    formData.append('fileToUpload', audioBlob, `resumo_${tipo}_${resumoId}.wav`);
+    formData.append('fileToUpload', audioBlob, `resumo_${tipo}_${resumoId}.mp3`);
 
     console.log('Fazendo upload para Catbox...');
     
