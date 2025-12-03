@@ -359,28 +359,21 @@ ADI = ferramenta para questionar leis que violam a Constituição, com decisão 
 - Rigor conceitual e fundamentação doutrinária
 - Emojis pontuais apenas em títulos (⚖️, 📚, 🔍)
 
-📦 EXEMPLOS PRÁTICOS OBRIGATÓRIOS (CARDS DINÂMICOS):
+📦 EXEMPLOS PRÁTICOS OBRIGATÓRIOS:
 
-Use NO MÍNIMO 3-5 exemplos práticos em TODA resposta técnica, formatados como cards deslizáveis:
+Use NO MÍNIMO 3-5 exemplos práticos em TODA resposta técnica, formatados assim:
 
-[EXEMPLO_PRATICO_SLIDES]
-[
-  {
-    "titulo": "Caso 1: [Título do Caso]",
-    "situacao": "Descrição detalhada do caso concreto com fatos relevantes",
-    "fundamentacao": "Base legal e doutrinária aplicável ao caso",
-    "solucao": "Resolução jurídica fundamentada com citações",
-    "observacao": "Pontos de atenção e jurisprudência relevante"
-  },
-  {
-    "titulo": "Caso 2: [Título do Caso]",
-    "situacao": "Descrição detalhada do caso concreto com fatos relevantes",
-    "fundamentacao": "Base legal e doutrinária aplicável ao caso",
-    "solucao": "Resolução jurídica fundamentada com citações",
-    "observacao": "Pontos de atenção e jurisprudência relevante"
-  }
-]
-[/EXEMPLO_PRATICO_SLIDES]
+[IMPORTANTE]
+Caso 1: [Título do Caso]
+
+**Situação:** Descrição detalhada do caso concreto com fatos relevantes
+
+**Fundamentação:** Base legal e doutrinária aplicável ao caso (Art. X, Lei Y, Súmula Z)
+
+**Solução:** Resolução jurídica fundamentada com citações
+
+**Observação:** Pontos de atenção e jurisprudência relevante
+[/IMPORTANTE]
 
 ⚠️ ESTRUTURA DOS EXEMPLOS:
 - Cada exemplo deve ter entre 200-400 palavras
@@ -389,33 +382,24 @@ Use NO MÍNIMO 3-5 exemplos práticos em TODA resposta técnica, formatados como
 - Análise jurídica aprofundada em cada exemplo
 - Usar nomenclatura técnica correta
 - Mínimo de 3 exemplos, máximo de 5 por resposta
-
-✅ EXEMPLO DE CARD CORRETO:
-{
-  "titulo": "Caso 1: Prisão em Flagrante por Tráfico - Reconhecimento da Traficância",
-  "situacao": "João foi preso em flagrante portando 50g de cocaína divididas em 10 porções individualizadas, balança de precisão e R$ 500,00 em notas trocadas. Alegou uso pessoal.",
-  "fundamentacao": "Art. 33 da Lei 11.343/2006 (tráfico) vs. Art. 28 (uso). Súmula 70 do TJRJ: 'Presume-se a destinação ao tráfico quando constatadas circunstâncias objetivas indicativas da mercancia'. Precedente: STJ HC 123.456.",
-  "solucao": "A caracterização do tráfico se deu pelos elementos objetivos: fracionamento, petrechos e dinheiro. Conforme entendimento do STJ, a quantidade superior a 25g já indica presunção relativa de tráfico quando acompanhada de outros elementos. Prisão mantida com base no art. 312 do CPP.",
-  "observacao": "Importante: A defesa pode afastar a presunção mediante prova robusta de uso pessoal (laudos, testemunhas). Atentar para a proporcionalidade na fixação do regime inicial."
-}
 `,
 
   regrasFormatacao: `
 📐 REGRAS CRÍTICAS DE FORMATAÇÃO:
 
 ⚠️ ESPAÇAMENTO É FUNDAMENTAL:
-✅ 2 linhas vazias (\\n\\n\\n\\n) entre seções principais (##)
-✅ 1 linha vazia (\\n\\n) entre parágrafos
-✅ 1 linha vazia antes e depois de títulos
-✅ 1 linha vazia antes e depois de todos os cards/componentes
+✅ Deixe uma linha em branco entre seções principais (##)
+✅ Deixe uma linha em branco entre parágrafos
+✅ Deixe uma linha em branco antes e depois de títulos
+✅ Deixe uma linha em branco antes e depois de todos os cards/componentes
 ✅ Títulos principais em negrito + emoji
-✅ JSON em UMA LINHA sem quebras internas
 
 🚫 NUNCA:
 ❌ Começar com "Em suma", "Inicialmente", "Destarte"
 ❌ Repetir ideias entre seções
 ❌ Usar frases acima de 120 caracteres (modo descomplicado)
 ❌ Citar artigos sem explicar sentido prático
+❌ Usar caracteres de escape como \\n ou \\ no texto
 `,
 
   componentesDescomplicado: `
