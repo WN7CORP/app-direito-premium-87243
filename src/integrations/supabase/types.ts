@@ -89,27 +89,6 @@ export type Database = {
         }
         Relationships: []
       }
-      AUDIO_FEEDBACK_CACHE: {
-        Row: {
-          created_at: string | null
-          id: number
-          tipo: string
-          url_audio: string
-        }
-        Insert: {
-          created_at?: string | null
-          id?: number
-          tipo: string
-          url_audio: string
-        }
-        Update: {
-          created_at?: string | null
-          id?: number
-          tipo?: string
-          url_audio?: string
-        }
-        Relationships: []
-      }
       "AUDIO-AULA": {
         Row: {
           area: string | null
@@ -5655,8 +5634,6 @@ export type Database = {
           tema: string
           updated_at: string | null
           url_audio: string | null
-          url_audio_comentario: string | null
-          url_audio_exemplo: string | null
           url_imagem_exemplo: string | null
           versao_geracao: number | null
           vezes_respondida: number | null
@@ -5684,8 +5661,6 @@ export type Database = {
           tema: string
           updated_at?: string | null
           url_audio?: string | null
-          url_audio_comentario?: string | null
-          url_audio_exemplo?: string | null
           url_imagem_exemplo?: string | null
           versao_geracao?: number | null
           vezes_respondida?: number | null
@@ -5713,8 +5688,6 @@ export type Database = {
           tema?: string
           updated_at?: string | null
           url_audio?: string | null
-          url_audio_comentario?: string | null
-          url_audio_exemplo?: string | null
           url_imagem_exemplo?: string | null
           versao_geracao?: number | null
           vezes_respondida?: number | null

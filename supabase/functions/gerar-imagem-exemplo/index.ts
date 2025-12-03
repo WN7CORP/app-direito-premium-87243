@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1'
+import { HfInference } from 'https://esm.sh/@huggingface/inference@2.3.2'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -43,56 +44,31 @@ serve(async (req) => {
       )
     }
 
-    // 2. Gerar imagem com Hugging Face FLUX.1-schnell (novo endpoint)
+    // 2. Gerar imagem com Hugging Face
     const HUGGING_FACE_ACCESS_TOKEN = Deno.env.get('HUGGING_FACE_ACCESS_TOKEN')
     if (!HUGGING_FACE_ACCESS_TOKEN) {
       throw new Error('HUGGING_FACE_ACCESS_TOKEN não configurado')
     }
 
-    // Limpar e resumir o texto do exemplo para criar prompt
-    const textoLimpo = exemploTexto
-      .substring(0, 200)
-      .replace(/[^\w\sáéíóúâêîôûãõàèìòùç.,!?-]/gi, ' ')
-      .replace(/\s+/g, ' ')
-      .trim()
+    // Criar prompt descritivo para a imagem
+    const textoResumido = exemploTexto.substring(0, 150).replace(/[^\w\s]/g, '')
+    const promptImagem = `Educational legal illustration showing: ${textoResumido}. Clean modern flat design, professional legal theme, soft blue and gold colors, minimalist style, no text.`
 
-    // Prompt otimizado em inglês para melhor resultado
-    const promptImagem = `Simple black and white line art educational diagram, whiteboard style sketch illustration.
-Scene depicting: ${textoLimpo}
-Style: minimalist stick figures, arrows showing relationships between elements, scales of justice icon at top, clean infographic layout, hand-drawn sketch aesthetic, pure white background, black ink lines only, educational legal diagram.
-Requirements: NO text, NO letters, NO words, NO numbers, NO labels, NO captions, NO writing of any kind in the image.`
+    console.log(`[gerar-imagem-exemplo] Gerando imagem com prompt: ${promptImagem.substring(0, 100)}...`)
 
-    console.log(`[gerar-imagem-exemplo] Gerando imagem com FLUX.1-schnell...`)
-    console.log(`[gerar-imagem-exemplo] Prompt: ${promptImagem.substring(0, 150)}...`)
-
-    // Usar novo endpoint router.huggingface.co
-    const hfResponse = await fetch('https://router.huggingface.co/hf-inference/models/black-forest-labs/FLUX.1-schnell', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${HUGGING_FACE_ACCESS_TOKEN}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        inputs: promptImagem,
-        parameters: {
-          negative_prompt: "text, letters, words, numbers, labels, captions, writing, typography, watermark, signature, realistic, photorealistic, 3d render, colors, colored, grayscale shading"
-        }
-      })
+    const hf = new HfInference(HUGGING_FACE_ACCESS_TOKEN)
+    const image = await hf.textToImage({
+      inputs: promptImagem,
+      model: 'black-forest-labs/FLUX.1-schnell',
     })
 
-    if (!hfResponse.ok) {
-      const errorText = await hfResponse.text()
-      console.error('[gerar-imagem-exemplo] Erro HF:', hfResponse.status, errorText)
-      throw new Error(`Hugging Face API error: ${hfResponse.status} - ${errorText}`)
-    }
-
-    // A resposta é um blob de imagem
-    const imageArrayBuffer = await hfResponse.arrayBuffer()
-    const imageBlob = new Blob([imageArrayBuffer], { type: 'image/png' })
+    // 3. Converter para blob
+    const arrayBuffer = await image.arrayBuffer()
+    const imageBlob = new Blob([arrayBuffer], { type: 'image/png' })
 
     console.log(`[gerar-imagem-exemplo] Imagem gerada, tamanho: ${imageBlob.size} bytes`)
 
-    // 3. Upload para Catbox
+    // 4. Upload para Catbox
     const formData = new FormData()
     formData.append('reqtype', 'fileupload')
     formData.append('fileToUpload', imageBlob, `exemplo_${questaoId}_${Date.now()}.png`)
@@ -114,7 +90,7 @@ Requirements: NO text, NO letters, NO words, NO numbers, NO labels, NO captions,
 
     console.log(`[gerar-imagem-exemplo] Upload Catbox sucesso: ${imageUrl}`)
 
-    // 4. Salvar URL no banco
+    // 5. Salvar URL no banco
     const { error: updateError } = await supabase
       .from('QUESTOES_GERADAS')
       .update({ url_imagem_exemplo: imageUrl })

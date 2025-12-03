@@ -1,5 +1,4 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -86,6 +85,7 @@ function numeroParaOrdinal(n: number): string {
     const milharTexto = milhar === 1 ? 'milésimo' : numeroParaExtenso(milhar) + ' milésimo';
     return milharTexto + (resto ? ' ' + numeroParaOrdinal(resto) : '');
   }
+  // Para números muito grandes, usa cardinal
   return numeroParaExtenso(n);
 }
 
@@ -224,6 +224,7 @@ function normalizarTextoParaTTS(texto: string): string {
   // 7. ARTIGOS SEM ORDINAL - "Art. 121", "art. 121"
   resultado = resultado.replace(/[Aa]rts?\.\s?(\d+)(?![º°\d])/g, (match, num) => {
     const numero = parseInt(num, 10);
+    // Artigos até 10 são ordinais, acima são cardinais
     if (numero <= 10) {
       return 'artigo ' + numeroParaOrdinal(numero);
     }
@@ -232,6 +233,7 @@ function normalizarTextoParaTTS(texto: string): string {
   
   // 8. INCISOS ROMANOS - "I -", "II -", "III.", "IV)", "V,"
   resultado = resultado.replace(/\b([IVXLCDM]+)\s?[-–—.),;:]/g, (match, romano) => {
+    // Verificar se é um numeral romano válido
     if (/^[IVXLCDM]+$/.test(romano)) {
       const numero = romanoParaNumero(romano);
       if (numero > 0 && numero < 100) {
@@ -309,6 +311,7 @@ function normalizarTextoParaTTS(texto: string): string {
   // 19. NÚMEROS GRANDES ISOLADOS (4+ dígitos) - contexto de leis, valores
   resultado = resultado.replace(/\b(\d{4,})\b/g, (match) => {
     const numero = parseInt(match, 10);
+    // Evitar converter anos já convertidos
     if (numero >= 1900 && numero <= 2100) {
       return numeroParaExtenso(numero);
     }
@@ -333,89 +336,17 @@ function normalizarTextoParaTTS(texto: string): string {
 }
 
 // ============================================
-// GERAR ÁUDIO E FAZER UPLOAD
-// ============================================
-
-async function gerarAudioEUpload(textoNormalizado: string, API_KEY: string): Promise<string> {
-  console.log('Calling Google TTS API...');
-  const ttsResponse = await fetch(
-    `https://texttospeech.googleapis.com/v1/text:synthesize?key=${API_KEY}`,
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        input: { text: textoNormalizado },
-        voice: {
-          languageCode: 'pt-BR',
-          name: 'pt-BR-Chirp3-HD-Sadaltager',
-        },
-        audioConfig: {
-          audioEncoding: 'MP3',
-          speakingRate: 1.0,
-          pitch: 0.0,
-        },
-      }),
-    }
-  );
-
-  if (!ttsResponse.ok) {
-    const errorText = await ttsResponse.text();
-    console.error('Google TTS error:', ttsResponse.status, errorText);
-    throw new Error(`Erro ao gerar áudio TTS: ${errorText}`);
-  }
-
-  const ttsData = await ttsResponse.json();
-  const audioContent = ttsData.audioContent;
-
-  if (!audioContent) {
-    throw new Error('TTS não retornou áudio');
-  }
-
-  // Converter base64 para blob
-  const binaryString = atob(audioContent);
-  const bytes = new Uint8Array(binaryString.length);
-  for (let i = 0; i < binaryString.length; i++) {
-    bytes[i] = binaryString.charCodeAt(i);
-  }
-  const audioBlob = new Blob([bytes], { type: 'audio/mpeg' });
-
-  console.log(`Áudio gerado: ${audioBlob.size} bytes, fazendo upload para Catbox...`);
-
-  // Upload para Catbox
-  const formData = new FormData();
-  formData.append('reqtype', 'fileupload');
-  formData.append('fileToUpload', audioBlob, `narracao_${Date.now()}.mp3`);
-
-  const catboxResponse = await fetch('https://catbox.moe/user/api.php', {
-    method: 'POST',
-    body: formData
-  });
-
-  if (!catboxResponse.ok) {
-    throw new Error(`Catbox upload falhou: ${catboxResponse.status}`);
-  }
-
-  const audioUrl = await catboxResponse.text();
-  
-  if (!audioUrl.startsWith('https://')) {
-    throw new Error(`URL inválida do Catbox: ${audioUrl}`);
-  }
-
-  console.log(`Upload Catbox sucesso: ${audioUrl}`);
-  return audioUrl;
-}
-
-// ============================================
 // SERVIDOR PRINCIPAL
 // ============================================
 
 serve(async (req) => {
+  // Handle CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { texto, questaoId, tipo, tipoFeedback } = await req.json();
+    const { texto } = await req.json();
 
     if (!texto) {
       console.error('Missing required field: texto');
@@ -423,52 +354,6 @@ serve(async (req) => {
         JSON.stringify({ error: 'texto é obrigatório' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
-    }
-
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
-
-    // Verificar cache de feedback global (resposta_correta ou resposta_incorreta)
-    if (tipoFeedback && (tipoFeedback === 'resposta_correta' || tipoFeedback === 'resposta_incorreta')) {
-      console.log(`[gerar-narracao] Verificando cache de feedback: ${tipoFeedback}`);
-      
-      const { data: feedbackCache, error: cacheError } = await supabase
-        .from('AUDIO_FEEDBACK_CACHE')
-        .select('url_audio')
-        .eq('tipo', tipoFeedback)
-        .single();
-
-      if (!cacheError && feedbackCache?.url_audio) {
-        console.log(`[gerar-narracao] Cache de feedback encontrado: ${feedbackCache.url_audio}`);
-        return new Response(
-          JSON.stringify({ url_audio: feedbackCache.url_audio, cached: true }),
-          { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-      
-      console.log(`[gerar-narracao] Cache de feedback não encontrado, gerando novo áudio...`);
-    }
-
-    // Verificar cache se tiver questaoId e tipo
-    if (questaoId && tipo && (tipo === 'comentario' || tipo === 'exemplo')) {
-      const colunaAudio = tipo === 'comentario' ? 'url_audio_comentario' : 'url_audio_exemplo';
-      
-      console.log(`[gerar-narracao] Verificando cache para questão ${questaoId}, tipo: ${tipo}`);
-      
-      const { data: questao, error: fetchError } = await supabase
-        .from('QUESTOES_GERADAS')
-        .select(colunaAudio)
-        .eq('id', questaoId)
-        .single();
-
-      if (!fetchError && questao?.[colunaAudio]) {
-        console.log(`[gerar-narracao] Cache encontrado: ${questao[colunaAudio]}`);
-        return new Response(
-          JSON.stringify({ url_audio: questao[colunaAudio], cached: true }),
-          { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
     }
 
     console.log(`Texto original (${texto.length} caracteres): ${texto.substring(0, 100)}...`);
@@ -488,40 +373,54 @@ serve(async (req) => {
       );
     }
 
-    // Gerar áudio e fazer upload para Catbox
-    const audioUrl = await gerarAudioEUpload(textoNormalizado, API_KEY);
-
-    // Salvar no cache de feedback global se for feedback
-    if (tipoFeedback && (tipoFeedback === 'resposta_correta' || tipoFeedback === 'resposta_incorreta')) {
-      const { error: insertError } = await supabase
-        .from('AUDIO_FEEDBACK_CACHE')
-        .upsert({ tipo: tipoFeedback, url_audio: audioUrl }, { onConflict: 'tipo' });
-
-      if (insertError) {
-        console.error('[gerar-narracao] Erro ao salvar cache de feedback:', insertError);
-      } else {
-        console.log(`[gerar-narracao] Cache de feedback salvo: ${tipoFeedback} = ${audioUrl}`);
+    // Call Google Cloud TTS API
+    console.log('Calling Google TTS API...');
+    const ttsResponse = await fetch(
+      `https://texttospeech.googleapis.com/v1/text:synthesize?key=${API_KEY}`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          input: { text: textoNormalizado },
+          voice: {
+            languageCode: 'pt-BR',
+            name: 'pt-BR-Chirp3-HD-Sadaltager',
+          },
+          audioConfig: {
+            audioEncoding: 'MP3',
+            speakingRate: 1.0,
+            pitch: 0.0,
+          },
+        }),
       }
+    );
+
+    if (!ttsResponse.ok) {
+      const errorText = await ttsResponse.text();
+      console.error('Google TTS error:', ttsResponse.status, errorText);
+      return new Response(
+        JSON.stringify({ error: 'Erro ao gerar áudio TTS', details: errorText }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
-    // Salvar URL no banco se tiver questaoId e tipo
-    if (questaoId && tipo && (tipo === 'comentario' || tipo === 'exemplo')) {
-      const colunaAudio = tipo === 'comentario' ? 'url_audio_comentario' : 'url_audio_exemplo';
-      
-      const { error: updateError } = await supabase
-        .from('QUESTOES_GERADAS')
-        .update({ [colunaAudio]: audioUrl })
-        .eq('id', questaoId);
+    const ttsData = await ttsResponse.json();
+    const audioContent = ttsData.audioContent; // Base64 encoded audio
 
-      if (updateError) {
-        console.error('[gerar-narracao] Erro ao salvar URL no banco:', updateError);
-      } else {
-        console.log(`[gerar-narracao] URL salva no banco: ${colunaAudio} = ${audioUrl}`);
-      }
+    if (!audioContent) {
+      console.error('No audio content returned from TTS');
+      return new Response(
+        JSON.stringify({ error: 'TTS não retornou áudio' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
+
+    console.log(`Áudio gerado com sucesso: ${audioContent.length} bytes (base64)`);
 
     return new Response(
-      JSON.stringify({ url_audio: audioUrl, cached: false }),
+      JSON.stringify({ audioBase64: audioContent }),
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
