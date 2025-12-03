@@ -1,6 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1';
-import { HfInference } from 'https://esm.sh/@huggingface/inference@2.3.2';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -73,21 +72,31 @@ serve(async (req) => {
 
     console.log(`Texto limpo: ${textoLimpo.length} caracteres`);
 
-    // Gerar áudio com Hugging Face
+    // Gerar áudio com Hugging Face (novo endpoint)
     const hfToken = Deno.env.get('HUGGING_FACE_ACCESS_TOKEN');
     if (!hfToken) {
       throw new Error('HUGGING_FACE_ACCESS_TOKEN não configurado');
     }
 
-    const hf = new HfInference(hfToken);
+    console.log('Gerando áudio com facebook/mms-tts-por via router.huggingface.co...');
     
-    console.log('Gerando áudio com facebook/mms-tts-por...');
-    
-    const audioBlob = await hf.textToSpeech({
-      model: 'facebook/mms-tts-por',
-      inputs: textoLimpo,
+    // Usar o novo endpoint router.huggingface.co
+    const hfResponse = await fetch('https://router.huggingface.co/hf-inference/models/facebook/mms-tts-por', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${hfToken}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ inputs: textoLimpo }),
     });
 
+    if (!hfResponse.ok) {
+      const errorText = await hfResponse.text();
+      console.error('Erro HuggingFace:', hfResponse.status, errorText);
+      throw new Error(`Erro ao gerar áudio: ${hfResponse.status} - ${errorText}`);
+    }
+
+    const audioBlob = await hfResponse.blob();
     console.log('Áudio gerado, tamanho:', audioBlob.size);
 
     // Upload para Catbox
