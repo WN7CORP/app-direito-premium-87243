@@ -669,7 +669,7 @@ ${cfContext || ''}`;
     const acceptHeader = request.headers.get('Accept') || '';
     const wantsSSE = acceptHeader.includes('text/event-stream');
     
-    const modelName = 'gemini-2.0-flash-exp';
+    const modelName = 'gemini-2.5-flash';
     const endpoint = wantsSSE ? 'streamGenerateContent' : 'generateContent';
     
     const geminiUrl = wantsSSE 
@@ -692,7 +692,7 @@ ${cfContext || ''}`;
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'X-Function-Revision': 'v4.0.0-2025-11-05T12:00Z',
+          'X-Function-Revision': 'v5.0.0-gemini-2.5-flash',
           'X-Model': modelName
         },
         body: JSON.stringify(geminiPayload)
@@ -821,7 +821,7 @@ ${cfContext || ''}`;
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'X-Function-Revision': 'v4.0.0-2025-11-05T12:00Z',
+          'X-Function-Revision': 'v5.0.0-gemini-2.5-flash',
           'X-Model': modelName
         },
         body: JSON.stringify(geminiPayload)
