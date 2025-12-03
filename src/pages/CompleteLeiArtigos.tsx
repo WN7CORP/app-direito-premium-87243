@@ -137,7 +137,7 @@ const CompleteLeiArtigos = () => {
       {/* Legenda */}
       <div className="flex gap-4 mb-4 text-xs text-muted-foreground">
         <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded-full bg-green-500" />
+          <div className="w-3 h-3 rounded-full bg-blue-500" />
           <span>Pronto</span>
         </div>
         <div className="flex items-center gap-1.5">
@@ -148,15 +148,16 @@ const CompleteLeiArtigos = () => {
 
       {/* Grid de Artigos */}
       {isLoadingArtigos ? (
-        <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 gap-2">
+        <div className="grid grid-cols-3 gap-2">
           {Array.from({ length: 24 }).map((_, i) => (
             <Skeleton key={i} className="h-16 rounded-lg" />
           ))}
         </div>
       ) : sortedArtigos.length > 0 ? (
-        <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 gap-2">
+        <div className="grid grid-cols-3 gap-2">
           {sortedArtigos.map((artigo) => {
             const temExercicio = exerciciosExistentes?.has(artigo.numero);
+            const statusColor = temExercicio ? "rgb(59, 130, 246)" : "rgb(245, 158, 11)"; // blue if ready, amber if to generate
             
             return (
               <Card
@@ -167,14 +168,14 @@ const CompleteLeiArtigos = () => {
                 <div 
                   className="absolute top-0 left-0 right-0 h-1 opacity-80"
                   style={{
-                    background: `linear-gradient(90deg, transparent, ${cor}, transparent)`,
-                    boxShadow: `0 0 15px ${cor}`
+                    background: `linear-gradient(90deg, transparent, ${statusColor}, transparent)`,
+                    boxShadow: `0 0 15px ${statusColor}`
                   }}
                 />
                 
                 <CardContent className="p-3 flex flex-col items-center text-center gap-1">
                   <span className="font-bold text-sm">Art. {artigo.numero}</span>
-                  <div className={`w-2 h-2 rounded-full ${temExercicio ? "bg-green-500" : "bg-amber-500"}`} />
+                  <div className={`w-2 h-2 rounded-full ${temExercicio ? "bg-blue-500" : "bg-amber-500"}`} />
                 </CardContent>
               </Card>
             );
