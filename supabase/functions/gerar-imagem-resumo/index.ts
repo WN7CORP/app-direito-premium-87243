@@ -1,6 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1'
-import { HfInference } from 'https://esm.sh/@huggingface/inference@3.6.0'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -19,9 +18,9 @@ serve(async (req) => {
       throw new Error('resumoId, tipo e conteudo são obrigatórios')
     }
 
-    const HUGGING_FACE_ACCESS_TOKEN = Deno.env.get('HUGGING_FACE_ACCESS_TOKEN')
-    if (!HUGGING_FACE_ACCESS_TOKEN) {
-      throw new Error('HUGGING_FACE_ACCESS_TOKEN não configurado')
+    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY')
+    if (!LOVABLE_API_KEY) {
+      throw new Error('LOVABLE_API_KEY não configurado')
     }
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!
@@ -61,29 +60,61 @@ serve(async (req) => {
       )
     }
 
-    // Gerar prompt baseado no conteúdo
+    // Gerar prompt otimizado para Gemini (sem texto)
     const contexto = conteudo.substring(0, 300).replace(/[#*_\[\]]/g, '')
-    const tipoLabel = tipo === 'resumo' ? 'conceito jurídico' : 'exemplo prático'
     
-    const prompt = `Minimalist symbolic illustration, NO TEXT WHATSOEVER, no letters, no words, no labels, no captions.
-Theme: ${area || 'Direito'} - ${tema || 'Legal concept'}.
-Visual elements: Simple icons, abstract shapes, symbolic objects representing ${contexto}.
-Style: Flat design, clean vectors, modern minimalist, soft gradients.
-Colors: Professional blue and gold palette.
-CRITICAL: Absolutely no text, no typography, no writing of any kind. Pure visual illustration only.`
+    const prompt = `Create a minimalist symbolic illustration for legal education.
+Area: ${area || 'Direito'}
+Topic: ${tema || 'Legal concept'}
+Context: ${contexto}
 
-    console.log('Gerando imagem com prompt:', prompt.substring(0, 100) + '...')
+Style: Clean flat design, simple icons, abstract shapes, professional blue and gold color palette, soft gradients, modern minimalist aesthetic.
 
-    const hf = new HfInference(HUGGING_FACE_ACCESS_TOKEN)
+CRITICAL REQUIREMENT: The image must contain absolutely NO TEXT, NO LETTERS, NO WORDS, NO LABELS, NO NUMBERS, NO TYPOGRAPHY of any kind.
+Only visual elements like icons, symbols, scales of justice, books, gavels, documents, abstract shapes.`
 
-    const image = await hf.textToImage({
-      inputs: prompt,
-      model: 'black-forest-labs/FLUX.1-schnell',
+    console.log('Gerando imagem com Nano Banana (Gemini)...')
+
+    // Chamar Lovable AI Gateway com modelo de imagem
+    const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${LOVABLE_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "google/gemini-2.5-flash-image-preview",
+        messages: [{
+          role: "user",
+          content: prompt
+        }],
+        modalities: ["image", "text"]
+      })
     })
 
-    // Converter blob para upload
-    const arrayBuffer = await image.arrayBuffer()
-    const uint8Array = new Uint8Array(arrayBuffer)
+    if (!aiResponse.ok) {
+      const errorText = await aiResponse.text()
+      console.error('Erro na API Lovable AI:', aiResponse.status, errorText)
+      throw new Error(`Erro na geração de imagem: ${aiResponse.status}`)
+    }
+
+    const aiData = await aiResponse.json()
+    console.log('Resposta AI recebida')
+
+    // Extrair imagem base64 da resposta
+    const imageBase64 = aiData.choices?.[0]?.message?.images?.[0]?.image_url?.url
+    if (!imageBase64) {
+      console.error('Resposta sem imagem:', JSON.stringify(aiData).substring(0, 500))
+      throw new Error('Nenhuma imagem gerada na resposta')
+    }
+
+    // Converter base64 para Uint8Array
+    const base64Data = imageBase64.replace(/^data:image\/\w+;base64,/, '')
+    const binaryString = atob(base64Data)
+    const uint8Array = new Uint8Array(binaryString.length)
+    for (let i = 0; i < binaryString.length; i++) {
+      uint8Array[i] = binaryString.charCodeAt(i)
+    }
 
     // Upload para Catbox.moe
     console.log('Fazendo upload para Catbox...')
