@@ -14,8 +14,13 @@ const QuestoesTemas = () => {
   const area = searchParams.get("area") || "";
   const [searchTerm, setSearchTerm] = useState("");
 
-  // Função para normalizar strings de forma consistente
-  const normalizar = (str: string) => str.trim().toLowerCase().replace(/\s+/g, ' ');
+  // Função para normalizar strings de forma consistente (remove acentos também)
+  const normalizar = (str: string) => 
+    str.trim()
+       .toLowerCase()
+       .normalize('NFD')
+       .replace(/[\u0300-\u036f]/g, '') // Remove acentos
+       .replace(/\s+/g, ' ');
 
   const { data: temas, isLoading, isFetching } = useQuery({
     queryKey: ["questoes-temas", area],
@@ -68,6 +73,7 @@ const QuestoesTemas = () => {
         // Conta quantos subtemas do RESUMO existem em QUESTOES_GERADAS
         const questoesDoTema = subtemasComQuestoes[temaNorm] || new Set();
         let subtemasGerados = 0;
+        
         subtemas.forEach(sub => {
           if (questoesDoTema.has(sub)) {
             subtemasGerados++;
