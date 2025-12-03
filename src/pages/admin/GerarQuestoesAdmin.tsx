@@ -65,20 +65,21 @@ export default function GerarQuestoesAdmin() {
 
     try {
       const { data, error } = await supabase
-        .from('QUESTOES_LOTE')
+        .from('QUESTOES_LOTE' as any)
         .select('*')
         .eq('id', loteAtual.id)
         .single();
 
       if (error) throw error;
 
-      setLoteAtual(data);
-      setProgresso(data.progresso_percentual || 0);
+      const loteData = data as any;
+      setLoteAtual(loteData);
+      setProgresso(loteData?.progresso_percentual || 0);
 
-      if (data.status === 'concluido') {
+      if (loteData?.status === 'concluido') {
         setGerando(false);
-        toast.success(`Geração concluída! ${data.total_questoes_geradas} questões criadas.`);
-      } else if (data.status === 'erro') {
+        toast.success(`Geração concluída! ${loteData?.total_questoes_geradas} questões criadas.`);
+      } else if (loteData?.status === 'erro') {
         setGerando(false);
         toast.error('Erro na geração de questões');
       }
@@ -107,26 +108,27 @@ export default function GerarQuestoesAdmin() {
 
       // Criar registro do lote
       const { data: lote, error: loteError } = await supabase
-        .from('QUESTOES_LOTE')
+        .from('QUESTOES_LOTE' as any)
         .insert({
           areas_selecionadas: areasSelecionadas,
           questoes_por_tema: questoesPorTema,
           status: 'processando',
           iniciado_em: new Date().toISOString()
-        })
+        } as any)
         .select()
         .single();
 
       if (loteError) throw loteError;
 
-      setLoteAtual(lote);
+      const loteData = lote as any;
+      setLoteAtual(loteData);
 
       // Chamar edge function
       const { error: functionError } = await supabase.functions.invoke('gerar-questoes-lote', {
         body: {
           areas: areasSelecionadas,
           questoesPorTema,
-          loteId: lote.id
+          loteId: loteData.id
         }
       });
 
