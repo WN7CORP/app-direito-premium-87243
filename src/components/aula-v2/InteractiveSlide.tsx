@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   FileText, 
@@ -92,10 +92,17 @@ export const InteractiveSlide = ({
 }: InteractiveSlideProps) => {
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [showFeedback, setShowFeedback] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
   
   const Icon = iconMap[slide.tipo] || FileText;
   const gradientColor = colorMap[slide.tipo] || colorMap.texto;
   const bgColor = bgColorMap[slide.tipo] || bgColorMap.texto;
+
+  // Scroll to top when slide changes
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    containerRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [slideIndex]);
 
   const handleOptionSelect = (index: number) => {
     if (showFeedback) return;
@@ -214,8 +221,27 @@ export const InteractiveSlide = ({
     return null;
   };
 
+  // Helper to render HTML content safely
+  const renderHtmlContent = (content: string) => {
+    // Check if content contains HTML tags
+    if (/<[^>]+>/.test(content)) {
+      return (
+        <div 
+          className="text-foreground leading-relaxed whitespace-pre-line [&_span]:rounded [&_span]:px-1"
+          dangerouslySetInnerHTML={{ __html: content }}
+        />
+      );
+    }
+    return (
+      <p className="text-foreground leading-relaxed whitespace-pre-line">
+        {content}
+      </p>
+    );
+  };
+
   return (
     <motion.div
+      ref={containerRef}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
@@ -322,14 +348,10 @@ export const InteractiveSlide = ({
                     <Briefcase className="w-3.5 h-3.5 text-emerald-400" />
                     <span className="text-xs font-medium text-emerald-400">{slide.contexto}</span>
                   </div>
-                  <p className="text-foreground leading-relaxed whitespace-pre-line">
-                    {slide.conteudo}
-                  </p>
+                  {renderHtmlContent(slide.conteudo)}
                 </div>
               ) : !isQuickCheck ? (
-                <p className="text-foreground leading-relaxed whitespace-pre-line">
-                  {slide.conteudo}
-                </p>
+                renderHtmlContent(slide.conteudo)
               ) : (
                 <div className="space-y-4">
                   <p className="text-foreground font-medium text-lg">
