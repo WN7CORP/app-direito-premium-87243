@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
-import { Sparkles, BookOpen, Scale } from "lucide-react";
+import { Sparkles, BookOpen, Scale, FileEdit } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 const FlashcardsEscolha = () => {
   const navigate = useNavigate();
@@ -23,6 +24,16 @@ const FlashcardsEscolha = () => {
       route: "/flashcards/artigos-lei",
       color: "rgb(16, 185, 129)",
       emoji: "⚖️"
+    },
+    {
+      id: "complete-lei",
+      title: "Complete a Lei",
+      description: "Preencha os espaços em branco dos artigos",
+      icon: FileEdit,
+      route: "/flashcards/complete-lei",
+      color: "rgb(59, 130, 246)",
+      emoji: "✏️",
+      badge: "BETA"
     }
   ];
 
@@ -67,7 +78,14 @@ const FlashcardsEscolha = () => {
                 {opcao.emoji}
               </div>
               <div className="flex-1">
-                <h3 className="font-bold text-lg mb-1">{opcao.title}</h3>
+                <div className="flex items-center gap-2 mb-1">
+                  <h3 className="font-bold text-lg">{opcao.title}</h3>
+                  {opcao.badge && (
+                    <Badge variant="secondary" className="text-xs bg-blue-500/20 text-blue-400 border-blue-500/30">
+                      {opcao.badge}
+                    </Badge>
+                  )}
+                </div>
                 <p className="text-sm text-muted-foreground">
                   {opcao.description}
                 </p>

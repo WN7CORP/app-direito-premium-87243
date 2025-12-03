@@ -26,3 +26,6 @@ verify_jwt = false
 
 [functions.gerar-aula-livro]
 verify_jwt = false
+
+[functions.gerar-lacunas]
+verify_jwt = false
