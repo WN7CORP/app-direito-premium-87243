@@ -50,3 +50,6 @@ verify_jwt = false
 
 [functions.gerar-audio-resumo-natural]
 verify_jwt = false
+
+[functions.gerar-imagem-resumo]
+verify_jwt = false
