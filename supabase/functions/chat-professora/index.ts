@@ -679,11 +679,8 @@ ${cfContext || ''}`;
     const wantsSSE = acceptHeader.includes('text/event-stream');
     
     const modelName = 'gemini-2.0-flash';
-    const endpoint = wantsSSE ? 'streamGenerateContent' : 'generateContent';
-    
-    const geminiUrl = wantsSSE 
-      ? `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:${endpoint}?key=${DIREITO_PREMIUM_API_KEY}&alt=sse`
-      : `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:${endpoint}?key=${DIREITO_PREMIUM_API_KEY}`;
+    // SEMPRE usar generateContent (não streaming) - abordagem mais estável
+    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${DIREITO_PREMIUM_API_KEY}`;
     
     console.log('🤖 Chamando Gemini API...', {
       mode,
@@ -695,157 +692,97 @@ ${cfContext || ''}`;
     
     const apiStartTime = Date.now();
     
+    // AbortController para timeout
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => {
+      console.error(`⏰ TIMEOUT: API não respondeu em ${API_TIMEOUT_MS}ms`);
+      controller.abort();
+    }, API_TIMEOUT_MS);
+    
+    let geminiResponse: Response;
+    try {
+      console.log('🚀 Iniciando fetch para Gemini API...');
+      geminiResponse = await fetch(geminiUrl, {
+        method: 'POST',
+        signal: controller.signal,
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Function-Revision': 'v7.0.0-simplified-streaming',
+          'X-Model': modelName
+        },
+        body: JSON.stringify(geminiPayload)
+      });
+      clearTimeout(timeoutId);
+      
+      const apiResponseTime = Date.now() - apiStartTime;
+      console.log(`⏱️ API respondeu em ${apiResponseTime}ms`);
+      console.log(`📊 Response status: ${geminiResponse.status}`);
+      
+    } catch (fetchError) {
+      clearTimeout(timeoutId);
+      if (fetchError instanceof Error && fetchError.name === 'AbortError') {
+        console.error('❌ Timeout na chamada da API Gemini');
+        throw new Error('A API demorou muito para responder. Tente novamente.');
+      }
+      console.error('❌ Erro no fetch:', fetchError);
+      throw fetchError;
+    }
+
+    if (!geminiResponse.ok) {
+      const errorText = await geminiResponse.text();
+      console.error('❌ Erro da API Gemini:', { status: geminiResponse.status, errorText });
+      throw new Error(`Gemini API error: ${geminiResponse.status} - ${errorText}`);
+    }
+
+    // Obter resposta completa como JSON
+    const json = await geminiResponse.json();
+    const fullText = json.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    
+    if (!fullText) {
+      console.error('❌ Resposta vazia do modelo');
+      throw new Error('Resposta vazia do modelo');
+    }
+
+    // Validação e logging
+    const wordCount = fullText.split(/\s+/).length;
+    const charCount = fullText.length;
+    const hasComponents = {
+      dicaDeOuro: fullText.includes('[DICA DE OURO 💎]'),
+      sacou: fullText.includes('[SACOU? 💡]'),
+      ficaLigado: fullText.includes('[FICA LIGADO! ⚠️]'),
+      questoes: fullText.includes('[QUESTOES_CLICAVEIS]')
+    };
+    
+    console.log('✅ Resposta recebida:', {
+      charCount,
+      wordCount,
+      expectedChars: config?.caracteres,
+      hasComponents
+    });
+
     if (wantsSSE) {
-      // Streaming com AbortController para timeout
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => {
-        console.error(`⏰ TIMEOUT: API não respondeu em ${API_TIMEOUT_MS}ms`);
-        controller.abort();
-      }, API_TIMEOUT_MS);
-      
-      let response: Response;
-      try {
-        console.log('🚀 Iniciando fetch para Gemini API (streaming)...');
-        response = await fetch(geminiUrl, {
-          method: 'POST',
-          signal: controller.signal,
-          headers: {
-            'Content-Type': 'application/json',
-            'X-Function-Revision': 'v6.0.0-timeout-fix',
-            'X-Model': modelName
-          },
-          body: JSON.stringify(geminiPayload)
-        });
-        clearTimeout(timeoutId);
-        
-        const apiResponseTime = Date.now() - apiStartTime;
-        console.log(`⏱️ API respondeu em ${apiResponseTime}ms`);
-        console.log(`📊 Response status: ${response.status}`);
-        console.log(`📊 Response headers:`, Object.fromEntries(response.headers));
-        
-      } catch (fetchError) {
-        clearTimeout(timeoutId);
-        if (fetchError instanceof Error && fetchError.name === 'AbortError') {
-          console.error('❌ Timeout na chamada da API Gemini');
-          throw new Error('A API demorou muito para responder. Tente novamente.');
-        }
-        console.error('❌ Erro no fetch:', fetchError);
-        throw fetchError;
-      }
-
-      if (!response.ok || !response.body) {
-        const errorText = await response.text();
-        console.error('❌ Erro da API Gemini:', { status: response.status, errorText });
-        throw new Error(`Gemini API error: ${response.status} - ${errorText}`);
-      }
-
-      console.log('📡 Enviando keepalive inicial...');
-      
-      const { readable, writable } = new TransformStream();
-      const writer = writable.getWriter();
+      // Simular SSE com chunks (igual gerar-explicacao-v2)
       const encoder = new TextEncoder();
-      
-      await writer.write(encoder.encode(': keepalive\n\n'));
-
-      (async () => {
-        try {
-          const reader = response.body!.getReader();
-          const decoder = new TextDecoder();
-          let buffer = '';
-          let fullText = '';
-          let chunkCount = 0;
-          let totalBytesReceived = 0;
-          const streamStartTime = Date.now();
-
-          console.log('📖 Iniciando leitura do stream...');
-
-          while (true) {
-            let readResult;
-            try {
-              readResult = await reader.read();
-            } catch (readError) {
-              console.error('❌ Erro ao ler chunk do stream:', readError);
-              break;
-            }
-            
-            const { done, value } = readResult;
-            
-            if (done) {
-              console.log('✅ Stream finalizado normalmente');
-              break;
-            }
-
-            chunkCount++;
-            const chunkSize = value?.length || 0;
-            totalBytesReceived += chunkSize;
-            
-            if (chunkCount <= 5 || chunkCount % 10 === 0) {
-              console.log(`📤 Chunk ${chunkCount}: ${chunkSize} bytes (total: ${totalBytesReceived} bytes)`);
-            }
-
-            buffer += decoder.decode(value, { stream: true });
-            const lines = buffer.split('\n');
-            buffer = lines.pop() || '';
-
-            for (const line of lines) {
-              if (!line.trim() || line.startsWith(':')) continue;
-              
-              if (line.startsWith('data: ')) {
-                const jsonStr = line.slice(6);
-                try {
-                  const parsed = JSON.parse(jsonStr);
-                  const content = parsed.candidates?.[0]?.content?.parts?.[0]?.text;
-                  
-                  if (content) {
-                    fullText += content;
-                    
-                    const sseEvent = {
-                      choices: [{
-                        delta: { content },
-                        index: 0,
-                        finish_reason: null
-                      }]
-                    };
-                    
-                    await writer.write(encoder.encode(`data: ${JSON.stringify(sseEvent)}\n\n`));
-                  }
-                } catch (parseError) {
-                  console.error('⚠️ Erro ao parsear JSON SSE:', { error: parseError, jsonStr: jsonStr.substring(0, 100) });
-                }
-              }
-            }
+      const stream = new ReadableStream<Uint8Array>({
+        start(ctrl) {
+          // Enviar keepalive inicial
+          ctrl.enqueue(encoder.encode(': keepalive\n\n'));
+          
+          // Dividir resposta em chunks para simular streaming
+          const chunkSize = 800;
+          for (let i = 0; i < fullText.length; i += chunkSize) {
+            const piece = fullText.slice(i, i + chunkSize);
+            const sseEvent = {
+              choices: [{
+                delta: { content: piece },
+                index: 0,
+                finish_reason: null
+              }]
+            };
+            ctrl.enqueue(encoder.encode(`data: ${JSON.stringify(sseEvent)}\n\n`));
           }
           
-          const streamDuration = Date.now() - streamStartTime;
-          console.log(`📊 Stream stats: ${chunkCount} chunks, ${totalBytesReceived} bytes, ${streamDuration}ms`);
-
-          // Validação final
-          const wordCount = fullText.split(/\s+/).length;
-          const charCount = fullText.length;
-          const hasComponents = {
-            dicaDeOuro: fullText.includes('[DICA DE OURO 💎]'),
-            sacou: fullText.includes('[SACOU? 💡]'),
-            ficaLigado: fullText.includes('[FICA LIGADO! ⚠️]'),
-            questoes: fullText.includes('[QUESTOES_CLICAVEIS]')
-          };
-          
-          console.log('✅ Streaming concluído:', {
-            charCount,
-            wordCount,
-            expectedChars: config?.caracteres,
-            hasComponents
-          });
-          
-          if (linguagemMode === 'descomplicado' && responseLevel !== 'basic') {
-            const minChars = config?.caracteres[0];
-            if (charCount < minChars) {
-              console.warn(`⚠️ Resposta muito curta! ${charCount} caracteres (mínimo: ${minChars})`);
-            }
-            if (!hasComponents.questoes) {
-              console.warn('⚠️ Faltando [QUESTOES_CLICAVEIS]');
-            }
-          }
-
+          // Evento de conclusão
           const doneEvent = {
             choices: [{
               delta: {},
@@ -853,23 +790,18 @@ ${cfContext || ''}`;
               finish_reason: 'stop'
             }]
           };
+          ctrl.enqueue(encoder.encode(`data: ${JSON.stringify(doneEvent)}\n\n`));
+          ctrl.enqueue(encoder.encode('data: [DONE]\n\n'));
+          ctrl.close();
           
-          await writer.write(encoder.encode(`data: ${JSON.stringify(doneEvent)}\n\n`));
-          await writer.write(encoder.encode('data: [DONE]\n\n'));
-          console.log('✅ Enviando evento done, showActions: true');
-          
-        } catch (error) {
-          console.error('Erro no streaming:', error);
-        } finally {
-          await writer.close();
-          console.log('🔒 Fechando stream SSE');
+          console.log('✅ Stream SSE simulado enviado');
         }
-      })();
+      });
 
       const totalTime = Date.now() - startTime;
-      console.log(`⏱️ Tempo total de processamento: ${totalTime}ms `);
+      console.log(`⏱️ Tempo total de processamento: ${totalTime}ms`);
 
-      return new Response(readable, {
+      return new Response(stream, {
         headers: {
           ...corsHeaders,
           'Content-Type': 'text/event-stream',
