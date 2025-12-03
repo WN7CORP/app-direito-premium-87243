@@ -65,11 +65,12 @@ serve(async (req) => {
     const contexto = conteudo.substring(0, 300).replace(/[#*_\[\]]/g, '')
     const tipoLabel = tipo === 'resumo' ? 'conceito jurídico' : 'exemplo prático'
     
-    const prompt = `Professional legal illustration for Brazilian law education. 
+    const prompt = `Minimalist symbolic illustration, NO TEXT WHATSOEVER, no letters, no words, no labels, no captions.
 Theme: ${area || 'Direito'} - ${tema || 'Legal concept'}.
-Context: ${tipoLabel} about ${contexto}.
-Style: Modern, clean, professional, educational infographic style.
-Requirements: No text, no watermarks, symbolic representation, blue and gold color scheme, 16:9 aspect ratio.`
+Visual elements: Simple icons, abstract shapes, symbolic objects representing ${contexto}.
+Style: Flat design, clean vectors, modern minimalist, soft gradients.
+Colors: Professional blue and gold palette.
+CRITICAL: Absolutely no text, no typography, no writing of any kind. Pure visual illustration only.`
 
     console.log('Gerando imagem com prompt:', prompt.substring(0, 100) + '...')
 
