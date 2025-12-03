@@ -23,7 +23,35 @@ serve(async (req) => {
       );
     }
 
-    console.log(`Gerando áudio para questão ${questaoId}`);
+    console.log(`Verificando se questão ${questaoId} já tem áudio...`);
+
+    // Initialize Supabase client
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    // Check if audio already exists
+    const { data: questao, error: fetchError } = await supabase
+      .from('QUESTOES_GERADAS')
+      .select('url_audio')
+      .eq('id', questaoId)
+      .maybeSingle();
+
+    if (fetchError) {
+      console.error('Erro ao buscar questão:', fetchError);
+      // Continue to generate new audio
+    }
+
+    // If audio already exists, return it immediately
+    if (questao?.url_audio) {
+      console.log(`✅ Áudio já existe para questão ${questaoId}: ${questao.url_audio}`);
+      return new Response(
+        JSON.stringify({ url_audio: questao.url_audio, cached: true }),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    console.log(`Gerando NOVO áudio para questão ${questaoId}...`);
     console.log(`Texto (${texto.length} caracteres): ${texto.substring(0, 100)}...`);
 
     // Get GER API key for Google Cloud TTS
@@ -126,10 +154,6 @@ serve(async (req) => {
 
     // 4. Save URL to database
     console.log('Saving URL to database...');
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const supabase = createClient(supabaseUrl, supabaseKey);
-
     const { error: updateError } = await supabase
       .from('QUESTOES_GERADAS')
       .update({ url_audio: audioUrl })
