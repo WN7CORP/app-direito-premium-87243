@@ -7,6 +7,7 @@ interface ModuloTransitionCardProps {
   moduloNumero: number;
   moduloNome: string;
   icone?: string;
+  imagemUrl?: string;
   onComplete: () => void;
 }
 
@@ -23,6 +24,7 @@ export const ModuloTransitionCard = ({
   moduloNumero, 
   moduloNome, 
   icone = "BookOpen",
+  imagemUrl,
   onComplete 
 }: ModuloTransitionCardProps) => {
   const [show, setShow] = useState(true);
@@ -60,20 +62,36 @@ export const ModuloTransitionCard = ({
               stiffness: 300 
             }}
           >
-            <Card className="p-8 max-w-md mx-4 text-center space-y-4 border-2 border-primary/30 shadow-2xl bg-gradient-to-br from-card to-primary/5">
-              <motion.div
-                initial={{ scale: 0 }}
-                animate={{ scale: 1, rotate: 360 }}
-                transition={{ 
-                  delay: 0.2,
-                  type: "spring",
-                  damping: 15,
-                  stiffness: 200
-                }}
-                className="inline-block bg-gradient-to-br from-primary to-accent rounded-2xl p-6 shadow-lg"
-              >
-                <IconComponent className="w-16 h-16 text-primary-foreground" />
-              </motion.div>
+            <Card className="p-8 max-w-md mx-4 text-center space-y-4 border-2 border-primary/30 shadow-2xl bg-gradient-to-br from-card to-primary/5 overflow-hidden">
+              {imagemUrl && moduloNumero === 1 ? (
+                <motion.div
+                  initial={{ scale: 0.8, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ delay: 0.2, type: "spring", damping: 15 }}
+                  className="relative -mx-8 -mt-8 mb-4"
+                >
+                  <img 
+                    src={imagemUrl} 
+                    alt="Capa da aula" 
+                    className="w-full h-40 object-cover"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-card to-transparent" />
+                </motion.div>
+              ) : (
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1, rotate: 360 }}
+                  transition={{ 
+                    delay: 0.2,
+                    type: "spring",
+                    damping: 15,
+                    stiffness: 200
+                  }}
+                  className="inline-block bg-gradient-to-br from-primary to-accent rounded-2xl p-6 shadow-lg"
+                >
+                  <IconComponent className="w-16 h-16 text-primary-foreground" />
+                </motion.div>
+              )}
 
               <motion.div
                 initial={{ opacity: 0, y: 10 }}

@@ -17,6 +17,8 @@ interface AulaEstrutura {
   titulo: string;
   descricao: string;
   area?: string;
+  imagemPrompt?: string;
+  imagemUrl?: string;
   modulos: Array<{
     id: number;
     nome: string;
@@ -41,6 +43,7 @@ type Etapa = 'intro' | 'transicao' | 'teoria' | 'matching' | 'flashcards' | 'que
 const AulaInterativa = () => {
   const [estrutura, setEstrutura] = useState<AulaEstrutura | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isGerandoImagem, setIsGerandoImagem] = useState(false);
   const [etapaAtual, setEtapaAtual] = useState<Etapa>('intro');
   const [moduloAtual, setModuloAtual] = useState(1);
   const [acertosProva, setAcertosProva] = useState(0);
@@ -73,6 +76,27 @@ const AulaInterativa = () => {
     }
   }, [estrutura, aulaId]);
 
+  const gerarImagemCapa = async (prompt: string): Promise<string | null> => {
+    try {
+      setIsGerandoImagem(true);
+      const { data, error } = await supabase.functions.invoke('gerar-imagem-hf', {
+        body: { prompt }
+      });
+
+      if (error) {
+        console.error('Erro ao gerar imagem:', error);
+        return null;
+      }
+
+      return data?.image || null;
+    } catch (error) {
+      console.error('Erro ao gerar imagem:', error);
+      return null;
+    } finally {
+      setIsGerandoImagem(false);
+    }
+  };
+
   const gerarAula = async (tema: string) => {
     setIsLoading(true);
     try {
@@ -81,6 +105,16 @@ const AulaInterativa = () => {
       });
 
       if (error) throw error;
+
+      // Gerar imagem de capa se houver prompt
+      let imagemUrl: string | null = null;
+      if (data.imagemPrompt) {
+        toast.info('Gerando imagem de capa...');
+        imagemUrl = await gerarImagemCapa(data.imagemPrompt);
+        if (imagemUrl) {
+          data.imagemUrl = imagemUrl;
+        }
+      }
 
       // Salvar aula no banco
       const aulaData = {
@@ -300,6 +334,7 @@ const AulaInterativa = () => {
           moduloNumero={moduloAtual}
           moduloNome={modulo.nome}
           icone={modulo.icone}
+          imagemUrl={estrutura.imagemUrl}
           onComplete={proximaEtapa}
         />
       )}

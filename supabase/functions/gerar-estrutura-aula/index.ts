@@ -68,12 +68,14 @@ IMPORTANTE:
 - O campo "teoria" deve conter markdown rico e formatado
 - Os cards especiais (>, ⚠️, 💡, 📌, ⚖️) são OBRIGATÓRIOS
 - Exemplo prático deve ser realista e aplicável
+- Inclua um campo "imagemPrompt" com uma descrição em inglês para gerar uma imagem de capa educacional relacionada ao tema (ex: "Educational illustration about criminal law, showing justice scales, legal books, and a gavel, modern clean style, blue and gold colors, gradient background")
 
 Formato JSON esperado:
 {
   "titulo": "Título da Aula",
   "descricao": "Breve descrição do que será aprendido",
   "area": "${tema.includes('Penal') ? 'Direito Penal' : tema.includes('Civil') ? 'Direito Civil' : tema.includes('Constitucional') ? 'Direito Constitucional' : 'Direito'}",
+  "imagemPrompt": "Educational illustration about [topic], showing [relevant visual elements], modern clean style, professional colors, gradient background",
   "modulos": [
     {
       "id": 1,
