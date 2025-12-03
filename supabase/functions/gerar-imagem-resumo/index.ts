@@ -60,18 +60,26 @@ serve(async (req) => {
       )
     }
 
-    // Gerar prompt otimizado para Gemini (sem texto)
+    // Gerar prompt no estilo sketchnote/desenho à mão
     const contexto = conteudo.substring(0, 300).replace(/[#*_\[\]]/g, '')
     
-    const prompt = `Create a minimalist symbolic illustration for legal education.
+    const prompt = `Create a hand-drawn sketch style illustration for legal education.
 Area: ${area || 'Direito'}
 Topic: ${tema || 'Legal concept'}
 Context: ${contexto}
 
-Style: Clean flat design, simple icons, abstract shapes, professional blue and gold color palette, soft gradients, modern minimalist aesthetic.
+STYLE REQUIREMENTS:
+- Hand-drawn pencil/pen sketch style with black lines on white grid notebook paper background
+- Simple stick figure characters with basic details (hair, clothing outlines)
+- Clean line art illustration like educational sketchnotes
+- Include simple legal icons: scales of justice, gavels, books, documents, arrows
+- Diagram-style layout showing relationships between concepts
+- Light crosshatching for shading
+- Notebook grid paper texture in background
+- Black ink drawing style on white/cream paper
 
-CRITICAL REQUIREMENT: The image must contain absolutely NO TEXT, NO LETTERS, NO WORDS, NO LABELS, NO NUMBERS, NO TYPOGRAPHY of any kind.
-Only visual elements like icons, symbols, scales of justice, books, gavels, documents, abstract shapes.`
+CRITICAL: The image must contain absolutely NO TEXT, NO LETTERS, NO WORDS, NO LABELS, NO NUMBERS.
+Only visual elements: stick figures, icons, arrows, simple objects. NO TYPOGRAPHY of any kind.`
 
     console.log('Gerando imagem com Nano Banana (Gemini)...')
 
