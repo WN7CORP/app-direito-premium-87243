@@ -61,20 +61,37 @@ serve(async (req) => {
       }
     }
 
-    const systemPrompt = `Você é um professor de Direito. Crie flashcards de estudo.
+    const systemPrompt = `Você é um professor de Direito especialista em criar flashcards.
 
-REGRAS:
-1. Crie EXATAMENTE 15 flashcards
-2. Cada flashcard tem: front (pergunta curta), back (resposta curta), exemplo (situação prática breve)
-3. Seja CONCISO - respostas curtas e diretas
-4. Retorne APENAS JSON válido, sem markdown`;
+REGRAS OBRIGATÓRIAS:
+1. Analise TODO o conteúdo do artigo
+2. Crie flashcards para CADA conceito/aspecto importante
+3. MÍNIMO 10 flashcards, crie quantos forem necessários para cobrir tudo
+4. PROIBIDO REPETIR - cada flashcard DEVE ser sobre tema/aspecto DIFERENTE
+5. VARIE os tipos de perguntas:
+   - Conceito (O que é...?)
+   - Requisitos (Quais os requisitos...?)
+   - Aplicação (Quando se aplica...?)
+   - Exceções (Em que casos não se aplica...?)
+   - Prazos (Qual o prazo...?)
+   - Penas/Sanções (Qual a consequência...?)
+   - Sujeitos (Quem pode...?)
+6. EXEMPLO PRÁTICO OBRIGATÓRIO - situação real com nomes fictícios
+7. Respostas CONCISAS e diretas
+8. Retorne APENAS JSON válido, sem markdown`;
 
-    const userPrompt = `Crie 15 flashcards sobre este artigo:
+    const userPrompt = `Analise este artigo e crie flashcards para cobrir TODO o conteúdo:
 
 ${content}
 
+INSTRUÇÕES:
+- Identifique TODOS os conceitos, requisitos, exceções, prazos e regras
+- Crie flashcard para CADA aspecto (mínimo 10, sem máximo)
+- NÃO REPITA conceitos - cada flashcard único
+- EXEMPLO PRÁTICO obrigatório em cada um
+
 JSON formato:
-{"flashcards":[{"front":"pergunta","back":"resposta","exemplo":"Ex: João fez X, aplica-se Y."}]}`;
+{"flashcards":[{"front":"pergunta","back":"resposta","exemplo":"Ex: Maria fez X, aplica-se Y porque Z."}]}`;
 
     console.log("🚀 Gerando flashcards com Gemini...");
 
