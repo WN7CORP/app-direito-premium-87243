@@ -32,3 +32,6 @@ verify_jwt = false
 
 [functions.gerar-questoes-tema]
 verify_jwt = false
+
+[functions.gerar-questoes-lote]
+verify_jwt = false
