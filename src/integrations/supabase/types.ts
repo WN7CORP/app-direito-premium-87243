@@ -89,6 +89,27 @@ export type Database = {
         }
         Relationships: []
       }
+      AUDIO_FEEDBACK_CACHE: {
+        Row: {
+          created_at: string | null
+          id: number
+          tipo: string
+          url_audio: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: number
+          tipo: string
+          url_audio: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: number
+          tipo?: string
+          url_audio?: string
+        }
+        Relationships: []
+      }
       "AUDIO-AULA": {
         Row: {
           area: string | null

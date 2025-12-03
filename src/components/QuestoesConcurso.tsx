@@ -52,6 +52,8 @@ const QuestoesConcurso = ({ questoes, onFinish, area, tema }: QuestoesConcursoPr
   const [shakeError, setShakeError] = useState(false);
   const [narrationLoading, setNarrationLoading] = useState(false);
   const [imagemLoading, setImagemLoading] = useState(false);
+  const [audioFeedbackCorreta, setAudioFeedbackCorreta] = useState<string | null>(null);
+  const [audioFeedbackIncorreta, setAudioFeedbackIncorreta] = useState<string | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
   const narrationAudioRef = useRef<HTMLAudioElement | null>(null);
@@ -135,6 +137,35 @@ const QuestoesConcurso = ({ questoes, onFinish, area, tema }: QuestoesConcursoPr
         resolve();
       }
     });
+  }, []);
+
+  // Carregar áudios de feedback uma vez na montagem do componente
+  useEffect(() => {
+    const carregarAudiosFeedback = async () => {
+      try {
+        // Carregar áudio de "Resposta correta!"
+        const { data: correta } = await supabase.functions.invoke('gerar-narracao', {
+          body: { texto: "Resposta correta!", tipoFeedback: 'resposta_correta' }
+        });
+        if (correta?.url_audio) {
+          setAudioFeedbackCorreta(correta.url_audio);
+          console.log('Áudio feedback correta carregado:', correta.url_audio, 'cached:', correta.cached);
+        }
+
+        // Carregar áudio de "Resposta incorreta."
+        const { data: incorreta } = await supabase.functions.invoke('gerar-narracao', {
+          body: { texto: "Resposta incorreta.", tipoFeedback: 'resposta_incorreta' }
+        });
+        if (incorreta?.url_audio) {
+          setAudioFeedbackIncorreta(incorreta.url_audio);
+          console.log('Áudio feedback incorreta carregado:', incorreta.url_audio, 'cached:', incorreta.cached);
+        }
+      } catch (err) {
+        console.error('Erro ao carregar áudios de feedback:', err);
+      }
+    };
+
+    carregarAudiosFeedback();
   }, []);
 
   // Scroll para o topo ao mudar de questão
@@ -348,9 +379,34 @@ const QuestoesConcurso = ({ questoes, onFinish, area, tema }: QuestoesConcursoPr
       console.error("Erro ao atualizar stats:", error);
     }
 
-    // Narração de feedback
+    // Função auxiliar para tocar áudio de feedback do cache
+    const tocarFeedbackAudio = async (url: string | null): Promise<void> => {
+      return new Promise((resolve) => {
+        if (!url) {
+          resolve();
+          return;
+        }
+        const audio = new Audio(url);
+        narrationAudioRef.current = audio;
+        setNarrationLoading(true);
+        audio.onended = () => {
+          setNarrationLoading(false);
+          resolve();
+        };
+        audio.onerror = () => {
+          setNarrationLoading(false);
+          resolve();
+        };
+        audio.play().catch(() => {
+          setNarrationLoading(false);
+          resolve();
+        });
+      });
+    };
+
+    // Narração de feedback usando cache global
     if (correct) {
-      await narrarTexto("Resposta correta!");
+      await tocarFeedbackAudio(audioFeedbackCorreta);
       // Aguarda um pouco e narra o comentário com cache
       if (currentQuestion.comentario) {
         setTimeout(() => {
@@ -372,7 +428,7 @@ const QuestoesConcurso = ({ questoes, onFinish, area, tema }: QuestoesConcursoPr
       setShakeError(true);
       setTimeout(() => setShakeError(false), 600);
       
-      await narrarTexto("Resposta incorreta.");
+      await tocarFeedbackAudio(audioFeedbackIncorreta);
       // Aguarda e narra o comentário também com cache
       if (currentQuestion.comentario) {
         setTimeout(() => {
