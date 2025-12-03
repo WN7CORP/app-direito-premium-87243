@@ -43,6 +43,7 @@ const FlashcardsArtigosLeiTemas = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const codigo = searchParams.get("codigo");
+  const cor = searchParams.get("cor") || "rgb(16, 185, 129)";
   const [searchTerm, setSearchTerm] = useState("");
 
   // Buscar artigos diretamente da tabela do Vade Mecum
@@ -90,13 +91,6 @@ const FlashcardsArtigosLeiTemas = () => {
     enabled: !!codigo,
   });
 
-  const glowColors = [
-    "rgb(16, 185, 129)",
-    "rgb(139, 92, 246)",
-    "rgb(239, 68, 68)", 
-    "rgb(245, 158, 11)",
-    "rgb(59, 130, 246)",
-  ];
 
   const filteredArtigos = artigos?.filter((item) =>
     item.numero.toLowerCase().includes(searchTerm.toLowerCase())
@@ -121,7 +115,10 @@ const FlashcardsArtigosLeiTemas = () => {
       {/* Header */}
       <div className="mb-6">
         <div className="flex items-center gap-3 mb-2">
-          <div className="flex items-center justify-center w-12 h-12 rounded-full bg-emerald-600 shadow-lg shadow-emerald-500/50">
+          <div 
+            className="flex items-center justify-center w-12 h-12 rounded-full shadow-lg"
+            style={{ backgroundColor: cor, boxShadow: `0 0 20px ${cor}80` }}
+          >
             <FileText className="w-6 h-6 text-white" />
           </div>
           <div>
@@ -194,8 +191,8 @@ const FlashcardsArtigosLeiTemas = () => {
                   <div 
                     className="absolute top-0 left-0 right-0 h-1 opacity-80"
                     style={{
-                      background: `linear-gradient(90deg, transparent, ${glowColors[index % glowColors.length]}, transparent)`,
-                      boxShadow: `0 0 20px ${glowColors[index % glowColors.length]}`
+                      background: `linear-gradient(90deg, transparent, ${cor}, transparent)`,
+                      boxShadow: `0 0 20px ${cor}`
                     }}
                   />
                   

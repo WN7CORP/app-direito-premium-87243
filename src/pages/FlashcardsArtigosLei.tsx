@@ -33,14 +33,33 @@ const codigosVadeMecum = [
   { id: "ESTATUTO - TORCEDOR", nome: "Estatuto do Torcedor", sigla: "TORC", emoji: "⚽" },
 ];
 
-const glowColors = [
-  "rgb(16, 185, 129)",
-  "rgb(139, 92, 246)",
-  "rgb(239, 68, 68)", 
-  "rgb(245, 158, 11)",
-  "rgb(59, 130, 246)",
-  "rgb(236, 72, 153)",
-];
+// Cores fixas por código
+const codigoCores: Record<string, string> = {
+  "CP - Código Penal": "rgb(16, 185, 129)",
+  "CC - Código Civil": "rgb(245, 158, 11)",
+  "CF - Constituição Federal": "rgb(59, 130, 246)",
+  "CPC – Código de Processo Civil": "rgb(139, 92, 246)",
+  "CPP – Código de Processo Penal": "rgb(239, 68, 68)",
+  "CDC – Código de Defesa do Consumidor": "rgb(236, 72, 153)",
+  "CLT - Consolidação das Leis do Trabalho": "rgb(251, 146, 60)",
+  "CTN – Código Tributário Nacional": "rgb(34, 211, 238)",
+  "CTB Código de Trânsito Brasileiro": "rgb(163, 230, 53)",
+  "CE – Código Eleitoral": "rgb(192, 132, 252)",
+  "CPM – Código Penal Militar": "rgb(248, 113, 113)",
+  "CPPM – Código de Processo Penal Militar": "rgb(251, 191, 36)",
+  "CA - Código de Águas": "rgb(56, 189, 248)",
+  "CBA Código Brasileiro de Aeronáutica": "rgb(74, 222, 128)",
+  "CBT Código Brasileiro de Telecomunicações": "rgb(167, 139, 250)",
+  "CCOM – Código Comercial": "rgb(253, 186, 116)",
+  "CDM – Código de Minas": "rgb(134, 239, 172)",
+  "ESTATUTO - ECA": "rgb(249, 168, 212)",
+  "ESTATUTO - IDOSO": "rgb(147, 197, 253)",
+  "ESTATUTO - OAB": "rgb(110, 231, 183)",
+  "ESTATUTO - PESSOA COM DEFICIÊNCIA": "rgb(196, 181, 253)",
+  "ESTATUTO - IGUALDADE RACIAL": "rgb(252, 211, 77)",
+  "ESTATUTO - CIDADE": "rgb(125, 211, 252)",
+  "ESTATUTO - TORCEDOR": "rgb(253, 164, 175)",
+};
 
 const FlashcardsArtigosLei = () => {
   const navigate = useNavigate();
@@ -97,20 +116,21 @@ const FlashcardsArtigosLei = () => {
             <p className="text-muted-foreground">Nenhum código encontrado</p>
           </Card>
         ) : (
-          <div className="grid grid-cols-1 gap-3">
+          <div className="grid grid-cols-2 gap-3">
             {filteredCodigos.map((item, index) => (
               <Card
                 key={item.id}
                 className="cursor-pointer hover:scale-[1.02] hover:shadow-xl transition-all border-2 border-transparent hover:border-primary/50 bg-gradient-to-br from-card to-card/80 group overflow-hidden relative animate-fade-in"
-                onClick={() =>
-                  navigate(`/flashcards/artigos-lei/temas?codigo=${encodeURIComponent(item.id)}`)
-                }
+                onClick={() => {
+                  const cor = codigoCores[item.id] || "rgb(16, 185, 129)";
+                  navigate(`/flashcards/artigos-lei/temas?codigo=${encodeURIComponent(item.id)}&cor=${encodeURIComponent(cor)}`);
+                }}
               >
                 <div 
                   className="absolute top-0 left-0 right-0 h-1 opacity-80"
                   style={{
-                    background: `linear-gradient(90deg, transparent, ${glowColors[index % glowColors.length]}, transparent)`,
-                    boxShadow: `0 0 20px ${glowColors[index % glowColors.length]}`
+                    background: `linear-gradient(90deg, transparent, ${codigoCores[item.id] || "rgb(16, 185, 129)"}, transparent)`,
+                    boxShadow: `0 0 20px ${codigoCores[item.id] || "rgb(16, 185, 129)"}`
                   }}
                 />
                 
