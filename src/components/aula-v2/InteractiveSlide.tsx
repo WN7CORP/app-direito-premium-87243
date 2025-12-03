@@ -10,10 +10,22 @@ import {
   ChevronRight,
   ChevronLeft,
   BookOpen,
-  Scale
+  Scale,
+  BookHeart,
+  Table2,
+  Clock,
+  Network,
+  Sparkles,
+  LayoutList
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SlideContent } from "./types";
+import { SlideStorytelling } from "./SlideStorytelling";
+import { SlideTabela } from "./SlideTabela";
+import { SlideLinhaTempo } from "./SlideLinhaTempo";
+import { SlideMapaMental } from "./SlideMapaMental";
+import { SlideDicaEstudo } from "./SlideDicaEstudo";
+import { SlideResumoVisual } from "./SlideResumoVisual";
 import confetti from "canvas-confetti";
 
 interface InteractiveSlideProps {
@@ -31,7 +43,13 @@ const iconMap: Record<string, any> = {
   explicacao: Lightbulb,
   atencao: AlertTriangle,
   exemplo: Briefcase,
-  quickcheck: CheckCircle2
+  quickcheck: CheckCircle2,
+  storytelling: BookHeart,
+  tabela: Table2,
+  linha_tempo: Clock,
+  mapa_mental: Network,
+  dica_estudo: Sparkles,
+  resumo_visual: LayoutList
 };
 
 const colorMap: Record<string, string> = {
@@ -40,7 +58,13 @@ const colorMap: Record<string, string> = {
   explicacao: "from-amber-500 to-orange-500",
   atencao: "from-red-500 to-rose-500",
   exemplo: "from-emerald-500 to-green-500",
-  quickcheck: "from-violet-500 to-purple-500"
+  quickcheck: "from-violet-500 to-purple-500",
+  storytelling: "from-purple-500 to-pink-500",
+  tabela: "from-cyan-500 to-teal-500",
+  linha_tempo: "from-blue-500 to-indigo-500",
+  mapa_mental: "from-green-500 to-emerald-500",
+  dica_estudo: "from-violet-500 to-fuchsia-500",
+  resumo_visual: "from-amber-500 to-yellow-500"
 };
 
 const bgColorMap: Record<string, string> = {
@@ -49,7 +73,13 @@ const bgColorMap: Record<string, string> = {
   explicacao: "bg-amber-500/10 border-amber-500/20",
   atencao: "bg-red-500/10 border-red-500/20",
   exemplo: "bg-emerald-500/10 border-emerald-500/20",
-  quickcheck: "bg-violet-500/10 border-violet-500/20"
+  quickcheck: "bg-violet-500/10 border-violet-500/20",
+  storytelling: "bg-purple-500/10 border-purple-500/20",
+  tabela: "bg-cyan-500/10 border-cyan-500/20",
+  linha_tempo: "bg-blue-500/10 border-blue-500/20",
+  mapa_mental: "bg-green-500/10 border-green-500/20",
+  dica_estudo: "bg-violet-500/10 border-violet-500/20",
+  resumo_visual: "bg-amber-500/10 border-amber-500/20"
 };
 
 export const InteractiveSlide = ({
@@ -102,8 +132,86 @@ export const InteractiveSlide = ({
       case 'atencao': return 'Ponto de atenção';
       case 'exemplo': return slide.contexto || 'Na prática';
       case 'quickcheck': return 'Verificação rápida';
+      case 'storytelling': return 'Entenda com uma história';
+      case 'tabela': return 'Quadro comparativo';
+      case 'linha_tempo': return 'Passo a passo';
+      case 'mapa_mental': return 'Conexões';
+      case 'dica_estudo': return 'Dica de memorização';
+      case 'resumo_visual': return 'Resumo';
       default: return '';
     }
+  };
+
+  // Render specialized slide components
+  const renderSpecializedContent = () => {
+    switch (slide.tipo) {
+      case 'storytelling':
+        return (
+          <SlideStorytelling 
+            personagem={slide.personagem}
+            narrativa={slide.narrativa}
+            conteudo={slide.conteudo}
+            titulo={slide.titulo}
+          />
+        );
+      
+      case 'tabela':
+        if (slide.tabela) {
+          return (
+            <SlideTabela 
+              tabela={slide.tabela}
+              titulo={slide.titulo}
+              conteudo={slide.conteudo}
+            />
+          );
+        }
+        break;
+      
+      case 'linha_tempo':
+        if (slide.etapas && slide.etapas.length > 0) {
+          return (
+            <SlideLinhaTempo 
+              etapas={slide.etapas}
+              titulo={slide.titulo}
+              conteudo={slide.conteudo}
+            />
+          );
+        }
+        break;
+      
+      case 'mapa_mental':
+        if (slide.conceitos && slide.conceitos.length > 0) {
+          return (
+            <SlideMapaMental 
+              conceitos={slide.conceitos}
+              titulo={slide.titulo}
+              conteudo={slide.conteudo}
+            />
+          );
+        }
+        break;
+      
+      case 'dica_estudo':
+        return (
+          <SlideDicaEstudo 
+            tecnica={slide.tecnica}
+            dica={slide.dica}
+            conteudo={slide.conteudo}
+            titulo={slide.titulo}
+          />
+        );
+      
+      case 'resumo_visual':
+        return (
+          <SlideResumoVisual 
+            pontos={slide.pontos}
+            conteudo={slide.conteudo}
+            titulo={slide.titulo}
+          />
+        );
+    }
+    
+    return null;
   };
 
   return (
@@ -149,156 +257,161 @@ export const InteractiveSlide = ({
 
         {/* Main content */}
         <div className={`rounded-2xl border p-5 md:p-6 ${bgColor} flex-1 overflow-y-auto`}>
-          {/* Termos slide */}
-          {isTermos && slide.termos && slide.termos.length > 0 ? (
-            <div className="space-y-4">
-              {slide.termos.map((item, idx) => (
-                <div 
-                  key={idx}
-                  className="bg-card/60 rounded-xl p-4 border border-border/50"
-                >
-                  <div className="flex items-start gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-indigo-500/20 flex items-center justify-center flex-shrink-0">
-                      <Scale className="w-4 h-4 text-indigo-400" />
+          {/* Check for specialized slide types first */}
+          {renderSpecializedContent() || (
+            <>
+              {/* Termos slide */}
+              {isTermos && slide.termos && slide.termos.length > 0 ? (
+                <div className="space-y-4">
+                  {slide.termos.map((item, idx) => (
+                    <div 
+                      key={idx}
+                      className="bg-card/60 rounded-xl p-4 border border-border/50"
+                    >
+                      <div className="flex items-start gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-indigo-500/20 flex items-center justify-center flex-shrink-0">
+                          <Scale className="w-4 h-4 text-indigo-400" />
+                        </div>
+                        <div>
+                          <h4 className="font-bold text-foreground uppercase text-sm tracking-wide">
+                            {item.termo}
+                          </h4>
+                          <p className="text-muted-foreground text-sm mt-1 leading-relaxed">
+                            {item.definicao}
+                          </p>
+                        </div>
+                      </div>
                     </div>
-                    <div>
-                      <h4 className="font-bold text-foreground uppercase text-sm tracking-wide">
-                        {item.termo}
-                      </h4>
-                      <p className="text-muted-foreground text-sm mt-1 leading-relaxed">
-                        {item.definicao}
-                      </p>
-                    </div>
+                  ))}
+                </div>
+              ) : isExplicacao && slide.topicos && slide.topicos.length > 0 ? (
+                /* Explicacao slide with topics */
+                <div className="space-y-5">
+                  {slide.conteudo && (
+                    <p className="text-foreground leading-relaxed">
+                      {slide.conteudo}
+                    </p>
+                  )}
+                  <div className="space-y-4 mt-4">
+                    {slide.topicos.map((topico, idx) => (
+                      <div 
+                        key={idx}
+                        className="bg-card/60 rounded-xl p-4 border border-amber-500/20"
+                      >
+                        <div className="flex items-start gap-3">
+                          <div className="w-6 h-6 rounded-full bg-amber-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                            <span className="text-xs font-bold text-amber-400">{idx + 1}</span>
+                          </div>
+                          <div>
+                            <h4 className="font-semibold text-foreground text-sm">
+                              {topico.titulo}
+                            </h4>
+                            <p className="text-muted-foreground text-sm mt-1 leading-relaxed">
+                              {topico.detalhe}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
-              ))}
-            </div>
-          ) : isExplicacao && slide.topicos && slide.topicos.length > 0 ? (
-            /* Explicacao slide with topics */
-            <div className="space-y-5">
-              {slide.conteudo && (
-                <p className="text-foreground leading-relaxed">
+              ) : isExemplo && slide.contexto ? (
+                /* Exemplo slide with context badge */
+                <div className="space-y-4">
+                  <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/20 border border-emerald-500/30">
+                    <Briefcase className="w-3.5 h-3.5 text-emerald-400" />
+                    <span className="text-xs font-medium text-emerald-400">{slide.contexto}</span>
+                  </div>
+                  <p className="text-foreground leading-relaxed whitespace-pre-line">
+                    {slide.conteudo}
+                  </p>
+                </div>
+              ) : !isQuickCheck ? (
+                <p className="text-foreground leading-relaxed whitespace-pre-line">
                   {slide.conteudo}
                 </p>
-              )}
-              <div className="space-y-4 mt-4">
-                {slide.topicos.map((topico, idx) => (
-                  <div 
-                    key={idx}
-                    className="bg-card/60 rounded-xl p-4 border border-amber-500/20"
-                  >
-                    <div className="flex items-start gap-3">
-                      <div className="w-6 h-6 rounded-full bg-amber-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                        <span className="text-xs font-bold text-amber-400">{idx + 1}</span>
-                      </div>
-                      <div>
-                        <h4 className="font-semibold text-foreground text-sm">
-                          {topico.titulo}
-                        </h4>
-                        <p className="text-muted-foreground text-sm mt-1 leading-relaxed">
-                          {topico.detalhe}
-                        </p>
-                      </div>
-                    </div>
+              ) : (
+                <div className="space-y-4">
+                  <p className="text-foreground font-medium text-lg">
+                    {slide.pergunta}
+                  </p>
+                  
+                  <div className="space-y-3 mt-6">
+                    {slide.opcoes?.map((opcao, index) => {
+                      const isSelected = selectedOption === index;
+                      const isCorrectOption = index === slide.resposta;
+                      
+                      let optionStyle = "bg-card border-border hover:border-primary/50 hover:bg-primary/5";
+                      
+                      if (showFeedback) {
+                        if (isCorrectOption) {
+                          optionStyle = "bg-emerald-500/20 border-emerald-500 text-emerald-400";
+                        } else if (isSelected && !isCorrectOption) {
+                          optionStyle = "bg-red-500/20 border-red-500 text-red-400";
+                        } else {
+                          optionStyle = "bg-card/50 border-border/50 opacity-50";
+                        }
+                      }
+                      
+                      return (
+                        <button
+                          key={index}
+                          onClick={() => handleOptionSelect(index)}
+                          disabled={showFeedback}
+                          className={`w-full p-4 rounded-xl border text-left transition-all ${optionStyle}`}
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
+                              showFeedback && isCorrectOption 
+                                ? 'border-emerald-500 bg-emerald-500' 
+                                : showFeedback && isSelected 
+                                  ? 'border-red-500 bg-red-500' 
+                                  : 'border-current'
+                            }`}>
+                              {showFeedback && isCorrectOption && (
+                                <CheckCircle2 className="w-5 h-5 text-white" />
+                              )}
+                              {showFeedback && isSelected && !isCorrectOption && (
+                                <XCircle className="w-5 h-5 text-white" />
+                              )}
+                              {!showFeedback && (
+                                <span className="text-sm font-medium">
+                                  {String.fromCharCode(65 + index)}
+                                </span>
+                              )}
+                            </div>
+                            <span className="text-foreground">{opcao}</span>
+                          </div>
+                        </button>
+                      );
+                    })}
                   </div>
-                ))}
-              </div>
-            </div>
-          ) : isExemplo && slide.contexto ? (
-            /* Exemplo slide with context badge */
-            <div className="space-y-4">
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/20 border border-emerald-500/30">
-                <Briefcase className="w-3.5 h-3.5 text-emerald-400" />
-                <span className="text-xs font-medium text-emerald-400">{slide.contexto}</span>
-              </div>
-              <p className="text-foreground leading-relaxed whitespace-pre-line">
-                {slide.conteudo}
-              </p>
-            </div>
-          ) : !isQuickCheck ? (
-            <p className="text-foreground leading-relaxed whitespace-pre-line">
-              {slide.conteudo}
-            </p>
-          ) : (
-            <div className="space-y-4">
-              <p className="text-foreground font-medium text-lg">
-                {slide.pergunta}
-              </p>
-              
-              <div className="space-y-3 mt-6">
-                {slide.opcoes?.map((opcao, index) => {
-                  const isSelected = selectedOption === index;
-                  const isCorrectOption = index === slide.resposta;
-                  
-                  let optionStyle = "bg-card border-border hover:border-primary/50 hover:bg-primary/5";
-                  
-                  if (showFeedback) {
-                    if (isCorrectOption) {
-                      optionStyle = "bg-emerald-500/20 border-emerald-500 text-emerald-400";
-                    } else if (isSelected && !isCorrectOption) {
-                      optionStyle = "bg-red-500/20 border-red-500 text-red-400";
-                    } else {
-                      optionStyle = "bg-card/50 border-border/50 opacity-50";
-                    }
-                  }
-                  
-                  return (
-                    <button
-                      key={index}
-                      onClick={() => handleOptionSelect(index)}
-                      disabled={showFeedback}
-                      className={`w-full p-4 rounded-xl border text-left transition-all ${optionStyle}`}
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
-                          showFeedback && isCorrectOption 
-                            ? 'border-emerald-500 bg-emerald-500' 
-                            : showFeedback && isSelected 
-                              ? 'border-red-500 bg-red-500' 
-                              : 'border-current'
-                        }`}>
-                          {showFeedback && isCorrectOption && (
-                            <CheckCircle2 className="w-5 h-5 text-white" />
-                          )}
-                          {showFeedback && isSelected && !isCorrectOption && (
-                            <XCircle className="w-5 h-5 text-white" />
-                          )}
-                          {!showFeedback && (
-                            <span className="text-sm font-medium">
-                              {String.fromCharCode(65 + index)}
-                            </span>
-                          )}
-                        </div>
-                        <span className="text-foreground">{opcao}</span>
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
 
-              {/* Feedback */}
-              <AnimatePresence>
-                {showFeedback && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    className={`mt-6 p-4 rounded-xl ${
-                      isCorrect 
-                        ? 'bg-emerald-500/20 border border-emerald-500/30' 
-                        : 'bg-red-500/20 border border-red-500/30'
-                    }`}
-                  >
-                    <p className={`font-medium mb-1 ${isCorrect ? 'text-emerald-400' : 'text-red-400'}`}>
-                      {isCorrect ? '✓ Correto!' : '✗ Incorreto'}
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      {slide.feedback}
-                    </p>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
+                  {/* Feedback */}
+                  <AnimatePresence>
+                    {showFeedback && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        className={`mt-6 p-4 rounded-xl ${
+                          isCorrect 
+                            ? 'bg-emerald-500/20 border border-emerald-500/30' 
+                            : 'bg-red-500/20 border border-red-500/30'
+                        }`}
+                      >
+                        <p className={`font-medium mb-1 ${isCorrect ? 'text-emerald-400' : 'text-red-400'}`}>
+                          {isCorrect ? '✓ Correto!' : '✗ Incorreto'}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          {slide.feedback}
+                        </p>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>

@@ -1,4 +1,4 @@
-// Types for the new interactive lesson system v2
+// Types for the new interactive lesson system v2 - ENHANCED
 
 export interface TermoDefinicao {
   termo: string;
@@ -10,22 +10,70 @@ export interface TopicoDetalhe {
   detalhe: string;
 }
 
+// For tabela slides
+export interface TabelaData {
+  cabecalhos: string[];
+  linhas: string[][];
+}
+
+// For linha_tempo slides
+export interface EtapaTimeline {
+  titulo: string;
+  descricao: string;
+}
+
+// For mapa_mental slides
+export interface ConceitoMental {
+  central: string;
+  relacionados: string[];
+}
+
 export interface SlideContent {
-  tipo: 'texto' | 'termos' | 'explicacao' | 'atencao' | 'exemplo' | 'quickcheck';
+  tipo: 'texto' | 'termos' | 'explicacao' | 'atencao' | 'exemplo' | 'quickcheck' 
+    | 'storytelling'      // Narrativa envolvente com personagens
+    | 'tabela'            // Tabela comparativa
+    | 'linha_tempo'       // Evolução histórica/etapas/procedimentos
+    | 'mapa_mental'       // Conceitos relacionados
+    | 'dica_estudo'       // Dica de memorização
+    | 'resumo_visual';    // Resumo com pontos principais
   titulo?: string;
   conteudo: string;
   icone?: string;
+  
   // For termos slides
   termos?: TermoDefinicao[];
+  
   // For explicacao slides with detailed topics
   topicos?: TopicoDetalhe[];
+  
   // For exemplo slides
   contexto?: string; // e.g., "Situação cotidiana" or "Jurisprudência"
+  
   // For quickcheck slides
   pergunta?: string;
   opcoes?: string[];
   resposta?: number;
   feedback?: string;
+  
+  // For storytelling slides
+  personagem?: string;   // "Maria", "João", "Pedro"
+  narrativa?: string;
+  
+  // For tabela slides
+  tabela?: TabelaData;
+  
+  // For linha_tempo slides
+  etapas?: EtapaTimeline[];
+  
+  // For mapa_mental slides
+  conceitos?: ConceitoMental[];
+  
+  // For dica_estudo slides
+  tecnica?: string;      // "Mnemônico", "Associação", "Visualização"
+  dica?: string;
+  
+  // For resumo_visual slides
+  pontos?: string[];
 }
 
 export interface Secao {
