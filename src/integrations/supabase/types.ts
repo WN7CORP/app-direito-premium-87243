@@ -5623,6 +5623,7 @@ export type Database = {
           created_at: string | null
           enunciado: string
           erros: number | null
+          exemplo_pratico: string | null
           gerada_em: string | null
           id: number
           modelo_ia: string | null
@@ -5647,6 +5648,7 @@ export type Database = {
           created_at?: string | null
           enunciado: string
           erros?: number | null
+          exemplo_pratico?: string | null
           gerada_em?: string | null
           id?: number
           modelo_ia?: string | null
@@ -5671,6 +5673,7 @@ export type Database = {
           created_at?: string | null
           enunciado?: string
           erros?: number | null
+          exemplo_pratico?: string | null
           gerada_em?: string | null
           id?: number
           modelo_ia?: string | null

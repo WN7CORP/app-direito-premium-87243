@@ -109,14 +109,26 @@ ${conteudoCombinado}
 4. Enunciado claro, direto e objetivo (máximo 200 caracteres)
 5. Alternativas com tamanho similar (evitar alternativa muito curta/longa)
 6. Comentário explicativo OBRIGATÓRIO (2-3 frases didáticas)
-7. Nível de dificuldade: graduação em direito
-8. Baseado APENAS no conteúdo fornecido (não invente informações)
+7. Exemplo prático OBRIGATÓRIO (história curta ilustrando o conceito)
+8. Nível de dificuldade: graduação em direito
+9. Baseado APENAS no conteúdo fornecido (não invente informações)
 
 📝 FORMATO DO COMENTÁRIO:
 O comentário deve:
 - Explicar POR QUE a alternativa correta está certa
 - Mencionar conceito-chave ou artigo legal relevante quando aplicável
 - Ser didático e ajudar o aluno a aprender o conceito
+
+📖 FORMATO DO EXEMPLO PRÁTICO:
+O exemplo_pratico deve:
+- Ser uma HISTÓRIA CURTA e REAL ilustrando o conceito
+- Usar nomes fictícios (João, Maria, Carlos, etc.)
+- Mostrar uma situação prática do dia-a-dia jurídico
+- Ter 3-5 frases explicando como o conceito se aplica
+- Ajudar o aluno a visualizar o conceito na prática
+
+EXEMPLO de exemplo_pratico bom:
+"João alugou um apartamento para Maria por R$ 2.000/mês. Após 4 meses sem pagar, João quer despejar Maria. Neste caso, João (locador) tem legitimidade ativa para propor ação de despejo. Maria (locatária) será citada como ré. O juiz poderá conceder liminar de desocupação em 15 dias se João prestar caução equivalente a 3 meses de aluguel."
 
 ❌ NÃO RETORNE NADA ALÉM DO JSON!
 ❌ NÃO adicione texto antes ou depois do JSON!
@@ -132,12 +144,13 @@ O comentário deve:
       "alternativa_c": "Terceira opção de resposta",
       "alternativa_d": "Quarta opção de resposta",
       "resposta_correta": "A",
-      "comentario": "Explicação didática: a alternativa A está correta porque [conceito]. Segundo [artigo/doutrina], [explicação complementar que ajuda na compreensão]."
+      "comentario": "Explicação didática: a alternativa A está correta porque [conceito]. Segundo [artigo/doutrina], [explicação complementar].",
+      "exemplo_pratico": "História curta ilustrando: João é advogado e recebeu um caso onde... [situação prática que demonstra o conceito da questão]."
     }
   ]
 }
 
-⚠️ IMPORTANTE: Gere TODAS AS 10 QUESTÕES no mesmo JSON!`;
+⚠️ IMPORTANTE: Gere TODAS AS 10 QUESTÕES no mesmo JSON, cada uma com comentario E exemplo_pratico!`;
 
       try {
         const aiResponse = await fetch(
@@ -155,7 +168,7 @@ O comentário deve:
               ],
               generationConfig: {
                 temperature: 0.8,
-                maxOutputTokens: 4000,
+                maxOutputTokens: 6000,
               },
             }),
           }
@@ -185,7 +198,7 @@ O comentário deve:
         const questoes = questoesData.questoes || [];
         console.log(`   ✅ ${questoes.length} questões geradas para subtema "${subtema}"`);
 
-        // Adicionar apenas campos obrigatórios (taxa_acerto é GENERATED, outros têm DEFAULT)
+        // Adicionar campos com exemplo_pratico
         const questoesComMetadados = questoes.map((q: any) => ({
           area: area,
           tema: tema,
@@ -196,7 +209,8 @@ O comentário deve:
           alternativa_c: q.alternativa_c,
           alternativa_d: q.alternativa_d,
           resposta_correta: q.resposta_correta,
-          comentario: q.comentario
+          comentario: q.comentario,
+          exemplo_pratico: q.exemplo_pratico || null
         }));
 
         todasQuestoes.push(...questoesComMetadados);
@@ -220,7 +234,7 @@ O comentário deve:
 
     // Sanitizar payload para garantir que nenhuma coluna gerada/default seja enviada
     const allowedKeys = [
-      'area','tema','subtema','enunciado','alternativa_a','alternativa_b','alternativa_c','alternativa_d','resposta_correta','comentario'
+      'area','tema','subtema','enunciado','alternativa_a','alternativa_b','alternativa_c','alternativa_d','resposta_correta','comentario','exemplo_pratico'
     ];
     const sanitizedQuestoes = todasQuestoes.map((q) => {
       const o: any = {};
