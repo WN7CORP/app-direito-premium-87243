@@ -92,14 +92,15 @@ const CompleteLeiExercicio = () => {
     enabled: !!codigo && !!artigo && !exercicioCache,
   });
 
-  // Gerar exercício via edge function
+  // Gerar exercício via edge function (usa gerar-flashcards com tipo: lacunas)
   const gerarExercicioMutation = useMutation({
     mutationFn: async (conteudo: string) => {
-      const { data, error } = await supabase.functions.invoke("gerar-lacunas", {
+      const { data, error } = await supabase.functions.invoke("gerar-flashcards", {
         body: {
           conteudo,
           area: codigo,
           artigo,
+          tipo: "lacunas",
         },
       });
 

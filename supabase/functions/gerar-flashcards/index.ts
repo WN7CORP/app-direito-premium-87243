@@ -1,7 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.75.1";
 
-const REVISION = "v3.2.0-json-repair";
+const REVISION = "v3.3.0-lacunas-support";
 const MODEL = "gemini-2.5-flash";
 
 const corsHeaders = {
@@ -17,7 +17,7 @@ serve(async (req) => {
   }
 
   try {
-    const { content, tableName, numeroArtigo, area, tipo } = await req.json();
+    const { content, conteudo, tableName, numeroArtigo, area, artigo, tipo } = await req.json();
 
     const DIREITO_PREMIUM_API_KEY = Deno.env.get("DIREITO_PREMIUM_API_KEY");
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
@@ -29,10 +29,156 @@ serve(async (req) => {
     
     console.log("✅ DIREITO_PREMIUM_API_KEY configurada");
     console.log(`🤖 Usando modelo: ${MODEL}`);
-    console.log(`📚 Área: ${area}, Artigo: ${numeroArtigo}`);
+    console.log(`📚 Tipo: ${tipo || 'flashcards'}, Área: ${area}, Artigo: ${numeroArtigo || artigo}`);
 
     const supabase = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
 
+    // ========== MODO LACUNAS ==========
+    if (tipo === 'lacunas') {
+      const textoConteudo = conteudo || content;
+      const artigoNumero = artigo || numeroArtigo;
+      
+      if (!textoConteudo) {
+        return new Response(
+          JSON.stringify({ error: "Conteúdo é obrigatório" }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      // Verificar cache em COMPLETE_LEI_CACHE
+      if (area && artigoNumero) {
+        const { data: cached } = await supabase
+          .from("COMPLETE_LEI_CACHE")
+          .select('*')
+          .eq('area', area)
+          .eq('artigo', artigoNumero)
+          .single();
+
+        if (cached) {
+          console.log(`✅ Retornando exercício de lacunas do cache`);
+          return new Response(
+            JSON.stringify({
+              textoComLacunas: cached.texto_com_lacunas,
+              palavras: cached.palavras,
+              lacunas: cached.lacunas,
+              cached: true
+            }),
+            { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+      }
+
+      // Gerar exercício de lacunas com IA
+      const lacunasPrompt = `Você é um assistente educacional especializado em criar exercícios de preenchimento de lacunas para estudantes de Direito.
+
+Dado o seguinte texto legal, crie um exercício de "complete a lei":
+
+TEXTO:
+${textoConteudo}
+
+INSTRUÇÕES:
+1. Identifique entre 4 e 8 palavras-chave importantes do texto (termos jurídicos, substantivos relevantes, verbos principais)
+2. Substitua cada palavra-chave por "_____" no texto
+3. Liste as palavras removidas (na ordem que aparecem no texto)
+4. Para cada lacuna, indique sua posição (0, 1, 2...) e a palavra correta
+
+RETORNE APENAS um JSON válido neste formato exato:
+{
+  "textoComLacunas": "O texto com as _____ no lugar das palavras removidas",
+  "palavras": ["palavra1", "palavra2", "palavra3"],
+  "lacunas": [
+    {"posicao": 0, "palavraCorreta": "palavra1"},
+    {"posicao": 1, "palavraCorreta": "palavra2"},
+    {"posicao": 2, "palavraCorreta": "palavra3"}
+  ]
+}
+
+IMPORTANTE:
+- O número de "_____" no texto DEVE ser igual ao número de palavras no array
+- Cada lacuna deve ter uma posição correspondente (0 para primeira lacuna, 1 para segunda, etc.)
+- Retorne APENAS o JSON, sem explicações adicionais.`;
+
+      console.log("🚀 Gerando exercício de lacunas...");
+
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${DIREITO_PREMIUM_API_KEY}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: lacunasPrompt }] }],
+            generationConfig: { temperature: 0.3, maxOutputTokens: 4000 }
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("❌ Erro da API Gemini:", response.status, errorText);
+        throw new Error(`Erro da API: ${response.status}`);
+      }
+
+      const data = await response.json();
+      const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+      
+      // Parse JSON
+      let jsonText = text;
+      const jsonMatch = text.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
+      if (jsonMatch) {
+        jsonText = jsonMatch[1];
+      }
+      
+      jsonText = jsonText.trim();
+      if (!jsonText.startsWith('{')) {
+        const startIndex = jsonText.indexOf('{');
+        if (startIndex !== -1) {
+          jsonText = jsonText.substring(startIndex);
+        }
+      }
+
+      const parsed = JSON.parse(jsonText);
+      
+      if (!parsed.textoComLacunas || !parsed.palavras || !parsed.lacunas) {
+        throw new Error("Formato de resposta inválido");
+      }
+
+      console.log(`✅ Exercício gerado com ${parsed.lacunas.length} lacunas`);
+
+      // Salvar no cache
+      if (area && artigoNumero) {
+        try {
+          const { error: insertError } = await supabase
+            .from("COMPLETE_LEI_CACHE")
+            .insert({
+              area: area,
+              artigo: artigoNumero,
+              texto_com_lacunas: parsed.textoComLacunas,
+              palavras: parsed.palavras,
+              lacunas: parsed.lacunas,
+            });
+
+          if (insertError) {
+            console.error("❌ Erro ao salvar cache:", insertError);
+          } else {
+            console.log("💾 Exercício salvo no cache");
+          }
+        } catch (e) {
+          console.error("❌ Erro ao salvar cache:", e);
+        }
+      }
+
+      return new Response(
+        JSON.stringify({
+          textoComLacunas: parsed.textoComLacunas,
+          palavras: parsed.palavras,
+          lacunas: parsed.lacunas,
+          cached: false
+        }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // ========== MODO FLASHCARDS (comportamento original) ==========
     // Verificar se já existem flashcards em cache na tabela FLASHCARDS - ARTIGOS LEI
     if (area && numeroArtigo && tipo !== 'chat') {
       const { data: cached } = await supabase
