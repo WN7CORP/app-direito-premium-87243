@@ -6,7 +6,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Loader2, Share2, FileDown, Sparkles } from "lucide-react";
+import { Loader2, Share2, FileDown, Sparkles, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import ReactMarkdown from "react-markdown";
@@ -121,11 +121,14 @@ const ExplicacaoNoticiaModal = ({
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="text-xl font-bold flex items-center gap-2">
-            <Sparkles className="w-5 h-5 text-primary" />
+        <DialogHeader className="flex flex-row items-center justify-between">
+          <DialogTitle className="text-base font-semibold flex items-center gap-2">
+            <Sparkles className="w-4 h-4 text-primary" />
             Explicação Detalhada
           </DialogTitle>
+          <Button variant="ghost" size="icon" onClick={handleClose} className="h-8 w-8">
+            <X className="h-4 w-4" />
+          </Button>
         </DialogHeader>
 
         <div className="space-y-4">
@@ -161,13 +164,13 @@ const ExplicacaoNoticiaModal = ({
                   remarkPlugins={[remarkGfm]}
                   components={{
                     h1: ({ children }) => (
-                      <h1 className="text-2xl font-bold text-foreground mb-4 mt-6">{children}</h1>
+                      <h1 className="text-lg font-bold text-foreground mb-3 mt-4">{children}</h1>
                     ),
                     h2: ({ children }) => (
-                      <h2 className="text-xl font-semibold text-foreground mb-3 mt-5">{children}</h2>
+                      <h2 className="text-base font-semibold text-foreground mb-2 mt-4">{children}</h2>
                     ),
                     h3: ({ children }) => (
-                      <h3 className="text-lg font-semibold text-foreground mb-2 mt-4">{children}</h3>
+                      <h3 className="text-sm font-semibold text-foreground mb-2 mt-3">{children}</h3>
                     ),
                     p: ({ children }) => (
                       <p className="text-foreground mb-3 leading-relaxed">{children}</p>

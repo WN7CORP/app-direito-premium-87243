@@ -68,12 +68,7 @@ const CompleteLeiCodigos = () => {
             <FileEdit className="w-6 h-6 text-white" />
           </div>
           <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-xl md:text-2xl font-bold">Complete a Lei</h1>
-              <Badge variant="secondary" className="text-xs bg-blue-500/20 text-blue-400 border-blue-500/30">
-                BETA
-              </Badge>
-            </div>
+            <h1 className="text-xl md:text-2xl font-bold">Complete a Lei</h1>
             <p className="text-sm text-muted-foreground">
               Escolha um código para praticar
             </p>
