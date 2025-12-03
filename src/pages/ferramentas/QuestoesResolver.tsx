@@ -1,7 +1,7 @@
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { ArrowLeft, Scale, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -27,6 +27,19 @@ interface GeracaoStatus {
   geracao_completa: boolean;
 }
 
+const FRASES_GERACAO = [
+  "Analisando o conteúdo jurídico...",
+  "Criando questões desafiadoras...",
+  "Elaborando alternativas...",
+  "Preparando comentários explicativos...",
+  "Refinando as questões...",
+  "Verificando gabaritos...",
+  "Organizando por subtemas...",
+  "Finalizando questões...",
+  "A IA está trabalhando...",
+  "Quase pronto...",
+];
+
 const QuestoesResolver = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -36,6 +49,29 @@ const QuestoesResolver = () => {
   const [questoes, setQuestoes] = useState<Questao[]>([]);
   const [geracaoStatus, setGeracaoStatus] = useState<GeracaoStatus | null>(null);
   const [progressMessage, setProgressMessage] = useState("");
+  const [fraseIndex, setFraseIndex] = useState(0);
+  const fraseIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Rotacionar frases durante a geração
+  useEffect(() => {
+    if (isGenerating) {
+      fraseIntervalRef.current = setInterval(() => {
+        setFraseIndex(prev => (prev + 1) % FRASES_GERACAO.length);
+      }, 3000);
+    } else {
+      if (fraseIntervalRef.current) {
+        clearInterval(fraseIntervalRef.current);
+        fraseIntervalRef.current = null;
+      }
+      setFraseIndex(0);
+    }
+    
+    return () => {
+      if (fraseIntervalRef.current) {
+        clearInterval(fraseIntervalRef.current);
+      }
+    };
+  }, [isGenerating]);
 
   const { data: questoesCache, isLoading, refetch } = useQuery({
     queryKey: ["questoes-resolver", area, tema],
@@ -195,9 +231,9 @@ const QuestoesResolver = () => {
               </>
             )}
             
-            <p className="text-sm text-muted-foreground max-w-xs mt-2">
+            <p className="text-sm text-muted-foreground max-w-xs mt-2 min-h-[40px] transition-opacity duration-300">
               {isGenerating 
-                ? "A IA está criando questões personalizadas. Isso pode levar alguns segundos."
+                ? FRASES_GERACAO[fraseIndex]
                 : "Verificando questões disponíveis..."
               }
             </p>
