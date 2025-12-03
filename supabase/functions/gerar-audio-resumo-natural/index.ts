@@ -72,27 +72,98 @@ serve(async (req) => {
 
     console.log(`Texto limpo: ${textoLimpo.length} caracteres`);
 
-    // Gerar áudio com Hugging Face (novo endpoint)
+    // Gerar áudio com Hugging Face usando modelo Bark (suporta português)
     const hfToken = Deno.env.get('HUGGING_FACE_ACCESS_TOKEN');
     if (!hfToken) {
       throw new Error('HUGGING_FACE_ACCESS_TOKEN não configurado');
     }
 
-    console.log('Gerando áudio com facebook/mms-tts-por via router.huggingface.co...');
+    // Limitar texto para Bark (máximo ~250 chars por vez para melhor qualidade)
+    const textoParaAudio = textoLimpo.substring(0, 2000);
+
+    console.log('Gerando áudio com suno/bark...');
     
-    // Usar o novo endpoint router.huggingface.co
-    const hfResponse = await fetch('https://router.huggingface.co/hf-inference/models/facebook/mms-tts-por', {
+    // Usar suno/bark que suporta múltiplos idiomas incluindo português
+    const hfResponse = await fetch('https://api-inference.huggingface.co/models/suno/bark-small', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${hfToken}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ inputs: textoLimpo }),
+      body: JSON.stringify({ 
+        inputs: textoParaAudio,
+      }),
     });
 
     if (!hfResponse.ok) {
       const errorText = await hfResponse.text();
       console.error('Erro HuggingFace:', hfResponse.status, errorText);
+      
+      // Se o modelo não estiver disponível, tentar modelo alternativo
+      if (hfResponse.status === 503 || hfResponse.status === 404) {
+        console.log('Tentando modelo alternativo espnet/kan-bayashi_ljspeech_vits...');
+        
+        const altResponse = await fetch('https://api-inference.huggingface.co/models/espnet/kan-bayashi_ljspeech_vits', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${hfToken}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ inputs: textoParaAudio }),
+        });
+        
+        if (!altResponse.ok) {
+          const altError = await altResponse.text();
+          console.error('Erro modelo alternativo:', altResponse.status, altError);
+          throw new Error(`Erro ao gerar áudio: ${altResponse.status} - ${altError}`);
+        }
+        
+        const audioBlob = await altResponse.blob();
+        console.log('Áudio gerado com modelo alternativo, tamanho:', audioBlob.size);
+        
+        // Continuar com upload
+        const formData = new FormData();
+        formData.append('reqtype', 'fileupload');
+        formData.append('fileToUpload', audioBlob, `resumo_${tipo}_${resumoId}.wav`);
+
+        console.log('Fazendo upload para Catbox...');
+        
+        const catboxResponse = await fetch('https://catbox.moe/user/api.php', {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (!catboxResponse.ok) {
+          throw new Error(`Erro no upload para Catbox: ${catboxResponse.status}`);
+        }
+
+        const audioUrl = await catboxResponse.text();
+        
+        if (!audioUrl.startsWith('http')) {
+          throw new Error(`URL inválida do Catbox: ${audioUrl}`);
+        }
+
+        console.log('Upload concluído:', audioUrl);
+
+        // Salvar URL no banco
+        const updateData: Record<string, string> = {};
+        updateData[coluna] = audioUrl;
+
+        const { error: updateError } = await supabase
+          .from('RESUMO')
+          .update(updateData)
+          .eq('id', resumoId);
+
+        if (updateError) {
+          console.error('Erro ao salvar URL no banco:', updateError);
+        }
+
+        return new Response(
+          JSON.stringify({ url_audio: audioUrl, cached: false }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      
       throw new Error(`Erro ao gerar áudio: ${hfResponse.status} - ${errorText}`);
     }
 
