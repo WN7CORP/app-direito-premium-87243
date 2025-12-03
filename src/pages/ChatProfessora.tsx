@@ -148,17 +148,20 @@ const ChatProfessora = () => {
     setUserScrolledUp(false);
   };
   const handleModeChange = (newMode: ChatMode) => {
+    // Redirecionar para /aula-interativa ao clicar em "Criar Aula"
+    if (newMode === 'aula') {
+      navigate('/aula-interativa');
+      return;
+    }
+    
     setMode(newMode);
     setMessages([]);
     setInput("");
     setUploadedFiles([]);
-    // Reset aula state when changing modes
-    if (newMode !== 'aula') {
-      setAulaGenerating(false);
-      setAulaModulos([]);
-      setAulaTema("");
-      setAulaEstrutura(null);
-    }
+    setAulaGenerating(false);
+    setAulaModulos([]);
+    setAulaTema("");
+    setAulaEstrutura(null);
   };
   const handleFileSelect = async (file: File, expectedType: "image" | "pdf") => {
     if (expectedType === "image" && !file.type.includes("image/")) {
