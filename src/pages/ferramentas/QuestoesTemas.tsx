@@ -89,7 +89,10 @@ const QuestoesTemas = () => {
       }).sort((a, b) => a.tema.localeCompare(b.tema));
     },
     enabled: !!area,
-    staleTime: 0, // Sempre busca dados frescos
+    staleTime: 0,
+    gcTime: 0, // Limpa cache ao desmontar
+    refetchOnMount: 'always', // Sempre busca dados frescos ao montar
+    refetchOnWindowFocus: true, // Recarrega ao voltar para a aba
     refetchInterval: (query) => {
       // Se há temas não completos, atualiza a cada 5 segundos
       const temPendentes = query.state.data?.some(t => !t.temQuestoes);
