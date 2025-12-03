@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, Sparkles } from "lucide-react";
+import { Loader2, Scale } from "lucide-react";
 import { FlashcardViewer } from "@/components/FlashcardViewer";
 import { toast } from "sonner";
 
@@ -141,16 +141,16 @@ const FlashcardsArtigosLeiEstudar = () => {
     );
   }
 
-  // Gerando flashcards com IA
+  // Gerando flashcards
   if (generateMutation.isPending || (flashcardsCache === null && artigoContent)) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-background to-background/95 gap-4">
         <div className="flex items-center gap-3">
-          <Sparkles className="w-8 h-8 text-amber-500 animate-pulse" />
+          <Scale className="w-8 h-8 text-amber-500 animate-pulse" />
           <Loader2 className="w-8 h-8 animate-spin text-primary" />
         </div>
         <p className="text-muted-foreground text-center px-4">
-          Gerando flashcards com IA para o Art. {artigo}...
+          Gerando flashcards para o Art. {artigo}...
           <br />
           <span className="text-xs">Isso pode levar alguns segundos</span>
         </p>

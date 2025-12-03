@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
-import { FileText, Search, Sparkles, CheckCircle } from "lucide-react";
+import { FileText, Search, Scale, CheckCircle } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -157,8 +157,8 @@ const FlashcardsArtigosLeiTemas = () => {
           <span>Flashcards prontos</span>
         </div>
         <div className="flex items-center gap-1">
-          <Sparkles className="w-4 h-4 text-amber-500" />
-          <span>Gerar com IA</span>
+          <Scale className="w-4 h-4 text-amber-500" />
+          <span>A gerar</span>
         </div>
       </div>
 
@@ -204,12 +204,12 @@ const FlashcardsArtigosLeiTemas = () => {
                       {temFlashcards ? (
                         <CheckCircle className="w-4 h-4 text-emerald-500" />
                       ) : (
-                        <Sparkles className="w-4 h-4 text-amber-500" />
+                        <Scale className="w-4 h-4 text-amber-500" />
                       )}
                       <h3 className="font-bold text-base">Art. {item.numero}</h3>
                     </div>
                     <p className="text-xs text-muted-foreground">
-                      {temFlashcards ? "Prontos" : "Gerar"}
+                      {temFlashcards ? "Prontos" : ""}
                     </p>
                   </CardContent>
                 </Card>
