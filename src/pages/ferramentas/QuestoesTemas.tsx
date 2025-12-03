@@ -16,29 +16,63 @@ const QuestoesTemas = () => {
   const { data: temas, isLoading } = useQuery({
     queryKey: ["questoes-temas", area],
     queryFn: async () => {
-      // Busca temas únicos da área
+      // Busca temas e subtemas únicos da área
       const { data: resumoData, error } = await supabase
         .from("RESUMO")
-        .select("tema")
+        .select("tema, subtema")
         .eq("area", area)
         .not("tema", "is", null);
 
       if (error) throw error;
 
-      const temasUnicos = [...new Set(resumoData?.map(r => r.tema).filter(Boolean))];
+      // Agrupa subtemas por tema
+      const subtemasPortema: Record<string, Set<string>> = {};
+      resumoData?.forEach(r => {
+        if (r.tema) {
+          if (!subtemasPortema[r.tema]) {
+            subtemasPortema[r.tema] = new Set();
+          }
+          if (r.subtema) {
+            subtemasPortema[r.tema].add(r.subtema);
+          }
+        }
+      });
 
-      // Verifica quais temas já têm questões geradas
+      const temasUnicos = Object.keys(subtemasPortema);
+
+      // Busca questões geradas com subtemas
       const { data: questoesData } = await supabase
         .from("QUESTOES_GERADAS")
-        .select("tema")
+        .select("tema, subtema")
         .eq("area", area);
 
-      const temasComQuestoes = new Set(questoesData?.map(q => q.tema));
+      // Agrupa subtemas com questões por tema
+      const subtemasComQuestoes: Record<string, Set<string>> = {};
+      questoesData?.forEach(q => {
+        if (q.tema) {
+          if (!subtemasComQuestoes[q.tema]) {
+            subtemasComQuestoes[q.tema] = new Set();
+          }
+          if (q.subtema) {
+            subtemasComQuestoes[q.tema].add(q.subtema);
+          }
+        }
+      });
 
-      return temasUnicos.map(tema => ({
-        tema,
-        temQuestoes: temasComQuestoes.has(tema)
-      })).sort((a, b) => a.tema.localeCompare(b.tema));
+      return temasUnicos.map(tema => {
+        const totalSubtemas = subtemasPortema[tema]?.size || 0;
+        const subtemasGerados = subtemasComQuestoes[tema]?.size || 0;
+        const temTodosSubtemas = totalSubtemas > 0 && subtemasGerados >= totalSubtemas;
+        const temAlgunsSubtemas = subtemasGerados > 0 && subtemasGerados < totalSubtemas;
+        
+        return {
+          tema,
+          temQuestoes: temTodosSubtemas,
+          parcial: temAlgunsSubtemas,
+          subtemasGerados,
+          totalSubtemas
+        };
+      }).sort((a, b) => a.tema.localeCompare(b.tema));
     },
     enabled: !!area
   });
@@ -104,6 +138,8 @@ const QuestoesTemas = () => {
                 <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
                   item.temQuestoes 
                     ? "bg-emerald-500/20 text-emerald-500" 
+                    : item.parcial
+                    ? "bg-blue-500/20 text-blue-500"
                     : "bg-amber-500/20 text-amber-500"
                 }`}>
                   {item.temQuestoes ? (
@@ -115,7 +151,11 @@ const QuestoesTemas = () => {
                 <div className="flex-1">
                   <h3 className="font-medium text-sm">{item.tema}</h3>
                   <p className="text-xs text-muted-foreground">
-                    {item.temQuestoes ? "Questões prontas" : "Questões serão geradas"}
+                    {item.temQuestoes 
+                      ? "Questões prontas" 
+                      : item.parcial 
+                      ? `${item.subtemasGerados}/${item.totalSubtemas} subtemas gerados`
+                      : "Questões serão geradas"}
                   </p>
                 </div>
               </button>
