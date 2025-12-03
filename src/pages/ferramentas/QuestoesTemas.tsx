@@ -89,6 +89,7 @@ const QuestoesTemas = () => {
       }).sort((a, b) => a.tema.localeCompare(b.tema));
     },
     enabled: !!area,
+    staleTime: 0, // Sempre busca dados frescos
     refetchInterval: (query) => {
       // Se há temas não completos, atualiza a cada 5 segundos
       const temPendentes = query.state.data?.some(t => !t.temQuestoes);
