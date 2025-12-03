@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Scale, Search, Loader2 } from "lucide-react";
+import { ArrowLeft, Scale, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
@@ -14,45 +14,49 @@ const QuestoesAreas = () => {
   const { data: areas, isLoading } = useQuery({
     queryKey: ["questoes-areas"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("RESUMO")
-        .select("area")
-        .not("area", "is", null);
+      // Busca paginada para trazer TODOS os registros
+      const pageSize = 1000;
+      let allData: { area: string; tema: string }[] = [];
+      let page = 0;
 
-      if (error) throw error;
+      while (true) {
+        const { data, error } = await supabase
+          .from("RESUMO")
+          .select("area, tema")
+          .not("area", "is", null)
+          .not("tema", "is", null)
+          .range(page * pageSize, (page + 1) * pageSize - 1);
+
+        if (error) throw error;
+        if (!data || data.length === 0) break;
+
+        allData = [...allData, ...data];
+        if (data.length < pageSize) break;
+        page++;
+      }
 
       // Agrupa por área e conta temas únicos
-      const areasMap = new Map<string, { temas: Set<string> }>();
-      
-      data?.forEach((item: any) => {
-        if (item.area) {
+      const areasMap = new Map<string, Set<string>>();
+
+      allData.forEach((item) => {
+        if (item.area && item.tema) {
           if (!areasMap.has(item.area)) {
-            areasMap.set(item.area, { temas: new Set() });
+            areasMap.set(item.area, new Set());
           }
+          areasMap.get(item.area)!.add(item.tema);
         }
       });
 
-      // Busca temas para cada área
-      const { data: temasData } = await supabase
-        .from("RESUMO")
-        .select("area, tema")
-        .not("area", "is", null)
-        .not("tema", "is", null);
-
-      temasData?.forEach((item: any) => {
-        if (item.area && item.tema && areasMap.has(item.area)) {
-          areasMap.get(item.area)!.temas.add(item.tema);
-        }
-      });
-
-      return Array.from(areasMap.entries()).map(([area, data]) => ({
-        area,
-        totalTemas: data.temas.size
-      })).sort((a, b) => a.area.localeCompare(b.area));
-    }
+      return Array.from(areasMap.entries())
+        .map(([area, temas]) => ({
+          area,
+          totalTemas: temas.size,
+        }))
+        .sort((a, b) => a.area.localeCompare(b.area));
+    },
   });
 
-  const filteredAreas = areas?.filter(item =>
+  const filteredAreas = areas?.filter((item) =>
     item.area.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -118,7 +122,11 @@ const QuestoesAreas = () => {
             filteredAreas?.map((item, index) => (
               <button
                 key={item.area}
-                onClick={() => navigate(`/ferramentas/questoes/temas?area=${encodeURIComponent(item.area)}`)}
+                onClick={() =>
+                  navigate(
+                    `/ferramentas/questoes/temas?area=${encodeURIComponent(item.area)}`
+                  )
+                }
                 className={`relative overflow-hidden rounded-xl border p-4 text-left transition-all hover:scale-[1.02] active:scale-[0.98] bg-gradient-to-br ${areaColors[index % areaColors.length]}`}
               >
                 <Scale className="w-5 h-5 text-primary mb-2" />
