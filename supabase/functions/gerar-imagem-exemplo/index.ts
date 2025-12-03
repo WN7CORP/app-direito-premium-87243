@@ -1,6 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1'
-import { HfInference } from 'https://esm.sh/@huggingface/inference@2.3.2'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -44,7 +43,7 @@ serve(async (req) => {
       )
     }
 
-    // 2. Gerar imagem com Hugging Face FLUX.1-schnell
+    // 2. Gerar imagem com Hugging Face FLUX.1-schnell (novo endpoint)
     const HUGGING_FACE_ACCESS_TOKEN = Deno.env.get('HUGGING_FACE_ACCESS_TOKEN')
     if (!HUGGING_FACE_ACCESS_TOKEN) {
       throw new Error('HUGGING_FACE_ACCESS_TOKEN não configurado')
@@ -66,19 +65,30 @@ Requirements: NO text, NO letters, NO words, NO numbers, NO labels, NO captions,
     console.log(`[gerar-imagem-exemplo] Gerando imagem com FLUX.1-schnell...`)
     console.log(`[gerar-imagem-exemplo] Prompt: ${promptImagem.substring(0, 150)}...`)
 
-    const hf = new HfInference(HUGGING_FACE_ACCESS_TOKEN)
-
-    const image = await hf.textToImage({
-      inputs: promptImagem,
-      model: 'black-forest-labs/FLUX.1-schnell',
-      parameters: {
-        negative_prompt: "text, letters, words, numbers, labels, captions, writing, typography, watermark, signature, realistic, photorealistic, 3d render, colors, colored, grayscale shading"
-      }
+    // Usar novo endpoint router.huggingface.co
+    const hfResponse = await fetch('https://router.huggingface.co/hf-inference/models/black-forest-labs/FLUX.1-schnell', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${HUGGING_FACE_ACCESS_TOKEN}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        inputs: promptImagem,
+        parameters: {
+          negative_prompt: "text, letters, words, numbers, labels, captions, writing, typography, watermark, signature, realistic, photorealistic, 3d render, colors, colored, grayscale shading"
+        }
+      })
     })
 
-    // Converter blob para buffer
-    const arrayBuffer = await image.arrayBuffer()
-    const imageBlob = new Blob([arrayBuffer], { type: 'image/png' })
+    if (!hfResponse.ok) {
+      const errorText = await hfResponse.text()
+      console.error('[gerar-imagem-exemplo] Erro HF:', hfResponse.status, errorText)
+      throw new Error(`Hugging Face API error: ${hfResponse.status} - ${errorText}`)
+    }
+
+    // A resposta é um blob de imagem
+    const imageArrayBuffer = await hfResponse.arrayBuffer()
+    const imageBlob = new Blob([imageArrayBuffer], { type: 'image/png' })
 
     console.log(`[gerar-imagem-exemplo] Imagem gerada, tamanho: ${imageBlob.size} bytes`)
 
