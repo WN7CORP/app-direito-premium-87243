@@ -99,7 +99,12 @@ Only visual elements: stick figures, icons, arrows, simple objects. NO TYPOGRAPH
           role: "user",
           content: prompt
         }],
-        modalities: ["image", "text"]
+        modalities: ["image", "text"],
+        generationConfig: {
+          imageConfig: {
+            aspectRatio: "16:9"
+          }
+        }
       })
     })
 
