@@ -17,13 +17,19 @@ serve(async (request) => {
   try {
     const { messages, files, mode, extractedText, deepMode = false, responseLevel = 'complete', linguagemMode = 'tecnico' }: any = await request.json();
     
+    const DIREITO_PREMIUM_API_KEY_RAW = Deno.env.get('DIREITO_PREMIUM_API_KEY') || 
+                                        Deno.env.get('DIREITO_PREMIUM_API_KEY_RESERVA');
+    
     console.log('📥 Requisição recebida:', {
       mode,
       messagesCount: messages?.length,
       filesCount: files?.length || 0,
       hasVademecumKey: !!Deno.env.get('VADEMECUM_API_KEY'),
       hasLovableKey: !!Deno.env.get('LOVABLE_API_KEY'),
-      hasServiceRole: !!Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
+      hasServiceRole: !!Deno.env.get('SUPABASE_SERVICE_ROLE_KEY'),
+      hasDireitoPremiumKey: !!DIREITO_PREMIUM_API_KEY_RAW,
+      keyLength: DIREITO_PREMIUM_API_KEY_RAW?.length || 0,
+      keyFirstChars: DIREITO_PREMIUM_API_KEY_RAW ? DIREITO_PREMIUM_API_KEY_RAW.substring(0, 8) + '...' : 'N/A'
     });
     
     // Detectar se é ação pós-análise (usuário clicou em "Resumir", "Explicar", etc.)
@@ -33,8 +39,7 @@ serve(async (request) => {
     // Se é ação pós-análise, não usar modo de análise inicial
     const isAnalyzeMode = mode === 'analyze' && !isPostAnalysisAction;
     
-    const DIREITO_PREMIUM_API_KEY = Deno.env.get('DIREITO_PREMIUM_API_KEY') || 
-                                     Deno.env.get('DIREITO_PREMIUM_API_KEY_RESERVA');
+    const DIREITO_PREMIUM_API_KEY = DIREITO_PREMIUM_API_KEY_RAW;
     const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
@@ -45,6 +50,9 @@ serve(async (request) => {
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
       );
     }
+    
+    // Constante de timeout (55 segundos para dar margem antes do timeout da edge function de 60s)
+    const API_TIMEOUT_MS = 55000;
     
     // Detectar se há imagem ou PDF anexado
     const hasImageOrPdf = files && files.length > 0;
@@ -687,20 +695,46 @@ ${cfContext || ''}`;
     const apiStartTime = Date.now();
     
     if (wantsSSE) {
-      // Streaming
-      const response = await fetch(geminiUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Function-Revision': 'v5.0.0-gemini-2.5-flash',
-          'X-Model': modelName
-        },
-        body: JSON.stringify(geminiPayload)
-      });
+      // Streaming com AbortController para timeout
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => {
+        console.error(`⏰ TIMEOUT: API não respondeu em ${API_TIMEOUT_MS}ms`);
+        controller.abort();
+      }, API_TIMEOUT_MS);
+      
+      let response: Response;
+      try {
+        console.log('🚀 Iniciando fetch para Gemini API (streaming)...');
+        response = await fetch(geminiUrl, {
+          method: 'POST',
+          signal: controller.signal,
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Function-Revision': 'v6.0.0-timeout-fix',
+            'X-Model': modelName
+          },
+          body: JSON.stringify(geminiPayload)
+        });
+        clearTimeout(timeoutId);
+        
+        const apiResponseTime = Date.now() - apiStartTime;
+        console.log(`⏱️ API respondeu em ${apiResponseTime}ms`);
+        console.log(`📊 Response status: ${response.status}`);
+        console.log(`📊 Response headers:`, Object.fromEntries(response.headers));
+        
+      } catch (fetchError) {
+        clearTimeout(timeoutId);
+        if (fetchError instanceof Error && fetchError.name === 'AbortError') {
+          console.error('❌ Timeout na chamada da API Gemini');
+          throw new Error('A API demorou muito para responder. Tente novamente.');
+        }
+        console.error('❌ Erro no fetch:', fetchError);
+        throw fetchError;
+      }
 
       if (!response.ok || !response.body) {
         const errorText = await response.text();
-        console.error('❌ Erro da API Gemini:', errorText);
+        console.error('❌ Erro da API Gemini:', { status: response.status, errorText });
         throw new Error(`Gemini API error: ${response.status} - ${errorText}`);
       }
 
@@ -718,10 +752,35 @@ ${cfContext || ''}`;
           const decoder = new TextDecoder();
           let buffer = '';
           let fullText = '';
+          let chunkCount = 0;
+          let totalBytesReceived = 0;
+          const streamStartTime = Date.now();
+
+          console.log('📖 Iniciando leitura do stream...');
 
           while (true) {
-            const { done, value } = await reader.read();
-            if (done) break;
+            let readResult;
+            try {
+              readResult = await reader.read();
+            } catch (readError) {
+              console.error('❌ Erro ao ler chunk do stream:', readError);
+              break;
+            }
+            
+            const { done, value } = readResult;
+            
+            if (done) {
+              console.log('✅ Stream finalizado normalmente');
+              break;
+            }
+
+            chunkCount++;
+            const chunkSize = value?.length || 0;
+            totalBytesReceived += chunkSize;
+            
+            if (chunkCount <= 5 || chunkCount % 10 === 0) {
+              console.log(`📤 Chunk ${chunkCount}: ${chunkSize} bytes (total: ${totalBytesReceived} bytes)`);
+            }
 
             buffer += decoder.decode(value, { stream: true });
             const lines = buffer.split('\n');
@@ -749,12 +808,15 @@ ${cfContext || ''}`;
                     
                     await writer.write(encoder.encode(`data: ${JSON.stringify(sseEvent)}\n\n`));
                   }
-                } catch (e) {
-                  console.error('Erro ao parsear JSON SSE:', e);
+                } catch (parseError) {
+                  console.error('⚠️ Erro ao parsear JSON SSE:', { error: parseError, jsonStr: jsonStr.substring(0, 100) });
                 }
               }
             }
           }
+          
+          const streamDuration = Date.now() - streamStartTime;
+          console.log(`📊 Stream stats: ${chunkCount} chunks, ${totalBytesReceived} bytes, ${streamDuration}ms`);
 
           // Validação final
           const wordCount = fullText.split(/\s+/).length;
@@ -816,20 +878,45 @@ ${cfContext || ''}`;
       });
       
     } else {
-      // Resposta normal (não streaming)
-      const geminiResponse = await fetch(geminiUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Function-Revision': 'v5.0.0-gemini-2.5-flash',
-          'X-Model': modelName
-        },
-        body: JSON.stringify(geminiPayload)
-      });
+      // Resposta normal (não streaming) com AbortController para timeout
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => {
+        console.error(`⏰ TIMEOUT: API não respondeu em ${API_TIMEOUT_MS}ms`);
+        controller.abort();
+      }, API_TIMEOUT_MS);
+      
+      let geminiResponse: Response;
+      try {
+        console.log('🚀 Iniciando fetch para Gemini API (não-streaming)...');
+        geminiResponse = await fetch(geminiUrl, {
+          method: 'POST',
+          signal: controller.signal,
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Function-Revision': 'v6.0.0-timeout-fix',
+            'X-Model': modelName
+          },
+          body: JSON.stringify(geminiPayload)
+        });
+        clearTimeout(timeoutId);
+        
+        const apiResponseTime = Date.now() - apiStartTime;
+        console.log(`⏱️ API respondeu em ${apiResponseTime}ms`);
+        console.log(`📊 Response status: ${geminiResponse.status}`);
+        
+      } catch (fetchError) {
+        clearTimeout(timeoutId);
+        if (fetchError instanceof Error && fetchError.name === 'AbortError') {
+          console.error('❌ Timeout na chamada da API Gemini');
+          throw new Error('A API demorou muito para responder. Tente novamente.');
+        }
+        console.error('❌ Erro no fetch:', fetchError);
+        throw fetchError;
+      }
 
       if (!geminiResponse.ok) {
         const errorText = await geminiResponse.text();
-        console.error('❌ Erro da API Gemini:', errorText);
+        console.error('❌ Erro da API Gemini:', { status: geminiResponse.status, errorText });
         throw new Error(`Gemini API error: ${geminiResponse.status} - ${errorText}`);
       }
 
