@@ -65,29 +65,36 @@ serve(async (req) => {
 
 REGRAS IMPORTANTES:
 1. Crie entre 20 e 25 flashcards variados sobre o artigo
-2. Cada flashcard deve ter:
+2. Cada flashcard DEVE ter OBRIGATORIAMENTE:
    - front: Uma pergunta clara e direta sobre o conteúdo
    - back: A resposta completa e educacional
-   - exemplo (opcional): Um exemplo prático de aplicação
-3. Varie os tipos de perguntas:
+   - exemplo: Um exemplo prático REAL de aplicação (OBRIGATÓRIO para cada flashcard)
+3. O EXEMPLO PRÁTICO deve ser:
+   - Uma situação real e cotidiana onde a regra se aplica
+   - Com nomes fictícios de pessoas (João, Maria, Pedro, etc.)
+   - Descrevendo uma situação concreta e fácil de visualizar
+   - Mostrando como a lei se aplica na prática
+4. Varie os tipos de perguntas:
    - Conceituais (O que é...?)
    - Práticas (Quando se aplica...?)
    - Comparativas (Qual a diferença entre...?)
    - Casos práticos (Em que situação...?)
    - Penas e sanções (Qual a pena para...?)
    - Requisitos (Quais os requisitos...?)
-4. Use linguagem clara e acessível
-5. Mantenha fidelidade ao texto da lei seca
-6. Retorne APENAS JSON válido, sem markdown`;
+5. Use linguagem clara e acessível
+6. Mantenha fidelidade ao texto da lei seca
+7. Retorne APENAS JSON válido, sem markdown`;
 
     const userPrompt = `Crie entre 20 e 25 flashcards de estudo baseados neste artigo de lei:
 
 ${content}
 
+IMPORTANTE: Cada flashcard DEVE ter um exemplo prático obrigatório com uma situação real.
+
 Retorne APENAS um JSON válido no formato:
 {
   "flashcards": [
-    {"front": "pergunta", "back": "resposta", "exemplo": "exemplo prático (opcional)"},
+    {"front": "pergunta sobre o artigo", "back": "resposta completa", "exemplo": "Ex: João praticou X. Neste caso, aplica-se Y porque Z."},
     ...
   ]
 }`;
