@@ -29,3 +29,6 @@ verify_jwt = false
 
 [functions.gerar-lacunas]
 verify_jwt = false
+
+[functions.gerar-questoes-tema]
+verify_jwt = false
