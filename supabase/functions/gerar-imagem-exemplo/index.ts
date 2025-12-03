@@ -52,15 +52,28 @@ serve(async (req) => {
 
     // Criar prompt descritivo para ilustrar a cena do exemplo prático
     const textoLimpo = exemploTexto
-      .substring(0, 400)
+      .substring(0, 300)
       .replace(/[^\w\sáéíóúâêîôûãõàèìòùç.,!?-]/gi, ' ')
       .replace(/\s+/g, ' ')
       .trim()
 
-    const promptImagem = `Create a detailed illustration depicting this scene: "${textoLimpo}". 
-The image should visually represent the people, places and situation described. 
-Show characters with expressions and actions matching the story.
-Style: warm editorial illustration, soft natural colors, friendly characters, clean composition, storytelling visual, no text or words in image.`
+    const promptImagem = `Create a legal educational infographic diagram in black and white sketch style.
+
+Scene to illustrate: "${textoLimpo}"
+
+STRICT STYLE REQUIREMENTS:
+- White/light paper background (like a notebook or whiteboard)
+- Black line art drawings only, hand-drawn sketch aesthetic
+- Simple stick figure characters with minimal details
+- Include a scales of justice icon at the top center
+- Arrows or visual connections showing relationships between elements
+- Clean, minimalist legal diagram layout
+- Educational infographic composition
+- NO realistic shading, NO colors, NO gradients
+- Style reference: hand-drawn legal textbook illustration, whiteboard diagram
+- NO text or words in image
+
+The diagram should clearly show the legal concept with labeled visual elements representing the parties and their relationships.`
 
     console.log(`[gerar-imagem-exemplo] Gerando imagem com prompt: ${promptImagem.substring(0, 150)}...`)
 
