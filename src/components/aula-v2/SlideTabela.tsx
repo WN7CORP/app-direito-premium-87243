@@ -1,5 +1,6 @@
+import { useRef } from "react";
 import { motion } from "framer-motion";
-import { Table2 } from "lucide-react";
+import { Table2, GripHorizontal } from "lucide-react";
 import { TabelaData } from "./types";
 
 interface SlideTabelaProps {
@@ -9,6 +10,8 @@ interface SlideTabelaProps {
 }
 
 export const SlideTabela = ({ tabela, titulo, conteudo }: SlideTabelaProps) => {
+  const scrollRef = useRef<HTMLDivElement>(null);
+
   if (!tabela || !tabela.cabecalhos || !tabela.linhas) {
     return (
       <div className="text-muted-foreground text-center py-8">
@@ -29,12 +32,27 @@ export const SlideTabela = ({ tabela, titulo, conteudo }: SlideTabelaProps) => {
           {conteudo}
         </motion.p>
       )}
-      
-      {/* Table container with scroll */}
+
+      {/* Drag hint */}
       <motion.div 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="flex items-center gap-2 text-muted-foreground text-xs"
+      >
+        <GripHorizontal className="w-4 h-4" />
+        <span>Arraste para ver mais colunas</span>
+      </motion.div>
+      
+      {/* Table container with horizontal scroll */}
+      <motion.div 
+        ref={scrollRef}
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="overflow-x-auto rounded-xl border border-border"
+        className="overflow-x-auto rounded-xl border border-border cursor-grab active:cursor-grabbing touch-pan-x"
+        style={{ 
+          WebkitOverflowScrolling: 'touch',
+          scrollbarWidth: 'thin'
+        }}
       >
         <table className="w-full text-sm">
           {/* Header */}
