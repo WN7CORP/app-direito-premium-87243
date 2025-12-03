@@ -1552,6 +1552,36 @@ export type Database = {
         }
         Relationships: []
       }
+      COMPLETE_LEI_CACHE: {
+        Row: {
+          area: string
+          artigo: string
+          created_at: string | null
+          id: number
+          lacunas: Json
+          palavras: Json
+          texto_com_lacunas: string
+        }
+        Insert: {
+          area: string
+          artigo: string
+          created_at?: string | null
+          id?: number
+          lacunas: Json
+          palavras: Json
+          texto_com_lacunas: string
+        }
+        Update: {
+          area?: string
+          artigo?: string
+          created_at?: string | null
+          id?: number
+          lacunas?: Json
+          palavras?: Json
+          texto_com_lacunas?: string
+        }
+        Relationships: []
+      }
       "CP - Código Penal": {
         Row: {
           Artigo: string | null

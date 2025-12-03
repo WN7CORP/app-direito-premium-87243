@@ -83,6 +83,9 @@ import FlashcardsEstudar from "./pages/FlashcardsEstudar";
 import FlashcardsArtigosLei from "./pages/FlashcardsArtigosLei";
 import FlashcardsArtigosLeiTemas from "./pages/FlashcardsArtigosLeiTemas";
 import FlashcardsArtigosLeiEstudar from "./pages/FlashcardsArtigosLeiEstudar";
+import CompleteLeiCodigos from "./pages/CompleteLeiCodigos";
+import CompleteLeiArtigos from "./pages/CompleteLeiArtigos";
+import CompleteLeiExercicio from "./pages/CompleteLeiExercicio";
 import Simulados from "./pages/Simulados";
 import SimuladosExames from "./pages/SimuladosExames";
 import SimuladosPersonalizado from "./pages/SimuladosPersonalizado";
@@ -340,6 +343,9 @@ const App = () => {
               <Route path="/flashcards/artigos-lei" element={<FlashcardsArtigosLei />} />
               <Route path="/flashcards/artigos-lei/temas" element={<FlashcardsArtigosLeiTemas />} />
               <Route path="/flashcards/artigos-lei/estudar" element={<FlashcardsArtigosLeiEstudar />} />
+              <Route path="/flashcards/complete-lei" element={<CompleteLeiCodigos />} />
+              <Route path="/flashcards/complete-lei/artigos" element={<CompleteLeiArtigos />} />
+              <Route path="/flashcards/complete-lei/exercicio" element={<CompleteLeiExercicio />} />
               <Route path="/oab" element={<OAB />} />
               <Route path="/oab-funcoes" element={<OABFuncoes />} />
               <Route path="/oab/o-que-estudar" element={<OABOQueEstudar />} />
