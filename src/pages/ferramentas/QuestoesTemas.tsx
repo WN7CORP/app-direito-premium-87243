@@ -201,18 +201,12 @@ const QuestoesTemas = () => {
                   </div>
                 </div>
                 
-                {/* Barra de progresso com animação suave */}
-                {item.totalSubtemas > 0 && (
+                {/* Barra de progresso só aparece durante geração (parcial) */}
+                {item.parcial && (
                   <div className="w-full">
                     <Progress 
                       value={item.progressoPercent} 
-                      className={`h-1.5 transition-all duration-500 ${
-                        item.temQuestoes 
-                          ? "[&>div]:bg-emerald-500" 
-                          : item.parcial 
-                          ? "[&>div]:bg-blue-500" 
-                          : "[&>div]:bg-amber-500/50"
-                      }`}
+                      className="h-1.5 transition-all duration-500 [&>div]:bg-blue-500"
                     />
                   </div>
                 )}
