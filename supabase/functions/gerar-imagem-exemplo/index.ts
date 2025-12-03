@@ -1,6 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1'
-import { InferenceClient } from 'https://esm.sh/@huggingface/inference@3.6.0'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -44,10 +43,10 @@ serve(async (req) => {
       )
     }
 
-    // 2. Gerar imagem com Hugging Face
-    const HUGGING_FACE_ACCESS_TOKEN = Deno.env.get('HUGGING_FACE_ACCESS_TOKEN')
-    if (!HUGGING_FACE_ACCESS_TOKEN) {
-      throw new Error('HUGGING_FACE_ACCESS_TOKEN não configurado')
+    // 2. Gerar imagem com Lovable AI (Gemini)
+    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY')
+    if (!LOVABLE_API_KEY) {
+      throw new Error('LOVABLE_API_KEY não configurado')
     }
 
     // Criar prompt descritivo para ilustrar a cena do exemplo prático
@@ -57,37 +56,74 @@ serve(async (req) => {
       .replace(/\s+/g, ' ')
       .trim()
 
-    const promptImagem = `Create a legal educational infographic diagram in black and white sketch style.
+    const promptImagem = `Crie um diagrama educacional jurídico simples em preto e branco.
 
-Scene to illustrate: "${textoLimpo}"
+Cena para ilustrar: "${textoLimpo}"
 
-STRICT STYLE REQUIREMENTS:
-- White/light paper background (like a notebook or whiteboard)
-- Black line art drawings only, hand-drawn sketch aesthetic
-- Simple stick figure characters with minimal details
-- Include a scales of justice icon at the top center
-- Arrows or visual connections showing relationships between elements
-- Clean, minimalist legal diagram layout
-- Educational infographic composition
-- NO realistic shading, NO colors, NO gradients
-- Style reference: hand-drawn legal textbook illustration, whiteboard diagram
-- NO text or words in image
+REQUISITOS OBRIGATÓRIOS:
+- Fundo branco/claro (como papel de caderno ou quadro branco)
+- Apenas linhas pretas, estilo de desenho à mão
+- Figuras humanas simplificadas (stick figures)
+- Setas mostrando relações entre elementos
+- Ícone de balança da justiça no topo
+- Layout de diagrama jurídico educativo
+- Composição de infográfico educacional
+- SEM sombreamento realista, SEM cores, SEM gradientes
+- SEM texto, SEM palavras, SEM letras na imagem
+- Estilo: ilustração de quadro branco/lousa jurídica`
 
-The diagram should clearly show the legal concept with labeled visual elements representing the parties and their relationships.`
+    console.log(`[gerar-imagem-exemplo] Gerando imagem com Lovable AI...`)
 
-    console.log(`[gerar-imagem-exemplo] Gerando imagem com prompt: ${promptImagem.substring(0, 150)}...`)
-
-    const client = new InferenceClient(HUGGING_FACE_ACCESS_TOKEN)
-    const image = await client.textToImage({
-      model: 'black-forest-labs/FLUX.1-schnell',
-      inputs: promptImagem,
+    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${LOVABLE_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "google/gemini-2.5-flash-image-preview",
+        messages: [{
+          role: "user",
+          content: promptImagem
+        }],
+        modalities: ["image", "text"]
+      })
     })
 
-    // 3. Converter para blob
-    const arrayBuffer = await image.arrayBuffer()
-    const imageBlob = new Blob([arrayBuffer], { type: 'image/png' })
+    if (!response.ok) {
+      const errorText = await response.text()
+      console.error('[gerar-imagem-exemplo] Erro da API:', response.status, errorText)
+      
+      if (response.status === 429) {
+        throw new Error('Rate limit excedido. Tente novamente em alguns segundos.')
+      }
+      if (response.status === 402) {
+        throw new Error('Créditos insuficientes para geração de imagem.')
+      }
+      throw new Error(`Erro na API de imagem: ${response.status}`)
+    }
 
-    console.log(`[gerar-imagem-exemplo] Imagem gerada, tamanho: ${imageBlob.size} bytes`)
+    const data = await response.json()
+    const imageBase64 = data.choices?.[0]?.message?.images?.[0]?.image_url?.url
+
+    if (!imageBase64) {
+      console.error('[gerar-imagem-exemplo] Resposta sem imagem:', JSON.stringify(data).substring(0, 500))
+      throw new Error('API não retornou imagem')
+    }
+
+    console.log(`[gerar-imagem-exemplo] Imagem gerada, fazendo upload para Catbox...`)
+
+    // 3. Converter base64 para blob e fazer upload para Catbox
+    // Remove o prefixo "data:image/png;base64," se existir
+    const base64Data = imageBase64.replace(/^data:image\/\w+;base64,/, '')
+    const binaryString = atob(base64Data)
+    const bytes = new Uint8Array(binaryString.length)
+    for (let i = 0; i < binaryString.length; i++) {
+      bytes[i] = binaryString.charCodeAt(i)
+    }
+    const imageBlob = new Blob([bytes], { type: 'image/png' })
+
+    console.log(`[gerar-imagem-exemplo] Imagem convertida, tamanho: ${imageBlob.size} bytes`)
 
     // 4. Upload para Catbox
     const formData = new FormData()

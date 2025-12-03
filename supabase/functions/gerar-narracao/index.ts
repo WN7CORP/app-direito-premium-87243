@@ -415,7 +415,7 @@ serve(async (req) => {
   }
 
   try {
-    const { texto, questaoId, tipo } = await req.json();
+    const { texto, questaoId, tipo, tipoFeedback } = await req.json();
 
     if (!texto) {
       console.error('Missing required field: texto');
@@ -428,6 +428,27 @@ serve(async (req) => {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    // Verificar cache de feedback global (resposta_correta ou resposta_incorreta)
+    if (tipoFeedback && (tipoFeedback === 'resposta_correta' || tipoFeedback === 'resposta_incorreta')) {
+      console.log(`[gerar-narracao] Verificando cache de feedback: ${tipoFeedback}`);
+      
+      const { data: feedbackCache, error: cacheError } = await supabase
+        .from('AUDIO_FEEDBACK_CACHE')
+        .select('url_audio')
+        .eq('tipo', tipoFeedback)
+        .single();
+
+      if (!cacheError && feedbackCache?.url_audio) {
+        console.log(`[gerar-narracao] Cache de feedback encontrado: ${feedbackCache.url_audio}`);
+        return new Response(
+          JSON.stringify({ url_audio: feedbackCache.url_audio, cached: true }),
+          { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      
+      console.log(`[gerar-narracao] Cache de feedback não encontrado, gerando novo áudio...`);
+    }
 
     // Verificar cache se tiver questaoId e tipo
     if (questaoId && tipo && (tipo === 'comentario' || tipo === 'exemplo')) {
@@ -469,6 +490,19 @@ serve(async (req) => {
 
     // Gerar áudio e fazer upload para Catbox
     const audioUrl = await gerarAudioEUpload(textoNormalizado, API_KEY);
+
+    // Salvar no cache de feedback global se for feedback
+    if (tipoFeedback && (tipoFeedback === 'resposta_correta' || tipoFeedback === 'resposta_incorreta')) {
+      const { error: insertError } = await supabase
+        .from('AUDIO_FEEDBACK_CACHE')
+        .upsert({ tipo: tipoFeedback, url_audio: audioUrl }, { onConflict: 'tipo' });
+
+      if (insertError) {
+        console.error('[gerar-narracao] Erro ao salvar cache de feedback:', insertError);
+      } else {
+        console.log(`[gerar-narracao] Cache de feedback salvo: ${tipoFeedback} = ${audioUrl}`);
+      }
+    }
 
     // Salvar URL no banco se tiver questaoId e tipo
     if (questaoId && tipo && (tipo === 'comentario' || tipo === 'exemplo')) {
