@@ -49,7 +49,7 @@ serve(async (req) => {
           input: { text: texto },
           voice: {
             languageCode: 'pt-BR',
-            name: 'pt-BR-Chirp3-HD-Kore',
+            name: 'pt-BR-Chirp3-HD-Sadaltager',
           },
           audioConfig: {
             audioEncoding: 'MP3',
