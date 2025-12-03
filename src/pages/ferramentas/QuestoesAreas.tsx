@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Scale, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Card, CardContent } from "@/components/ui/card";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -14,7 +15,6 @@ const QuestoesAreas = () => {
   const { data: areas, isLoading } = useQuery({
     queryKey: ["questoes-areas"],
     queryFn: async () => {
-      // Busca paginada para trazer TODOS os registros
       const pageSize = 1000;
       let allData: { area: string; tema: string }[] = [];
       let page = 0;
@@ -35,7 +35,6 @@ const QuestoesAreas = () => {
         page++;
       }
 
-      // Agrupa por área e conta temas únicos
       const areasMap = new Map<string, Set<string>>();
 
       allData.forEach((item) => {
@@ -60,22 +59,21 @@ const QuestoesAreas = () => {
     item.area.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const areaColors = [
-    "from-blue-500/20 to-blue-600/10 border-blue-500/30",
-    "from-purple-500/20 to-purple-600/10 border-purple-500/30",
-    "from-emerald-500/20 to-emerald-600/10 border-emerald-500/30",
-    "from-orange-500/20 to-orange-600/10 border-orange-500/30",
-    "from-rose-500/20 to-rose-600/10 border-rose-500/30",
-    "from-cyan-500/20 to-cyan-600/10 border-cyan-500/30",
-    "from-amber-500/20 to-amber-600/10 border-amber-500/30",
-    "from-indigo-500/20 to-indigo-600/10 border-indigo-500/30",
+  const areaIcons = ["📜", "⚖️", "💼", "💰", "🏛️", "📋"];
+  const glowColors = [
+    "rgb(139, 92, 246)",
+    "rgb(239, 68, 68)",
+    "rgb(16, 185, 129)",
+    "rgb(245, 158, 11)",
+    "rgb(59, 130, 246)",
+    "rgb(236, 72, 153)",
   ];
 
   return (
-    <div className="flex flex-col min-h-screen bg-background pb-6">
-      <div className="flex-1 px-3 md:px-6 py-4 md:py-6 space-y-4">
-        {/* Header */}
-        <div className="flex items-center gap-3">
+    <div className="px-3 py-4 max-w-4xl mx-auto pb-24">
+      {/* Header */}
+      <div className="mb-6">
+        <div className="flex items-center gap-3 mb-2">
           <Button
             variant="ghost"
             size="icon"
@@ -84,62 +82,86 @@ const QuestoesAreas = () => {
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center">
-              <Scale className="w-5 h-5 text-primary" />
-            </div>
-            <div>
-              <h1 className="text-xl font-bold">Questões por Tema</h1>
-              <p className="text-sm text-muted-foreground">
-                Escolha uma área do direito
-              </p>
-            </div>
+          <div className="flex items-center justify-center w-12 h-12 rounded-full bg-purple-600 shadow-lg shadow-purple-500/50">
+            <Scale className="w-6 h-6 text-white" />
+          </div>
+          <div>
+            <h1 className="text-xl md:text-2xl font-bold">Questões por Tema</h1>
+            <p className="text-sm text-muted-foreground">
+              Escolha uma área do direito para estudar
+            </p>
           </div>
         </div>
+      </div>
 
-        {/* Search */}
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Buscar área..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
-          />
-        </div>
+      {/* Campo de Busca */}
+      <Card className="mb-6">
+        <CardContent className="p-4">
+          <div className="flex gap-2">
+            <Input
+              placeholder="Buscar área..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="text-base"
+            />
+            <Button variant="outline" size="icon" className="shrink-0">
+              <Search className="w-4 h-4" />
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
 
-        {/* Lista de Áreas */}
-        <div className="grid grid-cols-2 gap-3">
-          {isLoading ? (
-            Array.from({ length: 8 }).map((_, i) => (
-              <Skeleton key={i} className="h-24 rounded-xl" />
-            ))
-          ) : filteredAreas?.length === 0 ? (
-            <div className="col-span-2 text-center py-8 text-muted-foreground">
-              Nenhuma área encontrada
-            </div>
-          ) : (
-            filteredAreas?.map((item, index) => (
-              <button
+      {/* Áreas de Questões */}
+      <div className="mb-6">
+        <h2 className="text-lg font-bold mb-3 flex items-center gap-2">
+          <Scale className="w-5 h-5" />
+          Áreas Disponíveis
+        </h2>
+
+        {isLoading ? (
+          <div className="grid grid-cols-2 gap-3">
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+              <Skeleton key={i} className="h-[140px] w-full rounded-lg" />
+            ))}
+          </div>
+        ) : filteredAreas?.length === 0 ? (
+          <div className="text-center py-8 text-muted-foreground">
+            Nenhuma área encontrada
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 gap-3">
+            {filteredAreas?.map((item, index) => (
+              <Card
                 key={item.area}
+                className="cursor-pointer hover:scale-105 hover:shadow-xl hover:-translate-y-1 transition-all border-2 border-transparent hover:border-primary/50 bg-gradient-to-br from-card to-card/80 group overflow-hidden relative animate-fade-in"
                 onClick={() =>
                   navigate(
                     `/ferramentas/questoes/temas?area=${encodeURIComponent(item.area)}`
                   )
                 }
-                className={`relative overflow-hidden rounded-xl border p-4 text-left transition-all hover:scale-[1.02] active:scale-[0.98] bg-gradient-to-br ${areaColors[index % areaColors.length]}`}
               >
-                <Scale className="w-5 h-5 text-primary mb-2" />
-                <h3 className="font-semibold text-sm line-clamp-2 mb-1">
-                  {item.area}
-                </h3>
-                <p className="text-xs text-muted-foreground">
-                  {item.totalTemas} {item.totalTemas === 1 ? "tema" : "temas"}
-                </p>
-              </button>
-            ))
-          )}
-        </div>
+                <div
+                  className="absolute top-0 left-0 right-0 h-1 opacity-80"
+                  style={{
+                    background: `linear-gradient(90deg, transparent, ${glowColors[index % glowColors.length]}, transparent)`,
+                    boxShadow: `0 0 20px ${glowColors[index % glowColors.length]}`,
+                  }}
+                />
+
+                <CardContent className="p-4 flex flex-col items-center text-center min-h-[140px] justify-center">
+                  <div className="text-3xl mb-2">
+                    {areaIcons[index % areaIcons.length]}
+                  </div>
+                  <h3 className="font-bold text-sm mb-1">{item.area}</h3>
+                  <p className="text-xs text-muted-foreground line-clamp-2">
+                    {item.totalTemas} {item.totalTemas === 1 ? "tema" : "temas"}{" "}
+                    disponíve{item.totalTemas === 1 ? "l" : "is"}
+                  </p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
