@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { CheckCircle2, XCircle, ChevronRight, Trophy, RotateCcw, BookOpen } from "lucide-react";
+import { CheckCircle2, XCircle, ChevronRight, Trophy, RotateCcw, BookOpen, Volume2, Pause, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
@@ -26,6 +26,7 @@ interface Questao {
   comentario: string;
   subtema: string;
   exemplo_pratico?: string;
+  url_audio?: string;
 }
 
 interface QuestoesConcursoProps {
@@ -42,10 +43,14 @@ const QuestoesConcurso = ({ questoes, onFinish, area, tema }: QuestoesConcursoPr
   const [score, setScore] = useState({ correct: 0, wrong: 0 });
   const [finished, setFinished] = useState(false);
   const [showExemplo, setShowExemplo] = useState(false);
+  const [questoesState, setQuestoesState] = useState<Questao[]>(questoes);
+  const [audioLoading, setAudioLoading] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const audioRef = useRef<HTMLAudioElement>(null);
 
-  const currentQuestion = questoes[currentIndex];
-  const progress = ((currentIndex + 1) / questoes.length) * 100;
+  const currentQuestion = questoesState[currentIndex];
+  const progress = ((currentIndex + 1) / questoesState.length) * 100;
   const isCorrect = selectedAnswer === currentQuestion?.resposta_correta;
 
   // Scroll para o topo ao mudar de questão
@@ -53,9 +58,97 @@ const QuestoesConcurso = ({ questoes, onFinish, area, tema }: QuestoesConcursoPr
     if (containerRef.current) {
       containerRef.current.scrollTo({ top: 0, behavior: 'smooth' });
     }
-    // Também scroll da página inteira
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [currentIndex]);
+
+  // Gerar ou reproduzir áudio ao entrar na questão
+  useEffect(() => {
+    const questaoAtual = questoesState[currentIndex];
+    if (!questaoAtual) return;
+
+    // Parar áudio anterior
+    if (audioRef.current) {
+      audioRef.current.pause();
+      setIsPlaying(false);
+    }
+
+    if (questaoAtual.url_audio) {
+      // Já tem áudio - reproduz automaticamente
+      playAudio(questaoAtual.url_audio);
+    } else {
+      // Não tem - gerar em background
+      gerarAudioParaQuestao(questaoAtual);
+    }
+  }, [currentIndex]);
+
+  const gerarAudioParaQuestao = async (questao: Questao) => {
+    if (audioLoading) return;
+    
+    setAudioLoading(true);
+    console.log(`Gerando áudio para questão ${questao.id}...`);
+
+    try {
+      const { data, error } = await supabase.functions.invoke('gerar-audio-questao', {
+        body: { 
+          questaoId: questao.id, 
+          texto: questao.enunciado 
+        }
+      });
+
+      if (error) {
+        console.error('Erro ao gerar áudio:', error);
+        setAudioLoading(false);
+        return;
+      }
+
+      if (data?.url_audio) {
+        // Atualizar questão local com URL
+        setQuestoesState(prev => prev.map(q => 
+          q.id === questao.id ? { ...q, url_audio: data.url_audio } : q
+        ));
+        // Reproduzir automaticamente
+        playAudio(data.url_audio);
+      }
+    } catch (err) {
+      console.error('Erro ao chamar função de áudio:', err);
+    } finally {
+      setAudioLoading(false);
+    }
+  };
+
+  const playAudio = (url: string) => {
+    if (audioRef.current) {
+      audioRef.current.src = url;
+      audioRef.current.play().then(() => {
+        setIsPlaying(true);
+      }).catch((err) => {
+        console.log('Autoplay bloqueado pelo navegador:', err);
+        setIsPlaying(false);
+      });
+    }
+  };
+
+  const toggleAudio = () => {
+    if (!audioRef.current) return;
+
+    if (isPlaying) {
+      audioRef.current.pause();
+      setIsPlaying(false);
+    } else {
+      const url = currentQuestion?.url_audio;
+      if (url) {
+        if (audioRef.current.src !== url) {
+          audioRef.current.src = url;
+        }
+        audioRef.current.play().then(() => {
+          setIsPlaying(true);
+        }).catch(console.error);
+      } else if (!audioLoading) {
+        // Se não tem URL ainda, gerar
+        gerarAudioParaQuestao(currentQuestion);
+      }
+    }
+  };
 
   const alternatives = [
     { key: "A", value: currentQuestion?.alternativa_a },
@@ -88,7 +181,7 @@ const QuestoesConcurso = ({ questoes, onFinish, area, tema }: QuestoesConcursoPr
   };
 
   const handleNext = () => {
-    if (currentIndex < questoes.length - 1) {
+    if (currentIndex < questoesState.length - 1) {
       setCurrentIndex(prev => prev + 1);
       setSelectedAnswer(null);
       setShowResult(false);
@@ -105,10 +198,14 @@ const QuestoesConcurso = ({ questoes, onFinish, area, tema }: QuestoesConcursoPr
     setScore({ correct: 0, wrong: 0 });
     setFinished(false);
     setShowExemplo(false);
+    if (audioRef.current) {
+      audioRef.current.pause();
+      setIsPlaying(false);
+    }
   };
 
   if (finished) {
-    const percentage = Math.round((score.correct / questoes.length) * 100);
+    const percentage = Math.round((score.correct / questoesState.length) * 100);
     return (
       <motion.div 
         initial={{ opacity: 0, scale: 0.95 }}
@@ -165,7 +262,7 @@ const QuestoesConcurso = ({ questoes, onFinish, area, tema }: QuestoesConcursoPr
         <div className="px-4 py-3 border-b">
           <div className="flex items-center justify-between text-sm mb-2">
             <span className="text-muted-foreground">
-              Questão {currentIndex + 1} de {questoes.length}
+              Questão {currentIndex + 1} de {questoesState.length}
             </span>
             <span className="font-medium">
               {score.correct} ✓ / {score.wrong} ✗
@@ -191,9 +288,34 @@ const QuestoesConcurso = ({ questoes, onFinish, area, tema }: QuestoesConcursoPr
                 </div>
               )}
 
-              {/* Enunciado */}
+              {/* Enunciado com botão de áudio */}
               <div className="bg-card rounded-xl p-4 border mb-4">
-                <p className="text-sm leading-relaxed">{currentQuestion?.enunciado}</p>
+                <div className="flex items-start justify-between gap-3">
+                  <p className="text-sm leading-relaxed flex-1">{currentQuestion?.enunciado}</p>
+                  
+                  {/* Botão de áudio */}
+                  <button 
+                    onClick={toggleAudio}
+                    disabled={audioLoading}
+                    className={cn(
+                      "shrink-0 p-2.5 rounded-full transition-all",
+                      audioLoading 
+                        ? "bg-muted cursor-wait" 
+                        : isPlaying 
+                        ? "bg-primary text-primary-foreground" 
+                        : "bg-primary/10 hover:bg-primary/20 text-primary"
+                    )}
+                    title={audioLoading ? "Gerando áudio..." : isPlaying ? "Pausar" : "Ouvir questão"}
+                  >
+                    {audioLoading ? (
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                    ) : isPlaying ? (
+                      <Pause className="w-5 h-5" />
+                    ) : (
+                      <Volume2 className="w-5 h-5" />
+                    )}
+                  </button>
+                </div>
               </div>
 
               {/* Alternativas */}
@@ -306,7 +428,7 @@ const QuestoesConcurso = ({ questoes, onFinish, area, tema }: QuestoesConcursoPr
             className="p-4 border-t bg-background"
           >
             <Button onClick={handleNext} className="w-full" size="lg">
-              {currentIndex < questoes.length - 1 ? (
+              {currentIndex < questoesState.length - 1 ? (
                 <>
                   Próxima Questão
                   <ChevronRight className="w-5 h-5 ml-2" />
@@ -321,6 +443,14 @@ const QuestoesConcurso = ({ questoes, onFinish, area, tema }: QuestoesConcursoPr
           </motion.div>
         )}
       </div>
+
+      {/* Audio element */}
+      <audio 
+        ref={audioRef} 
+        onEnded={() => setIsPlaying(false)}
+        onPause={() => setIsPlaying(false)}
+        onPlay={() => setIsPlaying(true)}
+      />
 
       {/* Drawer de Exemplo Prático */}
       <Drawer open={showExemplo} onOpenChange={setShowExemplo}>

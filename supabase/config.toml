@@ -35,3 +35,6 @@ verify_jwt = false
 
 [functions.gerar-questoes-lote]
 verify_jwt = false
+
+[functions.gerar-audio-questao]
+verify_jwt = false
