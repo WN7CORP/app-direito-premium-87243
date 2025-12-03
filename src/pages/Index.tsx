@@ -205,7 +205,8 @@ const Index = () => {
                         titulo: noticia.titulo,
                         capa: noticia.imagem || '',
                         link: noticia.link,
-                        dataHora: noticia.data
+                        dataHora: noticia.data,
+                        analise_ia: noticia.analise
                       }
                     }
                   });
