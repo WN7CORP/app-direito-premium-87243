@@ -145,47 +145,103 @@ const QuestoesResolver = () => {
       const subtemasUnicos = new Set(resumos.map(r => r.subtema));
       const totalSubtemas = subtemasUnicos.size;
       
-      setProgressMessage(`Gerando questões... (0/${totalSubtemas} subtemas)`);
+      // Buscar subtemas já processados
+      const { data: questoesExistentes } = await supabase
+        .from("QUESTOES_GERADAS")
+        .select("subtema")
+        .eq("area", area)
+        .eq("tema", tema);
+      
+      const subtemasJaProcessados = new Set(questoesExistentes?.map(q => q.subtema) || []);
+      const subtemasProcessadosInicial = subtemasJaProcessados.size;
+      
       setGeracaoStatus({
         total_subtemas: totalSubtemas,
-        subtemas_processados: 0,
-        subtemas_faltantes: totalSubtemas,
+        subtemas_processados: subtemasProcessadosInicial,
+        subtemas_faltantes: totalSubtemas - subtemasProcessadosInicial,
         geracao_completa: false
       });
 
-      // Chama edge function para gerar questões (agora progressiva)
+      // Iniciar polling para atualizar progresso em tempo real
+      let pollInterval: NodeJS.Timeout | null = null;
+      
+      const pollProgress = async () => {
+        const { data: questoesAtuais } = await supabase
+          .from("QUESTOES_GERADAS")
+          .select("subtema")
+          .eq("area", area)
+          .eq("tema", tema);
+        
+        if (questoesAtuais) {
+          const subtemasAtuais = new Set(questoesAtuais.map(q => q.subtema)).size;
+          setGeracaoStatus(prev => ({
+            ...prev!,
+            subtemas_processados: subtemasAtuais,
+            subtemas_faltantes: totalSubtemas - subtemasAtuais,
+            geracao_completa: subtemasAtuais >= totalSubtemas
+          }));
+          
+          // Atualiza as questões em tempo real
+          const { data: todasQuestoes } = await supabase
+            .from("QUESTOES_GERADAS")
+            .select("*")
+            .eq("area", area)
+            .eq("tema", tema);
+          
+          if (todasQuestoes && todasQuestoes.length > 0) {
+            setQuestoes(todasQuestoes as Questao[]);
+          }
+        }
+      };
+      
+      // Polling a cada 3 segundos
+      pollInterval = setInterval(pollProgress, 3000);
+
+      // Chama edge function para gerar questões
       const { data, error } = await supabase.functions.invoke("gerar-questoes-tema", {
         body: { area, tema, resumos }
       });
 
+      // Para o polling
+      if (pollInterval) {
+        clearInterval(pollInterval);
+      }
+
       if (error) throw error;
 
-      if (data) {
-        // Atualizar status de geração
-        setGeracaoStatus({
-          total_subtemas: data.total_subtemas || totalSubtemas,
-          subtemas_processados: data.subtemas_processados || 0,
-          subtemas_faltantes: data.subtemas_faltantes || 0,
-          geracao_completa: data.geracao_completa || false
-        });
+      // Busca final das questões após a geração
+      const { data: questoesFinais } = await supabase
+        .from("QUESTOES_GERADAS")
+        .select("*")
+        .eq("area", area)
+        .eq("tema", tema);
 
-        if (data.questoes && data.questoes.length > 0) {
-          setQuestoes(data.questoes);
-          
-          if (data.geracao_completa) {
-            toast.success(`${data.questoes.length} questões disponíveis!`);
-          } else {
-            toast.success(
-              `${data.questoes.length} questões geradas! (${data.subtemas_processados}/${data.total_subtemas} subtemas)`,
-              {
-                description: "O próximo acesso continuará gerando mais questões.",
-                duration: 5000
-              }
-            );
-          }
+      if (questoesFinais && questoesFinais.length > 0) {
+        setQuestoes(questoesFinais as Questao[]);
+        
+        const subtemasFinais = new Set(questoesFinais.map(q => q.subtema)).size;
+        const geracaoCompleta = subtemasFinais >= totalSubtemas;
+        
+        setGeracaoStatus({
+          total_subtemas: totalSubtemas,
+          subtemas_processados: subtemasFinais,
+          subtemas_faltantes: totalSubtemas - subtemasFinais,
+          geracao_completa: geracaoCompleta
+        });
+        
+        if (geracaoCompleta) {
+          toast.success(`${questoesFinais.length} questões disponíveis!`);
         } else {
-          toast.error("Não foi possível gerar questões");
+          toast.success(
+            `${questoesFinais.length} questões geradas! (${subtemasFinais}/${totalSubtemas} subtemas)`,
+            {
+              description: "O próximo acesso continuará gerando mais questões.",
+              duration: 5000
+            }
+          );
         }
+      } else {
+        toast.error("Não foi possível gerar questões");
       }
     } catch (error) {
       console.error("Erro ao gerar questões:", error);
