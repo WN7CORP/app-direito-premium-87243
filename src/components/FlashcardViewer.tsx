@@ -214,11 +214,11 @@ export const FlashcardViewer = ({
 
             <div 
               onClick={handleFlip} 
-              className="min-h-[300px] bg-card border-2 border-[hsl(270,60%,55%)] rounded-xl p-4 sm:p-8 cursor-pointer hover:shadow-lg transition-shadow relative break-words flex flex-col"
+              className="min-h-[300px] bg-card border-2 border-[hsl(270,60%,55%)] rounded-xl p-4 sm:p-8 pt-10 cursor-pointer hover:shadow-lg transition-shadow relative break-words flex flex-col"
               style={{ backfaceVisibility: 'hidden' }}
             >
               {tema && (
-                <p className="text-xs text-[hsl(270,70%,75%)] absolute top-4 left-4">
+                <p className="text-xs text-[hsl(270,70%,75%)] absolute top-3 left-4">
                   {tema}
                 </p>
               )}
