@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1'
-import { HfInference } from 'https://esm.sh/@huggingface/inference@2.3.2'
+import { InferenceClient } from 'https://esm.sh/@huggingface/inference@3.6.0'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -56,10 +56,10 @@ serve(async (req) => {
 
     console.log(`[gerar-imagem-exemplo] Gerando imagem com prompt: ${promptImagem.substring(0, 100)}...`)
 
-    const hf = new HfInference(HUGGING_FACE_ACCESS_TOKEN)
-    const image = await hf.textToImage({
-      inputs: promptImagem,
+    const client = new InferenceClient(HUGGING_FACE_ACCESS_TOKEN)
+    const image = await client.textToImage({
       model: 'black-forest-labs/FLUX.1-schnell',
+      inputs: promptImagem,
     })
 
     // 3. Converter para blob
