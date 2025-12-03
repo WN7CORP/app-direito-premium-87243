@@ -44,3 +44,6 @@ verify_jwt = false
 
 [functions.gerar-imagem-exemplo]
 verify_jwt = false
+
+[functions.gerar-audio-generico]
+verify_jwt = false

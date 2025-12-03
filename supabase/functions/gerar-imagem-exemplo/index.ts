@@ -50,16 +50,35 @@ serve(async (req) => {
       throw new Error('HUGGING_FACE_ACCESS_TOKEN não configurado')
     }
 
-    // Criar prompt descritivo para a imagem
-    const textoResumido = exemploTexto.substring(0, 150).replace(/[^\w\s]/g, '')
-    const promptImagem = `Educational legal illustration showing: ${textoResumido}. Clean modern flat design, professional legal theme, soft blue and gold colors, minimalist style, no text.`
+    // Extrair cenário do texto de forma inteligente
+    const cenario = exemploTexto
+      .replace(/[^\w\sáéíóúâêôãõçÁÉÍÓÚÂÊÔÃÕÇ.,!?-]/gi, ' ')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .substring(0, 300)
 
-    console.log(`[gerar-imagem-exemplo] Gerando imagem com prompt: ${promptImagem.substring(0, 100)}...`)
+    // Prompt melhorado para qualidade superior
+    const promptImagem = `Photorealistic legal illustration scene depicting: ${cenario}
+
+Style requirements:
+- Professional Brazilian legal setting (courtroom, law office, or public institution)
+- Warm natural lighting with soft shadows
+- Cinematic composition, 4K quality
+- Focus on human interaction and legal documents
+- Clean modern aesthetic, no clutter
+- Diverse Brazilian people in professional attire
+- ABSOLUTELY NO TEXT, NO WORDS, NO LETTERS, NO NUMBERS
+- No watermarks or logos`
+
+    console.log(`[gerar-imagem-exemplo] Gerando imagem com FLUX.1-dev...`)
+    console.log(`[gerar-imagem-exemplo] Prompt: ${promptImagem.substring(0, 150)}...`)
 
     const hf = new HfInference(HUGGING_FACE_ACCESS_TOKEN)
+    
+    // Usando FLUX.1-dev para qualidade superior
     const image = await hf.textToImage({
       inputs: promptImagem,
-      model: 'black-forest-labs/FLUX.1-schnell',
+      model: 'black-forest-labs/FLUX.1-dev',
     })
 
     // 3. Converter para blob
