@@ -679,109 +679,95 @@ ${cfContext || ''}`;
     const wantsSSE = acceptHeader.includes('text/event-stream');
     
     const modelName = 'gemini-2.0-flash';
-    // SEMPRE usar generateContent (não streaming) - abordagem mais estável
-    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${DIREITO_PREMIUM_API_KEY}`;
     
     console.log('🤖 Chamando Gemini API...', {
       mode,
       linguagemMode,
       responseLevel,
       maxTokens: config?.tokens,
-      expectedChars: config?.caracteres
+      expectedChars: config?.caracteres,
+      wantsSSE
     });
     
     const apiStartTime = Date.now();
-    
-    // AbortController para timeout
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => {
-      console.error(`⏰ TIMEOUT: API não respondeu em ${API_TIMEOUT_MS}ms`);
-      controller.abort();
-    }, API_TIMEOUT_MS);
-    
-    let geminiResponse: Response;
-    try {
-      console.log('🚀 Iniciando fetch para Gemini API...');
-      geminiResponse = await fetch(geminiUrl, {
+
+    if (wantsSSE) {
+      // STREAMING REAL - usando streamGenerateContent
+      const streamingUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:streamGenerateContent?alt=sse&key=${DIREITO_PREMIUM_API_KEY}`;
+      
+      console.log('🚀 Iniciando streaming real do Gemini...');
+      
+      const geminiResponse = await fetch(streamingUrl, {
         method: 'POST',
-        signal: controller.signal,
         headers: {
           'Content-Type': 'application/json',
-          'X-Function-Revision': 'v7.0.0-simplified-streaming',
-          'X-Model': modelName
+          'X-Function-Revision': 'v8.0.0-real-streaming'
         },
         body: JSON.stringify(geminiPayload)
       });
-      clearTimeout(timeoutId);
+      
+      if (!geminiResponse.ok) {
+        const errorText = await geminiResponse.text();
+        console.error('❌ Erro da API Gemini:', { status: geminiResponse.status, errorText });
+        throw new Error(`Gemini API error: ${geminiResponse.status} - ${errorText}`);
+      }
       
       const apiResponseTime = Date.now() - apiStartTime;
-      console.log(`⏱️ API respondeu em ${apiResponseTime}ms`);
-      console.log(`📊 Response status: ${geminiResponse.status}`);
+      console.log(`⏱️ Primeira resposta em ${apiResponseTime}ms`);
       
-    } catch (fetchError) {
-      clearTimeout(timeoutId);
-      if (fetchError instanceof Error && fetchError.name === 'AbortError') {
-        console.error('❌ Timeout na chamada da API Gemini');
-        throw new Error('A API demorou muito para responder. Tente novamente.');
-      }
-      console.error('❌ Erro no fetch:', fetchError);
-      throw fetchError;
-    }
-
-    if (!geminiResponse.ok) {
-      const errorText = await geminiResponse.text();
-      console.error('❌ Erro da API Gemini:', { status: geminiResponse.status, errorText });
-      throw new Error(`Gemini API error: ${geminiResponse.status} - ${errorText}`);
-    }
-
-    // Obter resposta completa como JSON
-    const json = await geminiResponse.json();
-    const fullText = json.candidates?.[0]?.content?.parts?.[0]?.text || '';
-    
-    if (!fullText) {
-      console.error('❌ Resposta vazia do modelo');
-      throw new Error('Resposta vazia do modelo');
-    }
-
-    // Validação e logging
-    const wordCount = fullText.split(/\s+/).length;
-    const charCount = fullText.length;
-    const hasComponents = {
-      dicaDeOuro: fullText.includes('[DICA DE OURO 💎]'),
-      sacou: fullText.includes('[SACOU? 💡]'),
-      ficaLigado: fullText.includes('[FICA LIGADO! ⚠️]'),
-      questoes: fullText.includes('[QUESTOES_CLICAVEIS]')
-    };
-    
-    console.log('✅ Resposta recebida:', {
-      charCount,
-      wordCount,
-      expectedChars: config?.caracteres,
-      hasComponents
-    });
-
-    if (wantsSSE) {
-      // Simular SSE com chunks (igual gerar-explicacao-v2)
+      // Criar stream que repassa os chunks do Gemini em tempo real
       const encoder = new TextEncoder();
-      const stream = new ReadableStream<Uint8Array>({
-        start(ctrl) {
-          // Enviar keepalive inicial
-          ctrl.enqueue(encoder.encode(': keepalive\n\n'));
+      const decoder = new TextDecoder();
+      
+      const transformStream = new TransformStream<Uint8Array, Uint8Array>({
+        start(controller) {
+          // Keepalive inicial
+          controller.enqueue(encoder.encode(': keepalive\n\n'));
+        },
+        
+        transform(chunk, controller) {
+          const text = decoder.decode(chunk, { stream: true });
+          const lines = text.split('\n');
           
-          // Dividir resposta em chunks para simular streaming
-          const chunkSize = 800;
-          for (let i = 0; i < fullText.length; i += chunkSize) {
-            const piece = fullText.slice(i, i + chunkSize);
-            const sseEvent = {
-              choices: [{
-                delta: { content: piece },
-                index: 0,
-                finish_reason: null
-              }]
-            };
-            ctrl.enqueue(encoder.encode(`data: ${JSON.stringify(sseEvent)}\n\n`));
+          for (const line of lines) {
+            if (!line.trim() || line.startsWith(':')) continue;
+            
+            if (line.startsWith('data: ')) {
+              const jsonStr = line.slice(6).trim();
+              if (jsonStr === '[DONE]') {
+                controller.enqueue(encoder.encode('data: [DONE]\n\n'));
+                continue;
+              }
+              
+              try {
+                const data = JSON.parse(jsonStr);
+                const content = data.candidates?.[0]?.content?.parts?.[0]?.text;
+                
+                if (content) {
+                  // Repassar conteúdo no formato SSE do OpenAI
+                  const sseEvent = {
+                    choices: [{
+                      delta: { content },
+                      index: 0,
+                      finish_reason: null
+                    }]
+                  };
+                  controller.enqueue(encoder.encode(`data: ${JSON.stringify(sseEvent)}\n\n`));
+                }
+                
+                // Verificar se terminou
+                const finishReason = data.candidates?.[0]?.finishReason;
+                if (finishReason && finishReason !== 'STOP') {
+                  console.log(`📊 Finish reason: ${finishReason}`);
+                }
+              } catch (e) {
+                // Ignorar linhas que não são JSON válido
+              }
+            }
           }
-          
+        },
+        
+        flush(controller) {
           // Evento de conclusão
           const doneEvent = {
             choices: [{
@@ -790,18 +776,18 @@ ${cfContext || ''}`;
               finish_reason: 'stop'
             }]
           };
-          ctrl.enqueue(encoder.encode(`data: ${JSON.stringify(doneEvent)}\n\n`));
-          ctrl.enqueue(encoder.encode('data: [DONE]\n\n'));
-          ctrl.close();
+          controller.enqueue(encoder.encode(`data: ${JSON.stringify(doneEvent)}\n\n`));
+          controller.enqueue(encoder.encode('data: [DONE]\n\n'));
           
-          console.log('✅ Stream SSE simulado enviado');
+          const totalTime = Date.now() - startTime;
+          console.log(`✅ Stream real concluído em ${totalTime}ms`);
         }
       });
-
-      const totalTime = Date.now() - startTime;
-      console.log(`⏱️ Tempo total de processamento: ${totalTime}ms`);
-
-      return new Response(stream, {
+      
+      // Pipe do stream do Gemini através do transformador
+      const responseStream = geminiResponse.body!.pipeThrough(transformStream);
+      
+      return new Response(responseStream, {
         headers: {
           ...corsHeaders,
           'Content-Type': 'text/event-stream',
@@ -811,7 +797,9 @@ ${cfContext || ''}`;
       });
       
     } else {
-      // Resposta normal (não streaming) com AbortController para timeout
+      // Resposta normal (não streaming)
+      const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${DIREITO_PREMIUM_API_KEY}`;
+      
       const controller = new AbortController();
       const timeoutId = setTimeout(() => {
         console.error(`⏰ TIMEOUT: API não respondeu em ${API_TIMEOUT_MS}ms`);
@@ -826,8 +814,7 @@ ${cfContext || ''}`;
           signal: controller.signal,
           headers: {
             'Content-Type': 'application/json',
-            'X-Function-Revision': 'v6.0.0-timeout-fix',
-            'X-Model': modelName
+            'X-Function-Revision': 'v8.0.0-real-streaming'
           },
           body: JSON.stringify(geminiPayload)
         });
@@ -835,7 +822,6 @@ ${cfContext || ''}`;
         
         const apiResponseTime = Date.now() - apiStartTime;
         console.log(`⏱️ API respondeu em ${apiResponseTime}ms`);
-        console.log(`📊 Response status: ${geminiResponse.status}`);
         
       } catch (fetchError) {
         clearTimeout(timeoutId);
@@ -843,7 +829,6 @@ ${cfContext || ''}`;
           console.error('❌ Timeout na chamada da API Gemini');
           throw new Error('A API demorou muito para responder. Tente novamente.');
         }
-        console.error('❌ Erro no fetch:', fetchError);
         throw fetchError;
       }
 
@@ -856,40 +841,13 @@ ${cfContext || ''}`;
       const geminiData = await geminiResponse.json();
       const fullResponse = geminiData.candidates?.[0]?.content?.parts?.[0]?.text || '';
       
-      const wordCount = fullResponse.split(/\s+/).length;
-      const charCount = fullResponse.length;
-      const hasComponents = {
-        dicaDeOuro: fullResponse.includes('[DICA DE OURO 💎]'),
-        sacou: fullResponse.includes('[SACOU? 💡]'),
-        ficaLigado: fullResponse.includes('[FICA LIGADO! ⚠️]'),
-        questoes: fullResponse.includes('[QUESTOES_CLICAVEIS]')
-      };
-      
-      console.log('✅ Resposta do Gemini recebida:', {
-        textLength: fullResponse.length,
-        wordCount,
-        charCount,
-        expectedChars: config?.caracteres,
-        hasComponents,
-        preview: fullResponse.substring(0, 100)
+      console.log('✅ Resposta recebida:', {
+        charCount: fullResponse.length,
+        wordCount: fullResponse.split(/\s+/).length
       });
-      
-      if (linguagemMode === 'descomplicado' && responseLevel !== 'basic') {
-        const minChars = config?.caracteres[0];
-        if (charCount < minChars) {
-          console.warn(`⚠️ Resposta muito curta! ${charCount} caracteres (mínimo: ${minChars})`);
-        }
-        if (!hasComponents.questoes) {
-          console.warn('⚠️ Faltando [QUESTOES_CLICAVEIS]');
-        }
-        const componentCount = Object.values(hasComponents).filter(Boolean).length;
-        if (componentCount < 3) {
-          console.warn(`⚠️ Poucos componentes visuais! ${componentCount}/4 esperados`);
-        }
-      }
 
       const totalTime = Date.now() - startTime;
-      console.log(`⏱️ Tempo total de processamento: ${totalTime}ms `);
+      console.log(`⏱️ Tempo total: ${totalTime}ms`);
 
       return new Response(
         JSON.stringify({ content: fullResponse }),
