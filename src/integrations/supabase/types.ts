@@ -5688,57 +5688,6 @@ export type Database = {
         }
         Relationships: []
       }
-      QUESTOES_LOTE: {
-        Row: {
-          areas_selecionadas: string[]
-          concluido_em: string | null
-          created_at: string | null
-          custo_estimado_usd: number | null
-          id: number
-          iniciado_em: string | null
-          log_erros: Json | null
-          progresso_percentual: number | null
-          questoes_por_tema: number | null
-          status: string | null
-          tempo_total_minutos: number | null
-          tokens_gastos: number | null
-          total_questoes_geradas: number | null
-          total_resumos_processados: number | null
-        }
-        Insert: {
-          areas_selecionadas: string[]
-          concluido_em?: string | null
-          created_at?: string | null
-          custo_estimado_usd?: number | null
-          id?: number
-          iniciado_em?: string | null
-          log_erros?: Json | null
-          progresso_percentual?: number | null
-          questoes_por_tema?: number | null
-          status?: string | null
-          tempo_total_minutos?: number | null
-          tokens_gastos?: number | null
-          total_questoes_geradas?: number | null
-          total_resumos_processados?: number | null
-        }
-        Update: {
-          areas_selecionadas?: string[]
-          concluido_em?: string | null
-          created_at?: string | null
-          custo_estimado_usd?: number | null
-          id?: number
-          iniciado_em?: string | null
-          log_erros?: Json | null
-          progresso_percentual?: number | null
-          questoes_por_tema?: number | null
-          status?: string | null
-          tempo_total_minutos?: number | null
-          tokens_gastos?: number | null
-          total_questoes_geradas?: number | null
-          total_resumos_processados?: number | null
-        }
-        Relationships: []
-      }
       "RANKING-FACULDADES": {
         Row: {
           avaliacao_cn: number | null
