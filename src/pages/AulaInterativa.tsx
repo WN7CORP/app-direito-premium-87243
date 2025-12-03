@@ -50,6 +50,24 @@ const AulaInterativa = () => {
   const [tempoInicio, setTempoInicio] = useState<Date>(new Date());
 
   useEffect(() => {
+    // Verificar se há aula gerada do chat
+    const aulaFromChat = sessionStorage.getItem('aulaGeradaChat');
+    if (aulaFromChat) {
+      try {
+        const { estrutura, tema } = JSON.parse(aulaFromChat);
+        sessionStorage.removeItem('aulaGeradaChat');
+        setEstrutura(estrutura);
+        setModuloAtual(1);
+        setEtapaAtual('transicao');
+        setTempoInicio(new Date());
+        toast.success(`Aula "${tema}" carregada!`);
+      } catch (e) {
+        console.error('Erro ao carregar aula do chat:', e);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
     if (estrutura && aulaId && !progressoId) {
       criarProgresso();
     }
