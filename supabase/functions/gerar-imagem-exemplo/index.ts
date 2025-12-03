@@ -50,11 +50,19 @@ serve(async (req) => {
       throw new Error('HUGGING_FACE_ACCESS_TOKEN não configurado')
     }
 
-    // Criar prompt descritivo para a imagem
-    const textoResumido = exemploTexto.substring(0, 150).replace(/[^\w\s]/g, '')
-    const promptImagem = `Educational legal illustration showing: ${textoResumido}. Clean modern flat design, professional legal theme, soft blue and gold colors, minimalist style, no text.`
+    // Criar prompt descritivo para ilustrar a cena do exemplo prático
+    const textoLimpo = exemploTexto
+      .substring(0, 400)
+      .replace(/[^\w\sáéíóúâêîôûãõàèìòùç.,!?-]/gi, ' ')
+      .replace(/\s+/g, ' ')
+      .trim()
 
-    console.log(`[gerar-imagem-exemplo] Gerando imagem com prompt: ${promptImagem.substring(0, 100)}...`)
+    const promptImagem = `Create a detailed illustration depicting this scene: "${textoLimpo}". 
+The image should visually represent the people, places and situation described. 
+Show characters with expressions and actions matching the story.
+Style: warm editorial illustration, soft natural colors, friendly characters, clean composition, storytelling visual, no text or words in image.`
+
+    console.log(`[gerar-imagem-exemplo] Gerando imagem com prompt: ${promptImagem.substring(0, 150)}...`)
 
     const client = new InferenceClient(HUGGING_FACE_ACCESS_TOKEN)
     const image = await client.textToImage({

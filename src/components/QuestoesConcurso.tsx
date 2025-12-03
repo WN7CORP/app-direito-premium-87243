@@ -28,6 +28,8 @@ interface Questao {
   exemplo_pratico?: string;
   url_audio?: string;
   url_imagem_exemplo?: string;
+  url_audio_comentario?: string;
+  url_audio_exemplo?: string;
 }
 
 interface QuestoesConcursoProps {
@@ -67,8 +69,12 @@ const QuestoesConcurso = ({ questoes, onFinish, area, tema }: QuestoesConcursoPr
     idle: { x: 0 }
   };
 
-  // Função para narrar texto dinamicamente
-  const narrarTexto = useCallback(async (texto: string): Promise<void> => {
+  // Função para narrar texto com cache opcional
+  const narrarTexto = useCallback(async (
+    texto: string, 
+    questaoId?: number, 
+    tipo?: 'comentario' | 'exemplo'
+  ): Promise<void> => {
     return new Promise(async (resolve) => {
       try {
         // Parar narração anterior se existir
@@ -80,17 +86,34 @@ const QuestoesConcurso = ({ questoes, onFinish, area, tema }: QuestoesConcursoPr
         setNarrationLoading(true);
         
         const { data, error } = await supabase.functions.invoke('gerar-narracao', {
-          body: { texto }
+          body: { texto, questaoId, tipo }
         });
 
-        if (error || !data?.audioBase64) {
+        if (error || (!data?.audioBase64 && !data?.url_audio)) {
           console.error('Erro ao gerar narração:', error);
           setNarrationLoading(false);
           resolve();
           return;
         }
 
-        const audioUrl = `data:audio/mpeg;base64,${data.audioBase64}`;
+        // Se recebeu URL do cache, usar diretamente
+        let audioUrl: string;
+        if (data.url_audio) {
+          audioUrl = data.url_audio;
+          console.log(`Usando áudio do cache: ${audioUrl}, cached: ${data.cached}`);
+          
+          // Atualizar estado local com a URL do cache
+          if (questaoId && tipo) {
+            const colunaAudio = tipo === 'comentario' ? 'url_audio_comentario' : 'url_audio_exemplo';
+            setQuestoesState(prev => prev.map(q => 
+              q.id === questaoId ? { ...q, [colunaAudio]: audioUrl } : q
+            ));
+          }
+        } else {
+          // Fallback para base64 (caso antigo)
+          audioUrl = `data:audio/mpeg;base64,${data.audioBase64}`;
+        }
+
         const audio = new Audio(audioUrl);
         narrationAudioRef.current = audio;
         
@@ -189,15 +212,27 @@ const QuestoesConcurso = ({ questoes, onFinish, area, tema }: QuestoesConcursoPr
         gerarImagemExemplo(currentQuestion);
       }
       
-      const exemploTexto = `Exemplo prático. ${currentQuestion.exemplo_pratico}`;
-      narrarTexto(exemploTexto);
+      // Verificar se já tem áudio do exemplo no cache local
+      if (currentQuestion.url_audio_exemplo) {
+        // Usar áudio do cache diretamente
+        const audio = new Audio(currentQuestion.url_audio_exemplo);
+        narrationAudioRef.current = audio;
+        setNarrationLoading(true);
+        audio.onended = () => setNarrationLoading(false);
+        audio.onerror = () => setNarrationLoading(false);
+        audio.play().catch(() => setNarrationLoading(false));
+      } else {
+        // Gerar novo áudio e salvar no cache
+        const exemploTexto = `Exemplo prático. ${currentQuestion.exemplo_pratico}`;
+        narrarTexto(exemploTexto, currentQuestion.id, 'exemplo');
+      }
     } else if (!showExemplo && narrationAudioRef.current) {
       // Parar narração ao fechar drawer
       narrationAudioRef.current.pause();
       narrationAudioRef.current = null;
       setNarrationLoading(false);
     }
-  }, [showExemplo, currentQuestion?.exemplo_pratico, currentQuestion?.url_imagem_exemplo, narrarTexto, gerarImagemExemplo]);
+  }, [showExemplo, currentQuestion?.exemplo_pratico, currentQuestion?.url_imagem_exemplo, currentQuestion?.url_audio_exemplo, currentQuestion?.id, narrarTexto, gerarImagemExemplo]);
 
   const gerarAudioParaQuestao = async (questao: Questao) => {
     if (audioLoading) return;
@@ -306,10 +341,20 @@ const QuestoesConcurso = ({ questoes, onFinish, area, tema }: QuestoesConcursoPr
     // Narração de feedback
     if (correct) {
       await narrarTexto("Resposta correta!");
-      // Aguarda um pouco e narra o comentário
+      // Aguarda um pouco e narra o comentário com cache
       if (currentQuestion.comentario) {
         setTimeout(() => {
-          narrarTexto(currentQuestion.comentario);
+          // Verificar se já tem áudio do comentário no cache local
+          if (currentQuestion.url_audio_comentario) {
+            const audio = new Audio(currentQuestion.url_audio_comentario);
+            narrationAudioRef.current = audio;
+            setNarrationLoading(true);
+            audio.onended = () => setNarrationLoading(false);
+            audio.onerror = () => setNarrationLoading(false);
+            audio.play().catch(() => setNarrationLoading(false));
+          } else {
+            narrarTexto(currentQuestion.comentario, currentQuestion.id, 'comentario');
+          }
         }, 500);
       }
     } else {
@@ -318,10 +363,19 @@ const QuestoesConcurso = ({ questoes, onFinish, area, tema }: QuestoesConcursoPr
       setTimeout(() => setShakeError(false), 600);
       
       await narrarTexto("Resposta incorreta.");
-      // Aguarda e narra o comentário também
+      // Aguarda e narra o comentário também com cache
       if (currentQuestion.comentario) {
         setTimeout(() => {
-          narrarTexto(currentQuestion.comentario);
+          if (currentQuestion.url_audio_comentario) {
+            const audio = new Audio(currentQuestion.url_audio_comentario);
+            narrationAudioRef.current = audio;
+            setNarrationLoading(true);
+            audio.onended = () => setNarrationLoading(false);
+            audio.onerror = () => setNarrationLoading(false);
+            audio.play().catch(() => setNarrationLoading(false));
+          } else {
+            narrarTexto(currentQuestion.comentario, currentQuestion.id, 'comentario');
+          }
         }, 500);
       }
     }
