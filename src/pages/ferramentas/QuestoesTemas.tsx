@@ -112,8 +112,8 @@ const QuestoesTemas = () => {
                     <Clock className="w-5 h-5" />
                   )}
                 </div>
-                <div className="flex-1 min-w-0">
-                  <h3 className="font-medium text-sm line-clamp-1">{item.tema}</h3>
+                <div className="flex-1">
+                  <h3 className="font-medium text-sm">{item.tema}</h3>
                   <p className="text-xs text-muted-foreground">
                     {item.temQuestoes ? "Questões prontas" : "Questões serão geradas"}
                   </p>
