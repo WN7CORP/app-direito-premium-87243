@@ -211,6 +211,9 @@ import LeiADIADCView from "./pages/LeiADIADCView";
 import QuestoesFaculdade from "./pages/QuestoesFaculdade";
 import QuizFaculdade from "./pages/QuizFaculdade";
 import GerarQuestoesAdmin from "./pages/admin/GerarQuestoesAdmin";
+import QuestoesAreas from "./pages/ferramentas/QuestoesAreas";
+import QuestoesTemas from "./pages/ferramentas/QuestoesTemas";
+import QuestoesResolver from "./pages/ferramentas/QuestoesResolver";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -301,6 +304,9 @@ const App = () => {
               <Route path="/chat-professora" element={<ChatProfessora />} />
               <Route path="/aula-interativa" element={<AulaInterativa />} />
               <Route path="/ferramentas" element={<Ferramentas />} />
+              <Route path="/ferramentas/questoes" element={<QuestoesAreas />} />
+              <Route path="/ferramentas/questoes/temas" element={<QuestoesTemas />} />
+              <Route path="/ferramentas/questoes/resolver" element={<QuestoesResolver />} />
               <Route path="/dicionario" element={<Dicionario />} />
               <Route path="/dicionario/:letra" element={<DicionarioLetra />} />
               <Route path="/bibliotecas" element={<Bibliotecas />} />
