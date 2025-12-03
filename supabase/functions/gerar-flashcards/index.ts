@@ -1,7 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.75.1";
 
-const REVISION = "v3.1.0-gemini-2.5-flash";
+const REVISION = "v3.2.0-json-repair";
 const MODEL = "gemini-2.5-flash";
 
 const corsHeaders = {
@@ -61,43 +61,20 @@ serve(async (req) => {
       }
     }
 
-    const systemPrompt = `Você é um professor de Direito especializado em criar flashcards de alta qualidade para estudo.
+    const systemPrompt = `Você é um professor de Direito. Crie flashcards de estudo.
 
-REGRAS IMPORTANTES:
-1. Crie entre 20 e 25 flashcards variados sobre o artigo
-2. Cada flashcard DEVE ter OBRIGATORIAMENTE:
-   - front: Uma pergunta clara e direta sobre o conteúdo
-   - back: A resposta completa e educacional
-   - exemplo: Um exemplo prático REAL de aplicação (OBRIGATÓRIO para cada flashcard)
-3. O EXEMPLO PRÁTICO deve ser:
-   - Uma situação real e cotidiana onde a regra se aplica
-   - Com nomes fictícios de pessoas (João, Maria, Pedro, etc.)
-   - Descrevendo uma situação concreta e fácil de visualizar
-   - Mostrando como a lei se aplica na prática
-4. Varie os tipos de perguntas:
-   - Conceituais (O que é...?)
-   - Práticas (Quando se aplica...?)
-   - Comparativas (Qual a diferença entre...?)
-   - Casos práticos (Em que situação...?)
-   - Penas e sanções (Qual a pena para...?)
-   - Requisitos (Quais os requisitos...?)
-5. Use linguagem clara e acessível
-6. Mantenha fidelidade ao texto da lei seca
-7. Retorne APENAS JSON válido, sem markdown`;
+REGRAS:
+1. Crie EXATAMENTE 15 flashcards
+2. Cada flashcard tem: front (pergunta curta), back (resposta curta), exemplo (situação prática breve)
+3. Seja CONCISO - respostas curtas e diretas
+4. Retorne APENAS JSON válido, sem markdown`;
 
-    const userPrompt = `Crie entre 20 e 25 flashcards de estudo baseados neste artigo de lei:
+    const userPrompt = `Crie 15 flashcards sobre este artigo:
 
 ${content}
 
-IMPORTANTE: Cada flashcard DEVE ter um exemplo prático obrigatório com uma situação real.
-
-Retorne APENAS um JSON válido no formato:
-{
-  "flashcards": [
-    {"front": "pergunta sobre o artigo", "back": "resposta completa", "exemplo": "Ex: João praticou X. Neste caso, aplica-se Y porque Z."},
-    ...
-  ]
-}`;
+JSON formato:
+{"flashcards":[{"front":"pergunta","back":"resposta","exemplo":"Ex: João fez X, aplica-se Y."}]}`;
 
     console.log("🚀 Gerando flashcards com Gemini...");
 
@@ -115,8 +92,8 @@ Retorne APENAS um JSON válido no formato:
             }]
           }],
           generationConfig: {
-            temperature: 0.7,
-            maxOutputTokens: 8000,
+            temperature: 0.5,
+            maxOutputTokens: 16000,
           }
         }),
       }
@@ -166,7 +143,46 @@ Retorne APENAS um JSON válido no formato:
       }
     }
     
-    const parsed = JSON.parse(jsonText);
+    // Tentar reparar JSON truncado
+    let parsed;
+    try {
+      parsed = JSON.parse(jsonText);
+    } catch (parseError) {
+      console.log("⚠️ JSON truncado, tentando reparar...");
+      
+      // Encontrar último flashcard completo
+      const lastCompleteIndex = jsonText.lastIndexOf('{"front"');
+      if (lastCompleteIndex > 0) {
+        // Verificar se tem um flashcard completo antes
+        const beforeLast = jsonText.substring(0, lastCompleteIndex);
+        const lastBraceIndex = beforeLast.lastIndexOf('}');
+        if (lastBraceIndex > 0) {
+          jsonText = beforeLast.substring(0, lastBraceIndex + 1) + ']}';
+          console.log("🔧 JSON reparado, tentando parse novamente...");
+          try {
+            parsed = JSON.parse(jsonText);
+          } catch {
+            // Fallback: extrair flashcards individualmente com regex
+            console.log("🔧 Tentando extração por regex...");
+            const flashcardRegex = /\{"front"\s*:\s*"([^"]+)"\s*,\s*"back"\s*:\s*"([^"]+)"\s*,\s*"exemplo"\s*:\s*"([^"]+)"\s*\}/g;
+            const matches = [...jsonText.matchAll(flashcardRegex)];
+            if (matches.length > 0) {
+              parsed = {
+                flashcards: matches.map(m => ({ front: m[1], back: m[2], exemplo: m[3] }))
+              };
+              console.log(`✅ Extraídos ${matches.length} flashcards via regex`);
+            } else {
+              throw new Error("Não foi possível extrair flashcards do JSON");
+            }
+          }
+        } else {
+          throw parseError;
+        }
+      } else {
+        throw parseError;
+      }
+    }
+    
     const flashcards = parsed.flashcards;
 
     console.log(`✅ ${flashcards.length} flashcards gerados`);
