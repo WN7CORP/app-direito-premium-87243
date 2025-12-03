@@ -48,16 +48,31 @@ const QuestoesTemas = () => {
         }
       });
 
-      // Busca questões geradas com subtemas (aumentando limite para pegar todos os dados)
-      const { data: questoesData } = await supabase
-        .from("QUESTOES_GERADAS")
-        .select("tema, subtema")
-        .eq("area", area)
-        .limit(10000);
+      // Busca todas as questões geradas com paginação completa
+      let allQuestoesData: { tema: string | null; subtema: string | null }[] = [];
+      let offset = 0;
+      const pageSize = 1000;
+      let hasMore = true;
+      
+      while (hasMore) {
+        const { data: pageData } = await supabase
+          .from("QUESTOES_GERADAS")
+          .select("tema, subtema")
+          .eq("area", area)
+          .range(offset, offset + pageSize - 1);
+        
+        if (pageData && pageData.length > 0) {
+          allQuestoesData = [...allQuestoesData, ...pageData];
+          offset += pageSize;
+          hasMore = pageData.length === pageSize;
+        } else {
+          hasMore = false;
+        }
+      }
 
       // Agrupa subtemas com questões por tema (usando chave normalizada)
       const subtemasComQuestoes: Record<string, Set<string>> = {};
-      questoesData?.forEach(q => {
+      allQuestoesData?.forEach(q => {
         if (q.tema) {
           const temaNorm = normalizar(q.tema);
           if (!subtemasComQuestoes[temaNorm]) {
