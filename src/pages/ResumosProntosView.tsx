@@ -7,7 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, FileDown, Sparkles, Search, ChevronRight, ArrowUp, Volume2, Pause, Loader2 } from "lucide-react";
+import { ArrowLeft, FileDown, Sparkles, Search, ChevronRight, ArrowUp, Volume2, Pause, Loader2, ImageIcon } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import ReactMarkdown from "react-markdown";
 import { formatForWhatsApp } from "@/lib/formatWhatsApp";
@@ -28,6 +28,10 @@ interface Resumo {
   url_audio_resumo?: string | null;
   url_audio_exemplos?: string | null;
   url_audio_termos?: string | null;
+  url_imagem_resumo?: string | null;
+  url_imagem_exemplo_1?: string | null;
+  url_imagem_exemplo_2?: string | null;
+  url_imagem_exemplo_3?: string | null;
 }
 
 const ResumosProntosView = () => {
@@ -49,6 +53,10 @@ const ResumosProntosView = () => {
   const [audioUrls, setAudioUrls] = useState<Map<string, string>>(new Map());
   const [loadingAudio, setLoadingAudio] = useState<Record<string, boolean>>({});
   const [playingAudio, setPlayingAudio] = useState<string | null>(null);
+  
+  // Estados de imagem
+  const [imagemUrls, setImagemUrls] = useState<Map<string, string>>(new Map());
+  const [loadingImagem, setLoadingImagem] = useState<Record<string, boolean>>({});
   
   // Refs de áudio
   const audioResumoRef = useRef<HTMLAudioElement | null>(null);
@@ -96,6 +104,8 @@ const ResumosProntosView = () => {
         const gerados = new Map<number, any>();
         const urls = new Map<string, string>();
         
+        const imgUrls = new Map<string, string>();
+        
         data.forEach((resumo: any) => {
           if (resumo.conteudo_gerado) {
             gerados.set(resumo.id, resumo.conteudo_gerado);
@@ -110,10 +120,24 @@ const ResumosProntosView = () => {
           if (resumo.url_audio_termos) {
             urls.set(`${resumo.id}-termos`, resumo.url_audio_termos);
           }
+          // Carregar URLs de imagens existentes
+          if (resumo.url_imagem_resumo) {
+            imgUrls.set(`${resumo.id}-resumo`, resumo.url_imagem_resumo);
+          }
+          if (resumo.url_imagem_exemplo_1) {
+            imgUrls.set(`${resumo.id}-exemplo1`, resumo.url_imagem_exemplo_1);
+          }
+          if (resumo.url_imagem_exemplo_2) {
+            imgUrls.set(`${resumo.id}-exemplo2`, resumo.url_imagem_exemplo_2);
+          }
+          if (resumo.url_imagem_exemplo_3) {
+            imgUrls.set(`${resumo.id}-exemplo3`, resumo.url_imagem_exemplo_3);
+          }
         });
         
         setResumosGerados(gerados);
         setAudioUrls(urls);
+        setImagemUrls(imgUrls);
       }
       return data as Resumo[];
     }
@@ -401,6 +425,160 @@ const ResumosProntosView = () => {
     );
   };
 
+  const gerarImagem = async (tipo: 'resumo' | 'exemplo1' | 'exemplo2' | 'exemplo3') => {
+    if (!resumoSelecionado) return;
+    
+    const resumoGerado = resumosGerados.get(resumoSelecionado.id);
+    if (!resumoGerado) return;
+    
+    const imagemKey = `${resumoSelecionado.id}-${tipo}`;
+    
+    // Se já tem URL, não gerar novamente
+    if (imagemUrls.has(imagemKey)) return;
+    
+    let conteudo = '';
+    if (tipo === 'resumo') {
+      conteudo = resumoGerado.markdown || resumoSelecionado.conteudo;
+    } else {
+      // Extrair exemplos do texto
+      const exemplosText = resumoGerado.exemplos || '';
+      const exemplos = exemplosText.split(/##\s*Exemplo\s*\d+/i).filter(Boolean);
+      const idx = parseInt(tipo.replace('exemplo', '')) - 1;
+      conteudo = exemplos[idx] || exemplosText;
+    }
+    
+    if (!conteudo) return;
+    
+    setLoadingImagem(prev => ({ ...prev, [tipo]: true }));
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('gerar-imagem-resumo', {
+        body: { 
+          resumoId: resumoSelecionado.id, 
+          tipo,
+          conteudo: conteudo.substring(0, 500),
+          area: decodedArea,
+          tema: decodedTema
+        }
+      });
+      
+      if (error) throw error;
+      
+      if (data?.url_imagem) {
+        setImagemUrls(prev => new Map(prev).set(imagemKey, data.url_imagem));
+      }
+    } catch (error: any) {
+      console.error('Erro ao gerar imagem:', error);
+      toast({
+        title: "Erro ao gerar ilustração",
+        description: error.message || "Tente novamente mais tarde",
+        variant: "destructive"
+      });
+    } finally {
+      setLoadingImagem(prev => ({ ...prev, [tipo]: false }));
+    }
+  };
+
+  const renderImagemResumo = () => {
+    if (!resumoSelecionado) return null;
+    
+    const imagemKey = `${resumoSelecionado.id}-resumo`;
+    const imagemUrl = imagemUrls.get(imagemKey);
+    const isLoading = loadingImagem['resumo'];
+    
+    return (
+      <div className="mb-4">
+        {imagemUrl ? (
+          <div className="relative rounded-lg overflow-hidden aspect-video bg-muted">
+            <img 
+              src={imagemUrl} 
+              alt={`Ilustração: ${resumoSelecionado.subtema}`}
+              className="w-full h-full object-cover"
+            />
+          </div>
+        ) : (
+          <div 
+            className="relative rounded-lg overflow-hidden aspect-video bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center cursor-pointer hover:from-primary/20 hover:to-primary/10 transition-colors"
+            onClick={() => !isLoading && gerarImagem('resumo')}
+          >
+            {isLoading ? (
+              <div className="flex flex-col items-center gap-2">
+                <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                <span className="text-sm text-muted-foreground">Gerando ilustração...</span>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center gap-2">
+                <ImageIcon className="w-8 h-8 text-primary/60" />
+                <span className="text-sm text-muted-foreground">Clique para gerar ilustração</span>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  const renderExemplosComImagens = () => {
+    if (!resumoSelecionado) return null;
+    
+    const resumoGerado = resumosGerados.get(resumoSelecionado.id);
+    const exemplosText = resumoGerado?.exemplos || '';
+    
+    // Split by ## Exemplo headers
+    const partes = exemplosText.split(/(?=##\s*Exemplo\s*\d+)/i).filter(Boolean);
+    
+    return (
+      <div className="space-y-6">
+        {partes.map((parte, index) => {
+          const exemploNum = index + 1;
+          if (exemploNum > 3) return null;
+          
+          const tipo = `exemplo${exemploNum}` as 'exemplo1' | 'exemplo2' | 'exemplo3';
+          const imagemKey = `${resumoSelecionado.id}-${tipo}`;
+          const imagemUrl = imagemUrls.get(imagemKey);
+          const isLoading = loadingImagem[tipo];
+          
+          return (
+            <div key={exemploNum} className="space-y-3">
+              {/* Imagem do exemplo */}
+              {imagemUrl ? (
+                <div className="relative rounded-lg overflow-hidden aspect-video bg-muted">
+                  <img 
+                    src={imagemUrl} 
+                    alt={`Ilustração Exemplo ${exemploNum}`}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              ) : (
+                <div 
+                  className="relative rounded-lg overflow-hidden aspect-video bg-gradient-to-br from-amber-500/10 to-orange-500/5 flex items-center justify-center cursor-pointer hover:from-amber-500/20 hover:to-orange-500/10 transition-colors"
+                  onClick={() => !isLoading && gerarImagem(tipo)}
+                >
+                  {isLoading ? (
+                    <div className="flex flex-col items-center gap-2">
+                      <Loader2 className="w-6 h-6 animate-spin text-amber-500" />
+                      <span className="text-xs text-muted-foreground">Gerando...</span>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center gap-2">
+                      <ImageIcon className="w-6 h-6 text-amber-500/60" />
+                      <span className="text-xs text-muted-foreground">Gerar ilustração</span>
+                    </div>
+                  )}
+                </div>
+              )}
+              
+              {/* Texto do exemplo */}
+              <div className="resumo-content resumo-markdown">
+                <ReactMarkdown>{parte}</ReactMarkdown>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
+
   if (isLoading) {
     return (
       <div className="px-3 py-4 max-w-4xl mx-auto pb-24">
@@ -503,6 +681,7 @@ const ResumosProntosView = () => {
               <TabsContent value="resumo">
                 <Card>
                   <CardContent className="p-4">
+                    {renderImagemResumo()}
                     <div className="flex justify-end mb-3">
                       {renderAudioButton('resumo')}
                     </div>
@@ -519,9 +698,7 @@ const ResumosProntosView = () => {
                     <div className="flex justify-end mb-3">
                       {renderAudioButton('exemplos')}
                     </div>
-                    <div className="resumo-content resumo-markdown">
-                      <ReactMarkdown>{resumosGerados.get(resumoSelecionado.id)?.exemplos || "Gerando exemplos..."}</ReactMarkdown>
-                    </div>
+                    {renderExemplosComImagens()}
                   </CardContent>
                 </Card>
               </TabsContent>
@@ -670,6 +847,7 @@ const ResumosProntosView = () => {
                   <TabsContent value="resumo">
                     <Card>
                       <CardContent className="p-6">
+                        {renderImagemResumo()}
                         <div className="flex justify-end mb-4">
                           {renderAudioButton('resumo')}
                         </div>
@@ -686,9 +864,7 @@ const ResumosProntosView = () => {
                         <div className="flex justify-end mb-4">
                           {renderAudioButton('exemplos')}
                         </div>
-                        <div className="resumo-content">
-                          <ReactMarkdown>{resumosGerados.get(resumoSelecionado.id)?.exemplos || "Gerando exemplos..."}</ReactMarkdown>
-                        </div>
+                        {renderExemplosComImagens()}
                       </CardContent>
                     </Card>
                   </TabsContent>

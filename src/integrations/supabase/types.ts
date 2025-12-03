@@ -5831,6 +5831,10 @@ export type Database = {
           url_audio_exemplos: string | null
           url_audio_resumo: string | null
           url_audio_termos: string | null
+          url_imagem_exemplo_1: string | null
+          url_imagem_exemplo_2: string | null
+          url_imagem_exemplo_3: string | null
+          url_imagem_resumo: string | null
         }
         Insert: {
           area?: string | null
@@ -5845,6 +5849,10 @@ export type Database = {
           url_audio_exemplos?: string | null
           url_audio_resumo?: string | null
           url_audio_termos?: string | null
+          url_imagem_exemplo_1?: string | null
+          url_imagem_exemplo_2?: string | null
+          url_imagem_exemplo_3?: string | null
+          url_imagem_resumo?: string | null
         }
         Update: {
           area?: string | null
@@ -5859,6 +5867,10 @@ export type Database = {
           url_audio_exemplos?: string | null
           url_audio_resumo?: string | null
           url_audio_termos?: string | null
+          url_imagem_exemplo_1?: string | null
+          url_imagem_exemplo_2?: string | null
+          url_imagem_exemplo_3?: string | null
+          url_imagem_resumo?: string | null
         }
         Relationships: []
       }
