@@ -14,6 +14,9 @@ const QuestoesTemas = () => {
   const area = searchParams.get("area") || "";
   const [searchTerm, setSearchTerm] = useState("");
 
+  // Função para normalizar strings de forma consistente
+  const normalizar = (str: string) => str.trim().toLowerCase().replace(/\s+/g, ' ');
+
   const { data: temas, isLoading, isFetching } = useQuery({
     queryKey: ["questoes-temas", area],
     queryFn: async () => {
@@ -26,21 +29,19 @@ const QuestoesTemas = () => {
 
       if (error) throw error;
 
-      // Agrupa subtemas por tema (normalizando strings)
-      const subtemasPortema: Record<string, Set<string>> = {};
+      // Agrupa subtemas por tema (usando chave normalizada, mas preservando nome original)
+      const subtemasPortema: Record<string, { nomeOriginal: string; subtemas: Set<string> }> = {};
       resumoData?.forEach(r => {
         if (r.tema) {
-          const temaNormalizado = r.tema.trim();
-          if (!subtemasPortema[temaNormalizado]) {
-            subtemasPortema[temaNormalizado] = new Set();
+          const temaNorm = normalizar(r.tema);
+          if (!subtemasPortema[temaNorm]) {
+            subtemasPortema[temaNorm] = { nomeOriginal: r.tema.trim(), subtemas: new Set() };
           }
           if (r.subtema) {
-            subtemasPortema[temaNormalizado].add(r.subtema.trim());
+            subtemasPortema[temaNorm].subtemas.add(normalizar(r.subtema));
           }
         }
       });
-
-      const temasUnicos = Object.keys(subtemasPortema);
 
       // Busca questões geradas com subtemas
       const { data: questoesData } = await supabase
@@ -48,29 +49,37 @@ const QuestoesTemas = () => {
         .select("tema, subtema")
         .eq("area", area);
 
-      // Agrupa subtemas com questões por tema (normalizando strings)
+      // Agrupa subtemas com questões por tema (usando chave normalizada)
       const subtemasComQuestoes: Record<string, Set<string>> = {};
       questoesData?.forEach(q => {
         if (q.tema) {
-          const temaNormalizado = q.tema.trim();
-          if (!subtemasComQuestoes[temaNormalizado]) {
-            subtemasComQuestoes[temaNormalizado] = new Set();
+          const temaNorm = normalizar(q.tema);
+          if (!subtemasComQuestoes[temaNorm]) {
+            subtemasComQuestoes[temaNorm] = new Set();
           }
           if (q.subtema) {
-            subtemasComQuestoes[temaNormalizado].add(q.subtema.trim());
+            subtemasComQuestoes[temaNorm].add(normalizar(q.subtema));
           }
         }
       });
 
-      return temasUnicos.map(tema => {
-        const totalSubtemas = subtemasPortema[tema]?.size || 0;
-        const subtemasGerados = subtemasComQuestoes[tema]?.size || 0;
+      return Object.entries(subtemasPortema).map(([temaNorm, { nomeOriginal, subtemas }]) => {
+        const totalSubtemas = subtemas.size;
+        // Conta quantos subtemas do RESUMO existem em QUESTOES_GERADAS
+        const questoesDoTema = subtemasComQuestoes[temaNorm] || new Set();
+        let subtemasGerados = 0;
+        subtemas.forEach(sub => {
+          if (questoesDoTema.has(sub)) {
+            subtemasGerados++;
+          }
+        });
+        
         const temTodosSubtemas = totalSubtemas > 0 && subtemasGerados >= totalSubtemas;
         const temAlgunsSubtemas = subtemasGerados > 0 && subtemasGerados < totalSubtemas;
         const progressoPercent = totalSubtemas > 0 ? Math.round((subtemasGerados / totalSubtemas) * 100) : 0;
         
         return {
-          tema,
+          tema: nomeOriginal,
           temQuestoes: temTodosSubtemas,
           parcial: temAlgunsSubtemas,
           subtemasGerados,
