@@ -677,7 +677,7 @@ ${cfContext || ''}`;
     const acceptHeader = request.headers.get('Accept') || '';
     const wantsSSE = acceptHeader.includes('text/event-stream');
     
-    const modelName = 'gemini-2.0-flash-exp';
+    const modelName = 'gemini-2.0-flash';
     const endpoint = wantsSSE ? 'streamGenerateContent' : 'generateContent';
     
     const geminiUrl = wantsSSE 
