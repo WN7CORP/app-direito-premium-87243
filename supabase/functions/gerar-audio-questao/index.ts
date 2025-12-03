@@ -26,46 +26,71 @@ serve(async (req) => {
     console.log(`Gerando áudio para questão ${questaoId}`);
     console.log(`Texto (${texto.length} caracteres): ${texto.substring(0, 100)}...`);
 
-    // Get OpenAI API key
-    const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY');
-    if (!OPENAI_API_KEY) {
-      console.error('OPENAI_API_KEY not configured');
+    // Get GER API key for Google Cloud TTS
+    const API_KEY = Deno.env.get('GER');
+    if (!API_KEY) {
+      console.error('GER API key not configured');
       return new Response(
-        JSON.stringify({ error: 'OpenAI API key não configurada' }),
+        JSON.stringify({ error: 'Chave API GER não configurada' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // 1. Call OpenAI TTS API
-    console.log('Calling OpenAI TTS API...');
-    const ttsResponse = await fetch('https://api.openai.com/v1/audio/speech', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${OPENAI_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'tts-1',
-        input: texto,
-        voice: 'nova', // Brazilian Portuguese sounds better with nova
-        response_format: 'mp3',
-      }),
-    });
+    // 1. Call Google Cloud TTS API
+    console.log('Calling Google TTS API...');
+    const ttsResponse = await fetch(
+      `https://texttospeech.googleapis.com/v1/text:synthesize?key=${API_KEY}`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          input: { text: texto },
+          voice: {
+            languageCode: 'pt-BR',
+            name: 'pt-BR-Chirp3-HD-Kore',
+          },
+          audioConfig: {
+            audioEncoding: 'MP3',
+            speakingRate: 1.0,
+            pitch: 0.0,
+          },
+        }),
+      }
+    );
 
     if (!ttsResponse.ok) {
       const errorText = await ttsResponse.text();
-      console.error('OpenAI TTS error:', ttsResponse.status, errorText);
+      console.error('Google TTS error:', ttsResponse.status, errorText);
       return new Response(
         JSON.stringify({ error: 'Erro ao gerar áudio TTS', details: errorText }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // 2. Get audio as ArrayBuffer
-    const audioBuffer = await ttsResponse.arrayBuffer();
-    const audioBlob = new Blob([audioBuffer], { type: 'audio/mpeg' });
+    const ttsData = await ttsResponse.json();
+    const audioContent = ttsData.audioContent; // Base64 encoded audio
 
-    console.log(`Audio generated: ${audioBlob.size} bytes`);
+    if (!audioContent) {
+      console.error('No audio content returned from TTS');
+      return new Response(
+        JSON.stringify({ error: 'TTS não retornou áudio' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    console.log(`Audio generated: ${audioContent.length} bytes (base64)`);
+
+    // 2. Convert base64 to blob for upload
+    const binaryString = atob(audioContent);
+    const bytes = new Uint8Array(binaryString.length);
+    for (let i = 0; i < binaryString.length; i++) {
+      bytes[i] = binaryString.charCodeAt(i);
+    }
+    const audioBlob = new Blob([bytes], { type: 'audio/mpeg' });
+
+    console.log(`Audio blob size: ${audioBlob.size} bytes`);
 
     // 3. Upload to Catbox.moe
     console.log('Uploading to Catbox.moe...');
