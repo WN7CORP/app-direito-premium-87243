@@ -6,6 +6,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Progress } from "@/components/ui/progress";
 
 const QuestoesTemas = () => {
   const navigate = useNavigate();
@@ -25,15 +26,16 @@ const QuestoesTemas = () => {
 
       if (error) throw error;
 
-      // Agrupa subtemas por tema
+      // Agrupa subtemas por tema (normalizando strings)
       const subtemasPortema: Record<string, Set<string>> = {};
       resumoData?.forEach(r => {
         if (r.tema) {
-          if (!subtemasPortema[r.tema]) {
-            subtemasPortema[r.tema] = new Set();
+          const temaNormalizado = r.tema.trim();
+          if (!subtemasPortema[temaNormalizado]) {
+            subtemasPortema[temaNormalizado] = new Set();
           }
           if (r.subtema) {
-            subtemasPortema[r.tema].add(r.subtema);
+            subtemasPortema[temaNormalizado].add(r.subtema.trim());
           }
         }
       });
@@ -46,15 +48,16 @@ const QuestoesTemas = () => {
         .select("tema, subtema")
         .eq("area", area);
 
-      // Agrupa subtemas com questões por tema
+      // Agrupa subtemas com questões por tema (normalizando strings)
       const subtemasComQuestoes: Record<string, Set<string>> = {};
       questoesData?.forEach(q => {
         if (q.tema) {
-          if (!subtemasComQuestoes[q.tema]) {
-            subtemasComQuestoes[q.tema] = new Set();
+          const temaNormalizado = q.tema.trim();
+          if (!subtemasComQuestoes[temaNormalizado]) {
+            subtemasComQuestoes[temaNormalizado] = new Set();
           }
           if (q.subtema) {
-            subtemasComQuestoes[q.tema].add(q.subtema);
+            subtemasComQuestoes[temaNormalizado].add(q.subtema.trim());
           }
         }
       });
@@ -64,13 +67,15 @@ const QuestoesTemas = () => {
         const subtemasGerados = subtemasComQuestoes[tema]?.size || 0;
         const temTodosSubtemas = totalSubtemas > 0 && subtemasGerados >= totalSubtemas;
         const temAlgunsSubtemas = subtemasGerados > 0 && subtemasGerados < totalSubtemas;
+        const progressoPercent = totalSubtemas > 0 ? Math.round((subtemasGerados / totalSubtemas) * 100) : 0;
         
         return {
           tema,
           temQuestoes: temTodosSubtemas,
           parcial: temAlgunsSubtemas,
           subtemasGerados,
-          totalSubtemas
+          totalSubtemas,
+          progressoPercent
         };
       }).sort((a, b) => a.tema.localeCompare(b.tema));
     },
@@ -122,7 +127,7 @@ const QuestoesTemas = () => {
         <div className="grid grid-cols-1 gap-2">
           {isLoading ? (
             Array.from({ length: 6 }).map((_, i) => (
-              <Skeleton key={i} className="h-16 rounded-xl" />
+              <Skeleton key={i} className="h-20 rounded-xl" />
             ))
           ) : filteredTemas?.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
@@ -133,31 +138,49 @@ const QuestoesTemas = () => {
               <button
                 key={item.tema}
                 onClick={() => navigate(`/ferramentas/questoes/resolver?area=${encodeURIComponent(area)}&tema=${encodeURIComponent(item.tema)}`)}
-                className="flex items-center gap-3 p-4 rounded-xl border bg-card hover:bg-accent transition-colors text-left"
+                className="flex flex-col gap-2 p-4 rounded-xl border bg-card hover:bg-accent transition-colors text-left"
               >
-                <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                  item.temQuestoes 
-                    ? "bg-emerald-500/20 text-emerald-500" 
-                    : item.parcial
-                    ? "bg-blue-500/20 text-blue-500"
-                    : "bg-amber-500/20 text-amber-500"
-                }`}>
-                  {item.temQuestoes ? (
-                    <CheckCircle2 className="w-5 h-5" />
-                  ) : (
-                    <Clock className="w-5 h-5" />
-                  )}
+                <div className="flex items-center gap-3">
+                  <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${
+                    item.temQuestoes 
+                      ? "bg-emerald-500/20 text-emerald-500" 
+                      : item.parcial
+                      ? "bg-blue-500/20 text-blue-500"
+                      : "bg-amber-500/20 text-amber-500"
+                  }`}>
+                    {item.temQuestoes ? (
+                      <CheckCircle2 className="w-5 h-5" />
+                    ) : (
+                      <Clock className="w-5 h-5" />
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-medium text-sm line-clamp-1">{item.tema}</h3>
+                    <p className="text-xs text-muted-foreground">
+                      {item.temQuestoes 
+                        ? "Questões prontas" 
+                        : item.parcial 
+                        ? `${item.subtemasGerados}/${item.totalSubtemas} subtemas gerados`
+                        : `0/${item.totalSubtemas} subtemas`}
+                    </p>
+                  </div>
                 </div>
-                <div className="flex-1">
-                  <h3 className="font-medium text-sm">{item.tema}</h3>
-                  <p className="text-xs text-muted-foreground">
-                    {item.temQuestoes 
-                      ? "Questões prontas" 
-                      : item.parcial 
-                      ? `${item.subtemasGerados}/${item.totalSubtemas} subtemas gerados`
-                      : "Questões serão geradas"}
-                  </p>
-                </div>
+                
+                {/* Barra de progresso */}
+                {item.totalSubtemas > 0 && (
+                  <div className="w-full">
+                    <Progress 
+                      value={item.progressoPercent} 
+                      className={`h-1.5 ${
+                        item.temQuestoes 
+                          ? "[&>div]:bg-emerald-500" 
+                          : item.parcial 
+                          ? "[&>div]:bg-blue-500" 
+                          : "[&>div]:bg-amber-500/50"
+                      }`}
+                    />
+                  </div>
+                )}
               </button>
             ))
           )}
