@@ -52,13 +52,38 @@ const QuestoesResolver = () => {
     enabled: !!area && !!tema
   });
 
+  // Verificar se precisa gerar mais questões (se não completou todos os subtemas)
   useEffect(() => {
-    if (questoesCache && questoesCache.length > 0) {
-      setQuestoes(questoesCache);
-    } else if (questoesCache && questoesCache.length === 0 && !isGenerating) {
-      generateQuestoes();
-    }
-  }, [questoesCache]);
+    const checkAndGenerate = async () => {
+      if (!area || !tema || isGenerating) return;
+      
+      if (questoesCache && questoesCache.length > 0) {
+        setQuestoes(questoesCache);
+        
+        // Buscar quantos subtemas existem no RESUMO
+        const { data: resumos } = await supabase
+          .from("RESUMO")
+          .select("subtema")
+          .eq("area", area)
+          .eq("tema", tema);
+        
+        if (resumos) {
+          const subtemasTotal = new Set(resumos.map(r => r.subtema)).size;
+          const subtemasComQuestoes = new Set(questoesCache.map(q => q.subtema)).size;
+          
+          // Se faltam subtemas, continuar gerando em background
+          if (subtemasComQuestoes < subtemasTotal) {
+            console.log(`Faltam ${subtemasTotal - subtemasComQuestoes} subtemas. Gerando...`);
+            generateQuestoes();
+          }
+        }
+      } else if (questoesCache && questoesCache.length === 0) {
+        generateQuestoes();
+      }
+    };
+    
+    checkAndGenerate();
+  }, [questoesCache, area, tema]);
 
   const generateQuestoes = async () => {
     setIsGenerating(true);
