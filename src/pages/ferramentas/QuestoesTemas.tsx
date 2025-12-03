@@ -1,5 +1,5 @@
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { ArrowLeft, Scale, Search, CheckCircle2, Clock } from "lucide-react";
+import { ArrowLeft, Scale, Search, CheckCircle2, Clock, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
@@ -14,7 +14,7 @@ const QuestoesTemas = () => {
   const area = searchParams.get("area") || "";
   const [searchTerm, setSearchTerm] = useState("");
 
-  const { data: temas, isLoading } = useQuery({
+  const { data: temas, isLoading, isFetching } = useQuery({
     queryKey: ["questoes-temas", area],
     queryFn: async () => {
       // Busca temas e subtemas únicos da área
@@ -79,12 +79,19 @@ const QuestoesTemas = () => {
         };
       }).sort((a, b) => a.tema.localeCompare(b.tema));
     },
-    enabled: !!area
+    enabled: !!area,
+    refetchInterval: (query) => {
+      // Se há temas não completos, atualiza a cada 5 segundos
+      const temPendentes = query.state.data?.some(t => !t.temQuestoes);
+      return temPendentes ? 5000 : false;
+    }
   });
 
   const filteredTemas = temas?.filter(item =>
     item.tema.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const temPendentes = temas?.some(t => !t.temQuestoes);
 
   return (
     <div className="flex flex-col min-h-screen bg-background pb-6">
@@ -99,16 +106,23 @@ const QuestoesTemas = () => {
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 flex-1">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center">
               <Scale className="w-5 h-5 text-primary" />
             </div>
-            <div>
+            <div className="flex-1">
               <h1 className="text-xl font-bold line-clamp-1">{area}</h1>
               <p className="text-sm text-muted-foreground">
                 Escolha um tema para estudar
               </p>
             </div>
+            {/* Indicador de atualização automática */}
+            {temPendentes && (
+              <div className="flex items-center gap-1.5 text-xs text-muted-foreground bg-muted/50 px-2 py-1 rounded-full">
+                <RefreshCw className={`w-3 h-3 ${isFetching ? 'animate-spin' : ''}`} />
+                <span className="hidden sm:inline">Atualizando</span>
+              </div>
+            )}
           </div>
         </div>
 
@@ -138,10 +152,10 @@ const QuestoesTemas = () => {
               <button
                 key={item.tema}
                 onClick={() => navigate(`/ferramentas/questoes/resolver?area=${encodeURIComponent(area)}&tema=${encodeURIComponent(item.tema)}`)}
-                className="flex flex-col gap-2 p-4 rounded-xl border bg-card hover:bg-accent transition-colors text-left"
+                className="flex flex-col gap-2 p-4 rounded-xl border bg-card hover:bg-accent transition-all text-left"
               >
                 <div className="flex items-center gap-3">
-                  <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${
+                  <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 transition-colors duration-500 ${
                     item.temQuestoes 
                       ? "bg-emerald-500/20 text-emerald-500" 
                       : item.parcial
@@ -150,6 +164,8 @@ const QuestoesTemas = () => {
                   }`}>
                     {item.temQuestoes ? (
                       <CheckCircle2 className="w-5 h-5" />
+                    ) : item.parcial ? (
+                      <RefreshCw className="w-5 h-5 animate-spin" />
                     ) : (
                       <Clock className="w-5 h-5" />
                     )}
@@ -166,12 +182,12 @@ const QuestoesTemas = () => {
                   </div>
                 </div>
                 
-                {/* Barra de progresso */}
+                {/* Barra de progresso com animação suave */}
                 {item.totalSubtemas > 0 && (
                   <div className="w-full">
                     <Progress 
                       value={item.progressoPercent} 
-                      className={`h-1.5 ${
+                      className={`h-1.5 transition-all duration-500 ${
                         item.temQuestoes 
                           ? "[&>div]:bg-emerald-500" 
                           : item.parcial 
