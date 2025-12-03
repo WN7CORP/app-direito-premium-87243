@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.74.0';
 import { BLOCOS_BASE, EXTENSAO_CONFIG } from './prompt-templates.ts';
+import { AULA_SYSTEM_PROMPT, AULA_USER_PROMPT } from './aula-prompts.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -274,6 +275,16 @@ MODO: Recomendação de Conteúdo
 OBJETIVO: Recomendar materiais de estudo relevantes e personalizados.
 
 Inclua links e organize por tipo (artigos, jurisprudência, livros, videoaulas, etc.).`;
+    } else if (mode === 'aula') {
+      // MODO AULA - Geração de estrutura de aula interativa
+      const tema = lastUserMessage;
+      console.log('📚 Modo AULA - Gerando estrutura para:', tema);
+      systemPrompt = AULA_SYSTEM_PROMPT;
+      
+      // Substituir mensagem do usuário pelo prompt formatado
+      if (messages.length > 0) {
+        messages[messages.length - 1].content = AULA_USER_PROMPT(tema);
+      }
     } else {
       // Modo padrão - chat de estudos
       const level = responseLevel || 'complete';
@@ -658,20 +669,25 @@ ${cfContext || ''}`;
 
     const modoAtual = mode === 'lesson' ? 'lesson' : 
                       mode === 'recommendation' ? 'recommendation' : 
+                      mode === 'aula' ? 'aula' :
                       linguagemMode;
     const nivelAtual = mode === 'recommendation' && responseLevel !== 'complete' ? 'basic' :
                        responseLevel || 'complete';
     
     const config = EXTENSAO_CONFIG[modoAtual]?.[nivelAtual];
     
+    // Para modo aula, usar tokens maiores já que é JSON grande
+    const maxTokensForMode = mode === 'aula' ? 32000 : 
+                             linguagemMode === 'descomplicado' 
+                               ? ((config?.tokens || 3500) * 2)
+                               : (config?.tokens || 3500);
+    
     const geminiPayload = {
       contents: geminiContents,
       generationConfig: {
-        temperature: 0.7,
+        temperature: mode === 'aula' ? 0.8 : 0.7,
         topP: 0.95,
-        maxOutputTokens: linguagemMode === 'descomplicado' 
-          ? ((config?.tokens || 3500) * 2)  // DOBRAR tokens para modo descomplicado forçar respostas longas
-          : (config?.tokens || 3500)
+        maxOutputTokens: maxTokensForMode
       }
     };
 

@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
-import { Send, X, Brain, ArrowLeft, Image, FileText, BookOpen, Scale, GraduationCap, MessageCircle, Lightbulb, Video, Book, ExternalLink, Play, ArrowDown, Trash2, Paperclip } from "lucide-react";
+import { Send, X, Brain, ArrowLeft, Image, FileText, BookOpen, Scale, GraduationCap, MessageCircle, Lightbulb, Video, Book, ExternalLink, Play, ArrowDown, Trash2, Paperclip, Loader2, CheckCircle2 } from "lucide-react";
+import { AulaProgressChat } from "@/components/chat/AulaProgressChat";
 import { VLibrasButton } from "@/components/VLibrasButton";
 import { HighlightedBox } from "@/components/chat/HighlightedBox";
 import { ComparisonCarousel } from "@/components/chat/ComparisonCarousel";
@@ -41,7 +42,7 @@ interface UploadedFile {
   type: string;
   data: string;
 }
-type ChatMode = "study" | "realcase" | "recommendation" | "psychologist" | "tcc" | "refutacao";
+type ChatMode = "study" | "realcase" | "recommendation" | "psychologist" | "tcc" | "refutacao" | "aula";
 const ChatProfessora = () => {
   const navigate = useNavigate();
   const {
@@ -69,6 +70,10 @@ const ChatProfessora = () => {
   const [elapsedTime, setElapsedTime] = useState(0);
   const [displayedContent, setDisplayedContent] = useState<Record<number, string>>({});
   const [showAttachMenu, setShowAttachMenu] = useState(false);
+  const [aulaGenerating, setAulaGenerating] = useState(false);
+  const [aulaModulos, setAulaModulos] = useState<any[]>([]);
+  const [aulaTema, setAulaTema] = useState("");
+  const [aulaEstrutura, setAulaEstrutura] = useState<any>(null);
 
   // Configurar worker do PDF.js uma vez
   useEffect(() => {
@@ -147,6 +152,13 @@ const ChatProfessora = () => {
     setMessages([]);
     setInput("");
     setUploadedFiles([]);
+    // Reset aula state when changing modes
+    if (newMode !== 'aula') {
+      setAulaGenerating(false);
+      setAulaModulos([]);
+      setAulaTema("");
+      setAulaEstrutura(null);
+    }
   };
   const handleFileSelect = async (file: File, expectedType: "image" | "pdf") => {
     if (expectedType === "image" && !file.type.includes("image/")) {
@@ -672,6 +684,14 @@ const ChatProfessora = () => {
     // Permitir envio se houver arquivo OU texto
     if (!input.trim() && uploadedFiles.length === 0) return;
 
+    // Se modo aula, chamar função específica
+    if (mode === 'aula') {
+      const tema = input.trim();
+      setInput("");
+      await gerarAulaStreaming(tema);
+      return;
+    }
+
     // Se houver arquivos anexados (imagem ou PDF), mostrar mensagem analisando
     let messageText = input.trim();
     if (uploadedFiles.length > 0) {
@@ -764,6 +784,9 @@ Seja mais detalhado, traga exemplos práticos, jurisprudências relevantes e an�
     return shuffled.slice(0, 4);
   });
   const renderWelcomeScreen = () => {
+    if (mode === "aula") {
+      return renderAulaWelcome();
+    }
     if (mode === "study") {
       return <div className="flex flex-col items-center justify-center h-full space-y-6 pb-20 px-4">
           <div className="text-center space-y-4 max-w-2xl">
@@ -849,6 +872,199 @@ Seja mais detalhado, traga exemplos práticos, jurisprudências relevantes e an�
         </div>;
     }
   };
+
+  // Função para gerar aula com streaming
+  const gerarAulaStreaming = async (tema: string) => {
+    setAulaGenerating(true);
+    setAulaTema(tema);
+    setAulaModulos([]);
+    setAulaEstrutura(null);
+    setIsLoading(true);
+    setThinkingStartTime(Date.now());
+
+    // Adicionar mensagem do usuário
+    const userMessage: Message = { role: 'user', content: `Criar aula interativa sobre: ${tema}` };
+    setMessages([userMessage]);
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      const response = await fetch(`https://izspjvegxdfgkgibpyst.supabase.co/functions/v1/chat-professora`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'text/event-stream',
+          'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml6c3BqdmVneGRmZ2tnaWJweXN0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDUxNDA2MTQsImV4cCI6MjA2MDcxNjYxNH0.LwTMbDH-S0mBoiIxfrSH2BpUMA7r4upOWWAb5a_If0Y',
+          'Authorization': `Bearer ${session?.access_token || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml6c3BqdmVneGRmZ2tnaWJweXN0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDUxNDA2MTQsImV4cCI6MjA2MDcxNjYxNH0.LwTMbDH-S0mBoiIxfrSH2BpUMA7r4upOWWAb5a_If0Y'}`
+        },
+        body: JSON.stringify({
+          messages: [{ role: 'user', content: tema }],
+          mode: 'aula',
+          tema: tema
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`Erro ao gerar aula: ${response.status}`);
+      }
+
+      const reader = response.body?.getReader();
+      const decoder = new TextDecoder();
+      let accumulatedText = '';
+      let buffer = '';
+
+      // Criar mensagem do assistente para mostrar progresso
+      setMessages(prev => [...prev, { role: 'assistant', content: '📚 Gerando sua aula interativa...', isStreaming: true }]);
+
+      if (reader) {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split('\n');
+          buffer = lines.pop() || '';
+
+          for (const line of lines) {
+            const trimmed = line.trim();
+            if (!trimmed || trimmed.startsWith(':')) continue;
+
+            let payloadStr = trimmed;
+            if (trimmed.startsWith('data:')) {
+              payloadStr = trimmed.slice(5).trim();
+              if (payloadStr === '[DONE]') continue;
+            }
+
+            try {
+              const parsed = JSON.parse(payloadStr);
+              const content = parsed?.choices?.[0]?.delta?.content ?? 
+                             parsed?.content ?? 
+                             parsed?.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
+              
+              if (content) {
+                accumulatedText += content;
+                
+                // Tentar parsear JSON parcial para mostrar progresso
+                try {
+                  // Verificar se temos um módulo completo
+                  const moduloMatch = accumulatedText.match(/"modulos"\s*:\s*\[([\s\S]*?)\]/);
+                  if (moduloMatch) {
+                    const modulosStr = '[' + moduloMatch[1] + ']';
+                    try {
+                      const modulos = JSON.parse(modulosStr.replace(/,\s*$/, ''));
+                      if (modulos.length > aulaModulos.length) {
+                        setAulaModulos(modulos);
+                      }
+                    } catch {}
+                  }
+                } catch {}
+
+                // Atualizar mensagem com progresso
+                setMessages(prev => {
+                  const newMessages = [...prev];
+                  const modulosGerados = aulaModulos.length;
+                  newMessages[newMessages.length - 1] = {
+                    role: 'assistant',
+                    content: `📚 Gerando sua aula sobre "${tema}"...\n\n🔄 Módulos gerados: ${modulosGerados}/3`,
+                    isStreaming: true
+                  };
+                  return newMessages;
+                });
+              }
+            } catch {}
+          }
+        }
+      }
+
+      // Parsear JSON completo
+      try {
+        // Limpar markdown se presente
+        let cleanJson = accumulatedText.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+        const estrutura = JSON.parse(cleanJson);
+        
+        setAulaEstrutura(estrutura);
+        setAulaModulos(estrutura.modulos || []);
+        
+        // Atualizar mensagem final
+        setMessages(prev => {
+          const newMessages = [...prev];
+          newMessages[newMessages.length - 1] = {
+            role: 'assistant',
+            content: `✅ Aula "${estrutura.titulo}" criada com sucesso!\n\n📚 ${estrutura.modulos?.length || 3} módulos interativos\n🎯 ${estrutura.provaFinal?.length || 10} questões na prova final`,
+            isStreaming: false
+          };
+          return newMessages;
+        });
+
+        sonnerToast.success('Aula gerada com sucesso!', {
+          description: 'Clique no botão abaixo para iniciar'
+        });
+
+      } catch (parseError) {
+        console.error('Erro ao parsear estrutura da aula:', parseError);
+        throw new Error('Não foi possível processar a estrutura da aula');
+      }
+
+    } catch (error: any) {
+      console.error('Erro ao gerar aula:', error);
+      sonnerToast.error('Erro ao gerar aula', {
+        description: error.message || 'Tente novamente'
+      });
+      setMessages(prev => prev.slice(0, -1)); // Remover mensagem de erro
+    } finally {
+      setAulaGenerating(false);
+      setIsLoading(false);
+      setThinkingStartTime(null);
+    }
+  };
+
+  const renderAulaWelcome = () => (
+    <div className="flex flex-col items-center justify-center h-full space-y-6 pb-20 px-4">
+      <div className="text-center space-y-4 max-w-2xl">
+        <div className="bg-accent/10 p-4 rounded-full w-20 h-20 mx-auto flex items-center justify-center">
+          <GraduationCap className="w-10 h-10 text-accent" />
+        </div>
+        <h2 className="text-2xl font-bold">Criar Aula Interativa</h2>
+        
+        <div className="text-left space-y-3 bg-card border border-border rounded-lg p-4">
+          <p className="font-semibold">📚 Como funciona:</p>
+          <ul className="space-y-2 text-sm text-muted-foreground">
+            <li>• Digite um tema jurídico e a Professora cria uma aula completa</li>
+            <li>• 3 módulos com teoria, flashcards, questões e matching</li>
+            <li>• Prova final para avaliar seu aprendizado</li>
+            <li>• Geração em tempo real com streaming</li>
+          </ul>
+        </div>
+
+        <div className="space-y-3">
+          <p className="text-sm font-semibold flex items-center justify-center gap-2">
+            <MessageCircle className="w-4 h-4" />
+            💡 Temas sugeridos - Clique para criar:
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+            {["Contratos - Teoria Geral", "Direitos Fundamentais", "Responsabilidade Civil", "Processo Penal - Princípios"].map((tema, index) => (
+              <Card 
+                key={index} 
+                className="p-3 cursor-pointer hover:bg-accent/10 transition-colors text-left border-accent/30"
+                onClick={() => gerarAulaStreaming(tema)}
+              >
+                <p className="text-[15px] leading-relaxed">{tema}</p>
+              </Card>
+            ))}
+          </div>
+        </div>
+
+        <Button 
+          variant="outline" 
+          className="mt-4"
+          onClick={() => navigate('/aula-interativa')}
+        >
+          <BookOpen className="w-4 h-4 mr-2" />
+          Ver Aulas Anteriores
+        </Button>
+      </div>
+    </div>
+  );
   return <div className="flex flex-col h-screen bg-background">
       <ChatFlashcardsModal isOpen={showFlashcardsModal} onClose={() => setShowFlashcardsModal(false)} content={currentContent} />
       <ChatQuestoesModal isOpen={showQuestoesModal} onClose={() => setShowQuestoesModal(false)} content={currentContent} />
@@ -882,7 +1098,7 @@ Seja mais detalhado, traga exemplos práticos, jurisprudências relevantes e an�
           <TabsList className="w-full grid grid-cols-3">
             <TabsTrigger value="study" className="gap-2 text-xs md:text-sm"><BookOpen className="w-4 h-4" />Estudo</TabsTrigger>
             <TabsTrigger value="realcase" className="gap-2 text-xs md:text-sm"><Scale className="w-5 h-5" />Caso Real</TabsTrigger>
-            <TabsTrigger value="aula" className="gap-2 text-xs md:text-sm" onClick={() => navigate('/aula-interativa')}><GraduationCap className="w-4 h-4" />Aula</TabsTrigger>
+            <TabsTrigger value="aula" className="gap-2 text-xs md:text-sm"><GraduationCap className="w-4 h-4" />Criar Aula</TabsTrigger>
           </TabsList>
         </Tabs>
 
@@ -1939,6 +2155,21 @@ Seja mais detalhado, traga exemplos práticos, jurisprudências relevantes e an�
                 <ThinkingIndicator elapsedTime={elapsedTime} />
               </div>}
             
+            {/* Card de progresso da aula quando gerada */}
+            {mode === 'aula' && aulaEstrutura && !aulaGenerating && (
+              <div className="px-4 mb-4">
+                <AulaProgressChat
+                  tema={aulaTema}
+                  titulo={aulaEstrutura.titulo}
+                  descricao={aulaEstrutura.descricao}
+                  modulos={aulaModulos}
+                  moduloAtual={aulaModulos.length}
+                  totalModulos={3}
+                  isGenerating={aulaGenerating}
+                  estruturaCompleta={aulaEstrutura}
+                />
+              </div>
+            )}
             
             {/* Removido "Gerando..." - usar apenas TypingIndicator */}
           </>}
