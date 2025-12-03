@@ -7,7 +7,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, FileDown, Sparkles, Search, ChevronRight, ArrowUp, Volume2, Pause, Loader2, ImageIcon } from "lucide-react";
+import { ArrowLeft, FileDown, Sparkles, Search, ChevronRight, ArrowUp, Loader2 } from "lucide-react";
+import { AudioPlayer } from "@/components/resumos/AudioPlayer";
+import { ImageWithZoom } from "@/components/resumos/ImageWithZoom";
 import { useToast } from "@/hooks/use-toast";
 import ReactMarkdown from "react-markdown";
 import { formatForWhatsApp } from "@/lib/formatWhatsApp";
@@ -391,40 +393,6 @@ const ResumosProntosView = () => {
     });
   };
 
-  const renderAudioButton = (tipo: 'resumo' | 'exemplos' | 'termos') => {
-    const isLoading = loadingAudio[tipo];
-    const isPlaying = playingAudio === tipo;
-    const audioKey = resumoSelecionado ? `${resumoSelecionado.id}-${tipo}` : '';
-    const hasAudio = audioUrls.has(audioKey);
-    
-    return (
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={() => hasAudio ? toggleAudio(tipo) : gerarAudioResumo(tipo)}
-        disabled={isLoading}
-        className="gap-2"
-      >
-        {isLoading ? (
-          <>
-            <Loader2 className="w-4 h-4 animate-spin" />
-            Gerando...
-          </>
-        ) : isPlaying ? (
-          <>
-            <Pause className="w-4 h-4" />
-            Pausar
-          </>
-        ) : (
-          <>
-            <Volume2 className="w-4 h-4" />
-            Narrar
-          </>
-        )}
-      </Button>
-    );
-  };
-
   const gerarImagem = async (tipo: 'resumo' | 'exemplo1' | 'exemplo2' | 'exemplo3') => {
     if (!resumoSelecionado) return;
     
@@ -479,41 +447,33 @@ const ResumosProntosView = () => {
     }
   };
 
-  const renderImagemResumo = () => {
+  const renderImagemComPlayer = (tipo: 'resumo' | 'exemplos' | 'termos') => {
     if (!resumoSelecionado) return null;
     
     const imagemKey = `${resumoSelecionado.id}-resumo`;
     const imagemUrl = imagemUrls.get(imagemKey);
-    const isLoading = loadingImagem['resumo'];
+    const isLoadingImg = loadingImagem['resumo'];
+    
+    const audioKey = `${resumoSelecionado.id}-${tipo}`;
+    const audioUrl = audioUrls.get(audioKey);
+    const isLoadingAudio = loadingAudio[tipo];
     
     return (
-      <div className="mb-4">
-        {imagemUrl ? (
-          <div className="relative rounded-lg overflow-hidden aspect-video bg-muted">
-            <img 
-              src={imagemUrl} 
-              alt={`Ilustração: ${resumoSelecionado.subtema}`}
-              className="w-full h-full object-cover"
-            />
-          </div>
-        ) : (
-          <div 
-            className="relative rounded-lg overflow-hidden aspect-video bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center cursor-pointer hover:from-primary/20 hover:to-primary/10 transition-colors"
-            onClick={() => !isLoading && gerarImagem('resumo')}
-          >
-            {isLoading ? (
-              <div className="flex flex-col items-center gap-2">
-                <Loader2 className="w-8 h-8 animate-spin text-primary" />
-                <span className="text-sm text-muted-foreground">Gerando ilustração...</span>
-              </div>
-            ) : (
-              <div className="flex flex-col items-center gap-2">
-                <ImageIcon className="w-8 h-8 text-primary/60" />
-                <span className="text-sm text-muted-foreground">Clique para gerar ilustração</span>
-              </div>
-            )}
-          </div>
-        )}
+      <div className="space-y-3 mb-6">
+        <ImageWithZoom
+          imageUrl={imagemUrl}
+          alt={`Ilustração: ${resumoSelecionado.subtema}`}
+          onGenerate={() => gerarImagem('resumo')}
+          isLoading={isLoadingImg}
+          placeholderText="Clique para gerar ilustração"
+        />
+        
+        <AudioPlayer
+          audioUrl={audioUrl}
+          onGenerate={() => gerarAudioResumo(tipo)}
+          isLoading={isLoadingAudio}
+          label="Narrar"
+        />
       </div>
     );
   };
@@ -527,8 +487,21 @@ const ResumosProntosView = () => {
     // Split by ## Exemplo headers
     const partes = exemplosText.split(/(?=##\s*Exemplo\s*\d+)/i).filter(Boolean);
     
+    // Audio player for examples at the top
+    const audioKey = `${resumoSelecionado.id}-exemplos`;
+    const audioUrl = audioUrls.get(audioKey);
+    const isLoadingAudio = loadingAudio['exemplos'];
+    
     return (
       <div className="space-y-6">
+        {/* Audio Player for all examples */}
+        <AudioPlayer
+          audioUrl={audioUrl}
+          onGenerate={() => gerarAudioResumo('exemplos')}
+          isLoading={isLoadingAudio}
+          label="Narrar Exemplos"
+        />
+        
         {partes.map((parte, index) => {
           const exemploNum = index + 1;
           if (exemploNum > 3) return null;
@@ -540,33 +513,16 @@ const ResumosProntosView = () => {
           
           return (
             <div key={exemploNum} className="space-y-3">
-              {/* Imagem do exemplo */}
-              {imagemUrl ? (
-                <div className="relative rounded-lg overflow-hidden aspect-video bg-muted">
-                  <img 
-                    src={imagemUrl} 
-                    alt={`Ilustração Exemplo ${exemploNum}`}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-              ) : (
-                <div 
-                  className="relative rounded-lg overflow-hidden aspect-video bg-gradient-to-br from-amber-500/10 to-orange-500/5 flex items-center justify-center cursor-pointer hover:from-amber-500/20 hover:to-orange-500/10 transition-colors"
-                  onClick={() => !isLoading && gerarImagem(tipo)}
-                >
-                  {isLoading ? (
-                    <div className="flex flex-col items-center gap-2">
-                      <Loader2 className="w-6 h-6 animate-spin text-amber-500" />
-                      <span className="text-xs text-muted-foreground">Gerando...</span>
-                    </div>
-                  ) : (
-                    <div className="flex flex-col items-center gap-2">
-                      <ImageIcon className="w-6 h-6 text-amber-500/60" />
-                      <span className="text-xs text-muted-foreground">Gerar ilustração</span>
-                    </div>
-                  )}
-                </div>
-              )}
+              {/* Imagem do exemplo com zoom */}
+              <ImageWithZoom
+                imageUrl={imagemUrl}
+                alt={`Ilustração Exemplo ${exemploNum}`}
+                onGenerate={() => gerarImagem(tipo)}
+                isLoading={isLoading}
+                placeholderText="Gerar ilustração"
+                gradientFrom="from-amber-500/10"
+                gradientTo="to-orange-500/5"
+              />
               
               {/* Texto do exemplo */}
               <div className="resumo-content resumo-markdown">
@@ -681,10 +637,7 @@ const ResumosProntosView = () => {
               <TabsContent value="resumo">
                 <Card>
                   <CardContent className="p-4">
-                    {renderImagemResumo()}
-                    <div className="flex justify-end mb-3">
-                      {renderAudioButton('resumo')}
-                    </div>
+                    {renderImagemComPlayer('resumo')}
                     <div className="resumo-content resumo-markdown">
                       <ReactMarkdown>{resumosGerados.get(resumoSelecionado.id)?.markdown}</ReactMarkdown>
                     </div>
@@ -695,9 +648,6 @@ const ResumosProntosView = () => {
               <TabsContent value="exemplos">
                 <Card>
                   <CardContent className="p-4">
-                    <div className="flex justify-end mb-3">
-                      {renderAudioButton('exemplos')}
-                    </div>
                     {renderExemplosComImagens()}
                   </CardContent>
                 </Card>
@@ -706,8 +656,13 @@ const ResumosProntosView = () => {
               <TabsContent value="termos">
                 <Card>
                   <CardContent className="p-4">
-                    <div className="flex justify-end mb-3">
-                      {renderAudioButton('termos')}
+                    <div className="mb-4">
+                      <AudioPlayer
+                        audioUrl={audioUrls.get(`${resumoSelecionado.id}-termos`)}
+                        onGenerate={() => gerarAudioResumo('termos')}
+                        isLoading={loadingAudio['termos']}
+                        label="Narrar Termos"
+                      />
                     </div>
                     <div className="resumo-content resumo-markdown">
                       <ReactMarkdown>{resumosGerados.get(resumoSelecionado.id)?.termos || "Gerando termos..."}</ReactMarkdown>
@@ -847,10 +802,7 @@ const ResumosProntosView = () => {
                   <TabsContent value="resumo">
                     <Card>
                       <CardContent className="p-6">
-                        {renderImagemResumo()}
-                        <div className="flex justify-end mb-4">
-                          {renderAudioButton('resumo')}
-                        </div>
+                        {renderImagemComPlayer('resumo')}
                         <div className="resumo-content">
                           <ReactMarkdown>{resumosGerados.get(resumoSelecionado.id)?.markdown}</ReactMarkdown>
                         </div>
@@ -861,9 +813,6 @@ const ResumosProntosView = () => {
                   <TabsContent value="exemplos">
                     <Card>
                       <CardContent className="p-6">
-                        <div className="flex justify-end mb-4">
-                          {renderAudioButton('exemplos')}
-                        </div>
                         {renderExemplosComImagens()}
                       </CardContent>
                     </Card>
@@ -872,8 +821,13 @@ const ResumosProntosView = () => {
                   <TabsContent value="termos">
                     <Card>
                       <CardContent className="p-6">
-                        <div className="flex justify-end mb-4">
-                          {renderAudioButton('termos')}
+                        <div className="mb-4">
+                          <AudioPlayer
+                            audioUrl={audioUrls.get(`${resumoSelecionado.id}-termos`)}
+                            onGenerate={() => gerarAudioResumo('termos')}
+                            isLoading={loadingAudio['termos']}
+                            label="Narrar Termos"
+                          />
                         </div>
                         <div className="resumo-content">
                           <ReactMarkdown>{resumosGerados.get(resumoSelecionado.id)?.termos || "Gerando termos..."}</ReactMarkdown>
