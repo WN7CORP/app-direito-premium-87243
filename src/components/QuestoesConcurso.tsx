@@ -279,10 +279,10 @@ const QuestoesConcurso = ({ questoes, onFinish, area, tema }: QuestoesConcursoPr
                     {/* Botão Ver Exemplo */}
                     {currentQuestion?.exemplo_pratico && (
                       <Button 
-                        variant="ghost" 
+                        variant="secondary" 
                         size="sm"
                         onClick={() => setShowExemplo(true)}
-                        className="text-primary hover:text-primary/80 hover:bg-primary/10"
+                        className="bg-primary/20 text-primary hover:bg-primary/30 border border-primary/30"
                       >
                         <BookOpen className="w-4 h-4 mr-1" />
                         Ver Exemplo
