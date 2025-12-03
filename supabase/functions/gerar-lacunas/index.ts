@@ -24,14 +24,16 @@ serve(async (req) => {
 
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-    const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY");
+    const DIREITO_PREMIUM_API_KEY = Deno.env.get("DIREITO_PREMIUM_API_KEY");
 
-    if (!GEMINI_API_KEY) {
+    if (!DIREITO_PREMIUM_API_KEY) {
       return new Response(
-        JSON.stringify({ error: "GEMINI_API_KEY não configurada" }),
+        JSON.stringify({ error: "DIREITO_PREMIUM_API_KEY não configurada" }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
+
+    console.log("✅ DIREITO_PREMIUM_API_KEY configurada");
 
     const supabase = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
 
@@ -88,10 +90,10 @@ ${conteudo}
 
 Retorne APENAS o JSON, sem explicações adicionais.`;
 
-    console.log("Chamando Gemini API...");
+    console.log("🤖 Chamando Gemini API (modelo: gemini-2.5-flash)...");
     
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${DIREITO_PREMIUM_API_KEY}`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
