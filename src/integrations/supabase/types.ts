@@ -5633,6 +5633,7 @@ export type Database = {
           taxa_acerto: number | null
           tema: string
           updated_at: string | null
+          url_audio: string | null
           versao_geracao: number | null
           vezes_respondida: number | null
         }
@@ -5658,6 +5659,7 @@ export type Database = {
           taxa_acerto?: number | null
           tema: string
           updated_at?: string | null
+          url_audio?: string | null
           versao_geracao?: number | null
           vezes_respondida?: number | null
         }
@@ -5683,6 +5685,7 @@ export type Database = {
           taxa_acerto?: number | null
           tema?: string
           updated_at?: string | null
+          url_audio?: string | null
           versao_geracao?: number | null
           vezes_respondida?: number | null
         }
