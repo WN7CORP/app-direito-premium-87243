@@ -139,7 +139,7 @@ Formato JSON esperado:
           }],
           generationConfig: {
             temperature: 0.7,
-            maxOutputTokens: 8000,
+            maxOutputTokens: 32000,
           }
         })
       }
@@ -154,10 +154,50 @@ Formato JSON esperado:
     const data = await response.json();
     let estruturaText = data.candidates?.[0]?.content?.parts?.[0]?.text;
     
+    if (!estruturaText) {
+      console.error('Resposta vazia do Gemini:', JSON.stringify(data));
+      throw new Error('Resposta vazia da IA');
+    }
+    
     // Limpar markdown se presente
     estruturaText = estruturaText.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
     
-    const estrutura = JSON.parse(estruturaText);
+    // Tentar reparar JSON truncado
+    let estrutura;
+    try {
+      estrutura = JSON.parse(estruturaText);
+    } catch (parseError) {
+      console.log('JSON truncado, tentando reparar...');
+      
+      // Contar chaves e colchetes para fechar estrutura
+      let openBraces = (estruturaText.match(/{/g) || []).length;
+      let closeBraces = (estruturaText.match(/}/g) || []).length;
+      let openBrackets = (estruturaText.match(/\[/g) || []).length;
+      let closeBrackets = (estruturaText.match(/\]/g) || []).length;
+      
+      // Remover última propriedade incompleta (string não terminada)
+      estruturaText = estruturaText.replace(/,\s*"[^"]*":\s*"[^"]*$/, '');
+      estruturaText = estruturaText.replace(/,\s*"[^"]*":\s*\[[^\]]*$/, '');
+      estruturaText = estruturaText.replace(/,\s*{[^}]*$/, '');
+      
+      // Fechar arrays e objetos pendentes
+      while (closeBrackets < openBrackets) {
+        estruturaText += ']';
+        closeBrackets++;
+      }
+      while (closeBraces < openBraces) {
+        estruturaText += '}';
+        closeBraces++;
+      }
+      
+      try {
+        estrutura = JSON.parse(estruturaText);
+        console.log('JSON reparado com sucesso');
+      } catch (e) {
+        console.error('Falha ao reparar JSON:', e);
+        throw new Error('Não foi possível processar a resposta da IA');
+      }
+    }
     
     console.log('Estrutura gerada com sucesso:', estrutura.titulo);
 
