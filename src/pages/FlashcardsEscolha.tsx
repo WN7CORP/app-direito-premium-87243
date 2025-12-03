@@ -32,8 +32,7 @@ const FlashcardsEscolha = () => {
       icon: FileEdit,
       route: "/flashcards/complete-lei",
       color: "rgb(59, 130, 246)",
-      emoji: "✏️",
-      badge: "BETA"
+      emoji: "✏️"
     }
   ];
 
@@ -80,11 +79,6 @@ const FlashcardsEscolha = () => {
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-1">
                   <h3 className="font-bold text-lg">{opcao.title}</h3>
-                  {opcao.badge && (
-                    <Badge variant="secondary" className="text-xs bg-blue-500/20 text-blue-400 border-blue-500/30">
-                      {opcao.badge}
-                    </Badge>
-                  )}
                 </div>
                 <p className="text-sm text-muted-foreground">
                   {opcao.description}
