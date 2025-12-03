@@ -70,16 +70,11 @@ const QuestoesTemas = () => {
 
       return Object.entries(subtemasPortema).map(([temaNorm, { nomeOriginal, subtemas }]) => {
         const totalSubtemas = subtemas.size;
-        // Conta quantos subtemas do RESUMO existem em QUESTOES_GERADAS
+        // Usa o tamanho do Set de questões geradas diretamente
         const questoesDoTema = subtemasComQuestoes[temaNorm] || new Set();
-        let subtemasGerados = 0;
+        const subtemasGerados = questoesDoTema.size;
         
-        subtemas.forEach(sub => {
-          if (questoesDoTema.has(sub)) {
-            subtemasGerados++;
-          }
-        });
-        
+        // Completo se todos os subtemas do RESUMO foram gerados
         const temTodosSubtemas = totalSubtemas > 0 && subtemasGerados >= totalSubtemas;
         const temAlgunsSubtemas = subtemasGerados > 0 && subtemasGerados < totalSubtemas;
         const progressoPercent = totalSubtemas > 0 ? Math.round((subtemasGerados / totalSubtemas) * 100) : 0;
