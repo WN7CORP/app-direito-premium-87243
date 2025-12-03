@@ -282,7 +282,7 @@ const QuestoesConcurso = ({ questoes, onFinish, area, tema }: QuestoesConcursoPr
                         variant="secondary" 
                         size="sm"
                         onClick={() => setShowExemplo(true)}
-                        className="bg-primary/20 text-primary hover:bg-primary/30 border border-primary/30"
+                        className="bg-amber-500/20 text-amber-500 hover:bg-amber-500/30 border border-amber-500/40"
                       >
                         <BookOpen className="w-4 h-4 mr-1" />
                         Ver Exemplo
