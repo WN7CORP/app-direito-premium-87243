@@ -1,7 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.75.1";
 
-const REVISION = "v2.0.0-flashcards-2025-11-05";
+const REVISION = "v3.0.0-flashcards-artigos-lei-2025";
 const MODEL = "gemini-2.0-flash";
 
 const corsHeaders = {
@@ -17,7 +17,7 @@ serve(async (req) => {
   }
 
   try {
-    const { content, codigo, numeroArtigo, tipo } = await req.json();
+    const { content, tableName, numeroArtigo, area, tipo } = await req.json();
 
     const DIREITO_PREMIUM_API_KEY = Deno.env.get("DIREITO_PREMIUM_API_KEY");
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
@@ -29,48 +29,26 @@ serve(async (req) => {
     
     console.log("✅ DIREITO_PREMIUM_API_KEY configurada");
     console.log(`🤖 Usando modelo: ${MODEL}`);
+    console.log(`📚 Área: ${area}, Artigo: ${numeroArtigo}`);
 
     const supabase = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
 
-    // Mapeamento COMPLETO de códigos - Cache Universal
-    const tableMap: { [key: string]: string } = {
-      'cpp': 'CP - Código Penal',
-      'cc': 'CC - Código Civil',
-      'cf': 'CF - Constituição Federal',
-      'cpc': 'CPC – Código de Processo Civil',
-      'cppenal': 'CPP – Código de Processo Penal',
-      'cdc': 'CDC – Código de Defesa do Consumidor',
-      'clt': 'CLT – Consolidação das Leis do Trabalho',
-      'ctn': 'CTN – Código Tributário Nacional',
-      'ctb': 'CTB Código de Trânsito Brasileiro',
-      'ce': 'CE – Código Eleitoral',
-      'ca': 'CA - Código de Águas',
-      'cba': 'CBA Código Brasileiro de Aeronáutica',
-      'ccom': 'CCOM – Código Comercial',
-      'cdm': 'CDM – Código de Minas',
-      'eca': 'ESTATUTO - ECA',
-      'idoso': 'ESTATUTO - IDOSO',
-      'oab': 'ESTATUTO - OAB',
-      'pcd': 'ESTATUTO - PESSOA COM DEFICIÊNCIA',
-      'racial': 'ESTATUTO - IGUALDADE RACIAL',
-      'cidade': 'ESTATUTO - CIDADE',
-      'torcedor': 'ESTATUTO - TORCEDOR'
-    };
-
-    const tableName = tableMap[codigo];
-
-    // Verificar se já existem flashcards em cache - UNIVERSAL (apenas para artigos, não para chat)
-    if (tableName && numeroArtigo && tipo !== 'chat') {
+    // Verificar se já existem flashcards em cache na tabela FLASHCARDS - ARTIGOS LEI
+    if (area && numeroArtigo && tipo !== 'chat') {
       const { data: cached } = await supabase
-        .from(tableName)
-        .select('flashcards')
-        .eq('Número do Artigo', numeroArtigo)
-        .maybeSingle();
+        .from("FLASHCARDS - ARTIGOS LEI")
+        .select('*')
+        .eq('area', area)
+        .eq('tema', parseInt(numeroArtigo));
 
-      if (cached?.flashcards && Array.isArray(cached.flashcards) && cached.flashcards.length > 0) {
-        console.log('✅ Retornando flashcards do cache - 0 tokens gastos');
+      if (cached && cached.length > 0) {
+        console.log(`✅ Retornando ${cached.length} flashcards do cache - 0 tokens gastos`);
         return new Response(
-          JSON.stringify({ flashcards: cached.flashcards, cached: true }),
+          JSON.stringify({ 
+            flashcards: cached.map(f => ({ front: f.pergunta, back: f.resposta, exemplo: f.exemplo })), 
+            cached: true,
+            count: cached.length 
+          }),
           { 
             headers: { 
               ...corsHeaders, 
@@ -83,15 +61,41 @@ serve(async (req) => {
       }
     }
 
-    const systemPrompt = `Você é um assistente especializado em criar flashcards para estudo de direito brasileiro.
-Crie flashcards claros, concisos e educacionais. Cada flashcard deve ter:
-- front: Uma pergunta ou conceito chave
-- back: A resposta ou explicação detalhada
+    const systemPrompt = `Você é um professor de Direito especializado em criar flashcards de alta qualidade para estudo.
 
-Retorne no formato JSON estruturado usando tool calling.`;
+REGRAS IMPORTANTES:
+1. Crie entre 20 e 25 flashcards variados sobre o artigo
+2. Cada flashcard deve ter:
+   - front: Uma pergunta clara e direta sobre o conteúdo
+   - back: A resposta completa e educacional
+   - exemplo (opcional): Um exemplo prático de aplicação
+3. Varie os tipos de perguntas:
+   - Conceituais (O que é...?)
+   - Práticas (Quando se aplica...?)
+   - Comparativas (Qual a diferença entre...?)
+   - Casos práticos (Em que situação...?)
+   - Penas e sanções (Qual a pena para...?)
+   - Requisitos (Quais os requisitos...?)
+4. Use linguagem clara e acessível
+5. Mantenha fidelidade ao texto da lei seca
+6. Retorne APENAS JSON válido, sem markdown`;
+
+    const userPrompt = `Crie entre 20 e 25 flashcards de estudo baseados neste artigo de lei:
+
+${content}
+
+Retorne APENAS um JSON válido no formato:
+{
+  "flashcards": [
+    {"front": "pergunta", "back": "resposta", "exemplo": "exemplo prático (opcional)"},
+    ...
+  ]
+}`;
+
+    console.log("🚀 Gerando flashcards com Gemini...");
 
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${DIREITO_PREMIUM_API_KEY}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${DIREITO_PREMIUM_API_KEY}`,
       {
         method: "POST",
         headers: {
@@ -100,12 +104,12 @@ Retorne no formato JSON estruturado usando tool calling.`;
         body: JSON.stringify({
           contents: [{
             parts: [{
-              text: `${systemPrompt}\n\nCrie 5-8 flashcards para estudo baseados neste conteúdo:\n\n${content}\n\nRetorne APENAS um JSON válido no formato:\n{\n  "flashcards": [\n    {"front": "pergunta", "back": "resposta"},\n    ...\n  ]\n}`
+              text: `${systemPrompt}\n\n${userPrompt}`
             }]
           }],
           generationConfig: {
-            temperature: 0.5,
-            maxOutputTokens: 2000,
+            temperature: 0.7,
+            maxOutputTokens: 8000,
           }
         }),
       }
@@ -137,34 +141,61 @@ Retorne no formato JSON estruturado usando tool calling.`;
     const data = await response.json();
     const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
     
+    console.log("📝 Resposta bruta recebida, processando...");
+    
     // Extract JSON from markdown code blocks if present
     let jsonText = text;
-    const jsonMatch = text.match(/```(?:json)?\s*(\{[\s\S]*?\})\s*```/);
+    const jsonMatch = text.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
     if (jsonMatch) {
       jsonText = jsonMatch[1];
+    }
+    
+    // Clean up the JSON text
+    jsonText = jsonText.trim();
+    if (!jsonText.startsWith('{')) {
+      const startIndex = jsonText.indexOf('{');
+      if (startIndex !== -1) {
+        jsonText = jsonText.substring(startIndex);
+      }
     }
     
     const parsed = JSON.parse(jsonText);
     const flashcards = parsed.flashcards;
 
-    // Salvar flashcards no banco - UNIVERSAL (apenas para artigos, não para chat)
-    if (tableName && numeroArtigo && flashcards && flashcards.length > 0 && tipo !== 'chat') {
+    console.log(`✅ ${flashcards.length} flashcards gerados`);
+
+    // Salvar flashcards na tabela FLASHCARDS - ARTIGOS LEI (cada um como uma linha)
+    if (area && numeroArtigo && flashcards && flashcards.length > 0 && tipo !== 'chat') {
       try {
-        await supabase
-          .from(tableName)
-          .update({ 
-            flashcards: flashcards,
-            ultima_atualizacao: new Date().toISOString()
-          })
-          .eq('Número do Artigo', numeroArtigo);
-        console.log(`💾 Flashcards salvos no banco (${tableName}) - próximos requests usarão cache (0 tokens)`);
+        const flashcardsToInsert = flashcards.map((f: any) => ({
+          area: area,
+          tema: parseInt(numeroArtigo),
+          pergunta: f.front,
+          resposta: f.back,
+          exemplo: f.exemplo || null,
+        }));
+
+        const { error: insertError } = await supabase
+          .from("FLASHCARDS - ARTIGOS LEI")
+          .insert(flashcardsToInsert);
+
+        if (insertError) {
+          console.error(`❌ Erro ao salvar flashcards:`, insertError);
+        } else {
+          console.log(`💾 ${flashcards.length} flashcards salvos na tabela FLASHCARDS - ARTIGOS LEI`);
+          console.log(`📊 Próximos requests para ${area} Art. ${numeroArtigo} usarão cache (0 tokens)`);
+        }
       } catch (e) {
-        console.error(`❌ Erro ao salvar flashcards no banco (${tableName}):`, e);
+        console.error(`❌ Erro ao salvar flashcards:`, e);
       }
     }
 
     return new Response(
-      JSON.stringify({ flashcards, cached: false }),
+      JSON.stringify({ 
+        flashcards: flashcards.map((f: any) => ({ front: f.front, back: f.back, exemplo: f.exemplo })), 
+        cached: false,
+        count: flashcards.length 
+      }),
       { 
         headers: { 
           ...corsHeaders, 
