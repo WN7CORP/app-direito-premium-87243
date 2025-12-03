@@ -15,6 +15,7 @@ import ReactMarkdown from "react-markdown";
 import { formatForWhatsApp } from "@/lib/formatWhatsApp";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useDeviceType } from "@/hooks/use-device-type";
+import { useImagePreload } from "@/hooks/useImagePreload";
 
 interface Resumo {
   id: number;
@@ -59,6 +60,20 @@ const ResumosProntosView = () => {
   // Estados de imagem
   const [imagemUrls, setImagemUrls] = useState<Map<string, string>>(new Map());
   const [loadingImagem, setLoadingImagem] = useState<Record<string, boolean>>({});
+
+  // Preload imagens do resumo selecionado
+  const imagensParaPreload = useMemo(() => {
+    if (!resumoSelecionado) return [];
+    const id = resumoSelecionado.id;
+    return [
+      imagemUrls.get(`${id}-resumo`),
+      imagemUrls.get(`${id}-exemplo1`),
+      imagemUrls.get(`${id}-exemplo2`),
+      imagemUrls.get(`${id}-exemplo3`),
+    ].filter(Boolean) as string[];
+  }, [resumoSelecionado?.id, imagemUrls]);
+
+  useImagePreload(imagensParaPreload);
   
   // Refs de áudio
   const audioResumoRef = useRef<HTMLAudioElement | null>(null);
