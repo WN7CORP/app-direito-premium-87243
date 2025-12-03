@@ -52,6 +52,7 @@ serve(async (req) => {
     }
 
     // Limpar texto para narração (remover markdown)
+    // Limite de 4000 chars para ficar dentro dos 5000 bytes (caracteres PT-BR podem usar 2+ bytes)
     const textoLimpo = texto
       .replace(/#{1,6}\s?/g, '') // Remove headers markdown
       .replace(/\*\*([^*]+)\*\*/g, '$1') // Remove bold
@@ -64,7 +65,7 @@ serve(async (req) => {
       .replace(/\n/g, ' ') // Single newline to space
       .replace(/\s{2,}/g, ' ') // Multiple spaces to single
       .trim()
-      .substring(0, 5000); // Limite de caracteres
+      .substring(0, 4000); // Limite seguro para 5000 bytes
 
     if (!textoLimpo) {
       throw new Error('Texto vazio após limpeza');
