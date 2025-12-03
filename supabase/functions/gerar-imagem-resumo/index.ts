@@ -68,15 +68,18 @@ Area: ${area || 'Direito'}
 Topic: ${tema || 'Legal concept'}
 Context: ${contexto}
 
+FORMAT: Wide rectangular landscape format, 16:9 aspect ratio, horizontal composition.
+
 STYLE REQUIREMENTS:
 - Hand-drawn pencil/pen sketch style with black lines on white grid notebook paper background
 - Simple stick figure characters with basic details (hair, clothing outlines)
 - Clean line art illustration like educational sketchnotes
 - Include simple legal icons: scales of justice, gavels, books, documents, arrows
-- Diagram-style layout showing relationships between concepts
+- Diagram-style layout showing relationships between concepts horizontally
 - Light crosshatching for shading
 - Notebook grid paper texture in background
 - Black ink drawing style on white/cream paper
+- Wide horizontal scene composition
 
 CRITICAL: The image must contain absolutely NO TEXT, NO LETTERS, NO WORDS, NO LABELS, NO NUMBERS.
 Only visual elements: stick figures, icons, arrows, simple objects. NO TYPOGRAPHY of any kind.`
