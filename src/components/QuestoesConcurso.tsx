@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { CheckCircle2, XCircle, ChevronRight, Trophy, RotateCcw } from "lucide-react";
@@ -31,10 +31,20 @@ const QuestoesConcurso = ({ questoes, onFinish, area, tema }: QuestoesConcursoPr
   const [showResult, setShowResult] = useState(false);
   const [score, setScore] = useState({ correct: 0, wrong: 0 });
   const [finished, setFinished] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const currentQuestion = questoes[currentIndex];
   const progress = ((currentIndex + 1) / questoes.length) * 100;
   const isCorrect = selectedAnswer === currentQuestion?.resposta_correta;
+
+  // Scroll para o topo ao mudar de questão
+  useEffect(() => {
+    if (containerRef.current) {
+      containerRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    // Também scroll da página inteira
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [currentIndex]);
 
   const alternatives = [
     { key: "A", value: currentQuestion?.alternativa_a },
@@ -136,7 +146,7 @@ const QuestoesConcurso = ({ questoes, onFinish, area, tema }: QuestoesConcursoPr
   }
 
   return (
-    <div className="flex-1 flex flex-col">
+    <div ref={containerRef} className="flex-1 flex flex-col overflow-y-auto">
       {/* Progress */}
       <div className="px-4 py-3 border-b">
         <div className="flex items-center justify-between text-sm mb-2">
