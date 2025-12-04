@@ -48,14 +48,20 @@ EXAMPLES OF SPECIFIC SCENES:
 - For assault: Show the confrontation (non-graphic) with clear aggressor/victim
 
 ABSOLUTE RULES:
-1. NO TEXT, words, letters, numbers, signs, labels, captions
-2. NO graphic violence or blood
-3. NO inappropriate content
-4. Characters must look like distinct individuals, not generic people
-5. Scene must be SPECIFIC to this case, not a generic legal illustration
+1. IF ANY TEXT IS NEEDED IN THE IMAGE (signs, banners, documents, labels), IT MUST BE IN PORTUGUESE - WRITE IN UPPERCASE: "TRIBUNAL", "POLÍCIA", "DELEGACIA", "PRISÃO", "FÓRUM", "CONTRATO", "ESCRITÓRIO", "BANCO", "HOSPITAL", etc.
+2. NEVER use English text in the image - ALL text must be in BRAZILIAN PORTUGUESE
+3. NO graphic violence or blood
+4. NO inappropriate content
+5. Characters must look like distinct individuals, not generic people
+6. Scene must be SPECIFIC to this case, not a generic legal illustration
+
+IMPORTANT LANGUAGE RULE:
+- Any visible text on buildings, signs, documents, uniforms, or objects MUST be in PORTUGUESE
+- Examples: "COURT" should be "TRIBUNAL", "POLICE" should be "POLÍCIA", "PRISON" should be "PRISÃO", "LAWYER" should be "ADVOGADO"
+- Write the Portuguese text in UPPERCASE in your prompt so the image model understands it must be in Portuguese
 
 OUTPUT:
-Write ONLY the detailed image prompt in English. No explanations.
+Write ONLY the detailed image prompt. No explanations.
 Start with: "A colorful cartoon illustration in 16:9 format showing..."`
 
   const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`, {
@@ -141,7 +147,9 @@ serve(async (req) => {
     // 3. Gerar imagem com Nano Banana (Gemini Image Generation)
     const promptFinal = `${promptEspecifico}
 
-CRITICAL STYLE: Modern colorful cartoon illustration, clean lines, expressive characters, 16:9 horizontal format. Vibrant colors, simple backgrounds, educational explainer style like Duolingo or Headspace. NO text, words, letters, numbers anywhere. High quality render.`
+CRITICAL STYLE: Modern colorful cartoon illustration, clean lines, expressive characters, 16:9 horizontal format. Vibrant colors, simple backgrounds, educational explainer style like Duolingo or Headspace. 
+CRITICAL LANGUAGE: IF there is ANY text visible in the image (on signs, buildings, documents, uniforms), it MUST be in BRAZILIAN PORTUGUESE, written in UPPERCASE. Example: "TRIBUNAL" not "COURT", "POLÍCIA" not "POLICE", "DELEGACIA" not "POLICE STATION".
+High quality render.`
 
     console.log('[gerar-imagem-exemplo] Etapa 2: Gerando imagem com Nano Banana...')
 
