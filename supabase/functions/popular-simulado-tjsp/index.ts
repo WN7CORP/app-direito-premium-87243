@@ -1244,7 +1244,7 @@ serve(async (req) => {
         const { data: existing } = await supabase
           .from('SIMULADO-TJSP')
           .select('id')
-          .eq('numero', questao.numero)
+          .eq('numero_questao', questao.numero)
           .single();
 
         if (existing) {
@@ -1255,14 +1255,14 @@ serve(async (req) => {
         const { error } = await supabase
           .from('SIMULADO-TJSP')
           .insert({
-            numero: questao.numero,
+            numero_questao: questao.numero,
             area: questao.area,
             enunciado: questao.enunciado,
-            a: questao.a,
-            b: questao.b,
-            c: questao.c,
-            d: questao.d,
-            e: questao.e,
+            alternativa_a: questao.a,
+            alternativa_b: questao.b,
+            alternativa_c: questao.c,
+            alternativa_d: questao.d,
+            alternativa_e: questao.e,
             resposta: questao.resposta,
             comentario: questao.comentario,
             ano: 2024,
