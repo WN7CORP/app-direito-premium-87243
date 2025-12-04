@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { CheckCircle2, XCircle, ChevronRight, Trophy, RotateCcw, BookOpen, Volume2, Pause, Loader2 } from "lucide-react";
+import { CheckCircle2, XCircle, ChevronRight, Trophy, RotateCcw, BookOpen, Volume2, Pause, Loader2, PlayCircle, StopCircle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
@@ -65,6 +65,12 @@ const QuestoesConcurso = ({ questoes, onFinish, area, tema }: QuestoesConcursoPr
   const [narrationLoading, setNarrationLoading] = useState(false);
   const [imagemLoading, setImagemLoading] = useState(false);
   
+  // Estados do modo automático
+  const [modoAutomatico, setModoAutomatico] = useState(false);
+  const [etapaAtual, setEtapaAtual] = useState<'enunciado' | 'comentario' | 'exemplo' | 'aguardando' | null>(null);
+  const autoModeRef = useRef<boolean>(false);
+  const pausadoPorInteracaoRef = useRef<boolean>(false);
+  
   const containerRef = useRef<HTMLDivElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
   const audioComentarioRef = useRef<HTMLAudioElement>(null);
@@ -88,7 +94,6 @@ const QuestoesConcurso = ({ questoes, onFinish, area, tema }: QuestoesConcursoPr
   const narrarTexto = useCallback(async (texto: string): Promise<void> => {
     return new Promise(async (resolve) => {
       try {
-        // Parar narração anterior se existir
         if (narrationAudioRef.current) {
           narrationAudioRef.current.pause();
           narrationAudioRef.current = null;
@@ -138,23 +143,20 @@ const QuestoesConcurso = ({ questoes, onFinish, area, tema }: QuestoesConcursoPr
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [currentIndex]);
 
-  // Gerar áudio do enunciado e reproduzir automaticamente
+  // Gerar áudio do enunciado e reproduzir automaticamente (apenas se NÃO estiver em modo automático)
   useEffect(() => {
     const questaoAtual = questoesState[currentIndex];
-    if (!questaoAtual) return;
+    if (!questaoAtual || modoAutomatico) return;
 
-    // Parar áudios anteriores
     stopAllAudio();
 
     const iniciarAudioEnunciado = async () => {
       let url = questaoAtual.url_audio;
       
-      // Se não tem áudio, gerar
       if (!url) {
         url = await gerarAudioGenerico(questaoAtual.id, questaoAtual.enunciado, 'enunciado');
       }
       
-      // Reproduzir automaticamente
       if (url && audioRef.current) {
         audioRef.current.src = url;
         audioRef.current.play().then(() => {
@@ -166,10 +168,10 @@ const QuestoesConcurso = ({ questoes, onFinish, area, tema }: QuestoesConcursoPr
     };
 
     iniciarAudioEnunciado();
-  }, [currentIndex]);
+  }, [currentIndex, modoAutomatico]);
 
   // Função para parar todos os áudios
-  const stopAllAudio = () => {
+  const stopAllAudio = useCallback(() => {
     if (audioRef.current) {
       audioRef.current.pause();
       setIsPlaying(false);
@@ -186,7 +188,7 @@ const QuestoesConcurso = ({ questoes, onFinish, area, tema }: QuestoesConcursoPr
       narrationAudioRef.current.pause();
       narrationAudioRef.current = null;
     }
-  };
+  }, []);
 
   // Gerar imagem do exemplo prático
   const gerarImagemExemplo = useCallback(async (questao: Questao) => {
@@ -222,7 +224,7 @@ const QuestoesConcurso = ({ questoes, onFinish, area, tema }: QuestoesConcursoPr
     } finally {
       setImagemLoading(false);
     }
-  }, [imagemLoading]);
+  }, [imagemLoading, area, tema]);
 
   // Gerar áudio genérico (enunciado, comentário ou exemplo)
   const gerarAudioGenerico = useCallback(async (questaoId: number, texto: string, tipo: 'enunciado' | 'comentario' | 'exemplo') => {
@@ -245,7 +247,6 @@ const QuestoesConcurso = ({ questoes, onFinish, area, tema }: QuestoesConcursoPr
       }
 
       if (data?.url_audio) {
-        // Atualizar questão local com URL
         const coluna = tipo === 'enunciado' ? 'url_audio' 
           : tipo === 'comentario' ? 'url_audio_comentario' 
           : 'url_audio_exemplo';
@@ -274,26 +275,206 @@ const QuestoesConcurso = ({ questoes, onFinish, area, tema }: QuestoesConcursoPr
   // Gerar imagem e áudio quando drawer abrir
   useEffect(() => {
     if (showExemplo && currentQuestion?.exemplo_pratico) {
-      // Parar outros áudios
       stopAllAudio();
       
-      // Gerar imagem se não existir
       if (!currentQuestion.url_imagem_exemplo) {
         gerarImagemExemplo(currentQuestion);
       }
       
-      // Gerar áudio em background se não existir (NÃO reproduz)
       if (!currentQuestion.url_audio_exemplo) {
         gerarAudioGenerico(currentQuestion.id, currentQuestion.exemplo_pratico, 'exemplo');
       }
     }
   }, [showExemplo, currentQuestion?.id]);
 
+  // ============ MODO AUTOMÁTICO ============
+
+  // Aguardar tempo em ms
+  const aguardarMs = (ms: number): Promise<void> => {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  };
+
+  // Reproduz áudio e retorna Promise quando terminar
+  const reproduzirAudioEAguardar = useCallback((url: string, audioElement: HTMLAudioElement | null): Promise<void> => {
+    return new Promise((resolve) => {
+      if (!audioElement || !url) return resolve();
+      
+      const onEnded = () => {
+        audioElement.removeEventListener('ended', onEnded);
+        audioElement.removeEventListener('error', onError);
+        resolve();
+      };
+      
+      const onError = () => {
+        audioElement.removeEventListener('ended', onEnded);
+        audioElement.removeEventListener('error', onError);
+        resolve();
+      };
+      
+      audioElement.addEventListener('ended', onEnded);
+      audioElement.addEventListener('error', onError);
+      
+      audioElement.src = url;
+      audioElement.play().catch(() => {
+        audioElement.removeEventListener('ended', onEnded);
+        audioElement.removeEventListener('error', onError);
+        resolve();
+      });
+    });
+  }, []);
+
+  // Função para obter ou gerar áudio
+  const obterOuGerarAudio = useCallback(async (questao: Questao, tipo: 'enunciado' | 'comentario' | 'exemplo'): Promise<string | null> => {
+    if (tipo === 'enunciado') {
+      if (questao.url_audio) return questao.url_audio;
+      return await gerarAudioGenerico(questao.id, questao.enunciado, 'enunciado');
+    }
+    if (tipo === 'comentario') {
+      if (questao.url_audio_comentario) return questao.url_audio_comentario;
+      return await gerarAudioGenerico(questao.id, questao.comentario, 'comentario');
+    }
+    if (tipo === 'exemplo' && questao.exemplo_pratico) {
+      if (questao.url_audio_exemplo) return questao.url_audio_exemplo;
+      return await gerarAudioGenerico(questao.id, questao.exemplo_pratico, 'exemplo');
+    }
+    return null;
+  }, [gerarAudioGenerico]);
+
+  // Pré-carregar áudios das próximas questões
+  const preCarregarProximos = useCallback(async (indiceAtual: number) => {
+    for (let i = indiceAtual + 1; i <= Math.min(indiceAtual + 2, questoesState.length - 1); i++) {
+      if (!autoModeRef.current) break;
+      const q = questoesState[i];
+      if (!q.url_audio) {
+        await gerarAudioGenerico(q.id, q.enunciado, 'enunciado');
+      }
+      if (!q.url_audio_comentario && q.comentario) {
+        await gerarAudioGenerico(q.id, q.comentario, 'comentario');
+      }
+      if (q.exemplo_pratico && !q.url_audio_exemplo) {
+        await gerarAudioGenerico(q.id, q.exemplo_pratico, 'exemplo');
+      }
+    }
+  }, [questoesState, gerarAudioGenerico]);
+
+  // Função principal de narração automática
+  const iniciarModoAutomatico = useCallback(async () => {
+    setModoAutomatico(true);
+    autoModeRef.current = true;
+    pausadoPorInteracaoRef.current = false;
+    
+    stopAllAudio();
+    
+    // Iniciar pré-carregamento em background
+    preCarregarProximos(currentIndex);
+    
+    for (let i = currentIndex; i < questoesState.length && autoModeRef.current; i++) {
+      // Atualizar índice
+      if (i !== currentIndex) {
+        setCurrentIndex(i);
+        setSelectedAnswer(null);
+        setShowResult(false);
+        setShowExemplo(false);
+        await aguardarMs(300);
+      }
+      
+      const questao = questoesState[i];
+      
+      // ETAPA 1: Narrar enunciado
+      if (!autoModeRef.current) break;
+      setEtapaAtual('enunciado');
+      const urlEnunciado = await obterOuGerarAudio(questao, 'enunciado');
+      if (urlEnunciado && autoModeRef.current) {
+        setIsPlaying(true);
+        await reproduzirAudioEAguardar(urlEnunciado, audioRef.current);
+        setIsPlaying(false);
+      }
+      
+      if (!autoModeRef.current) break;
+      
+      // ETAPA 2: Responder automaticamente (marca a correta)
+      setEtapaAtual('aguardando');
+      await aguardarMs(800);
+      
+      if (!autoModeRef.current) break;
+      
+      // Marcar resposta correta
+      setSelectedAnswer(questao.resposta_correta);
+      setShowResult(true);
+      setScore(prev => ({ ...prev, correct: prev.correct + 1 }));
+      
+      // Atualiza estatísticas no banco
+      try {
+        await supabase.rpc("incrementar_stats_questao", {
+          p_questao_id: questao.id,
+          p_correta: true
+        });
+      } catch (error) {
+        console.error("Erro ao atualizar stats:", error);
+      }
+      
+      await aguardarMs(500);
+      
+      if (!autoModeRef.current) break;
+      
+      // ETAPA 3: Narrar comentário
+      setEtapaAtual('comentario');
+      const urlComentario = await obterOuGerarAudio(questao, 'comentario');
+      if (urlComentario && autoModeRef.current) {
+        setIsPlayingComentario(true);
+        await reproduzirAudioEAguardar(urlComentario, audioComentarioRef.current);
+        setIsPlayingComentario(false);
+      }
+      
+      if (!autoModeRef.current) break;
+      
+      // ETAPA 4: Narrar exemplo (se existir)
+      if (questao.exemplo_pratico) {
+        setEtapaAtual('exemplo');
+        const urlExemplo = await obterOuGerarAudio(questao, 'exemplo');
+        if (urlExemplo && autoModeRef.current) {
+          setIsPlayingExemplo(true);
+          await reproduzirAudioEAguardar(urlExemplo, audioExemploRef.current);
+          setIsPlayingExemplo(false);
+        }
+      }
+      
+      if (!autoModeRef.current) break;
+      
+      // Pequena pausa antes da próxima
+      await aguardarMs(1000);
+      
+      // Pré-carregar próximas questões
+      if (autoModeRef.current) {
+        preCarregarProximos(i);
+      }
+    }
+    
+    // Finalizar modo automático
+    setModoAutomatico(false);
+    autoModeRef.current = false;
+    setEtapaAtual(null);
+    
+    // Se terminou todas as questões
+    if (currentIndex >= questoesState.length - 1 || !autoModeRef.current) {
+      setFinished(true);
+    }
+  }, [currentIndex, questoesState, stopAllAudio, obterOuGerarAudio, reproduzirAudioEAguardar, preCarregarProximos]);
+
+  // Parar modo automático
+  const pararModoAutomatico = useCallback(() => {
+    autoModeRef.current = false;
+    setModoAutomatico(false);
+    setEtapaAtual(null);
+    stopAllAudio();
+  }, [stopAllAudio]);
+
+  // ============ FIM MODO AUTOMÁTICO ============
+
   // Play/toggle áudio do enunciado
   const toggleAudioEnunciado = async () => {
     if (!audioRef.current) return;
 
-    // Parar outros áudios
     if (audioComentarioRef.current) {
       audioComentarioRef.current.pause();
       setIsPlayingComentario(false);
@@ -312,7 +493,6 @@ const QuestoesConcurso = ({ questoes, onFinish, area, tema }: QuestoesConcursoPr
     } else {
       let url = currentQuestion?.url_audio;
       
-      // Se não tem URL ainda, gerar
       if (!url && !audioLoading) {
         url = await gerarAudioGenerico(currentQuestion.id, currentQuestion.enunciado, 'enunciado');
       }
@@ -332,7 +512,6 @@ const QuestoesConcurso = ({ questoes, onFinish, area, tema }: QuestoesConcursoPr
   const toggleAudioComentario = async () => {
     if (!audioComentarioRef.current) return;
 
-    // Parar outros áudios
     if (audioRef.current) {
       audioRef.current.pause();
       setIsPlaying(false);
@@ -351,7 +530,6 @@ const QuestoesConcurso = ({ questoes, onFinish, area, tema }: QuestoesConcursoPr
     } else {
       let url = currentQuestion?.url_audio_comentario;
       
-      // Se não tem URL ainda, gerar
       if (!url && !audioComentarioLoading && currentQuestion?.comentario) {
         url = await gerarAudioGenerico(currentQuestion.id, currentQuestion.comentario, 'comentario');
       }
@@ -371,7 +549,6 @@ const QuestoesConcurso = ({ questoes, onFinish, area, tema }: QuestoesConcursoPr
   const toggleAudioExemplo = async () => {
     if (!audioExemploRef.current) return;
 
-    // Parar outros áudios
     if (audioRef.current) {
       audioRef.current.pause();
       setIsPlaying(false);
@@ -390,7 +567,6 @@ const QuestoesConcurso = ({ questoes, onFinish, area, tema }: QuestoesConcursoPr
     } else {
       let url = currentQuestion?.url_audio_exemplo;
       
-      // Se não tem URL ainda, gerar
       if (!url && !audioExemploLoading && currentQuestion?.exemplo_pratico) {
         url = await gerarAudioGenerico(currentQuestion.id, currentQuestion.exemplo_pratico, 'exemplo');
       }
@@ -416,7 +592,11 @@ const QuestoesConcurso = ({ questoes, onFinish, area, tema }: QuestoesConcursoPr
   const handleSelectAnswer = async (answer: string) => {
     if (showResult) return;
     
-    // Parar todos os áudios
+    // Se está em modo automático, parar
+    if (modoAutomatico) {
+      pararModoAutomatico();
+    }
+    
     stopAllAudio();
     
     setSelectedAnswer(answer);
@@ -428,7 +608,6 @@ const QuestoesConcurso = ({ questoes, onFinish, area, tema }: QuestoesConcursoPr
       wrong: prev.wrong + (correct ? 0 : 1)
     }));
 
-    // Atualiza estatísticas no banco
     try {
       await supabase.rpc("incrementar_stats_questao", {
         p_questao_id: currentQuestion.id,
@@ -438,21 +617,16 @@ const QuestoesConcurso = ({ questoes, onFinish, area, tema }: QuestoesConcursoPr
       console.error("Erro ao atualizar stats:", error);
     }
 
-    // Narração AUTOMÁTICA de feedback (apenas correta/incorreta)
     if (correct) {
       await narrarTexto("Resposta correta!");
     } else {
-      // Tremor de tela ao errar
       setShakeError(true);
       setTimeout(() => setShakeError(false), 600);
       await narrarTexto("Resposta incorreta.");
     }
-    
-    // NÃO narra comentário automaticamente - usuário clica no botão
   };
 
   const handleNext = () => {
-    // Parar todos os áudios
     stopAllAudio();
     setNarrationLoading(false);
     
@@ -474,6 +648,7 @@ const QuestoesConcurso = ({ questoes, onFinish, area, tema }: QuestoesConcursoPr
     setFinished(false);
     setShowExemplo(false);
     stopAllAudio();
+    pararModoAutomatico();
   };
 
   if (finished) {
@@ -541,11 +716,47 @@ const QuestoesConcurso = ({ questoes, onFinish, area, tema }: QuestoesConcursoPr
             <span className="text-muted-foreground">
               Questão {currentIndex + 1} de {questoesState.length}
             </span>
-            <span className="font-medium">
-              {score.correct} ✓ / {score.wrong} ✗
-            </span>
+            <div className="flex items-center gap-3">
+              <span className="font-medium">
+                {score.correct} ✓ / {score.wrong} ✗
+              </span>
+              
+              {/* Botão Modo Automático */}
+              {!modoAutomatico ? (
+                <Button 
+                  onClick={iniciarModoAutomatico} 
+                  variant="outline" 
+                  size="sm"
+                  className="h-8 gap-1.5"
+                >
+                  <PlayCircle className="w-4 h-4" />
+                  <span className="hidden sm:inline">Auto</span>
+                </Button>
+              ) : (
+                <Button 
+                  onClick={pararModoAutomatico} 
+                  variant="destructive" 
+                  size="sm"
+                  className="h-8 gap-1.5"
+                >
+                  <StopCircle className="w-4 h-4" />
+                  <span className="hidden sm:inline">Parar</span>
+                </Button>
+              )}
+            </div>
           </div>
           <Progress value={progress} className="h-2" />
+          
+          {/* Indicador de etapa no modo automático */}
+          {modoAutomatico && etapaAtual && (
+            <div className="flex items-center gap-2 mt-2 text-xs text-muted-foreground">
+              <Loader2 className="w-3 h-3 animate-spin" />
+              {etapaAtual === 'enunciado' && 'Narrando enunciado...'}
+              {etapaAtual === 'comentario' && 'Narrando comentário...'}
+              {etapaAtual === 'exemplo' && 'Narrando exemplo...'}
+              {etapaAtual === 'aguardando' && 'Processando...'}
+            </div>
+          )}
         </div>
 
         {/* Question */}
@@ -621,12 +832,12 @@ const QuestoesConcurso = ({ questoes, onFinish, area, tema }: QuestoesConcursoPr
                     <button
                       key={alt.key}
                       onClick={() => handleSelectAnswer(alt.key)}
-                      disabled={showResult}
+                      disabled={showResult || modoAutomatico}
                       className={cn(
                         "w-full flex items-start gap-3 p-4 rounded-xl border transition-all text-left",
                         bgClass,
                         borderClass,
-                        !showResult && "active:scale-[0.98]"
+                        !showResult && !modoAutomatico && "active:scale-[0.98]"
                       )}
                     >
                       <div className={cn(
@@ -726,7 +937,7 @@ const QuestoesConcurso = ({ questoes, onFinish, area, tema }: QuestoesConcursoPr
         </div>
 
         {/* Footer */}
-        {showResult && (
+        {showResult && !modoAutomatico && (
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
