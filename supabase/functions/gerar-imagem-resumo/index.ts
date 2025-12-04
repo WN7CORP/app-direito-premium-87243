@@ -18,9 +18,9 @@ serve(async (req) => {
       throw new Error('resumoId, tipo e conteudo são obrigatórios')
     }
 
-    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY')
-    if (!LOVABLE_API_KEY) {
-      throw new Error('LOVABLE_API_KEY não configurado')
+    const DIREITO_PREMIUM_API_KEY = Deno.env.get('DIREITO_PREMIUM_API_KEY')
+    if (!DIREITO_PREMIUM_API_KEY) {
+      throw new Error('DIREITO_PREMIUM_API_KEY não configurado')
     }
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!
@@ -84,23 +84,20 @@ STYLE REQUIREMENTS:
 CRITICAL: The image must contain absolutely NO TEXT, NO LETTERS, NO WORDS, NO LABELS, NO NUMBERS.
 Only visual elements: stick figures, icons, arrows, simple objects. NO TYPOGRAPHY of any kind.`
 
-    console.log('Gerando imagem com Nano Banana (Gemini)...')
+    console.log('Gerando imagem com Gemini API direta...')
 
-    // Chamar Lovable AI Gateway com modelo de imagem
-    const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    // Chamar API direta do Gemini
+    const aiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp-image-generation:generateContent?key=${DIREITO_PREMIUM_API_KEY}`, {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash-image-preview",
-        messages: [{
-          role: "user",
-          content: prompt
+        contents: [{
+          parts: [{ text: prompt }]
         }],
-        modalities: ["image", "text"],
         generationConfig: {
+          responseModalities: ["TEXT", "IMAGE"],
           imageConfig: {
             aspectRatio: "16:9"
           }
@@ -110,22 +107,24 @@ Only visual elements: stick figures, icons, arrows, simple objects. NO TYPOGRAPH
 
     if (!aiResponse.ok) {
       const errorText = await aiResponse.text()
-      console.error('Erro na API Lovable AI:', aiResponse.status, errorText)
+      console.error('Erro na API Gemini:', aiResponse.status, errorText)
       throw new Error(`Erro na geração de imagem: ${aiResponse.status}`)
     }
 
     const aiData = await aiResponse.json()
-    console.log('Resposta AI recebida')
+    console.log('Resposta Gemini recebida')
 
-    // Extrair imagem base64 da resposta
-    const imageBase64 = aiData.choices?.[0]?.message?.images?.[0]?.image_url?.url
-    if (!imageBase64) {
+    // Extrair imagem base64 da resposta nativa do Gemini
+    const parts = aiData.candidates?.[0]?.content?.parts || []
+    const imagePart = parts.find((p: any) => p.inlineData?.data)
+    const base64Data = imagePart?.inlineData?.data
+
+    if (!base64Data) {
       console.error('Resposta sem imagem:', JSON.stringify(aiData).substring(0, 500))
       throw new Error('Nenhuma imagem gerada na resposta')
     }
 
     // Converter base64 para Uint8Array
-    const base64Data = imageBase64.replace(/^data:image\/\w+;base64,/, '')
     const binaryString = atob(base64Data)
     const uint8Array = new Uint8Array(binaryString.length)
     for (let i = 0; i < binaryString.length; i++) {
