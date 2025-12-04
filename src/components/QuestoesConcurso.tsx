@@ -244,9 +244,12 @@ const QuestoesConcurso = ({ questoes, onFinish, area, tema }: QuestoesConcursoPr
     setLoading(true);
     console.log(`Gerando áudio ${tipo} para questão ${questaoId}...`);
 
+    // Adicionar prefixo "Exemplo prático" quando for narrar o exemplo
+    const textoParaNarrar = tipo === 'exemplo' ? `Exemplo prático. ${texto}` : texto;
+
     try {
       const { data, error } = await supabase.functions.invoke('gerar-audio-generico', {
-        body: { questaoId, texto, tipo }
+        body: { questaoId, texto: textoParaNarrar, tipo }
       });
 
       if (error) {
