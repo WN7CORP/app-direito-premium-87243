@@ -1,5 +1,5 @@
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { Scale, Search, CheckCircle2, Clock, RefreshCw, ArrowDownAZ, ListOrdered } from "lucide-react";
+import { Scale, Search, CheckCircle2, Clock, RefreshCw, ArrowDownAZ, ListOrdered, CheckSquare, Play } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -7,13 +7,16 @@ import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Progress } from "@/components/ui/progress";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 
 const QuestoesTemas = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const area = searchParams.get("area") || "";
   const [searchTerm, setSearchTerm] = useState("");
-  const [ordenacao, setOrdenacao] = useState<"cronologica" | "alfabetica">("cronologica");
+  const [modo, setModo] = useState<"cronologica" | "alfabetica" | "selecionar">("cronologica");
+  const [temasSelecionados, setTemasSelecionados] = useState<string[]>([]);
 
   // Função para normalizar strings de forma consistente (remove acentos também)
   const normalizar = (str: string) => 
@@ -131,10 +134,25 @@ const QuestoesTemas = () => {
   const filteredTemas = temas?.filter(item =>
     item.tema.toLowerCase().includes(searchTerm.toLowerCase())
   ).sort((a, b) => 
-    ordenacao === "alfabetica" 
+    modo === "alfabetica" 
       ? a.tema.localeCompare(b.tema) 
       : a.ordem - b.ordem
   );
+
+  const toggleTemaSelecionado = (tema: string) => {
+    setTemasSelecionados(prev => 
+      prev.includes(tema) 
+        ? prev.filter(t => t !== tema) 
+        : [...prev, tema]
+    );
+  };
+
+  const iniciarQuestoesSelecionadas = () => {
+    if (temasSelecionados.length > 0) {
+      const temasParam = temasSelecionados.join(",");
+      navigate(`/ferramentas/questoes/resolver?area=${encodeURIComponent(area)}&temas=${encodeURIComponent(temasParam)}`);
+    }
+  };
 
   const temPendentes = temas?.some(t => !t.temQuestoes);
 
@@ -175,18 +193,25 @@ const QuestoesTemas = () => {
         </div>
 
         {/* Toggle de ordenação */}
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-muted-foreground">Ordenar:</span>
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="text-xs text-muted-foreground">Modo:</span>
           <ToggleGroup 
             type="single" 
-            value={ordenacao} 
-            onValueChange={(value) => value && setOrdenacao(value as "cronologica" | "alfabetica")}
+            value={modo} 
+            onValueChange={(value) => {
+              if (value) {
+                setModo(value as "cronologica" | "alfabetica" | "selecionar");
+                if (value !== "selecionar") {
+                  setTemasSelecionados([]);
+                }
+              }
+            }}
             className="bg-muted/50 rounded-lg p-1"
           >
             <ToggleGroupItem 
               value="cronologica" 
               aria-label="Ordem cronológica"
-              className="text-xs px-3 py-1.5 h-auto data-[state=on]:bg-background data-[state=on]:shadow-sm"
+              className="text-xs px-3 py-1.5 h-auto data-[state=on]:bg-blue-500/20 data-[state=on]:text-blue-400 data-[state=on]:shadow-sm"
             >
               <ListOrdered className="w-3.5 h-3.5 mr-1.5" />
               Cronológica
@@ -194,13 +219,32 @@ const QuestoesTemas = () => {
             <ToggleGroupItem 
               value="alfabetica" 
               aria-label="Ordem alfabética"
-              className="text-xs px-3 py-1.5 h-auto data-[state=on]:bg-background data-[state=on]:shadow-sm"
+              className="text-xs px-3 py-1.5 h-auto data-[state=on]:bg-purple-500/20 data-[state=on]:text-purple-400 data-[state=on]:shadow-sm"
             >
               <ArrowDownAZ className="w-3.5 h-3.5 mr-1.5" />
               Alfabética
             </ToggleGroupItem>
+            <ToggleGroupItem 
+              value="selecionar" 
+              aria-label="Selecionar temas"
+              className="text-xs px-3 py-1.5 h-auto data-[state=on]:bg-emerald-500/20 data-[state=on]:text-emerald-400 data-[state=on]:shadow-sm"
+            >
+              <CheckSquare className="w-3.5 h-3.5 mr-1.5" />
+              Selecionar
+            </ToggleGroupItem>
           </ToggleGroup>
         </div>
+
+        {/* Botão de iniciar quando em modo seleção */}
+        {modo === "selecionar" && temasSelecionados.length > 0 && (
+          <Button 
+            onClick={iniciarQuestoesSelecionadas}
+            className="w-full bg-emerald-600 hover:bg-emerald-700 text-white"
+          >
+            <Play className="w-4 h-4 mr-2" />
+            Iniciar com {temasSelecionados.length} {temasSelecionados.length === 1 ? 'tema' : 'temas'}
+          </Button>
+        )}
 
         {/* Lista de Temas */}
         <div className="grid grid-cols-1 gap-2">
@@ -216,10 +260,26 @@ const QuestoesTemas = () => {
             filteredTemas?.map((item) => (
               <button
                 key={item.tema}
-                onClick={() => navigate(`/ferramentas/questoes/resolver?area=${encodeURIComponent(area)}&tema=${encodeURIComponent(item.tema)}`)}
-                className="flex flex-col gap-2 p-4 rounded-xl border bg-card hover:bg-accent transition-all text-left"
+                onClick={() => {
+                  if (modo === "selecionar") {
+                    toggleTemaSelecionado(item.tema);
+                  } else {
+                    navigate(`/ferramentas/questoes/resolver?area=${encodeURIComponent(area)}&tema=${encodeURIComponent(item.tema)}`);
+                  }
+                }}
+                className={`flex flex-col gap-2 p-4 rounded-xl border bg-card hover:bg-accent transition-all text-left ${
+                  modo === "selecionar" && temasSelecionados.includes(item.tema) 
+                    ? "border-emerald-500 bg-emerald-500/10" 
+                    : ""
+                }`}
               >
                 <div className="flex items-center gap-3">
+                  {modo === "selecionar" && (
+                    <Checkbox 
+                      checked={temasSelecionados.includes(item.tema)}
+                      className="data-[state=checked]:bg-emerald-500 data-[state=checked]:border-emerald-500"
+                    />
+                  )}
                   <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 transition-colors duration-500 ${
                     item.temQuestoes 
                       ? "bg-emerald-500/20 text-emerald-500" 
