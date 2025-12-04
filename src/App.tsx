@@ -214,6 +214,10 @@ import GerarQuestoesAdmin from "./pages/admin/GerarQuestoesAdmin";
 import QuestoesAreas from "./pages/ferramentas/QuestoesAreas";
 import QuestoesTemas from "./pages/ferramentas/QuestoesTemas";
 import QuestoesResolver from "./pages/ferramentas/QuestoesResolver";
+import SimuladosConcurso from "./pages/ferramentas/SimuladosConcurso";
+import SimuladoConcursoDetalhes from "./pages/ferramentas/SimuladoConcursoDetalhes";
+import SimuladoConcursoResolver from "./pages/ferramentas/SimuladoConcursoResolver";
+import SimuladoConcursoResultado from "./pages/ferramentas/SimuladoConcursoResultado";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -307,6 +311,10 @@ const App = () => {
               <Route path="/ferramentas/questoes" element={<QuestoesAreas />} />
               <Route path="/ferramentas/questoes/temas" element={<QuestoesTemas />} />
               <Route path="/ferramentas/questoes/resolver" element={<QuestoesResolver />} />
+              <Route path="/ferramentas/simulados" element={<SimuladosConcurso />} />
+              <Route path="/ferramentas/simulados/:concurso" element={<SimuladoConcursoDetalhes />} />
+              <Route path="/ferramentas/simulados/:concurso/resolver" element={<SimuladoConcursoResolver />} />
+              <Route path="/ferramentas/simulados/:concurso/resultado" element={<SimuladoConcursoResultado />} />
               <Route path="/dicionario" element={<Dicionario />} />
               <Route path="/dicionario/:letra" element={<DicionarioLetra />} />
               <Route path="/bibliotecas" element={<Bibliotecas />} />

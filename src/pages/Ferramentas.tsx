@@ -1,8 +1,14 @@
 import { useNavigate } from "react-router-dom";
-import { MessageCircle, FileText, Newspaper, Sparkles, Film, GraduationCap, BookOpen, Monitor, Target } from "lucide-react";
+import { MessageCircle, FileText, Newspaper, Sparkles, Film, GraduationCap, BookOpen, Monitor, Target, ClipboardList } from "lucide-react";
 const Ferramentas = () => {
   const navigate = useNavigate();
   const ferramentas = [{
+    id: "simulados-concurso",
+    title: "Simulados de Concurso",
+    description: "Provas completas de concursos públicos",
+    icon: ClipboardList,
+    route: "/ferramentas/simulados"
+  }, {
     id: "questoes",
     title: "Questões",
     description: "Pratique com questões de concurso por tema",
