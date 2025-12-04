@@ -60,84 +60,50 @@ serve(async (req) => {
       )
     }
 
-    // Limpar conteúdo e remover termos que podem triggerar filtros de segurança
-    const conteudoLimpo = conteudo
-      .replace(/[#*_\[\]]/g, '')
-      .replace(/\n+/g, ' ')
-      // Substituir termos violentos por versões abstratas
-      .replace(/atirou|tiro|disparo|bala/gi, 'reagiu')
-      .replace(/ferindo|feriu|machucou|lesão/gi, 'afetando')
-      .replace(/gravemente|grave/gi, 'significativamente')
-      .replace(/arma|pistola|revólver|faca/gi, 'objeto')
-      .replace(/mat(ou|ar|ando)/gi, 'prejudicou')
-      .replace(/mort(e|o|al)/gi, 'consequência')
-      .replace(/sangue|sangrando/gi, 'situação')
-      .replace(/assassin(o|ato|ar)/gi, 'ação ilegal')
-      .replace(/violên(cia|to)/gi, 'conflito')
-      .replace(/agress(ão|or|ivo)/gi, 'confronto')
-      .trim()
+    // NÃO usar o conteúdo textual para evitar que o modelo renderize texto na imagem
+    // Usar apenas área e tema para gerar ilustração conceitual
 
-    // Gerar prompt baseado no tipo - focando em representações abstratas e seguras
+    // Gerar prompt baseado no tipo - SEM incluir texto do conteúdo
     let prompt: string
 
     if (tipo.startsWith('exemplo')) {
-      // Para EXEMPLOS: focar na CENA de forma abstrata e segura
-      prompt = `EDUCATIONAL LEGAL ILLUSTRATION - NO TEXT - SAFE FOR ALL AGES
+      // Para EXEMPLOS: ilustração de situação jurídica genérica baseada no tema
+      prompt = `Create a simple hand-drawn sketch illustration for a legal case study.
 
-Create a simple, child-friendly sketch illustration showing a legal situation:
-
-Context: "${conteudoLimpo.substring(0, 400)}"
-
-DRAW A PEACEFUL SCENE showing:
-- Simple stick figures representing the people involved
-- A setting/location (street, building, office)
-- Visual symbols showing the legal situation (question marks, thought bubbles)
-- Arrows or connections showing relationships
-
-IMPORTANT STYLE RULES:
-- Cute, friendly, educational illustration style
-- Like a children's educational book
-- NO violence, weapons, or threatening imagery
-- Show the SITUATION conceptually, not literally
-- Use symbols like scales, question marks, thought bubbles
-- Wide horizontal composition (16:9)
-
-ABSOLUTE REQUIREMENTS:
-⛔ NO text, words, letters, or numbers
-⛔ NO violent or threatening imagery
-⛔ Keep it abstract and educational
-⛔ Child-safe illustration only
-
-Output: A friendly, educational sketch illustration.`
-    } else {
-      // Para RESUMO: focar nos CONCEITOS de forma abstrata
-      prompt = `EDUCATIONAL LEGAL CONCEPT - NO TEXT - SAFE ILLUSTRATION
-
-Create a simple educational sketch about this legal topic:
-
-Topic: ${area || 'Direito'} - ${tema || 'Legal concept'}
-
-Summary context: "${conteudoLimpo.substring(0, 300)}"
+Topic: ${area || 'Law'} - ${tema || 'Legal case'}
 
 DRAW:
-- Simple icons representing legal concepts (scales, books, documents)
-- Stick figures in peaceful interactions
-- Arrows connecting ideas
-- Abstract symbols (checkmarks, X marks, question marks)
+- 2-3 simple stick figures interacting
+- A relevant setting (office, street, courtroom)
+- Visual symbols: scales of justice, documents, question marks
+- Arrows showing cause and effect
 
 STYLE:
-- Clean, minimalist sketchnote style
-- Educational and friendly appearance
-- Black ink on cream paper look
-- Wide horizontal composition (16:9)
+- Black ink sketch on cream paper
+- Simple, clean, educational
+- Wide 16:9 format
+- Friendly, non-threatening
 
-REQUIREMENTS:
-⛔ NO text, words, or letters anywhere
-⛔ NO violence or threatening imagery
-⛔ Abstract, conceptual representation only
-⛔ Safe for educational purposes
+CRITICAL: DO NOT include ANY text, words, letters, numbers, or written language. Only drawings.`
+    } else {
+      // Para RESUMO: ilustração conceitual do tema
+      prompt = `Create a simple hand-drawn legal concept illustration.
 
-Output: A clean educational concept illustration.`
+Topic: ${area || 'Law'} - ${tema || 'Legal concept'}
+
+DRAW:
+- Legal symbols: scales, gavel, law books
+- Simple stick figures
+- Arrows connecting concepts
+- Abstract icons representing ideas
+
+STYLE:
+- Black ink sketch on cream paper
+- Minimalist sketchnote style
+- Wide 16:9 format
+- Educational appearance
+
+CRITICAL: DO NOT include ANY text, words, letters, numbers, or written language. Only drawings.`
     }
 
     console.log('Gerando imagem com Gemini API direta...')
