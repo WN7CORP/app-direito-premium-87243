@@ -199,7 +199,9 @@ const QuestoesConcurso = ({ questoes, onFinish, area, tema }: QuestoesConcursoPr
       const { data, error } = await supabase.functions.invoke('gerar-imagem-exemplo', {
         body: { 
           questaoId: questao.id, 
-          exemploTexto: questao.exemplo_pratico 
+          exemploTexto: questao.exemplo_pratico,
+          area: area,
+          tema: tema
         }
       });
 
