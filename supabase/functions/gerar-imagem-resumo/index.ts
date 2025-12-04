@@ -60,29 +60,32 @@ serve(async (req) => {
       )
     }
 
-    // Gerar prompt no estilo sketchnote/desenho à mão
-    const contexto = conteudo.substring(0, 300).replace(/[#*_\[\]]/g, '')
-    
-    const prompt = `Create a hand-drawn sketch style illustration for legal education.
-Area: ${area || 'Direito'}
-Topic: ${tema || 'Legal concept'}
-Context: ${contexto}
+    // Gerar prompt otimizado SEM TEXTO
+    const prompt = `STRICT VISUAL ILLUSTRATION - NO TEXT ALLOWED
 
-FORMAT: Wide rectangular landscape format, 16:9 aspect ratio, horizontal composition.
+Create a minimalist hand-drawn sketch illustration representing the legal concept of "${area || 'Direito'}: ${tema || 'Legal concept'}".
 
-STYLE REQUIREMENTS:
-- Hand-drawn pencil/pen sketch style with black lines on white grid notebook paper background
-- Simple stick figure characters with basic details (hair, clothing outlines)
-- Clean line art illustration like educational sketchnotes
-- Include simple legal icons: scales of justice, gavels, books, documents, arrows
-- Diagram-style layout showing relationships between concepts horizontally
-- Light crosshatching for shading
-- Notebook grid paper texture in background
-- Black ink drawing style on white/cream paper
-- Wide horizontal scene composition
+VISUAL STYLE:
+- Black ink line art on white/cream notebook paper with faint grid
+- Simple iconic symbols and stick figures
+- Clean sketchnote/doodle aesthetic
+- Horizontal wide composition (16:9 landscape)
 
-CRITICAL: The image must contain absolutely NO TEXT, NO LETTERS, NO WORDS, NO LABELS, NO NUMBERS.
-Only visual elements: stick figures, icons, arrows, simple objects. NO TYPOGRAPHY of any kind.`
+VISUAL ELEMENTS TO INCLUDE:
+- Legal symbols: scales of justice, gavel, law books, scrolls
+- Simple human stick figures showing interactions
+- Arrows connecting related concepts
+- Simple geometric shapes organizing the visual flow
+
+ABSOLUTE REQUIREMENTS:
+⛔ ZERO text, letters, words, labels, or numbers anywhere in the image
+⛔ NO captions, titles, or annotations
+⛔ NO written language of any kind - not even single letters
+⛔ The image must be 100% wordless - purely visual symbols and drawings
+
+The illustration should visually INTERPRET and SYMBOLIZE the legal concept through icons and drawings only, never through written words.
+
+Output: A clean, wordless sketch illustration with only visual symbols and drawings.`
 
     console.log('Gerando imagem com Gemini API direta...')
 
