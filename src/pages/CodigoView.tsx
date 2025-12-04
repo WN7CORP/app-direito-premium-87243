@@ -418,6 +418,30 @@ const CodigoView = () => {
     }
   }, [searchQuery]);
 
+  // Disparar geração automática de aulas em background ao acessar o código
+  useEffect(() => {
+    const gerarAulasBackground = async () => {
+      try {
+        // Disparar em background - não bloqueia a UI
+        supabase.functions.invoke('processar-aulas-background', {
+          body: { codigoTabela: tableName }
+        }).then(response => {
+          if (response.data?.status === 'generated') {
+            console.log(`[Background] Aula gerada para artigo ${response.data.artigo}`);
+          }
+        }).catch(error => {
+          console.error('[Background] Erro ao processar aulas:', error);
+        });
+      } catch (error) {
+        console.error('[Background] Erro:', error);
+      }
+    };
+
+    // Executar após um pequeno delay para não competir com carregamento inicial
+    const timeout = setTimeout(gerarAulasBackground, 3000);
+    return () => clearTimeout(timeout);
+  }, [tableName]);
+
   return <div className="min-h-screen bg-background text-foreground pb-32">
       {/* Tabs */}
       <VadeMecumTabs 

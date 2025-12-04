@@ -371,6 +371,7 @@ export const AulaArtigoBreakdown = ({
                 numeroArtigo={numeroArtigo}
                 codigoTabela={codigoTabela}
                 secaoId={secaoAtualObj.id}
+                aulaId={aulaId || undefined}
                 onImageGenerated={(idx, url) => {
                   // Cache the image URL in the structure
                   if (aulaEstrutura) {
@@ -380,6 +381,10 @@ export const AulaArtigoBreakdown = ({
                       setAulaEstrutura({ ...aulaEstrutura, secoes: updatedSecoes });
                     }
                   }
+                }}
+                onAudioGenerated={(idx, url) => {
+                  // Cache audio URL could be saved here if needed
+                  console.log(`Audio generated for slide ${idx}: ${url}`);
                 }}
               />
             )
