@@ -187,7 +187,7 @@ const QuestoesAreas = () => {
                   </div>
                   <h3 className="font-bold text-sm mb-1">{item.area}</h3>
                   <p className="text-xs text-muted-foreground line-clamp-2">
-                    {item.totalQuestoes.toLocaleString('pt-BR')} {item.totalQuestoes === 1 ? "questão disponível" : "questões disponíveis"}
+                    {item.totalQuestoes.toLocaleString('pt-BR')} {item.totalQuestoes === 1 ? "questão" : "questões"}
                   </p>
                 </CardContent>
               </Card>
