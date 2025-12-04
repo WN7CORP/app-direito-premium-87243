@@ -780,47 +780,11 @@ const QuestoesConcurso = ({ questoes, onFinish, area, tema }: QuestoesConcursoPr
             <span className="text-muted-foreground">
               Questão {currentIndex + 1} de {questoesState.length}
             </span>
-            <div className="flex items-center gap-3">
-              <span className="font-medium">
-                {score.correct} ✓ / {score.wrong} ✗
-              </span>
-              
-              {/* Botão Modo Automático */}
-              {!modoAutomatico ? (
-                <Button 
-                  onClick={iniciarModoAutomatico} 
-                  variant="outline" 
-                  size="sm"
-                  className="h-8 gap-1.5"
-                >
-                  <PlayCircle className="w-4 h-4" />
-                  <span className="hidden sm:inline">Auto</span>
-                </Button>
-              ) : (
-                <Button 
-                  onClick={pararModoAutomatico} 
-                  variant="destructive" 
-                  size="sm"
-                  className="h-8 gap-1.5"
-                >
-                  <StopCircle className="w-4 h-4" />
-                  <span className="hidden sm:inline">Parar</span>
-                </Button>
-              )}
-            </div>
+            <span className="font-medium">
+              {score.correct} ✓ / {score.wrong} ✗
+            </span>
           </div>
           <Progress value={progress} className="h-2" />
-          
-          {/* Indicador de etapa no modo automático */}
-          {modoAutomatico && etapaAtual && (
-            <div className="flex items-center gap-2 mt-2 text-xs text-muted-foreground">
-              <Loader2 className="w-3 h-3 animate-spin" />
-              {etapaAtual === 'enunciado' && 'Narrando enunciado...'}
-              {etapaAtual === 'comentario' && 'Narrando comentário...'}
-              {etapaAtual === 'exemplo' && 'Narrando exemplo...'}
-              {etapaAtual === 'aguardando' && 'Processando...'}
-            </div>
-          )}
         </div>
 
         {/* Question */}
