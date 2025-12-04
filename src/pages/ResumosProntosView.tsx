@@ -34,6 +34,7 @@ interface Resumo {
   url_imagem_exemplo_1?: string | null;
   url_imagem_exemplo_2?: string | null;
   url_imagem_exemplo_3?: string | null;
+  url_pdf?: string | null;
 }
 const ResumosProntosView = () => {
   const {
@@ -317,24 +318,38 @@ const ResumosProntosView = () => {
       });
       return;
     }
+    
+    // Verificar se já existe PDF em cache
+    if (resumo.url_pdf) {
+      window.open(resumo.url_pdf, '_blank');
+      toast({
+        title: "PDF aberto!",
+        description: "Recuperado do cache."
+      });
+      return;
+    }
+    
     toast({
       title: "Gerando PDF...",
-      description: "Aguarde, estamos criando o PDF"
+      description: "Aguarde, estamos criando o PDF profissional"
     });
     try {
       const { data, error } = await supabase.functions.invoke("exportar-resumo-pdf", {
         body: {
           resumo: resumoGerado.markdown,
-          titulo: resumo.subtema
+          titulo: resumo.subtema,
+          resumoId: resumo.id,
+          area: area ? decodeURIComponent(area) : undefined,
+          tema: tema ? decodeURIComponent(tema) : undefined,
+          urlAudio: resumo.url_audio_resumo || audioUrls.get(`${resumo.id}-resumo`)
         }
       });
       if (error) throw error;
       if (data?.pdfUrl) {
-        // Abrir o link do Catbox em uma nova aba
         window.open(data.pdfUrl, '_blank');
         toast({
-          title: "PDF gerado!",
-          description: "O PDF foi aberto em uma nova aba."
+          title: data.fromCache ? "PDF recuperado!" : "PDF gerado!",
+          description: data.fromCache ? "Recuperado do cache." : "O PDF foi aberto em uma nova aba."
         });
       }
     } catch (error: any) {
