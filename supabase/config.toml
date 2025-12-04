@@ -56,3 +56,6 @@ verify_jwt = false
 
 [functions.gerar-imagem-resumo-personalizado]
 verify_jwt = false
+
+[functions.gerar-imagem-aula-artigo]
+verify_jwt = false
