@@ -368,6 +368,19 @@ export const AulaArtigoBreakdown = ({
                 onNext={handleNextSlide}
                 onPrevious={handlePreviousSlide}
                 canGoBack={slideAtual > 0}
+                numeroArtigo={numeroArtigo}
+                codigoTabela={codigoTabela}
+                secaoId={secaoAtualObj.id}
+                onImageGenerated={(idx, url) => {
+                  // Cache the image URL in the structure
+                  if (aulaEstrutura) {
+                    const updatedSecoes = [...aulaEstrutura.secoes];
+                    if (updatedSecoes[secaoAtual]?.slides[idx]) {
+                      updatedSecoes[secaoAtual].slides[idx].imagemUrl = url;
+                      setAulaEstrutura({ ...aulaEstrutura, secoes: updatedSecoes });
+                    }
+                  }
+                }}
               />
             )
           )}

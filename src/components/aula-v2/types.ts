@@ -74,6 +74,10 @@ export interface SlideContent {
   
   // For resumo_visual slides
   pontos?: string[];
+  
+  // Image fields for storytelling and exemplo slides
+  imagemUrl?: string;      // URL da imagem gerada
+  imagemLoading?: boolean; // Se está carregando a imagem
 }
 
 export interface Secao {
@@ -110,6 +114,8 @@ export interface AulaEstruturaV2 {
     explicacao: string;
     tempoLimite?: number;
   }>;
+  // Image cache
+  imagensCache?: Record<string, string>; // key: "secaoId-slideIndex", value: imageUrl
 }
 
 export type EtapaAulaV2 = 

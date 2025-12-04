@@ -1,18 +1,86 @@
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { BookOpen, User } from "lucide-react";
+import { BookOpen, User, Image as ImageIcon, Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 interface SlideStorytellingProps {
   personagem?: string;
   narrativa?: string;
   conteudo: string;
   titulo?: string;
+  imagemUrl?: string;
+  onImageGenerated?: (url: string) => void;
+  numeroArtigo?: string;
+  codigoTabela?: string;
+  secaoId?: number;
+  slideIndex?: number;
 }
 
-export const SlideStorytelling = ({ personagem, narrativa, conteudo, titulo }: SlideStorytellingProps) => {
+export const SlideStorytelling = ({ 
+  personagem, 
+  narrativa, 
+  conteudo, 
+  titulo,
+  imagemUrl: propImagemUrl,
+  onImageGenerated,
+  numeroArtigo,
+  codigoTabela,
+  secaoId,
+  slideIndex
+}: SlideStorytellingProps) => {
   const storyContent = narrativa || conteudo;
+  const [imagemUrl, setImagemUrl] = useState<string | null>(propImagemUrl || null);
+  const [loadingImagem, setLoadingImagem] = useState(false);
+  const [imagemError, setImagemError] = useState(false);
   
   // Split content into paragraphs for better reading
   const paragraphs = storyContent.split('\n').filter(p => p.trim());
+
+  // Generate image when component mounts if no image exists
+  useEffect(() => {
+    if (propImagemUrl) {
+      setImagemUrl(propImagemUrl);
+      return;
+    }
+
+    if (!imagemUrl && !loadingImagem && numeroArtigo && codigoTabela && storyContent) {
+      gerarImagem();
+    }
+  }, [propImagemUrl, numeroArtigo, codigoTabela]);
+
+  const gerarImagem = async () => {
+    if (loadingImagem || imagemUrl) return;
+    
+    setLoadingImagem(true);
+    setImagemError(false);
+
+    try {
+      const response = await supabase.functions.invoke('gerar-imagem-aula-artigo', {
+        body: {
+          conteudo: storyContent,
+          tipo: 'storytelling',
+          personagem,
+          numeroArtigo,
+          codigoTabela,
+          secaoId,
+          slideIndex
+        }
+      });
+
+      if (response.error) {
+        console.error('Erro ao gerar imagem storytelling:', response.error);
+        setImagemError(true);
+      } else if (response.data?.url_imagem) {
+        setImagemUrl(response.data.url_imagem);
+        onImageGenerated?.(response.data.url_imagem);
+      }
+    } catch (error) {
+      console.error('Erro ao gerar imagem storytelling:', error);
+      setImagemError(true);
+    } finally {
+      setLoadingImagem(false);
+    }
+  };
   
   return (
     <div className="space-y-4">
@@ -31,12 +99,46 @@ export const SlideStorytelling = ({ personagem, narrativa, conteudo, titulo }: S
           </span>
         </motion.div>
       )}
+
+      {/* Illustration Image */}
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.05 }}
+        className="relative rounded-xl overflow-hidden bg-card/50 border border-border/50"
+      >
+        {loadingImagem ? (
+          <div className="aspect-video flex flex-col items-center justify-center gap-3 bg-gradient-to-br from-purple-500/10 to-pink-500/10">
+            <Loader2 className="w-8 h-8 animate-spin text-purple-400" />
+            <span className="text-sm text-muted-foreground">Gerando ilustração...</span>
+          </div>
+        ) : imagemUrl ? (
+          <img 
+            src={imagemUrl} 
+            alt={`Ilustração: ${titulo || 'História'}`}
+            className="w-full aspect-video object-cover"
+            onError={() => setImagemError(true)}
+          />
+        ) : imagemError ? (
+          <div className="aspect-video flex flex-col items-center justify-center gap-3 bg-gradient-to-br from-purple-500/10 to-pink-500/10">
+            <ImageIcon className="w-8 h-8 text-muted-foreground/50" />
+            <span className="text-sm text-muted-foreground">Ilustração indisponível</span>
+          </div>
+        ) : (
+          <div className="aspect-video flex flex-col items-center justify-center gap-3 bg-gradient-to-br from-purple-500/10 to-pink-500/10">
+            <div className="w-12 h-12 rounded-full bg-purple-500/20 flex items-center justify-center">
+              <BookOpen className="w-6 h-6 text-purple-400" />
+            </div>
+            <span className="text-sm text-muted-foreground">Preparando ilustração...</span>
+          </div>
+        )}
+      </motion.div>
       
       {/* Story content */}
       <motion.div 
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.1 }}
+        transition={{ delay: 0.15 }}
         className="relative"
       >
         {/* Decorative quote marks */}

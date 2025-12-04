@@ -21,6 +21,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { SlideContent } from "./types";
 import { SlideStorytelling } from "./SlideStorytelling";
+import { SlideExemploComImagem } from "./SlideExemploComImagem";
 import { SlideTabela } from "./SlideTabela";
 import { SlideLinhaTempo } from "./SlideLinhaTempo";
 import { SlideMapaMental } from "./SlideMapaMental";
@@ -35,6 +36,11 @@ interface InteractiveSlideProps {
   onNext: () => void;
   onPrevious: () => void;
   canGoBack: boolean;
+  // Props for image generation
+  numeroArtigo?: string;
+  codigoTabela?: string;
+  secaoId?: number;
+  onImageGenerated?: (slideIndex: number, url: string) => void;
 }
 
 const iconMap: Record<string, any> = {
@@ -88,7 +94,11 @@ export const InteractiveSlide = ({
   totalSlides,
   onNext,
   onPrevious,
-  canGoBack
+  canGoBack,
+  numeroArtigo,
+  codigoTabela,
+  secaoId,
+  onImageGenerated
 }: InteractiveSlideProps) => {
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [showFeedback, setShowFeedback] = useState(false);
@@ -159,6 +169,28 @@ export const InteractiveSlide = ({
             narrativa={slide.narrativa}
             conteudo={slide.conteudo}
             titulo={slide.titulo}
+            imagemUrl={slide.imagemUrl}
+            numeroArtigo={numeroArtigo}
+            codigoTabela={codigoTabela}
+            secaoId={secaoId}
+            slideIndex={slideIndex}
+            onImageGenerated={(url) => onImageGenerated?.(slideIndex, url)}
+          />
+        );
+      
+      case 'exemplo':
+        // Use the new component with image for examples
+        return (
+          <SlideExemploComImagem
+            conteudo={slide.conteudo}
+            contexto={slide.contexto}
+            titulo={slide.titulo}
+            imagemUrl={slide.imagemUrl}
+            numeroArtigo={numeroArtigo}
+            codigoTabela={codigoTabela}
+            secaoId={secaoId}
+            slideIndex={slideIndex}
+            onImageGenerated={(url) => onImageGenerated?.(slideIndex, url)}
           />
         );
       
