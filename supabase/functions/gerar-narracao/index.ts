@@ -231,6 +231,10 @@ function normalizarTextoParaTTS(texto: string): string {
     return 'artigo ' + numeroParaExtenso(numero);
   });
   
+  // 7.1. ABREVIAÇÃO "Art." ou "Arts." sozinha (sem número) → "Artigo" ou "Artigos"
+  resultado = resultado.replace(/\bArts\.\s?(?!\d)/gi, 'Artigos ');
+  resultado = resultado.replace(/\bArt\.\s?(?!\d)/gi, 'Artigo ');
+  
   // 8. INCISOS ROMANOS - "I -", "II -", "III.", "IV)", "V,"
   resultado = resultado.replace(/\b([IVXLCDM]+)\s?[-–—.),;:]/g, (match, romano) => {
     // Verificar se é um numeral romano válido
