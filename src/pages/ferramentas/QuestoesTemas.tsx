@@ -24,22 +24,24 @@ const QuestoesTemas = () => {
   const { data: temas, isLoading, isFetching } = useQuery({
     queryKey: ["questoes-temas", area],
     queryFn: async () => {
-      // Busca temas e subtemas únicos da área
+      // Busca temas e subtemas únicos da área, ordenados pelo id (ordem cronológica)
       const { data: resumoData, error } = await supabase
         .from("RESUMO")
-        .select("tema, subtema")
+        .select("id, tema, subtema")
         .eq("area", area)
-        .not("tema", "is", null);
+        .not("tema", "is", null)
+        .order("id", { ascending: true });
 
       if (error) throw error;
 
-      // Agrupa subtemas por tema (usando chave normalizada, mas preservando nome original)
-      const subtemasPortema: Record<string, { nomeOriginal: string; subtemas: Set<string> }> = {};
+      // Agrupa subtemas por tema e preserva a ordem de aparição
+      const subtemasPortema: Record<string, { nomeOriginal: string; subtemas: Set<string>; ordem: number }> = {};
+      let ordemCounter = 0;
       resumoData?.forEach(r => {
         if (r.tema) {
           const temaNorm = normalizar(r.tema);
           if (!subtemasPortema[temaNorm]) {
-            subtemasPortema[temaNorm] = { nomeOriginal: r.tema.trim(), subtemas: new Set() };
+            subtemasPortema[temaNorm] = { nomeOriginal: r.tema.trim(), subtemas: new Set(), ordem: ordemCounter++ };
           }
           if (r.subtema) {
             subtemasPortema[temaNorm].subtemas.add(normalizar(r.subtema));
@@ -88,7 +90,7 @@ const QuestoesTemas = () => {
         }
       });
 
-      return Object.entries(subtemasPortema).map(([temaNorm, { nomeOriginal, subtemas }]) => {
+      return Object.entries(subtemasPortema).map(([temaNorm, { nomeOriginal, subtemas, ordem }]) => {
         const totalSubtemas = subtemas.size;
         // Usa o tamanho do Set de questões geradas diretamente
         const questoesDoTema = subtemasComQuestoes[temaNorm] || new Set();
@@ -107,9 +109,10 @@ const QuestoesTemas = () => {
           subtemasGerados,
           totalSubtemas,
           totalQuestoes,
-          progressoPercent
+          progressoPercent,
+          ordem
         };
-      }).sort((a, b) => a.tema.localeCompare(b.tema));
+      }).sort((a, b) => a.ordem - b.ordem);
     },
     enabled: !!area,
     staleTime: 0,
