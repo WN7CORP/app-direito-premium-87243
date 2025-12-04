@@ -1,56 +1,60 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1'
-import { HfInference } from 'https://esm.sh/@huggingface/inference@3.9.0'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-// Função para gerar prompt contextualizado com IA (Gemini)
+// Função para gerar prompt contextualizado com IA (Gemini TEXT)
 async function gerarPromptComIA(exemploTexto: string, area: string, tema: string, apiKey: string): Promise<string> {
   const textoLimitado = exemploTexto.substring(0, 2000)
   
-  const promptParaGerarPrompt = `Você é um diretor de arte especializado em criar ilustrações educacionais para o contexto jurídico brasileiro.
+  const promptParaGerarPrompt = `You are an expert at creating prompts for professional, polished 3D illustrations.
 
-CONTEXTO JURÍDICO:
-- Área: ${area}
-- Tema: ${tema}
+CONTEXT:
+- Legal Area: ${area}
+- Topic: ${tema}
+- Content Type: A practical case study - show a scene with characters
 
-CASO PRÁTICO:
+CONTENT TO ILLUSTRATE:
 ${textoLimitado}
 
-SUA MISSÃO:
-Criar um prompt VISUAL em inglês para uma ilustração que CONTE A HISTÓRIA do exemplo de forma clara e memorável.
+YOUR TASK:
+Create an image generation prompt for a PROFESSIONAL, POLISHED, HIGH-QUALITY 3D illustration in VERTICAL format (9:16 portrait).
 
-ESTILO VISUAL (OBRIGATÓRIO):
-- Estilo: Modern editorial illustration, clean vector art com profundidade 3D sutil
-- Composição: VERTICAL (formato retrato 9:16), foco centralizado
-- Paleta: Cores vibrantes mas sofisticadas - navy blue (#1e3a5f), teal (#2dd4bf), coral (#f97316), cream (#fef3c7)
-- Personagens: Figuras humanas simplificadas mas expressivas, proporções estilizadas, diversidade brasileira
-- Cenário: Ambiente contextualizado (tribunal, delegacia, escritório, rua urbana brasileira)
-- Iluminação: Luz suave direcional, sombras definidas mas não duras
+MANDATORY STYLE SPECIFICATIONS:
+- Style: Professional 3D isometric illustration, Blender-quality render
+- Orientation: VERTICAL PORTRAIT (9:16 aspect ratio)
+- Lighting: Soft studio lighting with subtle shadows
+- Colors: Corporate color palette - deep blues, teals, warm oranges, clean whites
+- Characters: Stylized 3D human figures (like Pixar style but simpler), professional appearance, Brazilian diversity
+- Objects: Clean 3D models with smooth surfaces, subtle gradients, slight glossy finish
+- Background: Clean gradient background (light blue to white, or soft gray gradient)
+- Quality: Ultra high definition, professional marketing quality
+- Think: Stripe, Linear, or Notion marketing illustrations
 
-ELEMENTOS NARRATIVOS (analise o caso):
-1. PROTAGONISTA: Quem é o personagem central? (réu, vítima, advogado, juiz, policial, empresário)
-2. AÇÃO: O que está acontecendo? (crime, julgamento, negociação, prisão, investigação)
-3. OBJETO-CHAVE: Qual elemento representa o caso? (documento, arma, dinheiro, veículo, celular)
-4. EMOÇÃO: Qual sentimento transmitir? (tensão, justiça, consequência, resolução)
+FOR THIS CASE STUDY:
+- Show 2-3 professional 3D characters in a business/legal scene
+- Include relevant 3D objects: documents, buildings, computers, courtrooms
+- Use body language and positioning to tell the story
+- Professional corporate setting
 
-COMPOSIÇÃO VERTICAL:
-- Terço superior: céu/ambiente/contexto
-- Terço central: personagens e ação principal
-- Terço inferior: elementos de apoio/ground
+VERTICAL COMPOSITION (9:16):
+- Top third: sky/environment/context
+- Middle third: characters and main action
+- Bottom third: supporting elements/ground
 
-PROIBIÇÕES ABSOLUTAS:
-- ZERO texto, letras, números, placas, legendas
-- NADA de sangue, gore ou violência explícita
-- NADA de rostos realistas (manter estilizado)
-- NADA de símbolos religiosos ou políticos
+ABSOLUTE PROHIBITIONS:
+1. NO TEXT - no words, letters, labels, numbers, captions, signs with writing
+2. NO hand-drawn or sketch style - must look professionally rendered
+3. NO flat 2D style - must be 3D with depth and lighting
+4. NO cartoon or childish style - professional corporate aesthetic
+5. NO busy or cluttered compositions - clean and focused
 
-FORMATO DO OUTPUT:
-Escreva APENAS o prompt em inglês, máximo 500 caracteres.
-Comece com: "Vertical editorial illustration,"`
+OUTPUT:
+Write ONLY the image prompt. No explanations, no quotes.
+Start with: "A professional 3D isometric vertical illustration showing..."`
 
   const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`, {
     method: "POST",
@@ -58,8 +62,8 @@ Comece com: "Vertical editorial illustration,"`
     body: JSON.stringify({
       contents: [{ parts: [{ text: promptParaGerarPrompt }] }],
       generationConfig: {
-        temperature: 0.7,
-        maxOutputTokens: 500
+        temperature: 0.8,
+        maxOutputTokens: 700
       }
     })
   })
@@ -77,6 +81,7 @@ Comece com: "Vertical editorial illustration,"`
     throw new Error('Prompt vazio retornado pela IA')
   }
   
+  console.log('[gerar-imagem-exemplo] Prompt gerado:', promptGerado.substring(0, 400))
   return promptGerado
 }
 
@@ -93,6 +98,11 @@ serve(async (req) => {
     }
 
     console.log(`[gerar-imagem-exemplo] Processando questão ${questaoId} - Área: ${area || 'N/A'}, Tema: ${tema || 'N/A'}`)
+
+    const DIREITO_PREMIUM_API_KEY = Deno.env.get('DIREITO_PREMIUM_API_KEY')
+    if (!DIREITO_PREMIUM_API_KEY) {
+      throw new Error('DIREITO_PREMIUM_API_KEY não configurado')
+    }
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
@@ -118,80 +128,64 @@ serve(async (req) => {
     }
 
     // 2. Gerar prompt contextualizado com IA
-    const DIREITO_PREMIUM_API_KEY = Deno.env.get('DIREITO_PREMIUM_API_KEY')
-    const HUGGING_FACE_ACCESS_TOKEN = Deno.env.get('HUGGING_FACE_ACCESS_TOKEN')
-    
-    if (!HUGGING_FACE_ACCESS_TOKEN) {
-      throw new Error('HUGGING_FACE_ACCESS_TOKEN não configurado')
-    }
+    console.log('[gerar-imagem-exemplo] Etapa 1: Gerando prompt com Gemini...')
+    const promptEspecifico = await gerarPromptComIA(
+      exemploTexto,
+      area || 'Direito',
+      tema || 'Questão jurídica',
+      DIREITO_PREMIUM_API_KEY
+    )
 
-    let promptImagem: string
+    // 3. Gerar imagem com Nano Banana (Gemini Image Generation)
+    const promptFinal = `${promptEspecifico}
 
-    if (DIREITO_PREMIUM_API_KEY) {
-      try {
-        console.log('[gerar-imagem-exemplo] Gerando prompt contextualizado com Gemini...')
-        promptImagem = await gerarPromptComIA(
-          exemploTexto,
-          area || 'Direito',
-          tema || 'Questão jurídica',
-          DIREITO_PREMIUM_API_KEY
-        )
-        console.log(`[gerar-imagem-exemplo] Prompt IA gerado: ${promptImagem.substring(0, 150)}...`)
-      } catch (iaError) {
-        console.warn('[gerar-imagem-exemplo] Fallback para prompt básico:', iaError)
-        // Fallback para prompt básico
-        const cenario = exemploTexto
-          .replace(/[^\w\sáéíóúâêôãõçÁÉÍÓÚÂÊÔÃÕÇ.,!?-]/gi, ' ')
-          .replace(/\s+/g, ' ')
-          .trim()
-          .substring(0, 300)
-        
-        promptImagem = `Vertical editorial illustration, Brazilian legal scene: ${cenario}. 
-Modern clean vector art with subtle 3D depth. Stylized human figures, navy blue and teal palette with coral accents. 
-Soft directional lighting, cream background gradient. Professional educational style.`
-      }
-    } else {
-      // Sem API key do Gemini - usar prompt básico
-      console.log('[gerar-imagem-exemplo] Usando prompt básico (sem DIREITO_PREMIUM_API_KEY)')
-      const cenario = exemploTexto
-        .replace(/[^\w\sáéíóúâêôãõçÁÉÍÓÚÂÊÔÃÕÇ.,!?-]/gi, ' ')
-        .replace(/\s+/g, ' ')
-        .trim()
-        .substring(0, 300)
-      
-      promptImagem = `Vertical editorial illustration, Brazilian legal scene: ${cenario}.
-Modern clean vector art, stylized figures, navy and teal colors with coral accents. Professional educational style.`
-    }
+CRITICAL: This must be a professional 3D rendered illustration in VERTICAL PORTRAIT format (9:16 aspect ratio). Studio lighting. NO text, words, letters, or numbers anywhere in the image. Ultra high quality, corporate marketing style. Clean gradient background.`
 
-    // Adicionar instruções finais críticas
-    promptImagem += `
+    console.log('[gerar-imagem-exemplo] Etapa 2: Gerando imagem com Nano Banana...')
 
-CRITICAL: Vertical 9:16 aspect ratio composition. NO text, words, letters, numbers, signs anywhere. Ultra high quality render. Clean professional aesthetic.`
-
-    console.log(`[gerar-imagem-exemplo] Gerando imagem com FLUX.1-dev...`)
-
-    const hf = new HfInference(HUGGING_FACE_ACCESS_TOKEN)
-    
-    // Usando FLUX.1-dev com formato vertical (768x1344 = 9:16)
-    const image = await hf.textToImage({
-      inputs: promptImagem,
-      model: 'black-forest-labs/FLUX.1-dev',
-      parameters: {
-        width: 768,
-        height: 1344,
-      }
+    const aiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp-image-generation:generateContent?key=${DIREITO_PREMIUM_API_KEY}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: promptFinal }] }],
+        generationConfig: {
+          responseModalities: ["TEXT", "IMAGE"]
+        }
+      })
     })
 
-    // 3. Converter para blob
-    const arrayBuffer = await image.arrayBuffer()
-    const imageBlob = new Blob([arrayBuffer], { type: 'image/png' })
+    if (!aiResponse.ok) {
+      const errorText = await aiResponse.text()
+      console.error('[gerar-imagem-exemplo] Erro na API Gemini Image:', aiResponse.status, errorText)
+      throw new Error(`Erro na geração de imagem: ${aiResponse.status}`)
+    }
 
-    console.log(`[gerar-imagem-exemplo] Imagem gerada, tamanho: ${imageBlob.size} bytes`)
+    const aiData = await aiResponse.json()
+    console.log('[gerar-imagem-exemplo] Resposta Gemini recebida')
 
-    // 4. Upload para Catbox
+    const parts = aiData.candidates?.[0]?.content?.parts || []
+    const imagePart = parts.find((p: any) => p.inlineData?.data)
+    const base64Data = imagePart?.inlineData?.data
+
+    if (!base64Data) {
+      console.error('[gerar-imagem-exemplo] Resposta sem imagem:', JSON.stringify(aiData).substring(0, 500))
+      throw new Error('Nenhuma imagem gerada na resposta')
+    }
+
+    // 4. Converter base64
+    const binaryString = atob(base64Data)
+    const uint8Array = new Uint8Array(binaryString.length)
+    for (let i = 0; i < binaryString.length; i++) {
+      uint8Array[i] = binaryString.charCodeAt(i)
+    }
+
+    console.log(`[gerar-imagem-exemplo] Imagem gerada, tamanho: ${uint8Array.length} bytes`)
+
+    // 5. Upload para Catbox
+    console.log('[gerar-imagem-exemplo] Fazendo upload para Catbox...')
     const formData = new FormData()
     formData.append('reqtype', 'fileupload')
-    formData.append('fileToUpload', imageBlob, `exemplo_${questaoId}_${Date.now()}.png`)
+    formData.append('fileToUpload', new Blob([uint8Array], { type: 'image/png' }), `exemplo_${questaoId}_${Date.now()}.png`)
 
     const catboxResponse = await fetch('https://catbox.moe/user/api.php', {
       method: 'POST',
@@ -210,7 +204,7 @@ CRITICAL: Vertical 9:16 aspect ratio composition. NO text, words, letters, numbe
 
     console.log(`[gerar-imagem-exemplo] Upload Catbox sucesso: ${imageUrl}`)
 
-    // 5. Salvar URL no banco
+    // 6. Salvar URL no banco
     const { error: updateError } = await supabase
       .from('QUESTOES_GERADAS')
       .update({ url_imagem_exemplo: imageUrl })
