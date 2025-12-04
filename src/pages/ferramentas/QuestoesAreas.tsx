@@ -7,10 +7,12 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
+import { QuestoesIntro } from "@/components/QuestoesIntro";
 
 const QuestoesAreas = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
+  const [mostrarIntro, setMostrarIntro] = useState(true);
 
   const { data: areas, isLoading } = useQuery({
     queryKey: ["questoes-areas-com-contagem"],
@@ -101,6 +103,16 @@ const QuestoesAreas = () => {
     "rgb(59, 130, 246)",
     "rgb(236, 72, 153)",
   ];
+
+  // Mostrar página de introdução
+  if (mostrarIntro) {
+    return (
+      <QuestoesIntro 
+        totalQuestoes={totalQuestoes} 
+        onAcessar={() => setMostrarIntro(false)} 
+      />
+    );
+  }
 
   return (
     <div className="px-3 py-4 max-w-4xl mx-auto pb-24">
