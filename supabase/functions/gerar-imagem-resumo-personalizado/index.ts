@@ -5,48 +5,58 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-// Função para gerar prompt contextualizado com IA (Gemini TEXT)
-async function gerarPromptComIA(resumoTexto: string, apiKey: string): Promise<string> {
+// Função para gerar prompt contextualizado com IA (Gemini TEXT) - Mesmo estilo das questões
+async function gerarPromptComIA(resumoTexto: string, titulo: string, apiKey: string): Promise<string> {
   const textoLimitado = resumoTexto.substring(0, 2000)
   
-  const promptParaGerarPrompt = `You are an expert visual storyteller who creates detailed prompts for cartoon illustrations that SPECIFICALLY represent legal summaries.
+  const promptParaGerarPrompt = `You are an expert visual storyteller who creates detailed prompts for cartoon illustrations that SPECIFICALLY represent legal case studies.
 
-LEGAL SUMMARY TO ILLUSTRATE:
+LEGAL CONTEXT:
+- Topic: ${titulo || 'Conceito Jurídico'}
+
+LEGAL CONTENT TO ILLUSTRATE:
 ${textoLimitado}
 
 YOUR MISSION:
-Analyze this legal summary carefully and create an image prompt that VISUALLY REPRESENTS THE MAIN CONCEPT. Extract:
-1. WHAT is the main legal topic or concept?
-2. WHO are the key actors involved? (lawyers, judges, citizens, companies, government)
-3. WHAT visual metaphor best represents this concept?
-4. WHAT setting would be appropriate? (courtroom, office, street, government building)
+Analyze this legal content carefully and create an image prompt that TELLS THIS STORY visually. Extract:
+1. WHO are the specific characters? (lawyers, judges, citizens, government officials, companies)
+2. WHAT is the specific action/situation happening?
+3. WHERE does it take place? (specific setting)
+4. WHAT objects or elements are key to understanding the concept?
 
 MANDATORY STYLE - MODERN CARTOON:
 - Style: Clean modern cartoon illustration, similar to Duolingo, Headspace, or explainer videos
 - Format: HORIZONTAL 16:9 landscape
 - Characters: Expressive cartoon characters with distinct features, showing clear emotions
 - Colors: Vibrant but harmonious palette, warm and inviting
-- Background: Simple but contextual environment
-- Mood: Educational and clear, making the legal concept easy to understand
+- Background: Simple but contextual environment (home, office, church, courthouse, street)
+- Mood: Educational and clear, making the legal situation easy to understand
 
 STORYTELLING REQUIREMENTS:
-- Show the MAIN CONCEPT from the summary visually
-- Use visual metaphors when abstract concepts are involved
-- Include visual elements that represent the legal context
+- Show the EXACT scenario from the content, not a generic scene
+- If there are multiple parties, show the dynamic between them
+- Include visual elements that represent the specific legal issue
 - Use body language and facial expressions to convey the situation
-- Add contextual props that reinforce the legal theme
+- Add contextual props that are mentioned or implied in the content
+
+EXAMPLES OF SPECIFIC SCENES:
+- For administrative law: Show a government building with officials making decisions
+- For contract law: Show parties signing documents or negotiating
+- For constitutional rights: Show citizens exercising or protecting their rights
+- For criminal law: Show the confrontation (non-graphic) with clear victim/perpetrator
+- For labor law: Show workplace situations with employees and employers
 
 ABSOLUTE RULES:
-1. IF ANY TEXT IS NEEDED IN THE IMAGE (signs, banners, documents, labels), IT MUST BE IN PORTUGUESE - WRITE IN UPPERCASE: "TRIBUNAL", "JUSTIÇA", "DIREITO", "LEI", "CONTRATO", "ADVOGADO", "JUIZ", etc.
+1. IF ANY TEXT IS NEEDED IN THE IMAGE (signs, banners, documents, labels), IT MUST BE IN PORTUGUESE - WRITE IN UPPERCASE: "TRIBUNAL", "POLÍCIA", "DELEGACIA", "PRISÃO", "FÓRUM", "CONTRATO", "ESCRITÓRIO", "BANCO", "HOSPITAL", "PREFEITURA", "JUSTIÇA", "LEI", "ADVOGADO", etc.
 2. NEVER use English text in the image - ALL text must be in BRAZILIAN PORTUGUESE
 3. NO graphic violence or blood
 4. NO inappropriate content
 5. Characters must look like distinct individuals, not generic people
-6. Scene must be SPECIFIC to this legal concept, not a generic illustration
+6. Scene must be SPECIFIC to this content, not a generic legal illustration
 
 IMPORTANT LANGUAGE RULE:
 - Any visible text on buildings, signs, documents, uniforms, or objects MUST be in PORTUGUESE
-- Examples: "COURT" should be "TRIBUNAL", "LAW" should be "LEI", "JUSTICE" should be "JUSTIÇA", "LAWYER" should be "ADVOGADO"
+- Examples: "COURT" should be "TRIBUNAL", "POLICE" should be "POLÍCIA", "PRISON" should be "PRISÃO", "LAWYER" should be "ADVOGADO"
 - Write the Portuguese text in UPPERCASE in your prompt so the image model understands it must be in Portuguese
 
 OUTPUT:
@@ -101,15 +111,15 @@ serve(async (req) => {
       throw new Error('DIREITO_PREMIUM_API_KEY não configurado')
     }
 
-    // 1. Gerar prompt contextualizado com IA
+    // 1. Gerar prompt contextualizado com IA (mesmo estilo das questões)
     console.log('[gerar-imagem-resumo-personalizado] Etapa 1: Gerando prompt com Gemini...')
-    const promptEspecifico = await gerarPromptComIA(resumoTexto, DIREITO_PREMIUM_API_KEY)
+    const promptEspecifico = await gerarPromptComIA(resumoTexto, titulo || '', DIREITO_PREMIUM_API_KEY)
 
-    // 2. Gerar imagem com Nano Banana (Gemini Image Generation)
+    // 2. Gerar imagem com Nano Banana (Gemini Image Generation) - Mesmo estilo das questões
     const promptFinal = `${promptEspecifico}
 
 CRITICAL STYLE: Modern colorful cartoon illustration, clean lines, expressive characters, 16:9 horizontal format. Vibrant colors, simple backgrounds, educational explainer style like Duolingo or Headspace. 
-CRITICAL LANGUAGE: IF there is ANY text visible in the image (on signs, buildings, documents, uniforms), it MUST be in BRAZILIAN PORTUGUESE, written in UPPERCASE. Example: "TRIBUNAL" not "COURT", "JUSTIÇA" not "JUSTICE", "LEI" not "LAW".
+CRITICAL LANGUAGE: IF there is ANY text visible in the image (on signs, buildings, documents, uniforms), it MUST be in BRAZILIAN PORTUGUESE, written in UPPERCASE. Example: "TRIBUNAL" not "COURT", "POLÍCIA" not "POLICE", "DELEGACIA" not "POLICE STATION".
 High quality render.`
 
     console.log('[gerar-imagem-resumo-personalizado] Etapa 2: Gerando imagem com Gemini...')
