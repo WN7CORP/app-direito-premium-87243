@@ -149,6 +149,7 @@ export type Database = {
       aulas_artigos: {
         Row: {
           aproveitamento_medio: number | null
+          audios: Json | null
           codigo_tabela: string
           conteudo_artigo: string
           created_at: string
@@ -161,6 +162,7 @@ export type Database = {
         }
         Insert: {
           aproveitamento_medio?: number | null
+          audios?: Json | null
           codigo_tabela: string
           conteudo_artigo: string
           created_at?: string
@@ -173,6 +175,7 @@ export type Database = {
         }
         Update: {
           aproveitamento_medio?: number | null
+          audios?: Json | null
           codigo_tabela?: string
           conteudo_artigo?: string
           created_at?: string
@@ -3027,6 +3030,33 @@ export type Database = {
           ultima_visualizacao?: string | null
           versao_conteudo?: number | null
           visualizacoes?: number | null
+        }
+        Relationships: []
+      }
+      fila_geracao_aulas: {
+        Row: {
+          codigo_tabela: string
+          created_at: string | null
+          em_processamento: boolean | null
+          id: string
+          ultima_atualizacao: string | null
+          ultimo_artigo_processado: number | null
+        }
+        Insert: {
+          codigo_tabela: string
+          created_at?: string | null
+          em_processamento?: boolean | null
+          id?: string
+          ultima_atualizacao?: string | null
+          ultimo_artigo_processado?: number | null
+        }
+        Update: {
+          codigo_tabela?: string
+          created_at?: string | null
+          em_processamento?: boolean | null
+          id?: string
+          ultima_atualizacao?: string | null
+          ultimo_artigo_processado?: number | null
         }
         Relationships: []
       }

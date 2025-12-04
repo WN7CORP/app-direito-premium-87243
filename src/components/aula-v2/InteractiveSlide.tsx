@@ -27,6 +27,7 @@ import { SlideLinhaTempo } from "./SlideLinhaTempo";
 import { SlideMapaMental } from "./SlideMapaMental";
 import { SlideDicaEstudo } from "./SlideDicaEstudo";
 import { SlideResumoVisual } from "./SlideResumoVisual";
+import { SlideAudioButton } from "./SlideAudioButton";
 import confetti from "canvas-confetti";
 
 interface InteractiveSlideProps {
@@ -40,7 +41,10 @@ interface InteractiveSlideProps {
   numeroArtigo?: string;
   codigoTabela?: string;
   secaoId?: number;
+  aulaId?: string;
+  audioUrl?: string;
   onImageGenerated?: (slideIndex: number, url: string) => void;
+  onAudioGenerated?: (slideIndex: number, url: string) => void;
 }
 
 const iconMap: Record<string, any> = {
@@ -98,7 +102,10 @@ export const InteractiveSlide = ({
   numeroArtigo,
   codigoTabela,
   secaoId,
-  onImageGenerated
+  aulaId,
+  audioUrl,
+  onImageGenerated,
+  onAudioGenerated
 }: InteractiveSlideProps) => {
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [showFeedback, setShowFeedback] = useState(false);
@@ -253,20 +260,43 @@ export const InteractiveSlide = ({
     return null;
   };
 
-  // Helper to render HTML content safely
+  // Helper to render HTML content safely with better Markdown handling
   const renderHtmlContent = (content: string) => {
+    if (!content) return null;
+    
+    // Clean up common Markdown artifacts that might be mixed in
+    let cleanedContent = content
+      .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>') // **bold** -> <strong>
+      .replace(/\*([^*]+)\*/g, '<em>$1</em>') // *italic* -> <em>
+      .replace(/`([^`]+)`/g, '<code class="bg-muted px-1 py-0.5 rounded text-sm">$1</code>') // `code` -> <code>
+      .replace(/^[-•]\s*/gm, '• ') // Normalize bullet points
+      .replace(/^(\d+)\.\s*/gm, '$1. '); // Keep numbered lists
+    
     // Check if content contains HTML tags
-    if (/<[^>]+>/.test(content)) {
+    if (/<[^>]+>/.test(cleanedContent)) {
       return (
         <div 
-          className="text-foreground leading-relaxed whitespace-pre-line [&_span]:rounded [&_span]:px-1"
-          dangerouslySetInnerHTML={{ __html: content }}
+          className="text-foreground leading-relaxed whitespace-pre-line prose prose-sm max-w-none dark:prose-invert [&_span]:rounded [&_span]:px-1 [&_strong]:font-semibold [&_em]:italic [&_code]:bg-muted [&_code]:px-1 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-sm"
+          dangerouslySetInnerHTML={{ __html: cleanedContent }}
         />
       );
     }
+    
+    // Split by paragraphs and render
+    const paragraphs = cleanedContent.split(/\n\n+/);
+    if (paragraphs.length > 1) {
+      return (
+        <div className="space-y-4 text-foreground leading-relaxed">
+          {paragraphs.map((para, idx) => (
+            <p key={idx} className="whitespace-pre-line">{para}</p>
+          ))}
+        </div>
+      );
+    }
+    
     return (
       <p className="text-foreground leading-relaxed whitespace-pre-line">
-        {content}
+        {cleanedContent}
       </p>
     );
   };
@@ -299,18 +329,31 @@ export const InteractiveSlide = ({
       {/* Slide content */}
       <div className="flex-1 flex flex-col">
         {/* Header with icon */}
-        <div className="flex items-center gap-3 mb-6">
-          <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${gradientColor} flex items-center justify-center shadow-lg`}>
-            <Icon className="w-6 h-6 text-white" />
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-3">
+            <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${gradientColor} flex items-center justify-center shadow-lg`}>
+              <Icon className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground uppercase tracking-wide">
+                {getSlideLabel()}
+              </p>
+              {slide.titulo && (
+                <h2 className="text-lg font-semibold text-foreground">{slide.titulo}</h2>
+              )}
+            </div>
           </div>
-          <div>
-            <p className="text-xs text-muted-foreground uppercase tracking-wide">
-              {getSlideLabel()}
-            </p>
-            {slide.titulo && (
-              <h2 className="text-lg font-semibold text-foreground">{slide.titulo}</h2>
-            )}
-          </div>
+          
+          {/* Audio button for text-based slides */}
+          {aulaId && !isQuickCheck && slide.conteudo && (
+            <SlideAudioButton
+              aulaId={aulaId}
+              slideKey={`${secaoId}-${slideIndex}`}
+              conteudo={slide.narrativa || slide.conteudo}
+              audioUrl={audioUrl}
+              onAudioGenerated={(url) => onAudioGenerated?.(slideIndex, url)}
+            />
+          )}
         </div>
 
         {/* Main content */}

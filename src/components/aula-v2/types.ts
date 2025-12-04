@@ -116,6 +116,8 @@ export interface AulaEstruturaV2 {
   }>;
   // Image cache
   imagensCache?: Record<string, string>; // key: "secaoId-slideIndex", value: imageUrl
+  // Audio cache
+  audiosCache?: Record<string, string>; // key: "secaoId-slideIndex", value: audioUrl
 }
 
 export type EtapaAulaV2 = 
