@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { MessageCircle, FileText, Newspaper, Sparkles, Film, GraduationCap, BookOpen, Monitor, Target } from "lucide-react";
+import { MessageCircle, FileText, Newspaper, Film, GraduationCap, BookOpen, Monitor, Target } from "lucide-react";
 const Ferramentas = () => {
   const navigate = useNavigate();
   const ferramentas = [{
@@ -14,12 +14,6 @@ const Ferramentas = () => {
     description: "Solicite acesso à plataforma desktop",
     icon: Monitor,
     route: "/acesso-desktop"
-  }, {
-    id: "novidades",
-    title: "Novidades",
-    description: "Atualizações e melhorias do app",
-    icon: Sparkles,
-    route: "/novidades"
   }, {
     id: "assistente-ia",
     title: "Assistente IA",
