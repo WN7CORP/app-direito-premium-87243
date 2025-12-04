@@ -58,9 +58,9 @@ serve(async (req) => {
     }
 
     // 2. Gerar áudio com Google TTS
-    const GOOGLE_TTS_API_KEY = Deno.env.get('DIREITO_PREMIUM_API_KEY')
+    const GOOGLE_TTS_API_KEY = Deno.env.get('GER')
     if (!GOOGLE_TTS_API_KEY) {
-      throw new Error('DIREITO_PREMIUM_API_KEY não configurado')
+      throw new Error('GER não configurado')
     }
 
     // Limitar texto para TTS (máx 5000 chars)
@@ -77,7 +77,7 @@ serve(async (req) => {
           input: { text: textoLimitado },
           voice: {
             languageCode: 'pt-BR',
-            name: 'pt-BR-Wavenet-B',
+            name: 'pt-BR-Chirp3-HD-Sadaltager',
             ssmlGender: 'MALE'
           },
           audioConfig: {
