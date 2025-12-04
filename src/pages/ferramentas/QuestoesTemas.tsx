@@ -274,12 +274,6 @@ const QuestoesTemas = () => {
                 }`}
               >
                 <div className="flex items-center gap-3">
-                  {modo === "selecionar" && (
-                    <Checkbox 
-                      checked={temasSelecionados.includes(item.tema)}
-                      className="data-[state=checked]:bg-emerald-500 data-[state=checked]:border-emerald-500"
-                    />
-                  )}
                   <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 transition-colors duration-500 ${
                     item.temQuestoes 
                       ? "bg-emerald-500/20 text-emerald-500" 
@@ -305,6 +299,12 @@ const QuestoesTemas = () => {
                         : `0/${item.totalSubtemas} subtemas`}
                     </p>
                   </div>
+                  {modo === "selecionar" && (
+                    <Checkbox 
+                      checked={temasSelecionados.includes(item.tema)}
+                      className="data-[state=checked]:bg-emerald-500 data-[state=checked]:border-emerald-500 shrink-0"
+                    />
+                  )}
                 </div>
                 
                 {/* Barra de progresso só aparece durante geração (parcial) */}
