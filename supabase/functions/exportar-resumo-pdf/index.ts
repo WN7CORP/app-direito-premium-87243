@@ -1,6 +1,5 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -19,7 +18,7 @@ serve(async (req) => {
       throw new Error("Resumo e título são obrigatórios");
     }
 
-    console.log("Gerando PDF ABNT formatado em Markdown para:", titulo);
+    console.log("Gerando PDF ABNT formatado para:", titulo);
 
     // Importar jsPDF dinamicamente
     const jsPDF = (await import("https://esm.sh/jspdf@2.5.1")).default;
@@ -31,56 +30,13 @@ serve(async (req) => {
     });
 
     // Configurações ABNT - Margens corretas
-    const margemEsquerda = 30; // 3cm
-    const margemDireita = 20; // 2cm
-    const margemSuperior = 30; // 3cm
-    const margemInferior = 20; // 2cm
+    const margemEsquerda = 30;
+    const margemDireita = 20;
+    const margemSuperior = 30;
+    const margemInferior = 20;
     const larguraUtil = 210 - margemEsquerda - margemDireita;
     let y = margemSuperior;
     let pageNumber = 1;
-
-    // Função para processar negrito (**texto**)
-    const processarNegrito = (texto: string, x: number, maxWidth: number): { lines: string[], hasBold: boolean } => {
-      const parts = texto.split(/(\*\*.*?\*\*)/g);
-      let hasBold = false;
-      
-      // Remover os asteriscos mas manter marcação
-      const cleanParts = parts.map(part => {
-        if (part.startsWith('**') && part.endsWith('**')) {
-          hasBold = true;
-          return { text: part.replace(/\*\*/g, ''), bold: true };
-        }
-        return { text: part, bold: false };
-      });
-      
-      // Juntar texto para split
-      let fullText = '';
-      cleanParts.forEach(p => { fullText += p.text; });
-      
-      return { 
-        lines: pdf.splitTextToSize(fullText, maxWidth),
-        hasBold 
-      };
-    };
-
-    // Função para renderizar linha com negrito
-    const renderizarLinhaNegrito = (texto: string, x: number, y: number) => {
-      const parts = texto.split(/(\*\*.*?\*\*)/g);
-      let currentX = x;
-      
-      for (const part of parts) {
-        if (part.startsWith('**') && part.endsWith('**')) {
-          pdf.setFont("times", "bold");
-          const boldText = part.replace(/\*\*/g, '');
-          pdf.text(boldText, currentX, y);
-          currentX += pdf.getTextWidth(boldText);
-        } else if (part) {
-          pdf.setFont("times", "normal");
-          pdf.text(part, currentX, y);
-          currentX += pdf.getTextWidth(part);
-        }
-      }
-    };
 
     // Função para verificar espaço e adicionar nova página
     const checkNewPage = (requiredSpace: number) => {
@@ -88,7 +44,6 @@ serve(async (req) => {
         pdf.addPage();
         y = margemSuperior;
         pageNumber++;
-        // Adicionar número da página (ABNT - a partir da 2ª página)
         if (pageNumber > 1) {
           pdf.setFontSize(10);
           pdf.setFont("times", "normal");
@@ -168,42 +123,27 @@ serve(async (req) => {
         continue;
       }
 
-      // Listas numeradas (1. 2. 3.)
+      // Listas numeradas
       if (/^\d+\.\s/.test(cleanLine)) {
         checkNewPage(10);
         pdf.setFontSize(14);
-        
-        // Processar negrito em listas numeradas
-        if (cleanLine.includes('**')) {
-          // Remover ** antes de processar
-          const cleanedLine = cleanLine.replace(/\*\*/g, '');
-          pdf.setFont("times", "normal");
-          const textLines = pdf.splitTextToSize(cleanedLine, larguraUtil - 5);
-          textLines.forEach((textLine: string, i: number) => {
-            checkNewPage(8);
-            pdf.text(textLine, margemEsquerda + (i > 0 ? 8 : 0), y);
-            y += 7;
-          });
-        } else {
-          pdf.setFont("times", "normal");
-          const textLines = pdf.splitTextToSize(cleanLine, larguraUtil - 5);
-          textLines.forEach((textLine: string, i: number) => {
-            checkNewPage(8);
-            pdf.text(textLine, margemEsquerda + (i > 0 ? 8 : 0), y);
-            y += 7;
-          });
-        }
+        const cleanedLine = cleanLine.replace(/\*\*/g, '');
+        pdf.setFont("times", "normal");
+        const textLines = pdf.splitTextToSize(cleanedLine, larguraUtil - 5);
+        textLines.forEach((textLine: string, i: number) => {
+          checkNewPage(8);
+          pdf.text(textLine, margemEsquerda + (i > 0 ? 8 : 0), y);
+          y += 7;
+        });
         y += 2;
         continue;
       }
 
-      // Listas com marcadores (- ou *)
+      // Listas com marcadores
       if (cleanLine.startsWith('- ') || cleanLine.startsWith('* ')) {
         checkNewPage(10);
         pdf.setFontSize(14);
         const text = cleanLine.replace(/^[-*]\s*/, '');
-        
-        // Remover ** completamente antes de processar
         const cleanedText = text.replace(/\*\*/g, '');
         pdf.setFont("times", "normal");
         const textLines = pdf.splitTextToSize('• ' + cleanedText, larguraUtil - 5);
@@ -216,21 +156,12 @@ serve(async (req) => {
         continue;
       }
 
-      // Texto com negrito inline **texto**
-      if (cleanLine.includes('**')) {
-        checkNewPage(10);
-        pdf.setFontSize(14);
-        renderizarLinhaNegrito(cleanLine, margemEsquerda, y);
-        y += 7;
-        y += 2;
-        continue;
-      }
-
       // Texto normal
       checkNewPage(10);
       pdf.setFontSize(14);
       pdf.setFont("times", "normal");
-      const textLines = pdf.splitTextToSize(cleanLine, larguraUtil);
+      const cleanedLine = cleanLine.replace(/\*\*/g, '');
+      const textLines = pdf.splitTextToSize(cleanedLine, larguraUtil);
       textLines.forEach((textLine: string) => {
         checkNewPage(8);
         pdf.text(textLine, margemEsquerda, y);
@@ -239,7 +170,7 @@ serve(async (req) => {
       y += 2;
     }
 
-    // Adicionar numeração de páginas (a partir da página 2)
+    // Adicionar numeração de páginas
     const totalPages = pdf.getNumberOfPages();
     for (let i = 2; i <= totalPages; i++) {
       pdf.setPage(i);
@@ -250,20 +181,32 @@ serve(async (req) => {
 
     // Gerar PDF como ArrayBuffer
     const pdfArrayBuffer = pdf.output('arraybuffer');
-    
-    console.log("PDF ABNT formatado com Markdown gerado com sucesso");
-
-    // Converter para base64
     const uint8Array = new Uint8Array(pdfArrayBuffer);
-    const base64 = btoa(String.fromCharCode(...uint8Array));
-    const pdfDataUrl = `data:application/pdf;base64,${base64}`;
+    
+    console.log("PDF gerado, fazendo upload para Catbox...");
 
-    console.log("PDF convertido para base64 com sucesso");
+    // Upload para Catbox.moe
+    const formData = new FormData();
+    formData.append('reqtype', 'fileupload');
+    const filename = `resumo_${titulo.substring(0, 30).replace(/[^a-zA-Z0-9]/g, '_')}_${Date.now()}.pdf`;
+    formData.append('fileToUpload', new Blob([uint8Array], { type: 'application/pdf' }), filename);
+
+    const catboxResponse = await fetch('https://catbox.moe/user/api.php', {
+      method: 'POST',
+      body: formData
+    });
+
+    if (!catboxResponse.ok) {
+      throw new Error('Falha no upload para Catbox');
+    }
+
+    const catboxUrl = await catboxResponse.text();
+    console.log("PDF uploaded para Catbox:", catboxUrl);
 
     return new Response(
       JSON.stringify({ 
-        pdfDataUrl,
-        message: "PDF gerado com sucesso!"
+        pdfUrl: catboxUrl.trim(),
+        message: "PDF gerado e enviado com sucesso!"
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );

@@ -6,46 +6,57 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-// Função para gerar prompt de imagem usando Gemini TEXT
+// Gerar prompt de imagem usando Gemini TEXT
 async function gerarPromptComIA(conteudo: string, tipo: string, area: string, tema: string, apiKey: string): Promise<string> {
-  const textoLimitado = conteudo.substring(0, 2000)
+  const textoLimitado = conteudo.substring(0, 2500)
   
-  const promptParaGerarPrompt = `You are an expert at creating image prompts for educational legal illustrations.
+  const promptParaGerarPrompt = `You are a master at creating prompts for generating beautiful, clean, minimalist educational illustrations.
 
-TASK: Read the legal text below and create an IMAGE PROMPT that visually represents the concept or situation described.
+CONTEXT:
+- Legal Area: ${area}
+- Topic: ${tema}
+- Content Type: ${tipo.startsWith('exemplo') ? 'A practical case study with characters and a story' : 'An abstract legal concept that needs visual representation'}
 
-LEGAL AREA: ${area}
-TOPIC: ${tema}
-TYPE: ${tipo.startsWith('exemplo') ? 'Practical case/example (show a scene with characters)' : 'Legal concept (show abstract visual metaphor)'}
-
-TEXT TO ANALYZE:
+CONTENT TO ILLUSTRATE:
 ${textoLimitado}
 
-ABSOLUTE RULES FOR THE IMAGE PROMPT YOU CREATE:
-1. NEVER describe any text, labels, captions, words, letters, or numbers to appear in the image
-2. NEVER use phrases like "with text saying", "labeled as", "written", "showing the word"
-3. Use ONLY visual elements: stick figures, arrows, shapes, objects, buildings, nature
-4. Describe ACTIONS and POSITIONS, not labels
-5. Use visual metaphors: scales for justice, chains for restriction, open doors for freedom, etc.
-6. For timelines: use arrows pointing left (past) or right (future), sun positions, clocks without numbers
-7. For comparisons: use size differences, colors (light vs dark), positions (up vs down)
+YOUR TASK:
+Create an image generation prompt that will produce a BEAUTIFUL, CLEAN, MODERN illustration.
 
-STYLE REQUIREMENTS (include in your prompt):
-- Simple hand-drawn sketch style with black ink lines
-- Cream/beige paper background
-- Educational and friendly appearance
-- Wide 16:9 landscape format
-- Minimalist, clean, no clutter
+STYLE TO REQUEST (MANDATORY - include these exact specifications):
+- Style: Modern flat illustration, soft pastel colors, warm tones
+- Background: Soft gradient from light beige to cream
+- Characters: Simple, friendly human figures with minimal facial features (just dots for eyes, simple curved line for smile)
+- Objects: Rounded corners, soft shadows, clean geometric shapes
+- Composition: Balanced, centered, with breathing room
+- Colors: Muted pastels - soft coral, sage green, dusty blue, warm cream, soft peach
+- NO OUTLINES - use color blocks and soft shadows only
+- Think: Headspace app, Notion illustrations, Slack empty states
 
-EXAMPLE OF GOOD PROMPT:
-"A simple hand-drawn sketch showing two stick figures: one on the left side holding an old dusty book, one on the right side holding a shiny new book. A large arrow points from left to right between them. The left side has darker shading, the right side is brighter. Black ink on cream paper, minimalist educational style, 16:9 format. No text or labels."
+FOR PRACTICAL CASES (examples):
+- Show 2-3 simple human figures in a scene
+- Use visual storytelling: who is doing what to whom
+- Show the conflict or situation with body language and positioning
+- Add relevant objects (documents, buildings, vehicles) in simple geometric style
 
-EXAMPLE OF BAD PROMPT (DO NOT DO THIS):
-"A diagram showing 'Old Law' on one side and 'New Law' on the other with labels..."
+FOR CONCEPTS (resumo):
+- Use visual metaphors: scales = balance/justice, bridges = connection, shields = protection
+- Show abstract relationships with simple arrows or connecting lines
+- Create a centered, icon-like composition
+- Think: app onboarding illustrations
 
-Now create a prompt for the text above. Return ONLY the image prompt, nothing else.`
+ABSOLUTE PROHIBITIONS (CRITICAL):
+1. NO TEXT of any kind - no words, letters, labels, numbers, captions
+2. NO realistic faces - only simple dots/circles for features
+3. NO complex details - keep everything minimal and clean
+4. NO harsh colors - only soft, muted tones
+5. NO busy compositions - maximum 3-4 main elements
 
-  console.log('Etapa 1: Gerando prompt específico com Gemini TEXT...')
+OUTPUT:
+Write ONLY the image prompt in English. No explanations, no quotes, just the prompt itself.
+Start directly with "A soft, modern flat illustration showing..."`
+
+  console.log('Etapa 1: Gerando prompt com Gemini TEXT...')
 
   const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`, {
     method: "POST",
@@ -53,8 +64,8 @@ Now create a prompt for the text above. Return ONLY the image prompt, nothing el
     body: JSON.stringify({
       contents: [{ parts: [{ text: promptParaGerarPrompt }] }],
       generationConfig: {
-        temperature: 0.8,
-        maxOutputTokens: 600
+        temperature: 0.9,
+        maxOutputTokens: 700
       }
     })
   })
@@ -72,7 +83,7 @@ Now create a prompt for the text above. Return ONLY the image prompt, nothing el
     throw new Error('Nenhum prompt gerado pela IA')
   }
 
-  console.log('Prompt gerado:', promptGerado.substring(0, 300) + '...')
+  console.log('Prompt gerado:', promptGerado.substring(0, 400))
   return promptGerado
 }
 
@@ -97,7 +108,6 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     const supabase = createClient(supabaseUrl, supabaseKey)
 
-    // Determinar coluna baseado no tipo
     const colunaMap: Record<string, string> = {
       'resumo': 'url_imagem_resumo',
       'exemplo1': 'url_imagem_exemplo_1',
@@ -109,7 +119,7 @@ serve(async (req) => {
       throw new Error('Tipo inválido. Use: resumo, exemplo1, exemplo2, exemplo3')
     }
 
-    // Verificar cache no banco
+    // Verificar cache
     const { data: resumoData, error: fetchError } = await supabase
       .from('RESUMO')
       .select('url_imagem_resumo, url_imagem_exemplo_1, url_imagem_exemplo_2, url_imagem_exemplo_3')
@@ -130,7 +140,7 @@ serve(async (req) => {
       )
     }
 
-    // ========== ETAPA 1: Gerar prompt específico com Gemini TEXT ==========
+    // ETAPA 1: Gerar prompt específico
     const promptEspecifico = await gerarPromptComIA(
       conteudo, 
       tipo, 
@@ -139,14 +149,16 @@ serve(async (req) => {
       DIREITO_PREMIUM_API_KEY
     )
 
-    // ========== ETAPA 2: Gerar imagem com Nano Banana ==========
-    // Adicionar reforço extra contra texto
+    // ETAPA 2: Gerar imagem com Nano Banana
     const promptFinal = `${promptEspecifico}
 
-CRITICAL: This image must contain ZERO text, ZERO words, ZERO letters, ZERO numbers, ZERO labels, ZERO captions. Only pure visual elements like shapes, arrows, stick figures, objects. If you are about to draw any text or letter, STOP and draw a simple shape instead.`
+CRITICAL REQUIREMENTS:
+- Absolutely NO text, words, letters, numbers, labels or any written content in the image
+- Modern flat illustration style with soft pastel colors
+- Clean, minimal, professional appearance
+- Warm, friendly, educational feeling`
 
-    console.log('Etapa 2: Gerando imagem com Nano Banana...')
-    console.log('Prompt final:', promptFinal.substring(0, 400))
+    console.log('Etapa 2: Gerando imagem...')
 
     const aiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp-image-generation:generateContent?key=${DIREITO_PREMIUM_API_KEY}`, {
       method: "POST",
@@ -166,9 +178,8 @@ CRITICAL: This image must contain ZERO text, ZERO words, ZERO letters, ZERO numb
     }
 
     const aiData = await aiResponse.json()
-    console.log('Resposta Nano Banana recebida')
+    console.log('Resposta Gemini recebida')
 
-    // Extrair imagem base64 da resposta
     const parts = aiData.candidates?.[0]?.content?.parts || []
     const imagePart = parts.find((p: any) => p.inlineData?.data)
     const base64Data = imagePart?.inlineData?.data
@@ -178,14 +189,14 @@ CRITICAL: This image must contain ZERO text, ZERO words, ZERO letters, ZERO numb
       throw new Error('Nenhuma imagem gerada na resposta')
     }
 
-    // Converter base64 para Uint8Array
+    // Converter base64
     const binaryString = atob(base64Data)
     const uint8Array = new Uint8Array(binaryString.length)
     for (let i = 0; i < binaryString.length; i++) {
       uint8Array[i] = binaryString.charCodeAt(i)
     }
 
-    // Upload para Catbox.moe
+    // Upload para Catbox
     console.log('Fazendo upload para Catbox...')
     const formData = new FormData()
     formData.append('reqtype', 'fileupload')
@@ -203,7 +214,7 @@ CRITICAL: This image must contain ZERO text, ZERO words, ZERO letters, ZERO numb
     const imageUrl = await catboxResponse.text()
     console.log('Imagem uploaded:', imageUrl)
 
-    // Salvar URL no banco
+    // Salvar URL
     const updateData: Record<string, string> = {}
     updateData[coluna] = imageUrl
 
@@ -215,7 +226,7 @@ CRITICAL: This image must contain ZERO text, ZERO words, ZERO letters, ZERO numb
     if (updateError) {
       console.error('Erro ao salvar URL:', updateError)
     } else {
-      console.log('URL salva no banco com sucesso')
+      console.log('URL salva com sucesso')
     }
 
     return new Response(

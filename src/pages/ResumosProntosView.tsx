@@ -319,29 +319,22 @@ const ResumosProntosView = () => {
     }
     toast({
       title: "Gerando PDF...",
-      description: "Isso pode levar alguns segundos"
+      description: "Aguarde, estamos criando o PDF"
     });
     try {
-      const {
-        data,
-        error
-      } = await supabase.functions.invoke("exportar-resumo-pdf", {
+      const { data, error } = await supabase.functions.invoke("exportar-resumo-pdf", {
         body: {
           resumo: resumoGerado.markdown,
           titulo: resumo.subtema
         }
       });
       if (error) throw error;
-      if (data?.pdfDataUrl) {
-        const link = document.createElement('a');
-        link.href = data.pdfDataUrl;
-        link.download = `resumo-${resumo.subtema.substring(0, 30).replace(/[^a-zA-Z0-9]/g, '_')}.pdf`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+      if (data?.pdfUrl) {
+        // Abrir o link do Catbox em uma nova aba
+        window.open(data.pdfUrl, '_blank');
         toast({
-          title: "PDF exportado!",
-          description: "O arquivo foi gerado e baixado com sucesso."
+          title: "PDF gerado!",
+          description: "O PDF foi aberto em uma nova aba."
         });
       }
     } catch (error: any) {
