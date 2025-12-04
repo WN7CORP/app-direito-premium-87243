@@ -279,7 +279,7 @@ const QuestoesTemas = () => {
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-medium text-sm line-clamp-1">{item.tema}</h3>
+                    <h3 className="font-medium text-sm">{item.tema}</h3>
                     <p className="text-xs text-muted-foreground">
                       {item.temQuestoes 
                         ? `${item.totalQuestoes} questões disponíveis` 
