@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Download, Share2, Loader2, Network, RefreshCw } from "lucide-react";
@@ -63,11 +63,11 @@ export const MapaMentalModal = ({
   };
 
   // Carregar automaticamente ao abrir o modal
-  useEffect(() => {
-    if (isOpen && !imagemUrl && !isLoading && !error) {
+  useState(() => {
+    if (isOpen && !imagemUrl && !isLoading) {
       gerarMapaMental();
     }
-  }, [isOpen]);
+  });
 
   const handleDownload = async () => {
     if (!imagemUrl) return;
@@ -96,6 +96,17 @@ export const MapaMentalModal = ({
     const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(texto)}`;
     window.open(whatsappUrl, '_blank');
   };
+
+  const handleOpenModal = () => {
+    if (!imagemUrl && !isLoading) {
+      gerarMapaMental();
+    }
+  };
+
+  // Trigger generation when modal opens
+  if (isOpen && !imagemUrl && !isLoading && !error) {
+    handleOpenModal();
+  }
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
