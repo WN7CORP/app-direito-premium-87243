@@ -86,7 +86,7 @@ export const AudioPlayer = ({ audioUrl, onGenerate, isLoading, label = "Narrar" 
 
   // Player horizontal elegante
   return (
-    <div className="w-full bg-card/80 backdrop-blur-sm border border-primary/20 rounded-lg p-3 shadow-md">
+    <div className="w-full bg-[#2a1f1f] border border-primary/20 rounded-lg p-3">
       <audio ref={audioRef} src={audioUrl} preload="metadata" />
       
       <div className="flex items-center gap-3">
