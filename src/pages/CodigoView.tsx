@@ -29,6 +29,7 @@ import { formatForWhatsApp } from "@/lib/formatWhatsApp";
 import { useProgressiveLoad } from "@/hooks/useProgressiveLoad";
 import { getCodigoFromTable } from "@/lib/codigoMappings";
 import { AulaArtigoBreakdown } from "@/components/aula-v2/AulaArtigoBreakdown";
+import { MapaMentalModal } from "@/components/MapaMentalModal";
 interface Article {
   id: number;
   "Número do Artigo": string | null;
@@ -89,6 +90,10 @@ const CodigoView = () => {
   // Aula Artigo state
   const [aulaArtigoModalOpen, setAulaArtigoModalOpen] = useState(false);
   const [aulaArtigoData, setAulaArtigoData] = useState({ artigo: "", numeroArtigo: "" });
+  
+  // Mapa Mental state
+  const [mapaMentalModalOpen, setMapaMentalModalOpen] = useState(false);
+  const [mapaMentalData, setMapaMentalData] = useState({ artigo: "", numeroArtigo: "" });
   
   // Tabs state
   const [activeTab, setActiveTab] = useState<'artigos' | 'playlist' | 'ranking'>('artigos');
@@ -525,6 +530,15 @@ const CodigoView = () => {
         conteudoArtigo={aulaArtigoData.artigo}
       />
 
+      {/* Mapa Mental Modal */}
+      <MapaMentalModal
+        isOpen={mapaMentalModalOpen}
+        onClose={() => setMapaMentalModalOpen(false)}
+        codigoTabela={codeName}
+        numeroArtigo={mapaMentalData.numeroArtigo}
+        conteudoArtigo={mapaMentalData.artigo}
+      />
+
       {/* Flashcards Modal */}
       {flashcardsModalOpen && (
         <div className="fixed inset-0 bg-background/95 backdrop-blur-sm z-50 flex items-center justify-center p-4">
@@ -705,6 +719,10 @@ const CodigoView = () => {
                     onOpenAulaArtigo={() => {
                       setAulaArtigoData({ artigo: article["Artigo"]!, numeroArtigo: article["Número do Artigo"]! });
                       setAulaArtigoModalOpen(true);
+                    }}
+                    onOpenMapaMental={() => {
+                      setMapaMentalData({ artigo: article["Artigo"]!, numeroArtigo: `Art. ${article["Número do Artigo"]}` });
+                      setMapaMentalModalOpen(true);
                     }}
                     loadingFlashcards={loadingFlashcards}
                     isCommentPlaying={stickyPlayerOpen && currentAudio.isComment && currentAudio.title.includes(article["Número do Artigo"]!)}
