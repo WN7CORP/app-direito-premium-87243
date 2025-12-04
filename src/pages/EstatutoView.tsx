@@ -26,6 +26,7 @@ import { formatForWhatsApp } from "@/lib/formatWhatsApp";
 import { useArticleTracking } from "@/hooks/useArticleTracking";
 import { BuscaCompacta } from "@/components/BuscaCompacta";
 import { ArtigoListaCompacta } from "@/components/ArtigoListaCompacta";
+import { MapaMentalModal } from "@/components/MapaMentalModal";
 
 interface Article {
   id: number;
@@ -83,6 +84,10 @@ const EstatutoView = () => {
   const [questoesData, setQuestoesData] = useState({ artigo: "", numeroArtigo: "" });
   const [perguntaModalOpen, setPerguntaModalOpen] = useState(false);
   const [perguntaData, setPerguntaData] = useState({ artigo: "", numeroArtigo: "" });
+  
+  // Mapa Mental state
+  const [mapaMentalModalOpen, setMapaMentalModalOpen] = useState(false);
+  const [mapaMentalData, setMapaMentalData] = useState({ artigo: "", numeroArtigo: "" });
   
   // Tabs state
   const [activeTab, setActiveTab] = useState<'artigos' | 'playlist' | 'ranking'>('artigos');
@@ -389,6 +394,15 @@ const EstatutoView = () => {
       {/* Pergunta Modal */}
       <PerguntaModal isOpen={perguntaModalOpen} onClose={() => setPerguntaModalOpen(false)} artigo={perguntaData.artigo} numeroArtigo={perguntaData.numeroArtigo} />
 
+      {/* Mapa Mental Modal */}
+      <MapaMentalModal
+        isOpen={mapaMentalModalOpen}
+        onClose={() => setMapaMentalModalOpen(false)}
+        codigoTabela={estatutoName}
+        numeroArtigo={mapaMentalData.numeroArtigo}
+        conteudoArtigo={mapaMentalData.artigo}
+      />
+
       {flashcardsModalOpen && (
         <div className="fixed inset-0 bg-background/95 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-card border border-border rounded-2xl max-w-3xl w-full max-h-[90vh] flex flex-col shadow-2xl">
@@ -502,6 +516,10 @@ const EstatutoView = () => {
                   setPerguntaData({ artigo, numeroArtigo });
                   setPerguntaModalOpen(true);
                 }}
+                onOpenMapaMental={(artigo, numeroArtigo) => {
+                  setMapaMentalData({ artigo, numeroArtigo: `Art. ${numeroArtigo}` });
+                  setMapaMentalModalOpen(true);
+                }}
                 loadingFlashcards={loadingFlashcards}
                 isCommentPlaying={currentAudio.url === article["Comentario"] && stickyPlayerOpen}
               />
@@ -551,6 +569,7 @@ interface ArticleCardProps {
   onOpenTermos: (artigo: string, numeroArtigo: string) => void;
   onOpenQuestoes: (artigo: string, numeroArtigo: string) => void;
   onPerguntar: (artigo: string, numeroArtigo: string) => void;
+  onOpenMapaMental: (artigo: string, numeroArtigo: string) => void;
   loadingFlashcards: boolean;
   isCommentPlaying: boolean;
 }
@@ -569,6 +588,7 @@ const ArticleCard = ({
   onOpenTermos,
   onOpenQuestoes,
   onPerguntar,
+  onOpenMapaMental,
   loadingFlashcards,
   isCommentPlaying
 }: ArticleCardProps) => {
@@ -649,6 +669,7 @@ const ArticleCard = ({
           onOpenTermos={() => onOpenTermos(article["Artigo"] || "", article["Número do Artigo"] || "")}
           onOpenQuestoes={() => onOpenQuestoes(article["Artigo"] || "", article["Número do Artigo"] || "")}
           onPerguntar={() => onPerguntar(article["Artigo"] || "", article["Número do Artigo"] || "")}
+          onOpenMapaMental={() => onOpenMapaMental(article["Artigo"] || "", article["Número do Artigo"] || "")}
           loadingFlashcards={loadingFlashcards}
           isCommentPlaying={isCommentPlaying}
         />

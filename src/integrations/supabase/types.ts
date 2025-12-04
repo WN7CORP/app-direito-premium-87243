@@ -5196,6 +5196,39 @@ export type Database = {
         }
         Relationships: []
       }
+      mapas_mentais_artigos: {
+        Row: {
+          codigo_tabela: string
+          conteudo_artigo: string
+          created_at: string | null
+          id: string
+          imagem_url: string | null
+          numero_artigo: string
+          prompt_usado: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          codigo_tabela: string
+          conteudo_artigo: string
+          created_at?: string | null
+          id?: string
+          imagem_url?: string | null
+          numero_artigo: string
+          prompt_usado?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          codigo_tabela?: string
+          conteudo_artigo?: string
+          created_at?: string | null
+          id?: string
+          imagem_url?: string | null
+          numero_artigo?: string
+          prompt_usado?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       meu_brasil_casos: {
         Row: {
           ano: number | null
