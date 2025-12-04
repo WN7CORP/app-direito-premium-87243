@@ -138,7 +138,7 @@ const QuestoesConcurso = ({ questoes, onFinish, area, tema }: QuestoesConcursoPr
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [currentIndex]);
 
-  // Gerar áudio do enunciado em background (NÃO reproduz automaticamente)
+  // Gerar áudio do enunciado e reproduzir automaticamente
   useEffect(() => {
     const questaoAtual = questoesState[currentIndex];
     if (!questaoAtual) return;
@@ -146,10 +146,26 @@ const QuestoesConcurso = ({ questoes, onFinish, area, tema }: QuestoesConcursoPr
     // Parar áudios anteriores
     stopAllAudio();
 
-    // Se não tem áudio, gerar em background
-    if (!questaoAtual.url_audio) {
-      gerarAudioGenerico(questaoAtual.id, questaoAtual.enunciado, 'enunciado');
-    }
+    const iniciarAudioEnunciado = async () => {
+      let url = questaoAtual.url_audio;
+      
+      // Se não tem áudio, gerar
+      if (!url) {
+        url = await gerarAudioGenerico(questaoAtual.id, questaoAtual.enunciado, 'enunciado');
+      }
+      
+      // Reproduzir automaticamente
+      if (url && audioRef.current) {
+        audioRef.current.src = url;
+        audioRef.current.play().then(() => {
+          setIsPlaying(true);
+        }).catch((err) => {
+          console.log('Autoplay bloqueado pelo navegador:', err);
+        });
+      }
+    };
+
+    iniciarAudioEnunciado();
   }, [currentIndex]);
 
   // Função para parar todos os áudios
