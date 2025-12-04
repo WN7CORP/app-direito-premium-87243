@@ -53,3 +53,6 @@ verify_jwt = false
 
 [functions.gerar-imagem-resumo]
 verify_jwt = false
+
+[functions.gerar-imagem-resumo-personalizado]
+verify_jwt = false
