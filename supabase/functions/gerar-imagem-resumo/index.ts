@@ -10,37 +10,40 @@ const corsHeaders = {
 async function gerarPromptComIA(conteudo: string, tipo: string, area: string, tema: string, apiKey: string): Promise<string> {
   const textoLimitado = conteudo.substring(0, 2000)
   
-  const instrucaoTipo = tipo.startsWith('exemplo') 
-    ? `Crie uma CENA NARRATIVA visual mostrando os personagens e a situação descrita. 
-       Foque em: quem são as pessoas, o que estão fazendo, onde estão, qual é o conflito/problema.
-       Exemplo: "Uma mulher com dois filhos pequenos pega pães de uma prateleira enquanto o padeiro observa"`
-    : `Crie um DIAGRAMA CONCEITUAL visual mostrando as relações entre os conceitos jurídicos.
-       Foque em: símbolos abstratos, setas conectando ideias, hierarquias visuais.
-       Exemplo: "Diagrama mostrando três círculos conectados por setas: Conduta → Resultado → Nexo Causal"`
+  const promptParaGerarPrompt = `You are an expert at creating image prompts for educational legal illustrations.
 
-  const promptParaGerarPrompt = `Você é um especialista em criar prompts de imagem educacionais.
-Analise o texto jurídico abaixo e crie um PROMPT DE IMAGEM em inglês para ilustrá-lo.
+TASK: Read the legal text below and create an IMAGE PROMPT that visually represents the concept or situation described.
 
-ÁREA: ${area}
-TEMA: ${tema}
-TIPO DE ILUSTRAÇÃO: ${tipo.startsWith('exemplo') ? 'Cena narrativa (caso prático)' : 'Diagrama conceitual'}
+LEGAL AREA: ${area}
+TOPIC: ${tema}
+TYPE: ${tipo.startsWith('exemplo') ? 'Practical case/example (show a scene with characters)' : 'Legal concept (show abstract visual metaphor)'}
 
-TEXTO PARA ANALISAR:
+TEXT TO ANALYZE:
 ${textoLimitado}
 
-INSTRUÇÕES PARA O PROMPT:
-${instrucaoTipo}
+ABSOLUTE RULES FOR THE IMAGE PROMPT YOU CREATE:
+1. NEVER describe any text, labels, captions, words, letters, or numbers to appear in the image
+2. NEVER use phrases like "with text saying", "labeled as", "written", "showing the word"
+3. Use ONLY visual elements: stick figures, arrows, shapes, objects, buildings, nature
+4. Describe ACTIONS and POSITIONS, not labels
+5. Use visual metaphors: scales for justice, chains for restriction, open doors for freedom, etc.
+6. For timelines: use arrows pointing left (past) or right (future), sun positions, clocks without numbers
+7. For comparisons: use size differences, colors (light vs dark), positions (up vs down)
 
-REGRAS OBRIGATÓRIAS DO PROMPT:
-1. Descreva personagens como "stick figures" simples
-2. Descreva objetos e cenários de forma básica
-3. Estilo OBRIGATÓRIO: "Simple hand-drawn sketch, black ink lines on cream/beige paper background"
-4. PROIBIDO: qualquer texto, palavras, letras, números, rótulos ou legendas na imagem
-5. Use setas e símbolos visuais para mostrar relações
-6. Formato: paisagem 16:9
-7. Mantenha a ilustração simples e educacional
+STYLE REQUIREMENTS (include in your prompt):
+- Simple hand-drawn sketch style with black ink lines
+- Cream/beige paper background
+- Educational and friendly appearance
+- Wide 16:9 landscape format
+- Minimalist, clean, no clutter
 
-Retorne APENAS o prompt em inglês, sem explicações, sem aspas, direto o texto do prompt.`
+EXAMPLE OF GOOD PROMPT:
+"A simple hand-drawn sketch showing two stick figures: one on the left side holding an old dusty book, one on the right side holding a shiny new book. A large arrow points from left to right between them. The left side has darker shading, the right side is brighter. Black ink on cream paper, minimalist educational style, 16:9 format. No text or labels."
+
+EXAMPLE OF BAD PROMPT (DO NOT DO THIS):
+"A diagram showing 'Old Law' on one side and 'New Law' on the other with labels..."
+
+Now create a prompt for the text above. Return ONLY the image prompt, nothing else.`
 
   console.log('Etapa 1: Gerando prompt específico com Gemini TEXT...')
 
@@ -50,8 +53,8 @@ Retorne APENAS o prompt em inglês, sem explicações, sem aspas, direto o texto
     body: JSON.stringify({
       contents: [{ parts: [{ text: promptParaGerarPrompt }] }],
       generationConfig: {
-        temperature: 0.7,
-        maxOutputTokens: 500
+        temperature: 0.8,
+        maxOutputTokens: 600
       }
     })
   })
@@ -69,7 +72,7 @@ Retorne APENAS o prompt em inglês, sem explicações, sem aspas, direto o texto
     throw new Error('Nenhum prompt gerado pela IA')
   }
 
-  console.log('Prompt gerado:', promptGerado.substring(0, 200) + '...')
+  console.log('Prompt gerado:', promptGerado.substring(0, 300) + '...')
   return promptGerado
 }
 
@@ -137,16 +140,13 @@ serve(async (req) => {
     )
 
     // ========== ETAPA 2: Gerar imagem com Nano Banana ==========
+    // Adicionar reforço extra contra texto
     const promptFinal = `${promptEspecifico}
 
-CRITICAL STYLE REQUIREMENTS:
-- Simple hand-drawn sketch style
-- Black ink lines on cream/beige paper background
-- Educational and friendly appearance
-- Wide 16:9 landscape format
-- DO NOT include ANY text, words, letters, numbers, labels, or captions in the image. ONLY drawings.`
+CRITICAL: This image must contain ZERO text, ZERO words, ZERO letters, ZERO numbers, ZERO labels, ZERO captions. Only pure visual elements like shapes, arrows, stick figures, objects. If you are about to draw any text or letter, STOP and draw a simple shape instead.`
 
     console.log('Etapa 2: Gerando imagem com Nano Banana...')
+    console.log('Prompt final:', promptFinal.substring(0, 400))
 
     const aiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp-image-generation:generateContent?key=${DIREITO_PREMIUM_API_KEY}`, {
       method: "POST",
