@@ -5835,6 +5835,7 @@ export type Database = {
           url_imagem_exemplo_2: string | null
           url_imagem_exemplo_3: string | null
           url_imagem_resumo: string | null
+          url_pdf: string | null
         }
         Insert: {
           area?: string | null
@@ -5853,6 +5854,7 @@ export type Database = {
           url_imagem_exemplo_2?: string | null
           url_imagem_exemplo_3?: string | null
           url_imagem_resumo?: string | null
+          url_pdf?: string | null
         }
         Update: {
           area?: string | null
@@ -5871,6 +5873,7 @@ export type Database = {
           url_imagem_exemplo_2?: string | null
           url_imagem_exemplo_3?: string | null
           url_imagem_resumo?: string | null
+          url_pdf?: string | null
         }
         Relationships: []
       }
