@@ -10,53 +10,53 @@ const corsHeaders = {
 async function gerarPromptComIA(conteudo: string, tipo: string, area: string, tema: string, apiKey: string): Promise<string> {
   const textoLimitado = conteudo.substring(0, 2500)
   
-  const promptParaGerarPrompt = `You are a master at creating prompts for generating beautiful, clean, minimalist educational illustrations.
+  const promptParaGerarPrompt = `You are an expert at creating prompts for professional, polished 3D illustrations.
 
 CONTEXT:
 - Legal Area: ${area}
 - Topic: ${tema}
-- Content Type: ${tipo.startsWith('exemplo') ? 'A practical case study with characters and a story' : 'An abstract legal concept that needs visual representation'}
+- Content Type: ${tipo.startsWith('exemplo') ? 'A practical case study - show a scene with characters' : 'An abstract legal concept - show a symbolic visual metaphor'}
 
 CONTENT TO ILLUSTRATE:
 ${textoLimitado}
 
 YOUR TASK:
-Create an image generation prompt that will produce a BEAUTIFUL, CLEAN, MODERN illustration.
+Create an image generation prompt for a PROFESSIONAL, POLISHED, HIGH-QUALITY 3D illustration.
 
-STYLE TO REQUEST (MANDATORY - include these exact specifications):
-- Style: Modern flat illustration, soft pastel colors, warm tones
-- Background: Soft gradient from light beige to cream
-- Characters: Simple, friendly human figures with minimal facial features (just dots for eyes, simple curved line for smile)
-- Objects: Rounded corners, soft shadows, clean geometric shapes
-- Composition: Balanced, centered, with breathing room
-- Colors: Muted pastels - soft coral, sage green, dusty blue, warm cream, soft peach
-- NO OUTLINES - use color blocks and soft shadows only
-- Think: Headspace app, Notion illustrations, Slack empty states
+MANDATORY STYLE SPECIFICATIONS:
+- Style: Professional 3D isometric illustration, Blender-quality render
+- Lighting: Soft studio lighting with subtle shadows
+- Colors: Corporate color palette - deep blues, teals, warm oranges, clean whites
+- Characters: Stylized 3D human figures (like Pixar style but simpler), professional appearance
+- Objects: Clean 3D models with smooth surfaces, subtle gradients, slight glossy finish
+- Background: Clean gradient background (light blue to white, or soft gray gradient)
+- Quality: Ultra high definition, professional marketing quality
+- Think: Stripe, Linear, or Notion marketing illustrations
 
-FOR PRACTICAL CASES (examples):
-- Show 2-3 simple human figures in a scene
-- Use visual storytelling: who is doing what to whom
-- Show the conflict or situation with body language and positioning
-- Add relevant objects (documents, buildings, vehicles) in simple geometric style
+FOR CASE STUDIES (exemplo):
+- Show 2-3 professional 3D characters in a business/legal scene
+- Include relevant 3D objects: documents, buildings, computers, courtrooms
+- Use body language and positioning to tell the story
+- Professional corporate setting
 
 FOR CONCEPTS (resumo):
-- Use visual metaphors: scales = balance/justice, bridges = connection, shields = protection
-- Show abstract relationships with simple arrows or connecting lines
-- Create a centered, icon-like composition
-- Think: app onboarding illustrations
+- Create a powerful 3D symbolic composition
+- Use iconic legal symbols rendered in 3D: scales of justice, gavels, shields, documents
+- Create a centered, hero-image style composition
+- Add subtle floating elements for depth
 
-ABSOLUTE PROHIBITIONS (CRITICAL):
-1. NO TEXT of any kind - no words, letters, labels, numbers, captions
-2. NO realistic faces - only simple dots/circles for features
-3. NO complex details - keep everything minimal and clean
-4. NO harsh colors - only soft, muted tones
-5. NO busy compositions - maximum 3-4 main elements
+ABSOLUTE PROHIBITIONS:
+1. NO TEXT - no words, letters, labels, numbers, captions, signs with writing
+2. NO hand-drawn or sketch style - must look professionally rendered
+3. NO flat 2D style - must be 3D with depth and lighting
+4. NO cartoon or childish style - professional corporate aesthetic
+5. NO busy or cluttered compositions - clean and focused
 
 OUTPUT:
-Write ONLY the image prompt in English. No explanations, no quotes, just the prompt itself.
-Start directly with "A soft, modern flat illustration showing..."`
+Write ONLY the image prompt. No explanations, no quotes.
+Start with: "A professional 3D isometric illustration showing..."`
 
-  console.log('Etapa 1: Gerando prompt com Gemini TEXT...')
+  console.log('Etapa 1: Gerando prompt profissional...')
 
   const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`, {
     method: "POST",
@@ -64,7 +64,7 @@ Start directly with "A soft, modern flat illustration showing..."`
     body: JSON.stringify({
       contents: [{ parts: [{ text: promptParaGerarPrompt }] }],
       generationConfig: {
-        temperature: 0.9,
+        temperature: 0.8,
         maxOutputTokens: 700
       }
     })
@@ -152,13 +152,9 @@ serve(async (req) => {
     // ETAPA 2: Gerar imagem com Nano Banana
     const promptFinal = `${promptEspecifico}
 
-CRITICAL REQUIREMENTS:
-- Absolutely NO text, words, letters, numbers, labels or any written content in the image
-- Modern flat illustration style with soft pastel colors
-- Clean, minimal, professional appearance
-- Warm, friendly, educational feeling`
+CRITICAL: This must be a professional 3D rendered illustration with studio lighting. NO text, words, letters, or numbers anywhere in the image. Ultra high quality, corporate marketing style. Clean gradient background.`
 
-    console.log('Etapa 2: Gerando imagem...')
+    console.log('Etapa 2: Gerando imagem profissional...')
 
     const aiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp-image-generation:generateContent?key=${DIREITO_PREMIUM_API_KEY}`, {
       method: "POST",
