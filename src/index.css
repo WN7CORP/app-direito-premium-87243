@@ -86,8 +86,19 @@ All colors MUST be HSL.
     @apply border-border;
   }
 
+  html {
+    background-color: hsl(0, 0%, 12%);
+  }
+
   body {
     @apply bg-background text-foreground;
+    background-color: hsl(0, 0%, 12%);
+    min-height: 100vh;
+  }
+  
+  #root {
+    min-height: 100vh;
+    background-color: hsl(0, 0%, 12%);
   }
 
   /* Markdown styles for chat */
