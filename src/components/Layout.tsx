@@ -102,8 +102,7 @@ export const Layout = ({ children }: LayoutProps) => {
   // Esconder Header em páginas com header próprio
   const hideHeader = 
     location.pathname === "/professora" || 
-    location.pathname === "/chat-professora" ||
-    location.pathname === "/ferramentas/questoes/resolver";
+    location.pathname === "/chat-professora";
 
   // DESKTOP LAYOUT (>= 1024px)
   if (isDesktop) {
