@@ -6,6 +6,97 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Função para normalizar texto para TTS - expande abreviações jurídicas
+function normalizarTextoParaTTS(texto: string): string {
+  let textoNormalizado = texto;
+  
+  // Expandir abreviações jurídicas comuns
+  const abreviacoes: [RegExp, string][] = [
+    // Artigo - várias formas
+    [/\bArt\.\s*/gi, 'Artigo '],
+    [/\bart\.\s*/g, 'artigo '],
+    [/\barts\.\s*/gi, 'artigos '],
+    
+    // Parágrafo
+    [/§\s*(\d+)/g, 'parágrafo $1'],
+    [/§§\s*/g, 'parágrafos '],
+    [/§\s*único/gi, 'parágrafo único'],
+    
+    // Inciso
+    [/\bInc\.\s*/gi, 'Inciso '],
+    [/\binc\.\s*/g, 'inciso '],
+    [/\bincs\.\s*/gi, 'incisos '],
+    
+    // Alínea
+    [/\bAl\.\s*/gi, 'Alínea '],
+    [/\bal\.\s*/g, 'alínea '],
+    
+    // Número
+    [/\bNº\s*/gi, 'número '],
+    [/\bn[º°]\s*/gi, 'número '],
+    [/\bNr\.\s*/gi, 'número '],
+    
+    // Constituição Federal
+    [/\bCF\/88\b/gi, 'Constituição Federal de 1988'],
+    [/\bCF\b/g, 'Constituição Federal'],
+    
+    // Códigos
+    [/\bCC\/2002\b/gi, 'Código Civil de 2002'],
+    [/\bCC\b/g, 'Código Civil'],
+    [/\bCP\b/g, 'Código Penal'],
+    [/\bCPC\b/g, 'Código de Processo Civil'],
+    [/\bCPP\b/g, 'Código de Processo Penal'],
+    [/\bCLT\b/g, 'Consolidação das Leis do Trabalho'],
+    [/\bCTN\b/g, 'Código Tributário Nacional'],
+    [/\bCDC\b/g, 'Código de Defesa do Consumidor'],
+    [/\bCTB\b/g, 'Código de Trânsito Brasileiro'],
+    [/\bECA\b/g, 'Estatuto da Criança e do Adolescente'],
+    
+    // Tribunais
+    [/\bSTF\b/g, 'Supremo Tribunal Federal'],
+    [/\bSTJ\b/g, 'Superior Tribunal de Justiça'],
+    [/\bTST\b/g, 'Tribunal Superior do Trabalho'],
+    [/\bTSE\b/g, 'Tribunal Superior Eleitoral'],
+    [/\bTJ\b/g, 'Tribunal de Justiça'],
+    [/\bTRF\b/g, 'Tribunal Regional Federal'],
+    [/\bTRT\b/g, 'Tribunal Regional do Trabalho'],
+    [/\bTRE\b/g, 'Tribunal Regional Eleitoral'],
+    
+    // Outros termos jurídicos
+    [/\bMP\b/g, 'Ministério Público'],
+    [/\bOAB\b/g, 'Ordem dos Advogados do Brasil'],
+    [/\bDOU\b/g, 'Diário Oficial da União'],
+    [/\bLC\b/g, 'Lei Complementar'],
+    [/\bEC\b/g, 'Emenda Constitucional'],
+    [/\bADI\b/g, 'Ação Direta de Inconstitucionalidade'],
+    [/\bADC\b/g, 'Ação Declaratória de Constitucionalidade'],
+    [/\bADPF\b/g, 'Arguição de Descumprimento de Preceito Fundamental'],
+    [/\bRE\b/g, 'Recurso Extraordinário'],
+    [/\bREsp\b/gi, 'Recurso Especial'],
+    [/\bHC\b/g, 'Habeas Corpus'],
+    [/\bMS\b/g, 'Mandado de Segurança'],
+    
+    // Expressões latinas comuns
+    [/\bin fine\b/gi, 'in fine'],
+    [/\bcaput\b/gi, 'caput'],
+    
+    // Outras abreviações
+    [/\bDr\.\s*/g, 'Doutor '],
+    [/\bDra\.\s*/g, 'Doutora '],
+    [/\bProf\.\s*/g, 'Professor '],
+    [/\bProfa\.\s*/g, 'Professora '],
+    [/\betc\.\s*/g, 'etcétera '],
+    [/\bp\.\s*ex\.\s*/gi, 'por exemplo '],
+    [/\bi\.e\.\s*/gi, 'isto é '],
+  ];
+  
+  for (const [regex, substituicao] of abreviacoes) {
+    textoNormalizado = textoNormalizado.replace(regex, substituicao);
+  }
+  
+  return textoNormalizado;
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -71,7 +162,9 @@ serve(async (req) => {
       throw new Error('Texto vazio após limpeza');
     }
 
-    console.log(`Texto limpo: ${textoLimpo.length} caracteres`);
+    // Normalizar texto para TTS - expande abreviações como "art." para "artigo"
+    const textoNormalizado = normalizarTextoParaTTS(textoLimpo);
+    console.log(`Texto normalizado: ${textoNormalizado.length} caracteres`);
 
     // Gerar áudio com Google Cloud TTS
     const GOOGLE_API_KEY = Deno.env.get('GOOGLE_API_KEY');
@@ -87,7 +180,7 @@ serve(async (req) => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          input: { text: textoLimpo },
+          input: { text: textoNormalizado },
           voice: {
             languageCode: 'pt-BR',
             name: 'pt-BR-Wavenet-B',
