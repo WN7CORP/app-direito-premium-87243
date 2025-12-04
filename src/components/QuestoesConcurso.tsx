@@ -1045,7 +1045,14 @@ const QuestoesConcurso = ({ questoes, onFinish, area, tema }: QuestoesConcursoPr
       />
 
       {/* Drawer de Exemplo Prático */}
-      <Drawer open={showExemplo} onOpenChange={setShowExemplo}>
+      <Drawer open={showExemplo} onOpenChange={(open) => {
+        setShowExemplo(open);
+        if (!open && audioExemploRef.current) {
+          audioExemploRef.current.pause();
+          audioExemploRef.current.currentTime = 0;
+          setIsPlayingExemplo(false);
+        }
+      }}>
         <DrawerContent>
           <DrawerHeader className="text-left">
             <DrawerTitle className="flex items-center justify-between">
