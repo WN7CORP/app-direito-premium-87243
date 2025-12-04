@@ -226,6 +226,15 @@ const QuestoesConcurso = ({ questoes, onFinish, area, tema }: QuestoesConcursoPr
     }
   }, [imagemLoading, area, tema]);
 
+  // Gerar imagem do exemplo automaticamente ao entrar na questão
+  useEffect(() => {
+    const questaoAtual = questoesState[currentIndex];
+    if (!questaoAtual?.exemplo_pratico || questaoAtual.url_imagem_exemplo) return;
+    
+    // Gerar imagem em background (não bloqueia a interface)
+    gerarImagemExemplo(questaoAtual);
+  }, [currentIndex, questoesState, gerarImagemExemplo]);
+
   // Gerar áudio genérico (enunciado, comentário ou exemplo)
   const gerarAudioGenerico = useCallback(async (questaoId: number, texto: string, tipo: 'enunciado' | 'comentario' | 'exemplo') => {
     const setLoading = tipo === 'enunciado' ? setAudioLoading 
