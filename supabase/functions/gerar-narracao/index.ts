@@ -138,6 +138,175 @@ function valorMonetarioParaExtenso(valor: number): string {
 }
 
 // ============================================
+// ABREVIAÇÕES GERAIS
+// ============================================
+
+const abreviacoes: { [key: string]: string } = {
+  // Artigos e referências legais
+  'arts.': 'artigos',
+  'Arts.': 'Artigos',
+  'art.': 'artigo',
+  'Art.': 'Artigo',
+  'inc.': 'inciso',
+  'Inc.': 'Inciso',
+  'incs.': 'incisos',
+  'par.': 'parágrafo',
+  'Par.': 'Parágrafo',
+  'pars.': 'parágrafos',
+  'al.': 'alínea',
+  'als.': 'alíneas',
+  
+  // Pronomes de tratamento
+  'Dr.': 'Doutor',
+  'Dra.': 'Doutora',
+  'Drs.': 'Doutores',
+  'Sr.': 'Senhor',
+  'Sra.': 'Senhora',
+  'Srta.': 'Senhorita',
+  'Prof.': 'Professor',
+  'Profa.': 'Professora',
+  'Profs.': 'Professores',
+  'Exmo.': 'Excelentíssimo',
+  'Exma.': 'Excelentíssima',
+  'Exmos.': 'Excelentíssimos',
+  'Exmas.': 'Excelentíssimas',
+  'Ilmo.': 'Ilustríssimo',
+  'Ilma.': 'Ilustríssima',
+  'Ilmos.': 'Ilustríssimos',
+  'Ilmas.': 'Ilustríssimas',
+  'V. Exa.': 'Vossa Excelência',
+  'V. Sa.': 'Vossa Senhoria',
+  'V. Mag.': 'Vossa Magnificência',
+  'V. Revma.': 'Vossa Reverendíssima',
+  'V. S.': 'Vossa Senhoria',
+  'Vossa Exª': 'Vossa Excelência',
+  'V. Ex.ª': 'Vossa Excelência',
+  
+  // Jurídicas e processuais
+  'Min.': 'Ministro',
+  'Des.': 'Desembargador',
+  'Rel.': 'Relator',
+  'j.': 'julgado em',
+  'v.u.': 'votação unânime',
+  'v.m.': 'votação majoritária',
+  'DJe': 'Diário de Justiça eletrônico',
+  'DOU': 'Diário Oficial da União',
+  'DOE': 'Diário Oficial do Estado',
+  'proc.': 'processo',
+  'Proc.': 'Processo',
+  'fl.': 'folha',
+  'fls.': 'folhas',
+  'ap.': 'apelação',
+  'Ap.': 'Apelação',
+  'autos': 'autos',
+  'aut.': 'autor',
+  'réu': 'réu',
+  'apte.': 'apelante',
+  'apdo.': 'apelado',
+  'recte.': 'recorrente',
+  'recdo.': 'recorrido',
+  'imp.': 'impetrante',
+  'impdo.': 'impetrado',
+  'Adv.': 'Advogado',
+  'advs.': 'advogados',
+  
+  // Unidades e medidas
+  'nº': 'número',
+  'Nº': 'Número',
+  'n.': 'número',
+  'N.': 'Número',
+  'p.': 'página',
+  'P.': 'Página',
+  'pp.': 'páginas',
+  'pág.': 'página',
+  'págs.': 'páginas',
+  'vol.': 'volume',
+  'Vol.': 'Volume',
+  'vols.': 'volumes',
+  'ed.': 'edição',
+  'Ed.': 'Edição',
+  'cap.': 'capítulo',
+  'Cap.': 'Capítulo',
+  'caps.': 'capítulos',
+  'seç.': 'seção',
+  'Seç.': 'Seção',
+  'tít.': 'título',
+  'Tít.': 'Título',
+  'liv.': 'livro',
+  'Liv.': 'Livro',
+  'item': 'item',
+  'itens': 'itens',
+  
+  // Temporal
+  'seg.': 'segunda-feira',
+  'ter.': 'terça-feira',
+  'qua.': 'quarta-feira',
+  'qui.': 'quinta-feira',
+  'sex.': 'sexta-feira',
+  'sáb.': 'sábado',
+  'dom.': 'domingo',
+  'jan.': 'janeiro',
+  'fev.': 'fevereiro',
+  'mar.': 'março',
+  'abr.': 'abril',
+  'mai.': 'maio',
+  'jun.': 'junho',
+  'jul.': 'julho',
+  'ago.': 'agosto',
+  'set.': 'setembro',
+  'out.': 'outubro',
+  'nov.': 'novembro',
+  'dez.': 'dezembro',
+  
+  // Outras comuns
+  'etc.': 'etcétera',
+  'ex.': 'exemplo',
+  'Ex.': 'Exemplo',
+  'obs.': 'observação',
+  'Obs.': 'Observação',
+  'aprox.': 'aproximadamente',
+  'cit.': 'citado',
+  'op. cit.': 'obra citada',
+  'ibid.': 'ibidem',
+  'apud': 'citado por',
+  'cf.': 'conforme',
+  'Cf.': 'Conforme',
+  'v.g.': 'verbi gratia',
+  'i.e.': 'isto é',
+  'e.g.': 'por exemplo',
+  's/n': 'sem número',
+  's/d': 'sem data',
+  's.m.j.': 'salvo melhor juízo',
+  'd.m.v.': 'data máxima venia',
+  's.d.': 'sem data',
+  's.l.': 'sem local',
+  's.e.': 'sem editora',
+  'c/c': 'combinado com',
+  'c.c.': 'combinado com',
+  'Coord.': 'Coordenador',
+  'coord.': 'coordenador',
+  'Org.': 'Organizador',
+  'org.': 'organizador',
+  'Trad.': 'Tradutor',
+  'trad.': 'tradutor',
+  'a.C.': 'antes de Cristo',
+  'd.C.': 'depois de Cristo',
+  'séc.': 'século',
+  'Séc.': 'Século',
+  'h.': 'horas',
+  's.': 'segundos',
+  'km': 'quilômetros',
+  'cm': 'centímetros',
+  'mm': 'milímetros',
+  'm²': 'metros quadrados',
+  'kg': 'quilogramas',
+  'g': 'gramas',
+  'mg': 'miligramas',
+  'l': 'litros',
+  'ml': 'mililitros',
+};
+
+// ============================================
 // SIGLAS JURÍDICAS
 // ============================================
 
@@ -178,6 +347,16 @@ const siglasJuridicas: { [key: string]: string } = {
   'ADI': 'Ação Direta de Inconstitucionalidade',
   'ADC': 'Ação Declaratória de Constitucionalidade',
   'ADPF': 'Arguição de Descumprimento de Preceito Fundamental',
+  'RO': 'Recurso Ordinário',
+  'AI': 'Agravo de Instrumento',
+  'AgRg': 'Agravo Regimental',
+  'EDcl': 'Embargos de Declaração',
+  'INSS': 'Instituto Nacional do Seguro Social',
+  'FGTS': 'Fundo de Garantia do Tempo de Serviço',
+  'CNPJ': 'Cadastro Nacional da Pessoa Jurídica',
+  'CPF': 'Cadastro de Pessoas Físicas',
+  'RG': 'Registro Geral',
+  'LGPD': 'Lei Geral de Proteção de Dados',
 };
 
 // ============================================
@@ -186,6 +365,23 @@ const siglasJuridicas: { [key: string]: string } = {
 
 function normalizarTextoParaTTS(texto: string): string {
   let resultado = texto;
+  
+  // 0. ABREVIAÇÕES GERAIS - substituir por extenso (deve ser executado primeiro)
+  // Ordenar por tamanho decrescente para evitar conflitos (ex: "Arts." antes de "Art.")
+  const abreviacoesOrdenadas = Object.entries(abreviacoes).sort((a, b) => b[0].length - a[0].length);
+  for (const [abrev, extenso] of abreviacoesOrdenadas) {
+    // Escapar caracteres especiais de regex
+    const escapedAbrev = abrev.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    // Usar word boundary apenas no início para evitar problemas com pontuação
+    const regex = new RegExp(`\\b${escapedAbrev}`, 'gi');
+    resultado = resultado.replace(regex, (match) => {
+      // Preservar capitalização do original
+      if (match[0] === match[0].toUpperCase() && extenso[0] === extenso[0].toLowerCase()) {
+        return extenso.charAt(0).toUpperCase() + extenso.slice(1);
+      }
+      return extenso;
+    });
+  }
   
   // 1. VALORES MONETÁRIOS - R$X.XXX,XX
   resultado = resultado.replace(/R\$\s?([\d.]+),(\d{2})/g, (match, inteiro, centavos) => {
@@ -215,14 +411,14 @@ function normalizarTextoParaTTS(texto: string): string {
   // 5. SÍMBOLO DE PARÁGRAFO SOZINHO
   resultado = resultado.replace(/§(?!\s?\d)/g, 'parágrafo ');
   
-  // 6. ARTIGOS COM ORDINAL - "Art. 5º", "art. 5°"
-  resultado = resultado.replace(/[Aa]rts?\.\s?(\d+)[º°]/g, (match, num) => {
+  // 6. ARTIGOS COM ORDINAL - "Artigo 5º", "artigo 5°" (já expandido de Art.)
+  resultado = resultado.replace(/[Aa]rtigos?\s?(\d+)[º°]/g, (match, num) => {
     const numero = parseInt(num, 10);
     return 'artigo ' + numeroParaOrdinal(numero);
   });
   
-  // 7. ARTIGOS SEM ORDINAL - "Art. 121", "art. 121"
-  resultado = resultado.replace(/[Aa]rts?\.\s?(\d+)(?![º°\d])/g, (match, num) => {
+  // 7. ARTIGOS SEM ORDINAL - "Artigo 121", "artigo 121" (já expandido de Art.)
+  resultado = resultado.replace(/[Aa]rtigos?\s?(\d+)(?![º°\d])/g, (match, num) => {
     const numero = parseInt(num, 10);
     // Artigos até 10 são ordinais, acima são cardinais
     if (numero <= 10) {
@@ -230,10 +426,6 @@ function normalizarTextoParaTTS(texto: string): string {
     }
     return 'artigo ' + numeroParaExtenso(numero);
   });
-  
-  // 7.1. ABREVIAÇÃO "Art." ou "Arts." sozinha (sem número) → "Artigo" ou "Artigos"
-  resultado = resultado.replace(/\bArts\.\s?(?!\d)/gi, 'Artigos ');
-  resultado = resultado.replace(/\bArt\.\s?(?!\d)/gi, 'Artigo ');
   
   // 8. INCISOS ROMANOS - "I -", "II -", "III.", "IV)", "V,"
   resultado = resultado.replace(/\b([IVXLCDM]+)\s?[-–—.),;:]/g, (match, romano) => {
