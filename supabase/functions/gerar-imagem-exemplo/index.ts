@@ -10,51 +10,53 @@ const corsHeaders = {
 async function gerarPromptComIA(exemploTexto: string, area: string, tema: string, apiKey: string): Promise<string> {
   const textoLimitado = exemploTexto.substring(0, 2000)
   
-  const promptParaGerarPrompt = `You are an expert at creating prompts for professional, polished 3D illustrations.
+  const promptParaGerarPrompt = `You are an expert visual storyteller who creates detailed prompts for cartoon illustrations that SPECIFICALLY represent legal case studies.
 
-CONTEXT:
-- Legal Area: ${area}
+LEGAL CONTEXT:
+- Area: ${area}
 - Topic: ${tema}
-- Content Type: A practical case study - show a scene with characters
 
-CONTENT TO ILLUSTRATE:
+CASE STUDY TO ILLUSTRATE:
 ${textoLimitado}
 
-YOUR TASK:
-Create an image generation prompt for a PROFESSIONAL, POLISHED, HIGH-QUALITY 3D illustration in HORIZONTAL format (16:9 landscape).
+YOUR MISSION:
+Analyze this case study carefully and create an image prompt that TELLS THIS EXACT STORY visually. Extract:
+1. WHO are the specific characters? (names, roles, relationships)
+2. WHAT is the specific action/crime/situation happening?
+3. WHERE does it take place? (specific setting)
+4. WHAT objects or elements are key to understanding the case?
 
-MANDATORY STYLE SPECIFICATIONS:
-- Style: Professional 3D isometric illustration, Blender-quality render
-- Orientation: HORIZONTAL LANDSCAPE (16:9 aspect ratio)
-- Lighting: Soft studio lighting with subtle shadows
-- Colors: Corporate color palette - deep blues, teals, warm oranges, clean whites
-- Characters: Stylized 3D human figures (like Pixar style but simpler), professional appearance, Brazilian diversity
-- Objects: Clean 3D models with smooth surfaces, subtle gradients, slight glossy finish
-- Background: Clean gradient background (light blue to white, or soft gray gradient)
-- Quality: Ultra high definition, professional marketing quality
-- Think: Stripe, Linear, or Notion marketing illustrations
+MANDATORY STYLE - MODERN CARTOON:
+- Style: Clean modern cartoon illustration, similar to Duolingo, Headspace, or explainer videos
+- Format: HORIZONTAL 16:9 landscape
+- Characters: Expressive cartoon characters with distinct features, showing clear emotions
+- Colors: Vibrant but harmonious palette, warm and inviting
+- Background: Simple but contextual environment (home, office, church, courthouse, street)
+- Mood: Educational and clear, making the legal situation easy to understand
 
-FOR THIS CASE STUDY:
-- Show 2-3 professional 3D characters in a business/legal scene
-- Include relevant 3D objects: documents, buildings, computers, courtrooms
-- Use body language and positioning to tell the story
-- Professional corporate setting
+STORYTELLING REQUIREMENTS:
+- Show the EXACT scenario from the case study, not a generic scene
+- If there's a victim and perpetrator, show the dynamic between them
+- Include visual elements that represent the specific crime or legal issue
+- Use body language and facial expressions to convey the situation
+- Add contextual props that are mentioned or implied in the case
 
-HORIZONTAL COMPOSITION (16:9):
-- Left side: context/environment elements
-- Center: main characters and action
-- Right side: supporting elements/objects
+EXAMPLES OF SPECIFIC SCENES:
+- For bigamy: Show the wedding ceremony with the second spouse while the first watches
+- For fraud: Show the deception moment with the victim being tricked
+- For theft: Show the exact item being taken in the specific context
+- For assault: Show the confrontation (non-graphic) with clear aggressor/victim
 
-ABSOLUTE PROHIBITIONS:
-1. NO TEXT - no words, letters, labels, numbers, captions, signs with writing
-2. NO hand-drawn or sketch style - must look professionally rendered
-3. NO flat 2D style - must be 3D with depth and lighting
-4. NO cartoon or childish style - professional corporate aesthetic
-5. NO busy or cluttered compositions - clean and focused
+ABSOLUTE RULES:
+1. NO TEXT, words, letters, numbers, signs, labels, captions
+2. NO graphic violence or blood
+3. NO inappropriate content
+4. Characters must look like distinct individuals, not generic people
+5. Scene must be SPECIFIC to this case, not a generic legal illustration
 
 OUTPUT:
-Write ONLY the image prompt. No explanations, no quotes.
-Start with: "A professional 3D isometric horizontal illustration showing..."`
+Write ONLY the detailed image prompt in English. No explanations.
+Start with: "A colorful cartoon illustration in 16:9 format showing..."`
 
   const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`, {
     method: "POST",
@@ -62,8 +64,8 @@ Start with: "A professional 3D isometric horizontal illustration showing..."`
     body: JSON.stringify({
       contents: [{ parts: [{ text: promptParaGerarPrompt }] }],
       generationConfig: {
-        temperature: 0.8,
-        maxOutputTokens: 700
+        temperature: 0.9,
+        maxOutputTokens: 800
       }
     })
   })
@@ -139,7 +141,7 @@ serve(async (req) => {
     // 3. Gerar imagem com Nano Banana (Gemini Image Generation)
     const promptFinal = `${promptEspecifico}
 
-CRITICAL: This must be a professional 3D rendered illustration in HORIZONTAL LANDSCAPE format (16:9 aspect ratio). Studio lighting. NO text, words, letters, or numbers anywhere in the image. Ultra high quality, corporate marketing style. Clean gradient background.`
+CRITICAL STYLE: Modern colorful cartoon illustration, clean lines, expressive characters, 16:9 horizontal format. Vibrant colors, simple backgrounds, educational explainer style like Duolingo or Headspace. NO text, words, letters, numbers anywhere. High quality render.`
 
     console.log('[gerar-imagem-exemplo] Etapa 2: Gerando imagem com Nano Banana...')
 
