@@ -11,43 +11,46 @@ const corsHeaders = {
 async function gerarPromptComIA(exemploTexto: string, area: string, tema: string, apiKey: string): Promise<string> {
   const textoLimitado = exemploTexto.substring(0, 2000)
   
-  const promptParaGerarPrompt = `Você é especialista em criar prompts para ilustrações jurídicas profissionais.
+  const promptParaGerarPrompt = `Você é um diretor de arte especializado em criar ilustrações educacionais para o contexto jurídico brasileiro.
 
-CONTEXTO:
-- Área do Direito: ${area}
-- Tema da Questão: ${tema}
-- Tipo: Exemplo prático de uma questão jurídica
+CONTEXTO JURÍDICO:
+- Área: ${area}
+- Tema: ${tema}
 
-EXEMPLO PRÁTICO A ILUSTRAR:
+CASO PRÁTICO:
 ${textoLimitado}
 
-SUA TAREFA:
-Crie um prompt em INGLÊS para gerar uma ilustração 3D profissional que represente visualmente este exemplo prático.
+SUA MISSÃO:
+Criar um prompt VISUAL em inglês para uma ilustração que CONTE A HISTÓRIA do exemplo de forma clara e memorável.
 
-ESPECIFICAÇÕES OBRIGATÓRIAS:
-- Estilo: Ilustração 3D isométrica profissional, qualidade de render Blender
-- Iluminação: Suave de estúdio com sombras sutis
-- Cores: Paleta corporativa - azuis profundos, verdes-azulados, laranjas quentes, brancos limpos
-- Personagens: Figuras humanas 3D estilizadas (estilo Pixar simplificado), aparência profissional brasileira
-- Objetos: Modelos 3D limpos com superfícies suaves, gradientes sutis
-- Fundo: Gradiente limpo (azul claro para branco)
+ESTILO VISUAL (OBRIGATÓRIO):
+- Estilo: Modern editorial illustration, clean vector art com profundidade 3D sutil
+- Composição: VERTICAL (formato retrato 9:16), foco centralizado
+- Paleta: Cores vibrantes mas sofisticadas - navy blue (#1e3a5f), teal (#2dd4bf), coral (#f97316), cream (#fef3c7)
+- Personagens: Figuras humanas simplificadas mas expressivas, proporções estilizadas, diversidade brasileira
+- Cenário: Ambiente contextualizado (tribunal, delegacia, escritório, rua urbana brasileira)
+- Iluminação: Luz suave direcional, sombras definidas mas não duras
 
-ANÁLISE DO EXEMPLO:
-1. Identifique os PERSONAGENS principais (réu, vítima, juiz, advogado, testemunha, policial, etc.)
-2. Identifique o CENÁRIO (tribunal, delegacia, escritório, rua, residência, banco, etc.)
-3. Identifique OBJETOS relevantes (documentos, arma, veículo, dinheiro, celular, contrato, etc.)
-4. Identifique a AÇÃO principal sendo representada (roubo, julgamento, negociação, prisão, etc.)
+ELEMENTOS NARRATIVOS (analise o caso):
+1. PROTAGONISTA: Quem é o personagem central? (réu, vítima, advogado, juiz, policial, empresário)
+2. AÇÃO: O que está acontecendo? (crime, julgamento, negociação, prisão, investigação)
+3. OBJETO-CHAVE: Qual elemento representa o caso? (documento, arma, dinheiro, veículo, celular)
+4. EMOÇÃO: Qual sentimento transmitir? (tensão, justiça, consequência, resolução)
+
+COMPOSIÇÃO VERTICAL:
+- Terço superior: céu/ambiente/contexto
+- Terço central: personagens e ação principal
+- Terço inferior: elementos de apoio/ground
 
 PROIBIÇÕES ABSOLUTAS:
-1. SEM TEXTO - nenhuma palavra, letra, número, legenda, placa
-2. SEM estilo de desenho à mão - deve parecer renderizado profissionalmente
-3. SEM estilo 2D flat - deve ser 3D com profundidade e iluminação
-4. SEM estilo cartoon ou infantil - estética corporativa profissional
-5. SEM sangue, violência gráfica ou conteúdo perturbador
+- ZERO texto, letras, números, placas, legendas
+- NADA de sangue, gore ou violência explícita
+- NADA de rostos realistas (manter estilizado)
+- NADA de símbolos religiosos ou políticos
 
-OUTPUT:
-Escreva APENAS o prompt da imagem em inglês, máximo 400 caracteres. Sem explicações.
-Comece com: "A professional 3D isometric illustration showing..."`
+FORMATO DO OUTPUT:
+Escreva APENAS o prompt em inglês, máximo 500 caracteres.
+Comece com: "Vertical editorial illustration,"`
 
   const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`, {
     method: "POST",
@@ -143,10 +146,9 @@ serve(async (req) => {
           .trim()
           .substring(0, 300)
         
-        promptImagem = `A professional 3D isometric illustration showing a Brazilian legal scene: ${cenario}. 
-Style: Professional 3D render, Blender quality, soft studio lighting, corporate color palette (deep blues, teals, warm oranges).
-Characters: Stylized 3D human figures in professional attire.
-Background: Clean gradient (light blue to white).`
+        promptImagem = `Vertical editorial illustration, Brazilian legal scene: ${cenario}. 
+Modern clean vector art with subtle 3D depth. Stylized human figures, navy blue and teal palette with coral accents. 
+Soft directional lighting, cream background gradient. Professional educational style.`
       }
     } else {
       // Sem API key do Gemini - usar prompt básico
@@ -157,23 +159,27 @@ Background: Clean gradient (light blue to white).`
         .trim()
         .substring(0, 300)
       
-      promptImagem = `A professional 3D isometric illustration showing a Brazilian legal scene: ${cenario}.
-Style: Professional 3D render, soft studio lighting, corporate colors.`
+      promptImagem = `Vertical editorial illustration, Brazilian legal scene: ${cenario}.
+Modern clean vector art, stylized figures, navy and teal colors with coral accents. Professional educational style.`
     }
 
     // Adicionar instruções finais críticas
     promptImagem += `
 
-CRITICAL: NO text, words, letters, numbers, signs, or labels anywhere. Ultra high quality 3D render. Clean professional aesthetic.`
+CRITICAL: Vertical 9:16 aspect ratio composition. NO text, words, letters, numbers, signs anywhere. Ultra high quality render. Clean professional aesthetic.`
 
     console.log(`[gerar-imagem-exemplo] Gerando imagem com FLUX.1-dev...`)
 
     const hf = new HfInference(HUGGING_FACE_ACCESS_TOKEN)
     
-    // Usando FLUX.1-dev para qualidade superior
+    // Usando FLUX.1-dev com formato vertical (768x1344 = 9:16)
     const image = await hf.textToImage({
       inputs: promptImagem,
       model: 'black-forest-labs/FLUX.1-dev',
+      parameters: {
+        width: 768,
+        height: 1344,
+      }
     })
 
     // 3. Converter para blob
