@@ -16,7 +16,6 @@ import { formatForWhatsApp } from "@/lib/formatWhatsApp";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useDeviceType } from "@/hooks/use-device-type";
 import { useImagePreload } from "@/hooks/useImagePreload";
-
 interface Resumo {
   id: number;
   subtema: string;
@@ -36,14 +35,22 @@ interface Resumo {
   url_imagem_exemplo_2?: string | null;
   url_imagem_exemplo_3?: string | null;
 }
-
 const ResumosProntosView = () => {
-  const { area, tema } = useParams<{ area: string; tema: string }>();
+  const {
+    area,
+    tema
+  } = useParams<{
+    area: string;
+    tema: string;
+  }>();
   const navigate = useNavigate();
-  const { toast } = useToast();
+  const {
+    toast
+  } = useToast();
   const isMobile = useIsMobile();
-  const { isDesktop } = useDeviceType();
-  
+  const {
+    isDesktop
+  } = useDeviceType();
   const [searchTerm, setSearchTerm] = useState("");
   const [resumoSelecionado, setResumoSelecionado] = useState<Resumo | null>(null);
   const [showMobilePreview, setShowMobilePreview] = useState(false);
@@ -56,7 +63,7 @@ const ResumosProntosView = () => {
   const [audioUrls, setAudioUrls] = useState<Map<string, string>>(new Map());
   const [loadingAudio, setLoadingAudio] = useState<Record<string, boolean>>({});
   const [playingAudio, setPlayingAudio] = useState<string | null>(null);
-  
+
   // Estados de imagem
   const [imagemUrls, setImagemUrls] = useState<Map<string, string>>(new Map());
   const [loadingImagem, setLoadingImagem] = useState<Record<string, boolean>>({});
@@ -65,24 +72,16 @@ const ResumosProntosView = () => {
   const imagensParaPreload = useMemo(() => {
     if (!resumoSelecionado) return [];
     const id = resumoSelecionado.id;
-    return [
-      imagemUrls.get(`${id}-resumo`),
-      imagemUrls.get(`${id}-exemplo1`),
-      imagemUrls.get(`${id}-exemplo2`),
-      imagemUrls.get(`${id}-exemplo3`),
-    ].filter(Boolean) as string[];
+    return [imagemUrls.get(`${id}-resumo`), imagemUrls.get(`${id}-exemplo1`), imagemUrls.get(`${id}-exemplo2`), imagemUrls.get(`${id}-exemplo3`)].filter(Boolean) as string[];
   }, [resumoSelecionado?.id, imagemUrls]);
-
   useImagePreload(imagensParaPreload);
-  
+
   // Refs de áudio
   const audioResumoRef = useRef<HTMLAudioElement | null>(null);
   const audioExemplosRef = useRef<HTMLAudioElement | null>(null);
   const audioTermosRef = useRef<HTMLAudioElement | null>(null);
-
   const decodedArea = decodeURIComponent(area || "");
   const decodedTema = decodeURIComponent(tema || "");
-
   useEffect(() => {
     const handleScroll = () => {
       setShowScrollTop(window.scrollY > 300);
@@ -90,7 +89,6 @@ const ResumosProntosView = () => {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
-
   useEffect(() => {
     const handleSelectResumo = (e: CustomEvent) => {
       const resumo = e.detail;
@@ -102,27 +100,24 @@ const ResumosProntosView = () => {
     window.addEventListener('selectResumo' as any, handleSelectResumo);
     return () => window.removeEventListener('selectResumo' as any, handleSelectResumo);
   }, [resumosGerados, gerandoResumoId]);
-
-  const { data: resumos, isLoading } = useQuery({
+  const {
+    data: resumos,
+    isLoading
+  } = useQuery({
     queryKey: ["resumos-subtemas", decodedArea, decodedTema],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("RESUMO")
-        .select("*")
-        .eq("area", decodedArea)
-        .eq("tema", decodedTema)
-        .not("subtema", "is", null)
-        .order("ordem subtema", { ascending: true });
-      
+      const {
+        data,
+        error
+      } = await supabase.from("RESUMO").select("*").eq("area", decodedArea).eq("tema", decodedTema).not("subtema", "is", null).order("ordem subtema", {
+        ascending: true
+      });
       if (error) throw error;
-      
       if (data.length > 0 && !resumoSelecionado) {
         setResumoSelecionado(data[0] as Resumo);
         const gerados = new Map<number, any>();
         const urls = new Map<string, string>();
-        
         const imgUrls = new Map<string, string>();
-        
         data.forEach((resumo: any) => {
           if (resumo.conteudo_gerado) {
             gerados.set(resumo.id, resumo.conteudo_gerado);
@@ -151,7 +146,6 @@ const ResumosProntosView = () => {
             imgUrls.set(`${resumo.id}-exemplo3`, resumo.url_imagem_exemplo_3);
           }
         });
-        
         setResumosGerados(gerados);
         setAudioUrls(urls);
         setImagemUrls(imgUrls);
@@ -159,22 +153,21 @@ const ResumosProntosView = () => {
       return data as Resumo[];
     }
   });
-
   const resumosFiltrados = useMemo(() => {
     if (!resumos) return [];
-    return resumos
-      .filter(resumo => resumo.subtema.toLowerCase().includes(searchTerm.toLowerCase()))
-      .sort((a, b) => {
-        const ordemA = parseFloat(a["ordem subtema"] || "0");
-        const ordemB = parseFloat(b["ordem subtema"] || "0");
-        return ordemA - ordemB;
-      });
+    return resumos.filter(resumo => resumo.subtema.toLowerCase().includes(searchTerm.toLowerCase())).sort((a, b) => {
+      const ordemA = parseFloat(a["ordem subtema"] || "0");
+      const ordemB = parseFloat(b["ordem subtema"] || "0");
+      return ordemA - ordemB;
+    });
   }, [resumos, searchTerm]);
-
   const gerarResumo = async (resumo: Resumo) => {
     setGerandoResumoId(resumo.id);
     try {
-      const { data, error } = await supabase.functions.invoke("gerar-resumo-pronto", {
+      const {
+        data,
+        error
+      } = await supabase.functions.invoke("gerar-resumo-pronto", {
         body: {
           resumoId: resumo.id,
           area: decodedArea,
@@ -204,21 +197,17 @@ const ResumosProntosView = () => {
       setGerandoResumoId(null);
     }
   };
-
   const gerarAudioResumo = async (tipo: 'resumo' | 'exemplos' | 'termos') => {
     if (!resumoSelecionado) return;
-    
     const resumoGerado = resumosGerados.get(resumoSelecionado.id);
     if (!resumoGerado) return;
-    
     const audioKey = `${resumoSelecionado.id}-${tipo}`;
-    
+
     // Se já tem URL, apenas tocar
     if (audioUrls.has(audioKey)) {
       toggleAudio(tipo);
       return;
     }
-    
     let texto = '';
     switch (tipo) {
       case 'resumo':
@@ -231,7 +220,6 @@ const ResumosProntosView = () => {
         texto = resumoGerado.termos;
         break;
     }
-    
     if (!texto) {
       toast({
         title: "Conteúdo não disponível",
@@ -240,23 +228,24 @@ const ResumosProntosView = () => {
       });
       return;
     }
-    
-    setLoadingAudio(prev => ({ ...prev, [tipo]: true }));
-    
+    setLoadingAudio(prev => ({
+      ...prev,
+      [tipo]: true
+    }));
     try {
-      const { data, error } = await supabase.functions.invoke('gerar-audio-resumo-natural', {
-        body: { 
-          resumoId: resumoSelecionado.id, 
-          texto, 
-          tipo 
+      const {
+        data,
+        error
+      } = await supabase.functions.invoke('gerar-audio-resumo-natural', {
+        body: {
+          resumoId: resumoSelecionado.id,
+          texto,
+          tipo
         }
       });
-      
       if (error) throw error;
-      
       if (data?.url_audio) {
         setAudioUrls(prev => new Map(prev).set(audioKey, data.url_audio));
-        
         toast({
           title: data.cached ? "Áudio carregado!" : "Áudio gerado!",
           description: "Clique novamente para ouvir"
@@ -270,10 +259,12 @@ const ResumosProntosView = () => {
         variant: "destructive"
       });
     } finally {
-      setLoadingAudio(prev => ({ ...prev, [tipo]: false }));
+      setLoadingAudio(prev => ({
+        ...prev,
+        [tipo]: false
+      }));
     }
   };
-
   const stopAllAudios = () => {
     [audioResumoRef, audioExemplosRef, audioTermosRef].forEach(ref => {
       if (ref.current) {
@@ -283,26 +274,20 @@ const ResumosProntosView = () => {
     });
     setPlayingAudio(null);
   };
-
   const toggleAudio = (tipo: 'resumo' | 'exemplos' | 'termos') => {
     if (!resumoSelecionado) return;
-    
     const audioKey = `${resumoSelecionado.id}-${tipo}`;
     const audioUrl = audioUrls.get(audioKey);
-    
     if (!audioUrl) {
       gerarAudioResumo(tipo);
       return;
     }
-    
     const refMap = {
       resumo: audioResumoRef,
       exemplos: audioExemplosRef,
       termos: audioTermosRef
     };
-    
     const audioRef = refMap[tipo];
-    
     if (playingAudio === tipo) {
       // Pausar
       if (audioRef.current) {
@@ -312,7 +297,6 @@ const ResumosProntosView = () => {
     } else {
       // Parar outros e tocar este
       stopAllAudios();
-      
       if (audioRef.current) {
         audioRef.current.src = audioUrl;
         audioRef.current.play();
@@ -320,11 +304,9 @@ const ResumosProntosView = () => {
       }
     }
   };
-
   const handleAudioEnded = () => {
     setPlayingAudio(null);
   };
-
   const exportarPDF = async (resumo: Resumo) => {
     const resumoGerado = resumosGerados.get(resumo.id);
     if (!resumoGerado?.markdown) {
@@ -340,14 +322,16 @@ const ResumosProntosView = () => {
       description: "Isso pode levar alguns segundos"
     });
     try {
-      const { data, error } = await supabase.functions.invoke("exportar-resumo-pdf", {
+      const {
+        data,
+        error
+      } = await supabase.functions.invoke("exportar-resumo-pdf", {
         body: {
           resumo: resumoGerado.markdown,
           titulo: resumo.subtema
         }
       });
       if (error) throw error;
-      
       if (data?.pdfDataUrl) {
         const link = document.createElement('a');
         link.href = data.pdfDataUrl;
@@ -355,7 +339,6 @@ const ResumosProntosView = () => {
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-        
         toast({
           title: "PDF exportado!",
           description: "O arquivo foi gerado e baixado com sucesso."
@@ -370,7 +353,6 @@ const ResumosProntosView = () => {
       });
     }
   };
-
   const compartilharWhatsApp = (resumo: Resumo) => {
     const resumoGerado = resumosGerados.get(resumo.id);
     if (!resumoGerado?.markdown) {
@@ -382,7 +364,6 @@ const ResumosProntosView = () => {
       return;
     }
     const textoFormatado = formatForWhatsApp(resumoGerado.markdown);
-    
     const cabecalho = `╔═══════════════════╗
 📚 *RESUMO JURÍDICO*
 ╚═══════════════════╝
@@ -392,33 +373,26 @@ const ResumosProntosView = () => {
 📝 *Subtema:* ${resumo.subtema}
 
 ━━━━━━━━━━━━━━━━━━━━`;
-
     const rodape = `━━━━━━━━━━━━━━━━━━━━
 
 ✨ _Gerado pelo Direito Premium_
 📱 _Seu app de estudos jurídicos_`;
-
     const mensagem = `${cabecalho}\n\n${textoFormatado}\n\n${rodape}`;
     const url = `https://wa.me/?text=${encodeURIComponent(mensagem)}`;
     window.open(url, "_blank");
-    
     toast({
       title: "Abrindo WhatsApp",
       description: "Resumo formatado com emojis e pronto para compartilhar!"
     });
   };
-
   const gerarImagem = async (tipo: 'resumo' | 'exemplo1' | 'exemplo2' | 'exemplo3') => {
     if (!resumoSelecionado) return;
-    
     const resumoGerado = resumosGerados.get(resumoSelecionado.id);
     if (!resumoGerado) return;
-    
     const imagemKey = `${resumoSelecionado.id}-${tipo}`;
-    
+
     // Se já tem URL, não gerar novamente
     if (imagemUrls.has(imagemKey)) return;
-    
     let conteudo = '';
     if (tipo === 'resumo') {
       conteudo = resumoGerado.markdown || resumoSelecionado.conteudo;
@@ -429,24 +403,25 @@ const ResumosProntosView = () => {
       const idx = parseInt(tipo.replace('exemplo', '')) - 1;
       conteudo = exemplos[idx] || exemplosText;
     }
-    
     if (!conteudo) return;
-    
-    setLoadingImagem(prev => ({ ...prev, [tipo]: true }));
-    
+    setLoadingImagem(prev => ({
+      ...prev,
+      [tipo]: true
+    }));
     try {
-      const { data, error } = await supabase.functions.invoke('gerar-imagem-resumo', {
-        body: { 
-          resumoId: resumoSelecionado.id, 
+      const {
+        data,
+        error
+      } = await supabase.functions.invoke('gerar-imagem-resumo', {
+        body: {
+          resumoId: resumoSelecionado.id,
           tipo,
           conteudo: conteudo.substring(0, 500),
           area: decodedArea,
           tema: decodedTema
         }
       });
-      
       if (error) throw error;
-      
       if (data?.url_imagem) {
         setImagemUrls(prev => new Map(prev).set(imagemKey, data.url_imagem));
       }
@@ -458,111 +433,70 @@ const ResumosProntosView = () => {
         variant: "destructive"
       });
     } finally {
-      setLoadingImagem(prev => ({ ...prev, [tipo]: false }));
+      setLoadingImagem(prev => ({
+        ...prev,
+        [tipo]: false
+      }));
     }
   };
-
   const renderImagemComPlayer = (tipo: 'resumo' | 'exemplos' | 'termos') => {
     if (!resumoSelecionado) return null;
-    
     const imagemKey = `${resumoSelecionado.id}-resumo`;
     const imagemUrl = imagemUrls.get(imagemKey);
     const isLoadingImg = loadingImagem['resumo'];
-    
     const audioKey = `${resumoSelecionado.id}-${tipo}`;
     const audioUrl = audioUrls.get(audioKey);
     const isLoadingAudio = loadingAudio[tipo];
-    
-    return (
-      <div className="space-y-3 mb-6">
-        <ImageWithZoom
-          imageUrl={imagemUrl}
-          alt={`Ilustração: ${resumoSelecionado.subtema}`}
-          onGenerate={() => gerarImagem('resumo')}
-          isLoading={isLoadingImg}
-          placeholderText="Clique para gerar ilustração"
-        />
+    return <div className="space-y-3 mb-6">
+        <ImageWithZoom imageUrl={imagemUrl} alt={`Ilustração: ${resumoSelecionado.subtema}`} onGenerate={() => gerarImagem('resumo')} isLoading={isLoadingImg} placeholderText="Clique para gerar ilustração" />
         
-        <AudioPlayer
-          audioUrl={audioUrl}
-          onGenerate={() => gerarAudioResumo(tipo)}
-          isLoading={isLoadingAudio}
-          label="Narrar"
-        />
-      </div>
-    );
+        <AudioPlayer audioUrl={audioUrl} onGenerate={() => gerarAudioResumo(tipo)} isLoading={isLoadingAudio} label="Narrar" />
+      </div>;
   };
-
   const renderExemplosComImagens = () => {
     if (!resumoSelecionado) return null;
-    
     const resumoGerado = resumosGerados.get(resumoSelecionado.id);
     const exemplosText = resumoGerado?.exemplos || '';
-    
+
     // Split by ## Exemplo headers
     const partes = exemplosText.split(/(?=##\s*Exemplo\s*\d+)/i).filter(Boolean);
-    
+
     // Audio player for examples at the top
     const audioKey = `${resumoSelecionado.id}-exemplos`;
     const audioUrl = audioUrls.get(audioKey);
     const isLoadingAudio = loadingAudio['exemplos'];
-    
-    return (
-      <div className="space-y-6">
+    return <div className="space-y-6">
         {/* Audio Player for all examples */}
-        <AudioPlayer
-          audioUrl={audioUrl}
-          onGenerate={() => gerarAudioResumo('exemplos')}
-          isLoading={isLoadingAudio}
-          label="Narrar Exemplos"
-        />
+        <AudioPlayer audioUrl={audioUrl} onGenerate={() => gerarAudioResumo('exemplos')} isLoading={isLoadingAudio} label="Narrar Exemplos" />
         
         {partes.map((parte, index) => {
-          const exemploNum = index + 1;
-          if (exemploNum > 3) return null;
-          
-          const tipo = `exemplo${exemploNum}` as 'exemplo1' | 'exemplo2' | 'exemplo3';
-          const imagemKey = `${resumoSelecionado.id}-${tipo}`;
-          const imagemUrl = imagemUrls.get(imagemKey);
-          const isLoading = loadingImagem[tipo];
-          
-          return (
-            <div key={exemploNum} className="space-y-3">
+        const exemploNum = index + 1;
+        if (exemploNum > 3) return null;
+        const tipo = `exemplo${exemploNum}` as 'exemplo1' | 'exemplo2' | 'exemplo3';
+        const imagemKey = `${resumoSelecionado.id}-${tipo}`;
+        const imagemUrl = imagemUrls.get(imagemKey);
+        const isLoading = loadingImagem[tipo];
+        return <div key={exemploNum} className="space-y-3">
               {/* Imagem do exemplo com zoom */}
-              <ImageWithZoom
-                imageUrl={imagemUrl}
-                alt={`Ilustração Exemplo ${exemploNum}`}
-                onGenerate={() => gerarImagem(tipo)}
-                isLoading={isLoading}
-                placeholderText="Gerar ilustração"
-                gradientFrom="from-amber-500/10"
-                gradientTo="to-orange-500/5"
-              />
+              <ImageWithZoom imageUrl={imagemUrl} alt={`Ilustração Exemplo ${exemploNum}`} onGenerate={() => gerarImagem(tipo)} isLoading={isLoading} placeholderText="Gerar ilustração" gradientFrom="from-amber-500/10" gradientTo="to-orange-500/5" />
               
               {/* Texto do exemplo */}
               <div className="resumo-content resumo-markdown">
                 <ReactMarkdown>{parte}</ReactMarkdown>
               </div>
-            </div>
-          );
-        })}
-      </div>
-    );
+            </div>;
+      })}
+      </div>;
   };
-
   if (isLoading) {
-    return (
-      <div className="px-3 py-4 max-w-4xl mx-auto pb-24">
+    return <div className="px-3 py-4 max-w-4xl mx-auto pb-24">
         <Skeleton className="h-8 w-64 mb-4" />
         <Skeleton className="h-12 w-full mb-4" />
         <Skeleton className="h-96 w-full" />
-      </div>
-    );
+      </div>;
   }
-
   if (!resumos || resumos.length === 0) {
-    return (
-      <div className="px-3 py-4 max-w-4xl mx-auto pb-24">
+    return <div className="px-3 py-4 max-w-4xl mx-auto pb-24">
         <Button variant="ghost" size="sm" onClick={() => navigate(`/resumos-prontos/${area}`)} className="mb-4">
           <ArrowLeft className="w-4 h-4 mr-2" />
           Voltar
@@ -570,14 +504,12 @@ const ResumosProntosView = () => {
         <p className="text-center text-muted-foreground">
           Nenhum resumo encontrado para este tema
         </p>
-      </div>
-    );
+      </div>;
   }
 
   // Mobile preview
   if (isMobile && showMobilePreview && resumoSelecionado) {
-    return (
-      <div className="flex flex-col min-h-screen pb-20">
+    return <div className="flex flex-col min-h-screen pb-20">
         {/* Hidden audio elements */}
         <audio ref={audioResumoRef} onEnded={handleAudioEnded} />
         <audio ref={audioExemplosRef} onEnded={handleAudioEnded} />
@@ -585,26 +517,14 @@ const ResumosProntosView = () => {
 
         <div className="sticky top-0 z-10 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
           <div className="px-3 py-4">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => {
-                stopAllAudios();
-                setShowMobilePreview(false);
-              }}
-              className="mb-3"
-            >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Voltar
-            </Button>
+            
 
             <div className="mb-4">
               <div className="text-xs text-muted-foreground mb-1">{decodedArea}</div>
               <h1 className="text-lg font-bold">{resumoSelecionado.subtema}</h1>
             </div>
 
-            {resumosGerados.has(resumoSelecionado.id) && (
-              <div className="flex gap-2">
+            {resumosGerados.has(resumoSelecionado.id) && <div className="flex gap-2">
                 <Button onClick={() => exportarPDF(resumoSelecionado)} variant="outline" className="flex-1" size="sm">
                   <FileDown className="w-4 h-4 mr-2" />
                   PDF
@@ -615,14 +535,12 @@ const ResumosProntosView = () => {
                   </svg>
                   WhatsApp
                 </Button>
-              </div>
-            )}
+              </div>}
           </div>
         </div>
 
         <div className="p-4">
-          {!resumosGerados.has(resumoSelecionado.id) ? (
-            <Card>
+          {!resumosGerados.has(resumoSelecionado.id) ? <Card>
               <CardContent className="p-8">
                 <div className="text-center space-y-4">
                   <div className="inline-flex p-4 rounded-full bg-primary/10">
@@ -640,9 +558,7 @@ const ResumosProntosView = () => {
                   </div>
                 </div>
               </CardContent>
-            </Card>
-          ) : (
-            <Tabs value={activeTab} onValueChange={setActiveTab}>
+            </Card> : <Tabs value={activeTab} onValueChange={setActiveTab}>
               <TabsList className="grid w-full grid-cols-3 mb-4">
                 <TabsTrigger value="resumo">Resumo</TabsTrigger>
                 <TabsTrigger value="exemplos">Exemplos</TabsTrigger>
@@ -672,12 +588,7 @@ const ResumosProntosView = () => {
                 <Card>
                   <CardContent className="p-4">
                     <div className="mb-4">
-                      <AudioPlayer
-                        audioUrl={audioUrls.get(`${resumoSelecionado.id}-termos`)}
-                        onGenerate={() => gerarAudioResumo('termos')}
-                        isLoading={loadingAudio['termos']}
-                        label="Narrar Termos"
-                      />
+                      <AudioPlayer audioUrl={audioUrls.get(`${resumoSelecionado.id}-termos`)} onGenerate={() => gerarAudioResumo('termos')} isLoading={loadingAudio['termos']} label="Narrar Termos" />
                     </div>
                     <div className="resumo-content resumo-markdown">
                       <ReactMarkdown>{resumosGerados.get(resumoSelecionado.id)?.termos || "Gerando termos..."}</ReactMarkdown>
@@ -685,16 +596,13 @@ const ResumosProntosView = () => {
                   </CardContent>
                 </Card>
               </TabsContent>
-            </Tabs>
-          )}
+            </Tabs>}
         </div>
-      </div>
-    );
+      </div>;
   }
 
   // Desktop/Tablet view
-  return (
-    <div className="min-h-screen pb-20">
+  return <div className="min-h-screen pb-20">
       {/* Hidden audio elements */}
       <audio ref={audioResumoRef} onEnded={handleAudioEnded} />
       <audio ref={audioExemplosRef} onEnded={handleAudioEnded} />
@@ -707,8 +615,7 @@ const ResumosProntosView = () => {
             <h1 className="text-xl md:text-2xl font-bold">{decodedTema}</h1>
           </div>
 
-          {!isMobile && resumoSelecionado && resumosGerados.has(resumoSelecionado.id) && (
-            <div className="flex gap-2 mb-4">
+          {!isMobile && resumoSelecionado && resumosGerados.has(resumoSelecionado.id) && <div className="flex gap-2 mb-4">
               <Button onClick={() => exportarPDF(resumoSelecionado)} variant="outline" className="flex-1">
                 <FileDown className="w-4 h-4 mr-2" />
                 Exportar PDF
@@ -719,8 +626,7 @@ const ResumosProntosView = () => {
                 </svg>
                 WhatsApp
               </Button>
-            </div>
-          )}
+            </div>}
 
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -730,23 +636,17 @@ const ResumosProntosView = () => {
       </div>
 
       <div className="flex max-w-7xl mx-auto">
-        {!isDesktop && (
-          <div className={isMobile ? "w-full px-3 py-4" : "w-80 border-r px-3 py-4"}>
+        {!isDesktop && <div className={isMobile ? "w-full px-3 py-4" : "w-80 border-r px-3 py-4"}>
             <div className="space-y-2">
-              {resumosFiltrados.map(resumo => (
-                <Card 
-                  key={resumo.id} 
-                  className={`cursor-pointer transition-all hover:shadow-md hover:border-primary ${resumoSelecionado?.id === resumo.id && !isMobile ? "border-primary bg-primary/5" : ""} ${gerandoResumoId === resumo.id ? "opacity-50" : ""}`} 
-                  onClick={() => {
-                    setResumoSelecionado(resumo);
-                    if (!resumosGerados.has(resumo.id) && gerandoResumoId === null) {
-                      gerarResumo(resumo);
-                    }
-                    if (isMobile) {
-                      setShowMobilePreview(true);
-                    }
-                  }}
-                >
+              {resumosFiltrados.map(resumo => <Card key={resumo.id} className={`cursor-pointer transition-all hover:shadow-md hover:border-primary ${resumoSelecionado?.id === resumo.id && !isMobile ? "border-primary bg-primary/5" : ""} ${gerandoResumoId === resumo.id ? "opacity-50" : ""}`} onClick={() => {
+            setResumoSelecionado(resumo);
+            if (!resumosGerados.has(resumo.id) && gerandoResumoId === null) {
+              gerarResumo(resumo);
+            }
+            if (isMobile) {
+              setShowMobilePreview(true);
+            }
+          }}>
                   <CardContent className="p-4">
                     <div className="flex items-center gap-3">
                       <div className="flex-shrink-0 w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
@@ -759,35 +659,24 @@ const ResumosProntosView = () => {
                         <h3 className="font-medium text-sm leading-tight">
                           {resumo.subtema}
                         </h3>
-                        {gerandoResumoId === resumo.id && (
-                          <span className="text-xs text-muted-foreground mt-1 block">
+                        {gerandoResumoId === resumo.id && <span className="text-xs text-muted-foreground mt-1 block">
                             Gerando...
-                          </span>
-                        )}
+                          </span>}
                       </div>
 
                       <div className="flex-shrink-0">
-                        {resumosGerados.has(resumo.id) ? (
-                          <div className="w-7 h-7 rounded-full bg-green-500/20 flex items-center justify-center">
+                        {resumosGerados.has(resumo.id) ? <div className="w-7 h-7 rounded-full bg-green-500/20 flex items-center justify-center">
                             <span className="text-green-600 dark:text-green-400 text-base">✓</span>
-                          </div>
-                        ) : (
-                          <ChevronRight className="w-5 h-5 text-muted-foreground" />
-                        )}
+                          </div> : <ChevronRight className="w-5 h-5 text-muted-foreground" />}
                       </div>
                     </div>
                   </CardContent>
-                </Card>
-              ))}
+                </Card>)}
             </div>
-          </div>
-        )}
+          </div>}
 
-        {!isMobile && (
-          <div className={isDesktop ? "flex-1 p-6" : "flex-1 p-6"}>
-            {resumoSelecionado ? (
-              !resumosGerados.has(resumoSelecionado.id) ? (
-                <Card>
+        {!isMobile && <div className={isDesktop ? "flex-1 p-6" : "flex-1 p-6"}>
+            {resumoSelecionado ? !resumosGerados.has(resumoSelecionado.id) ? <Card>
                   <CardContent className="p-8">
                     <div className="text-center space-y-4">
                       <div className="inline-flex p-4 rounded-full bg-primary/10">
@@ -805,9 +694,7 @@ const ResumosProntosView = () => {
                       </div>
                     </div>
                   </CardContent>
-                </Card>
-              ) : (
-                <Tabs value={activeTab} onValueChange={setActiveTab}>
+                </Card> : <Tabs value={activeTab} onValueChange={setActiveTab}>
                   <TabsList className="grid w-full grid-cols-3 mb-4">
                     <TabsTrigger value="resumo">Resumo</TabsTrigger>
                     <TabsTrigger value="exemplos">Exemplos Práticos</TabsTrigger>
@@ -837,12 +724,7 @@ const ResumosProntosView = () => {
                     <Card>
                       <CardContent className="p-6">
                         <div className="mb-4">
-                          <AudioPlayer
-                            audioUrl={audioUrls.get(`${resumoSelecionado.id}-termos`)}
-                            onGenerate={() => gerarAudioResumo('termos')}
-                            isLoading={loadingAudio['termos']}
-                            label="Narrar Termos"
-                          />
+                          <AudioPlayer audioUrl={audioUrls.get(`${resumoSelecionado.id}-termos`)} onGenerate={() => gerarAudioResumo('termos')} isLoading={loadingAudio['termos']} label="Narrar Termos" />
                         </div>
                         <div className="resumo-content">
                           <ReactMarkdown>{resumosGerados.get(resumoSelecionado.id)?.termos || "Gerando termos..."}</ReactMarkdown>
@@ -850,27 +732,18 @@ const ResumosProntosView = () => {
                       </CardContent>
                     </Card>
                   </TabsContent>
-                </Tabs>
-              )
-            ) : (
-              <div className="text-center text-muted-foreground py-12">
+                </Tabs> : <div className="text-center text-muted-foreground py-12">
                 Selecione um subtema para visualizar
-              </div>
-            )}
-          </div>
-        )}
+              </div>}
+          </div>}
       </div>
 
-      {showScrollTop && (
-        <Button 
-          className="fixed bottom-24 right-6 rounded-full w-12 h-12 p-0 shadow-lg z-50" 
-          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-        >
+      {showScrollTop && <Button className="fixed bottom-24 right-6 rounded-full w-12 h-12 p-0 shadow-lg z-50" onClick={() => window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    })}>
           <ArrowUp className="w-5 h-5" />
-        </Button>
-      )}
-    </div>
-  );
+        </Button>}
+    </div>;
 };
-
 export default ResumosProntosView;
