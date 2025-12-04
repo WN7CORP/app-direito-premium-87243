@@ -150,7 +150,7 @@ const QuestoesTemas = () => {
             <div className="flex-1">
               <h1 className="text-xl font-bold line-clamp-1">{area}</h1>
               <p className="text-sm text-muted-foreground">
-                Escolha um tema para estudar
+                {temas ? `${temas.reduce((acc, t) => acc + t.totalQuestoes, 0)} questões disponíveis` : 'Carregando...'}
               </p>
             </div>
             {/* Indicador de atualização automática */}
