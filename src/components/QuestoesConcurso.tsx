@@ -265,32 +265,27 @@ const QuestoesConcurso = ({ questoes, onFinish, area, tema }: QuestoesConcursoPr
     return null;
   }, []);
 
-  // Auto-narrar comentário quando mostrar resultado (modo manual)
-  useEffect(() => {
-    if (showResult && currentQuestion?.comentario && !modoAutomatico) {
-      const autoNarrarComentario = async () => {
-        let url = currentQuestion.url_audio_comentario;
-        
-        // Se não tem URL, gerar
-        if (!url) {
-          url = await gerarAudioGenerico(currentQuestion.id, currentQuestion.comentario, 'comentario');
-        }
-        
-        // Reproduzir automaticamente após pequena pausa
-        if (url && audioComentarioRef.current) {
-          await aguardarMs(800); // Aguardar narração de "correta/incorreta"
-          audioComentarioRef.current.src = url;
-          audioComentarioRef.current.play().then(() => {
-            setIsPlayingComentario(true);
-          }).catch((err) => {
-            console.log('Autoplay comentário bloqueado:', err);
-          });
-        }
-      };
-      
-      autoNarrarComentario();
+  // Função para narrar comentário automaticamente
+  const narrarComentarioAutomatico = useCallback(async () => {
+    if (!currentQuestion?.comentario || !audioComentarioRef.current) return;
+    
+    let url = currentQuestion.url_audio_comentario;
+    
+    // Se não tem URL, gerar
+    if (!url) {
+      url = await gerarAudioGenerico(currentQuestion.id, currentQuestion.comentario, 'comentario');
     }
-  }, [showResult, currentQuestion?.id, modoAutomatico]);
+    
+    // Reproduzir automaticamente
+    if (url && audioComentarioRef.current) {
+      audioComentarioRef.current.src = url;
+      audioComentarioRef.current.play().then(() => {
+        setIsPlayingComentario(true);
+      }).catch((err) => {
+        console.log('Autoplay comentário bloqueado:', err);
+      });
+    }
+  }, [currentQuestion, gerarAudioGenerico]);
 
   // Gerar imagem e áudio quando drawer abrir + pausar modo automático
   useEffect(() => {
@@ -670,6 +665,7 @@ const QuestoesConcurso = ({ questoes, onFinish, area, tema }: QuestoesConcursoPr
       console.error("Erro ao atualizar stats:", error);
     }
 
+    // Narrar feedback (correta/incorreta)
     if (correct) {
       await narrarTexto("Resposta correta!");
     } else {
@@ -677,6 +673,9 @@ const QuestoesConcurso = ({ questoes, onFinish, area, tema }: QuestoesConcursoPr
       setTimeout(() => setShakeError(false), 600);
       await narrarTexto("Resposta incorreta.");
     }
+    
+    // Após narração do feedback, narrar comentário automaticamente
+    await narrarComentarioAutomatico();
   };
 
   const handleNext = () => {
