@@ -265,27 +265,80 @@ const QuestoesConcurso = ({ questoes, onFinish, area, tema }: QuestoesConcursoPr
     return null;
   }, []);
 
-  // Gerar áudio em background quando mostrar resultado (comentário)
+  // Auto-narrar comentário quando mostrar resultado (modo manual)
   useEffect(() => {
-    if (showResult && currentQuestion?.comentario && !currentQuestion.url_audio_comentario) {
-      gerarAudioGenerico(currentQuestion.id, currentQuestion.comentario, 'comentario');
+    if (showResult && currentQuestion?.comentario && !modoAutomatico) {
+      const autoNarrarComentario = async () => {
+        let url = currentQuestion.url_audio_comentario;
+        
+        // Se não tem URL, gerar
+        if (!url) {
+          url = await gerarAudioGenerico(currentQuestion.id, currentQuestion.comentario, 'comentario');
+        }
+        
+        // Reproduzir automaticamente após pequena pausa
+        if (url && audioComentarioRef.current) {
+          await aguardarMs(800); // Aguardar narração de "correta/incorreta"
+          audioComentarioRef.current.src = url;
+          audioComentarioRef.current.play().then(() => {
+            setIsPlayingComentario(true);
+          }).catch((err) => {
+            console.log('Autoplay comentário bloqueado:', err);
+          });
+        }
+      };
+      
+      autoNarrarComentario();
     }
-  }, [showResult, currentQuestion?.id]);
+  }, [showResult, currentQuestion?.id, modoAutomatico]);
 
-  // Gerar imagem e áudio quando drawer abrir
+  // Gerar imagem e áudio quando drawer abrir + pausar modo automático
   useEffect(() => {
     if (showExemplo && currentQuestion?.exemplo_pratico) {
+      // Pausar modo automático se estiver ativo
+      if (modoAutomatico) {
+        autoModeRef.current = false;
+        pausadoPorInteracaoRef.current = true;
+      }
+      
       stopAllAudio();
       
       if (!currentQuestion.url_imagem_exemplo) {
         gerarImagemExemplo(currentQuestion);
       }
       
-      if (!currentQuestion.url_audio_exemplo) {
-        gerarAudioGenerico(currentQuestion.id, currentQuestion.exemplo_pratico, 'exemplo');
-      }
+      // Gerar e reproduzir áudio do exemplo automaticamente
+      const autoNarrarExemplo = async () => {
+        let url = currentQuestion.url_audio_exemplo;
+        
+        if (!url) {
+          url = await gerarAudioGenerico(currentQuestion.id, currentQuestion.exemplo_pratico!, 'exemplo');
+        }
+        
+        // Reproduzir automaticamente
+        if (url && audioExemploRef.current) {
+          audioExemploRef.current.src = url;
+          audioExemploRef.current.play().then(() => {
+            setIsPlayingExemplo(true);
+          }).catch((err) => {
+            console.log('Autoplay exemplo bloqueado:', err);
+          });
+        }
+      };
+      
+      autoNarrarExemplo();
     }
   }, [showExemplo, currentQuestion?.id]);
+
+  // Retomar modo automático quando fechar drawer
+  useEffect(() => {
+    if (!showExemplo && pausadoPorInteracaoRef.current && modoAutomatico) {
+      // Retomar após fechar o drawer
+      pausadoPorInteracaoRef.current = false;
+      autoModeRef.current = true;
+      // O modo automático vai continuar de onde parou
+    }
+  }, [showExemplo, modoAutomatico]);
 
   // ============ MODO AUTOMÁTICO ============
 
