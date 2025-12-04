@@ -12,7 +12,15 @@ import { QuestoesIntro } from "@/components/QuestoesIntro";
 const QuestoesAreas = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
-  const [mostrarIntro, setMostrarIntro] = useState(true);
+  
+  // Verificar se já viu a intro nesta sessão
+  const jaViuIntro = sessionStorage.getItem('questoes-intro-visto') === 'true';
+  const [mostrarIntro, setMostrarIntro] = useState(!jaViuIntro);
+
+  const handleAcessar = () => {
+    sessionStorage.setItem('questoes-intro-visto', 'true');
+    setMostrarIntro(false);
+  };
 
   const { data: areas, isLoading } = useQuery({
     queryKey: ["questoes-areas-com-contagem"],
@@ -109,7 +117,7 @@ const QuestoesAreas = () => {
     return (
       <QuestoesIntro 
         totalQuestoes={totalQuestoes} 
-        onAcessar={() => setMostrarIntro(false)} 
+        onAcessar={handleAcessar} 
       />
     );
   }
