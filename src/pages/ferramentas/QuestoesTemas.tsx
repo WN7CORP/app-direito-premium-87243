@@ -70,14 +70,19 @@ const QuestoesTemas = () => {
         }
       }
 
-      // Agrupa subtemas com questões por tema (usando chave normalizada)
+      // Agrupa subtemas com questões por tema e conta total de questões (usando chave normalizada)
       const subtemasComQuestoes: Record<string, Set<string>> = {};
+      const totalQuestoesPortema: Record<string, number> = {};
       allQuestoesData?.forEach(q => {
         if (q.tema) {
           const temaNorm = normalizar(q.tema);
           if (!subtemasComQuestoes[temaNorm]) {
             subtemasComQuestoes[temaNorm] = new Set();
           }
+          if (!totalQuestoesPortema[temaNorm]) {
+            totalQuestoesPortema[temaNorm] = 0;
+          }
+          totalQuestoesPortema[temaNorm]++;
           if (q.subtema) {
             subtemasComQuestoes[temaNorm].add(normalizar(q.subtema));
           }
@@ -89,6 +94,7 @@ const QuestoesTemas = () => {
         // Usa o tamanho do Set de questões geradas diretamente
         const questoesDoTema = subtemasComQuestoes[temaNorm] || new Set();
         const subtemasGerados = questoesDoTema.size;
+        const totalQuestoes = totalQuestoesPortema[temaNorm] || 0;
         
         // Completo se todos os subtemas do RESUMO foram gerados
         const temTodosSubtemas = totalSubtemas > 0 && subtemasGerados >= totalSubtemas;
@@ -101,6 +107,7 @@ const QuestoesTemas = () => {
           parcial: temAlgunsSubtemas,
           subtemasGerados,
           totalSubtemas,
+          totalQuestoes,
           progressoPercent
         };
       }).sort((a, b) => a.tema.localeCompare(b.tema));
@@ -204,7 +211,7 @@ const QuestoesTemas = () => {
                     <h3 className="font-medium text-sm line-clamp-1">{item.tema}</h3>
                     <p className="text-xs text-muted-foreground">
                       {item.temQuestoes 
-                        ? "Questões prontas" 
+                        ? `${item.totalQuestoes} questões disponíveis` 
                         : item.parcial 
                         ? `${item.subtemasGerados}/${item.totalSubtemas} subtemas gerados`
                         : `0/${item.totalSubtemas} subtemas`}
