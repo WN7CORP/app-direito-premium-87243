@@ -19,10 +19,133 @@ serve(async (req) => {
   }
 
   try {
-    const { codigoTabela, numeroArtigo, conteudoArtigo } = await req.json();
+    const { codigoTabela, numeroArtigo, conteudoArtigo, tipo, codigoNome } = await req.json();
     
     if (!codigoTabela || !numeroArtigo || !conteudoArtigo) {
       throw new Error('Código da tabela, número do artigo e conteúdo são obrigatórios');
+    }
+
+    // Se tipo === 'mapa-mental', gerar apenas o mapa mental
+    if (tipo === 'mapa-mental') {
+      console.log('🗺️ Modo MAPA MENTAL ativado');
+      
+      const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
+      if (!LOVABLE_API_KEY) {
+        throw new Error('LOVABLE_API_KEY não configurada');
+      }
+
+      const systemPrompt = `Você é um especialista em Direito brasileiro. Sua tarefa é criar mapas mentais verticais e estruturados para artigos de lei.
+
+INSTRUÇÕES:
+1. Analise o artigo fornecido e extraia os conceitos principais
+2. Crie uma estrutura hierárquica vertical com:
+   - Um conceito central (tema principal do artigo)
+   - 3-5 ramos principais (categorias como: Elementos, Requisitos, Efeitos, Exceções, Penas, etc.)
+   - Sub-ramos para cada categoria (2-4 itens)
+   - Conexões com outros artigos relacionados (se aplicável)
+
+FORMATO DE RESPOSTA (JSON):
+{
+  "conceitoCentral": {
+    "titulo": "Título curto do conceito",
+    "descricao": "Descrição breve (máx 15 palavras)"
+  },
+  "ramos": [
+    {
+      "titulo": "Nome do Ramo",
+      "cor": "#cor_hex",
+      "subramos": [
+        {
+          "titulo": "Sub-conceito",
+          "descricao": "Explicação breve"
+        }
+      ]
+    }
+  ],
+  "conexoes": [
+    {
+      "artigo": "Art. XX",
+      "relacao": "Tipo de relação"
+    }
+  ]
+}
+
+CORES SUGERIDAS: #F59E0B (amarelo), #10B981 (verde), #3B82F6 (azul), #8B5CF6 (roxo), #EC4899 (rosa)
+
+Responda APENAS com o JSON, sem markdown ou explicações.`;
+
+      const userPrompt = `Crie um mapa mental vertical para o seguinte artigo do ${codigoNome || codigoTabela}:
+
+Art. ${numeroArtigo}
+${conteudoArtigo}
+
+Gere a estrutura completa do mapa mental em JSON.`;
+
+      console.log(`[mapa-mental] Gerando mapa para Art. ${numeroArtigo}`);
+
+      const mmResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'google/gemini-2.5-flash',
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: userPrompt }
+          ],
+          temperature: 0.7,
+          max_tokens: 2000,
+        }),
+      });
+
+      if (!mmResponse.ok) {
+        const errorText = await mmResponse.text();
+        console.error('[mapa-mental] Erro na API:', mmResponse.status, errorText);
+        throw new Error(`Erro na API: ${mmResponse.status}`);
+      }
+
+      const mmData = await mmResponse.json();
+      const content = mmData.choices?.[0]?.message?.content;
+
+      if (!content) {
+        throw new Error('Resposta vazia da IA');
+      }
+
+      let mapaMental;
+      try {
+        const cleanContent = content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+        mapaMental = JSON.parse(cleanContent);
+      } catch (parseError) {
+        console.error('[mapa-mental] Erro ao parsear JSON:', parseError);
+        mapaMental = {
+          conceitoCentral: {
+            titulo: `Art. ${numeroArtigo}`,
+            descricao: "Mapa mental do artigo"
+          },
+          ramos: [
+            {
+              titulo: "Conteúdo Principal",
+              cor: "#F59E0B",
+              subramos: [
+                {
+                  titulo: "Dispositivo Legal",
+                  descricao: conteudoArtigo.substring(0, 100) + "..."
+                }
+              ]
+            }
+          ],
+          conexoes: []
+        };
+      }
+
+      console.log(`[mapa-mental] Mapa mental gerado com sucesso para Art. ${numeroArtigo}`);
+
+      return new Response(
+        JSON.stringify({ mapaMental, cached: false }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
     const DIREITO_PREMIUM_API_KEY = Deno.env.get('DIREITO_PREMIUM_API_KEY');
