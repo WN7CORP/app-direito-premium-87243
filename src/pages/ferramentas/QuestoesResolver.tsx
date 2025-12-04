@@ -1,5 +1,5 @@
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { ArrowLeft, Scale, Loader2 } from "lucide-react";
+import { Scale, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -322,26 +322,16 @@ const QuestoesResolver = () => {
     <div className="flex flex-col min-h-screen bg-background">
       {/* Header */}
       <div className="sticky top-0 z-10 bg-background/95 backdrop-blur border-b px-3 py-3">
-        <div className="flex items-center gap-3">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => navigate(-1)}
-            className="shrink-0"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          <div className="flex-1 min-w-0">
-            <h1 className="font-semibold text-sm line-clamp-1">{tema}</h1>
-            <p className="text-xs text-muted-foreground line-clamp-1">
-              {area} • {questoes.length} questões
-              {geracaoStatus && !geracaoStatus.geracao_completa && (
-                <span className="text-amber-500 ml-1">
-                  ({geracaoStatus.subtemas_processados}/{geracaoStatus.total_subtemas} subtemas)
-                </span>
-              )}
-            </p>
-          </div>
+        <div className="flex-1 min-w-0">
+          <h1 className="font-semibold text-sm line-clamp-1">{tema}</h1>
+          <p className="text-xs text-muted-foreground line-clamp-1">
+            {area} • {questoes.length} questões
+            {geracaoStatus && !geracaoStatus.geracao_completa && (
+              <span className="text-amber-500 ml-1">
+                ({geracaoStatus.subtemas_processados}/{geracaoStatus.total_subtemas} subtemas)
+              </span>
+            )}
+          </p>
         </div>
       </div>
 
