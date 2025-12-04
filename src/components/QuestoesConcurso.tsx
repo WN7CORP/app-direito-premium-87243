@@ -835,7 +835,7 @@ const QuestoesConcurso = ({ questoes, onFinish, area, tema }: QuestoesConcursoPr
             >
               {/* Subtema */}
               {currentQuestion?.subtema && (
-                <div className="text-xs text-primary font-medium mb-2 uppercase tracking-wide">
+                <div className="text-xs text-yellow-500 font-medium mb-2 uppercase tracking-wide">
                   {currentQuestion.subtema}
                 </div>
               )}
@@ -854,8 +854,8 @@ const QuestoesConcurso = ({ questoes, onFinish, area, tema }: QuestoesConcursoPr
                       audioLoading 
                         ? "bg-muted cursor-wait" 
                         : isPlaying 
-                        ? "bg-primary text-primary-foreground" 
-                        : "bg-primary/10 hover:bg-primary/20 text-primary"
+                        ? "bg-yellow-500 text-black" 
+                        : "bg-yellow-500/20 hover:bg-yellow-500/30 text-yellow-500"
                     )}
                     title={audioLoading ? "Gerando áudio..." : isPlaying ? "Pausar" : "Ouvir questão"}
                   >
