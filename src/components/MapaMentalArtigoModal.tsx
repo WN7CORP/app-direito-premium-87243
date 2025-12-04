@@ -72,8 +72,14 @@ export const MapaMentalArtigoModal = ({
     setError(null);
     
     try {
-      const { data, error: fnError } = await supabase.functions.invoke('gerar-mapa-mental-artigo', {
-        body: { artigo, numeroArtigo, codigoNome, codigoTabela }
+      const { data, error: fnError } = await supabase.functions.invoke('gerar-aula-artigo', {
+        body: { 
+          codigoTabela, 
+          numeroArtigo, 
+          conteudoArtigo: artigo, 
+          codigoNome,
+          tipo: 'mapa-mental' 
+        }
       });
 
       if (fnError) throw fnError;

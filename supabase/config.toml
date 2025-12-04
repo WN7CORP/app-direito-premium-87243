@@ -65,6 +65,3 @@ verify_jwt = false
 
 [functions.processar-aulas-background]
 verify_jwt = false
-
-[functions.gerar-mapa-mental-artigo]
-verify_jwt = false
