@@ -8,7 +8,8 @@ import {
   FileQuestion, 
   Sparkles,
   Share2,
-  X
+  X,
+  Network
 } from "lucide-react";
 import { useState } from "react";
 import {
@@ -40,6 +41,7 @@ interface ArtigoActionsMenuProps {
   onOpenQuestoes?: () => void;
   onPerguntar?: () => void;
   onOpenAulaArtigo?: () => void;
+  onOpenMapaMental?: () => void;
   loadingFlashcards?: boolean;
   isCommentPlaying?: boolean;
 }
@@ -56,6 +58,7 @@ export const ArtigoActionsMenu = ({
   onOpenQuestoes,
   onPerguntar,
   onOpenAulaArtigo,
+  onOpenMapaMental,
   loadingFlashcards = false,
   isCommentPlaying = false,
 }: ArtigoActionsMenuProps) => {
@@ -92,6 +95,13 @@ export const ArtigoActionsMenu = ({
       action: onOpenAulaArtigo,
       show: !!onOpenAulaArtigo,
       highlight: true
+    },
+    {
+      icon: Network,
+      label: "Mapa Mental",
+      description: "Visualize as conexões e conceitos do artigo",
+      action: onOpenMapaMental,
+      show: !!onOpenMapaMental
     },
     {
       icon: Lightbulb,
