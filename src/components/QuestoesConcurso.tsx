@@ -1084,15 +1084,15 @@ const QuestoesConcurso = ({ questoes, onFinish, area, tema }: QuestoesConcursoPr
           <div className="px-4 pb-4 space-y-3">
             {/* Imagem ilustrativa */}
             {currentQuestion?.url_imagem_exemplo ? (
-              <div className="rounded-xl overflow-hidden border max-w-xs mx-auto">
+              <div className="rounded-xl overflow-hidden border">
                 <img 
                   src={currentQuestion.url_imagem_exemplo} 
                   alt="Ilustração do exemplo prático" 
-                  className="w-full h-auto aspect-[9/16] object-cover"
+                  className="w-full aspect-video object-cover"
                 />
               </div>
             ) : imagemLoading && (
-              <div className="aspect-[9/16] max-w-xs mx-auto rounded-xl bg-muted flex items-center justify-center">
+              <div className="aspect-video rounded-xl bg-muted flex items-center justify-center">
                 <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
                 <span className="ml-2 text-sm text-muted-foreground">Gerando ilustração...</span>
               </div>

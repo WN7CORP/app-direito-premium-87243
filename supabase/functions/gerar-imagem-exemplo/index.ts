@@ -21,11 +21,11 @@ CONTENT TO ILLUSTRATE:
 ${textoLimitado}
 
 YOUR TASK:
-Create an image generation prompt for a PROFESSIONAL, POLISHED, HIGH-QUALITY 3D illustration in VERTICAL format (9:16 portrait).
+Create an image generation prompt for a PROFESSIONAL, POLISHED, HIGH-QUALITY 3D illustration in HORIZONTAL format (16:9 landscape).
 
 MANDATORY STYLE SPECIFICATIONS:
 - Style: Professional 3D isometric illustration, Blender-quality render
-- Orientation: VERTICAL PORTRAIT (9:16 aspect ratio)
+- Orientation: HORIZONTAL LANDSCAPE (16:9 aspect ratio)
 - Lighting: Soft studio lighting with subtle shadows
 - Colors: Corporate color palette - deep blues, teals, warm oranges, clean whites
 - Characters: Stylized 3D human figures (like Pixar style but simpler), professional appearance, Brazilian diversity
@@ -40,10 +40,10 @@ FOR THIS CASE STUDY:
 - Use body language and positioning to tell the story
 - Professional corporate setting
 
-VERTICAL COMPOSITION (9:16):
-- Top third: sky/environment/context
-- Middle third: characters and main action
-- Bottom third: supporting elements/ground
+HORIZONTAL COMPOSITION (16:9):
+- Left side: context/environment elements
+- Center: main characters and action
+- Right side: supporting elements/objects
 
 ABSOLUTE PROHIBITIONS:
 1. NO TEXT - no words, letters, labels, numbers, captions, signs with writing
@@ -54,7 +54,7 @@ ABSOLUTE PROHIBITIONS:
 
 OUTPUT:
 Write ONLY the image prompt. No explanations, no quotes.
-Start with: "A professional 3D isometric vertical illustration showing..."`
+Start with: "A professional 3D isometric horizontal illustration showing..."`
 
   const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`, {
     method: "POST",
@@ -139,7 +139,7 @@ serve(async (req) => {
     // 3. Gerar imagem com Nano Banana (Gemini Image Generation)
     const promptFinal = `${promptEspecifico}
 
-CRITICAL: This must be a professional 3D rendered illustration in VERTICAL PORTRAIT format (9:16 aspect ratio). Studio lighting. NO text, words, letters, or numbers anywhere in the image. Ultra high quality, corporate marketing style. Clean gradient background.`
+CRITICAL: This must be a professional 3D rendered illustration in HORIZONTAL LANDSCAPE format (16:9 aspect ratio). Studio lighting. NO text, words, letters, or numbers anywhere in the image. Ultra high quality, corporate marketing style. Clean gradient background.`
 
     console.log('[gerar-imagem-exemplo] Etapa 2: Gerando imagem com Nano Banana...')
 
