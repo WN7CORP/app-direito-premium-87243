@@ -235,19 +235,8 @@ const QuestoesTemas = () => {
           </ToggleGroup>
         </div>
 
-        {/* Botão de iniciar quando em modo seleção */}
-        {modo === "selecionar" && temasSelecionados.length > 0 && (
-          <Button 
-            onClick={iniciarQuestoesSelecionadas}
-            className="w-full bg-emerald-600 hover:bg-emerald-700 text-white"
-          >
-            <Play className="w-4 h-4 mr-2" />
-            Iniciar com {temasSelecionados.length} {temasSelecionados.length === 1 ? 'tema' : 'temas'}
-          </Button>
-        )}
-
         {/* Lista de Temas */}
-        <div className="grid grid-cols-1 gap-2">
+        <div className={`grid grid-cols-1 gap-2 ${modo === "selecionar" && temasSelecionados.length > 0 ? "pb-20" : ""}`}>
           {isLoading ? (
             Array.from({ length: 6 }).map((_, i) => (
               <Skeleton key={i} className="h-20 rounded-xl" />
@@ -321,6 +310,19 @@ const QuestoesTemas = () => {
           )}
         </div>
       </div>
+
+      {/* Botão fixo na parte inferior quando em modo seleção */}
+      {modo === "selecionar" && temasSelecionados.length > 0 && (
+        <div className="fixed bottom-0 left-0 right-0 p-4 bg-background/95 backdrop-blur-sm border-t z-50">
+          <Button 
+            onClick={iniciarQuestoesSelecionadas}
+            className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-6 text-base"
+          >
+            <Play className="w-5 h-5 mr-2" />
+            Iniciar com {temasSelecionados.length} {temasSelecionados.length === 1 ? 'tema selecionado' : 'temas selecionados'}
+          </Button>
+        </div>
+      )}
     </div>
   );
 };
