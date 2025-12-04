@@ -94,7 +94,9 @@ export const Layout = ({ children }: LayoutProps) => {
     // Esconder na página de estudo de flashcards de artigos de lei
     location.pathname === "/flashcards/artigos-lei/estudar" ||
     // Esconder na página de resolver simulados de concurso
-    (location.pathname.includes("/ferramentas/simulados/") && location.pathname.includes("/resolver"));
+    (location.pathname.includes("/ferramentas/simulados/") && location.pathname.includes("/resolver")) ||
+    // Esconder na página de questões (intro)
+    location.pathname === "/ferramentas/questoes";
   
   // Esconder Header em páginas com header próprio
   const hideHeader = location.pathname === "/professora" || location.pathname === "/chat-professora";
