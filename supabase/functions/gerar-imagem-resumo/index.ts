@@ -97,10 +97,7 @@ Only visual elements: stick figures, icons, arrows, simple objects. NO TYPOGRAPH
           parts: [{ text: prompt }]
         }],
         generationConfig: {
-          responseModalities: ["TEXT", "IMAGE"],
-          imageConfig: {
-            aspectRatio: "16:9"
-          }
+          responseModalities: ["TEXT", "IMAGE"]
         }
       })
     })
