@@ -13,10 +13,11 @@ const QuestoesAreas = () => {
   const [searchTerm, setSearchTerm] = useState("");
 
   const { data: areas, isLoading } = useQuery({
-    queryKey: ["questoes-areas"],
+    queryKey: ["questoes-areas-com-contagem"],
     queryFn: async () => {
+      // Fetch areas and temas from RESUMO
       const pageSize = 1000;
-      let allData: { area: string; tema: string }[] = [];
+      let allResumoData: { area: string; tema: string }[] = [];
       let page = 0;
 
       while (true) {
@@ -30,14 +31,43 @@ const QuestoesAreas = () => {
         if (error) throw error;
         if (!data || data.length === 0) break;
 
-        allData = [...allData, ...data];
+        allResumoData = [...allResumoData, ...data];
         if (data.length < pageSize) break;
         page++;
       }
 
+      // Fetch question counts from QUESTOES_GERADAS
+      let allQuestoesData: { area: string | null }[] = [];
+      let offset = 0;
+      let hasMore = true;
+      
+      while (hasMore) {
+        const { data: pageData } = await supabase
+          .from("QUESTOES_GERADAS")
+          .select("area")
+          .range(offset, offset + pageSize - 1);
+        
+        if (pageData && pageData.length > 0) {
+          allQuestoesData = [...allQuestoesData, ...pageData];
+          offset += pageSize;
+          hasMore = pageData.length === pageSize;
+        } else {
+          hasMore = false;
+        }
+      }
+
+      // Count questions per area
+      const questoesPortArea: Record<string, number> = {};
+      allQuestoesData.forEach(q => {
+        if (q.area) {
+          questoesPortArea[q.area] = (questoesPortArea[q.area] || 0) + 1;
+        }
+      });
+
+      // Group temas by area
       const areasMap = new Map<string, Set<string>>();
 
-      allData.forEach((item) => {
+      allResumoData.forEach((item) => {
         if (item.area && item.tema) {
           if (!areasMap.has(item.area)) {
             areasMap.set(item.area, new Set());
@@ -50,6 +80,7 @@ const QuestoesAreas = () => {
         .map(([area, temas]) => ({
           area,
           totalTemas: temas.size,
+          totalQuestoes: questoesPortArea[area] || 0,
         }))
         .sort((a, b) => a.area.localeCompare(b.area));
     },
@@ -58,6 +89,8 @@ const QuestoesAreas = () => {
   const filteredAreas = areas?.filter((item) =>
     item.area.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const totalQuestoes = areas?.reduce((acc, item) => acc + item.totalQuestoes, 0) || 0;
 
   const areaIcons = ["📜", "⚖️", "💼", "💰", "🏛️", "📋"];
   const glowColors = [
@@ -88,7 +121,7 @@ const QuestoesAreas = () => {
           <div>
             <h1 className="text-xl md:text-2xl font-bold">Questões por Tema</h1>
             <p className="text-sm text-muted-foreground">
-              Escolha uma área do direito para estudar
+              {isLoading ? 'Carregando...' : `${totalQuestoes.toLocaleString('pt-BR')} questões disponíveis`}
             </p>
           </div>
         </div>
@@ -154,8 +187,7 @@ const QuestoesAreas = () => {
                   </div>
                   <h3 className="font-bold text-sm mb-1">{item.area}</h3>
                   <p className="text-xs text-muted-foreground line-clamp-2">
-                    {item.totalTemas} {item.totalTemas === 1 ? "tema" : "temas"}{" "}
-                    disponíve{item.totalTemas === 1 ? "l" : "is"}
+                    {item.totalQuestoes.toLocaleString('pt-BR')} {item.totalQuestoes === 1 ? "questão disponível" : "questões disponíveis"}
                   </p>
                 </CardContent>
               </Card>
