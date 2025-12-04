@@ -1,6 +1,5 @@
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { ArrowLeft, Scale, Search, CheckCircle2, Clock, RefreshCw } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Scale, Search, CheckCircle2, Clock, RefreshCw } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -135,14 +134,6 @@ const QuestoesTemas = () => {
       <div className="flex-1 px-3 md:px-6 py-4 md:py-6 space-y-4">
         {/* Header */}
         <div className="flex items-center gap-3">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => navigate("/ferramentas/questoes")}
-            className="shrink-0"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
           <div className="flex items-center gap-3 flex-1">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center">
               <Scale className="w-5 h-5 text-primary" />
