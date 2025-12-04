@@ -60,32 +60,77 @@ serve(async (req) => {
       )
     }
 
-    // Gerar prompt otimizado SEM TEXTO
-    const prompt = `STRICT VISUAL ILLUSTRATION - NO TEXT ALLOWED
+    // Limpar conteúdo para usar no prompt
+    const conteudoLimpo = conteudo
+      .replace(/[#*_\[\]]/g, '')
+      .replace(/\n+/g, ' ')
+      .trim()
 
-Create a minimalist hand-drawn sketch illustration representing the legal concept of "${area || 'Direito'}: ${tema || 'Legal concept'}".
+    // Gerar prompt baseado no tipo
+    let prompt: string
+
+    if (tipo.startsWith('exemplo')) {
+      // Para EXEMPLOS: focar na CENA NARRATIVA específica
+      prompt = `VISUAL SCENE ILLUSTRATION - NO TEXT ALLOWED
+
+Based on this real case story, create a visual scene illustration:
+
+"${conteudoLimpo.substring(0, 500)}"
+
+DRAW THE SPECIFIC SCENE described above showing:
+- The people involved (as simple stick figures with distinguishing features like gender, age, profession)
+- The specific actions happening (stealing, running, confronting, etc.)
+- The location/setting mentioned (bakery, store, court, street, etc.)
+- Key objects from the story (bread, money, documents, etc.)
+- Emotions and situations (hunger, desperation, conflict, etc.)
 
 VISUAL STYLE:
-- Black ink line art on white/cream notebook paper with faint grid
-- Simple iconic symbols and stick figures
-- Clean sketchnote/doodle aesthetic
-- Horizontal wide composition (16:9 landscape)
+- Hand-drawn sketch style with black ink on cream paper
+- Simple but SPECIFIC to the story above
+- Show the NARRATIVE MOMENT, not generic symbols
+- Stick figures with clear actions and expressions
+- Wide horizontal composition (16:9)
 
-VISUAL ELEMENTS TO INCLUDE:
-- Legal symbols: scales of justice, gavel, law books, scrolls
-- Simple human stick figures showing interactions
-- Arrows connecting related concepts
-- Simple geometric shapes organizing the visual flow
+CRITICAL REQUIREMENTS:
+⛔ ABSOLUTELY NO text, words, letters, labels or numbers anywhere
+⛔ NO generic legal symbols - only illustrate what's in the story
+⛔ MUST illustrate the SPECIFIC situation described, not abstract concepts
+⛔ Show the ACTUAL PEOPLE and ACTIONS from the narrative
+⛔ The image must tell the story visually without any written words
 
-ABSOLUTE REQUIREMENTS:
-⛔ ZERO text, letters, words, labels, or numbers anywhere in the image
-⛔ NO captions, titles, or annotations
-⛔ NO written language of any kind - not even single letters
-⛔ The image must be 100% wordless - purely visual symbols and drawings
+Output: A scene illustration showing the specific situation from the case story.`
+    } else {
+      // Para RESUMO: focar nos CONCEITOS do texto
+      prompt = `LEGAL CONCEPT ILLUSTRATION - NO TEXT ALLOWED
 
-The illustration should visually INTERPRET and SYMBOLIZE the legal concept through icons and drawings only, never through written words.
+Illustrate the main legal concepts from this summary:
 
-Output: A clean, wordless sketch illustration with only visual symbols and drawings.`
+"${conteudoLimpo.substring(0, 400)}"
+
+Topic: ${area || 'Direito'} - ${tema || 'Legal concept'}
+
+DRAW visual representations of:
+- The key legal principles mentioned in the text
+- Relationships between concepts (using arrows, connections)
+- Symbolic representations of the specific situations described
+- Visual metaphors for the legal rules explained
+
+VISUAL STYLE:
+- Minimalist sketchnote/mind-map style
+- Black ink on cream paper
+- Icons and symbols that represent SPECIFIC concepts from the text
+- Stick figures showing relevant interactions
+- Wide horizontal composition (16:9)
+
+CRITICAL REQUIREMENTS:
+⛔ ABSOLUTELY NO text, words, letters or numbers anywhere
+⛔ Symbols must relate to the SPECIFIC content, not generic law icons
+⛔ Show the CONCEPTS from the text, not just scales/gavels
+⛔ Visual elements must reflect the actual legal topic described
+⛔ The image must be 100% wordless
+
+Output: A conceptual illustration of the specific legal topic described.`
+    }
 
     console.log('Gerando imagem com Gemini API direta...')
 
