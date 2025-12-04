@@ -13,6 +13,170 @@ const TIPO_TO_COLUNA: Record<string, string> = {
   'exemplo': 'url_audio_exemplo',
 }
 
+// ============================================
+// FUNÇÕES DE CONVERSÃO DE NÚMEROS
+// ============================================
+
+const unidades = ['', 'um', 'dois', 'três', 'quatro', 'cinco', 'seis', 'sete', 'oito', 'nove'];
+const especiais = ['dez', 'onze', 'doze', 'treze', 'quatorze', 'quinze', 'dezesseis', 'dezessete', 'dezoito', 'dezenove'];
+const dezenas = ['', '', 'vinte', 'trinta', 'quarenta', 'cinquenta', 'sessenta', 'setenta', 'oitenta', 'noventa'];
+const centenas = ['', 'cento', 'duzentos', 'trezentos', 'quatrocentos', 'quinhentos', 'seiscentos', 'setecentos', 'oitocentos', 'novecentos'];
+
+function numeroParaExtenso(n: number): string {
+  if (n === 0) return 'zero';
+  if (n < 0) return 'menos ' + numeroParaExtenso(-n);
+  
+  if (n < 10) return unidades[n];
+  if (n < 20) return especiais[n - 10];
+  if (n < 100) {
+    const dezena = Math.floor(n / 10);
+    const unidade = n % 10;
+    return dezenas[dezena] + (unidade ? ' e ' + unidades[unidade] : '');
+  }
+  if (n === 100) return 'cem';
+  if (n < 1000) {
+    const centena = Math.floor(n / 100);
+    const resto = n % 100;
+    return centenas[centena] + (resto ? ' e ' + numeroParaExtenso(resto) : '');
+  }
+  if (n < 2000) {
+    const resto = n % 1000;
+    return 'mil' + (resto ? (resto < 100 ? ' e ' : ' ') + numeroParaExtenso(resto) : '');
+  }
+  if (n < 1000000) {
+    const milhar = Math.floor(n / 1000);
+    const resto = n % 1000;
+    return numeroParaExtenso(milhar) + ' mil' + (resto ? (resto < 100 ? ' e ' : ' ') + numeroParaExtenso(resto) : '');
+  }
+  return n.toString();
+}
+
+// ============================================
+// FUNÇÕES DE ORDINAIS
+// ============================================
+
+const ordinaisUnidades = ['', 'primeiro', 'segundo', 'terceiro', 'quarto', 'quinto', 'sexto', 'sétimo', 'oitavo', 'nono'];
+const ordinaisDezenas = ['', 'décimo', 'vigésimo', 'trigésimo', 'quadragésimo', 'quinquagésimo', 'sexagésimo', 'septuagésimo', 'octogésimo', 'nonagésimo'];
+const ordinaisCentenas = ['', 'centésimo', 'ducentésimo', 'tricentésimo', 'quadringentésimo', 'quingentésimo', 'sexcentésimo', 'septingentésimo', 'octingentésimo', 'nongentésimo'];
+
+function numeroParaOrdinal(n: number): string {
+  if (n <= 0) return numeroParaExtenso(n);
+  if (n < 10) return ordinaisUnidades[n];
+  if (n < 100) {
+    const dezena = Math.floor(n / 10);
+    const unidade = n % 10;
+    return ordinaisDezenas[dezena] + (unidade ? ' ' + ordinaisUnidades[unidade] : '');
+  }
+  if (n < 1000) {
+    const centena = Math.floor(n / 100);
+    const resto = n % 100;
+    return ordinaisCentenas[centena] + (resto ? ' ' + numeroParaOrdinal(resto) : '');
+  }
+  return numeroParaExtenso(n);
+}
+
+// ============================================
+// ABREVIAÇÕES GERAIS
+// ============================================
+
+const abreviacoes: { [key: string]: string } = {
+  'arts.': 'artigos',
+  'Arts.': 'Artigos',
+  'art.': 'artigo',
+  'Art.': 'Artigo',
+  'inc.': 'inciso',
+  'Inc.': 'Inciso',
+  'par.': 'parágrafo',
+  'Par.': 'Parágrafo',
+  'al.': 'alínea',
+  'Dr.': 'Doutor',
+  'Dra.': 'Doutora',
+  'Sr.': 'Senhor',
+  'Sra.': 'Senhora',
+  'nº': 'número',
+  'Nº': 'Número',
+  'n.': 'número',
+  'etc.': 'etcétera',
+  'ex.': 'exemplo',
+  'obs.': 'observação',
+};
+
+// ============================================
+// SIGLAS JURÍDICAS
+// ============================================
+
+const siglasJuridicas: { [key: string]: string } = {
+  'CC': 'Código Civil',
+  'CPC': 'Código de Processo Civil',
+  'CDC': 'Código de Defesa do Consumidor',
+  'CF': 'Constituição Federal',
+  'CP': 'Código Penal',
+  'CPP': 'Código de Processo Penal',
+  'CTN': 'Código Tributário Nacional',
+  'CLT': 'Consolidação das Leis do Trabalho',
+  'ECA': 'Estatuto da Criança e do Adolescente',
+  'STF': 'Supremo Tribunal Federal',
+  'STJ': 'Superior Tribunal de Justiça',
+  'OAB': 'Ordem dos Advogados do Brasil',
+  'LINDB': 'Lei de Introdução às Normas do Direito Brasileiro',
+};
+
+// ============================================
+// FUNÇÃO DE NORMALIZAÇÃO
+// ============================================
+
+function normalizarTextoParaTTS(texto: string): string {
+  let resultado = texto;
+  
+  // 1. ABREVIAÇÕES - substituir por extenso
+  const abreviacoesOrdenadas = Object.entries(abreviacoes).sort((a, b) => b[0].length - a[0].length);
+  for (const [abrev, extenso] of abreviacoesOrdenadas) {
+    const escapedAbrev = abrev.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const regex = new RegExp(`\\b${escapedAbrev}`, 'gi');
+    resultado = resultado.replace(regex, extenso);
+  }
+  
+  // 2. PARÁGRAFOS COM NÚMERO - "§1º", "§ 1º"
+  resultado = resultado.replace(/§\s?(\d+)[º°]/g, (match, num) => {
+    const numero = parseInt(num, 10);
+    return 'parágrafo ' + numeroParaOrdinal(numero);
+  });
+  
+  // 3. ARTIGOS COM ORDINAL - "Artigo 5º", "artigo 5°"
+  resultado = resultado.replace(/[Aa]rtigos?\s?(\d+)[º°]/g, (match, num) => {
+    const numero = parseInt(num, 10);
+    return 'artigo ' + numeroParaOrdinal(numero);
+  });
+  
+  // 4. ARTIGOS SEM ORDINAL - "Artigo 121"
+  resultado = resultado.replace(/[Aa]rtigos?\s?(\d+)(?![º°\d])/g, (match, num) => {
+    const numero = parseInt(num, 10);
+    if (numero <= 10) {
+      return 'artigo ' + numeroParaOrdinal(numero);
+    }
+    return 'artigo ' + numeroParaExtenso(numero);
+  });
+  
+  // 5. ORDINAIS ISOLADOS - "1º", "2°"
+  resultado = resultado.replace(/(\d+)[º°](?!\s?[-–])/g, (match, num) => {
+    const numero = parseInt(num, 10);
+    return numeroParaOrdinal(numero);
+  });
+  
+  // 6. SIGLAS JURÍDICAS
+  for (const [sigla, expandida] of Object.entries(siglasJuridicas)) {
+    const regex = new RegExp(`\\b${sigla}\\b(?!\\/)`, 'g');
+    resultado = resultado.replace(regex, expandida);
+  }
+  
+  // 7. PORCENTAGENS - "50%"
+  resultado = resultado.replace(/(\d+)%/g, (match, num) => {
+    return numeroParaExtenso(parseInt(num, 10)) + ' por cento';
+  });
+  
+  return resultado;
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
@@ -63,10 +227,12 @@ serve(async (req) => {
       throw new Error('GER não configurado')
     }
 
-    // Limitar texto para TTS (máx 5000 chars)
-    const textoLimitado = texto.substring(0, 4900)
+    // Normalizar texto antes de enviar para TTS
+    const textoNormalizado = normalizarTextoParaTTS(texto)
+    const textoLimitado = textoNormalizado.substring(0, 4900)
 
     console.log(`[gerar-audio-generico] Gerando áudio para ${tipo}...`)
+    console.log(`[gerar-audio-generico] Texto normalizado: ${textoLimitado.substring(0, 200)}...`)
 
     const ttsResponse = await fetch(
       `https://texttospeech.googleapis.com/v1/text:synthesize?key=${GOOGLE_TTS_API_KEY}`,
