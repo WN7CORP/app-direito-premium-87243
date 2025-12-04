@@ -256,7 +256,7 @@ const QuestoesTemas = () => {
                     navigate(`/ferramentas/questoes/resolver?area=${encodeURIComponent(area)}&tema=${encodeURIComponent(item.tema)}`);
                   }
                 }}
-                className={`flex flex-col gap-2 p-4 rounded-xl border bg-card hover:bg-accent transition-all text-left ${
+                className={`flex flex-col justify-between p-4 rounded-xl border bg-card hover:bg-accent transition-all text-left min-h-[80px] ${
                   modo === "selecionar" && temasSelecionados.includes(item.tema) 
                     ? "border-emerald-500 bg-emerald-500/10" 
                     : ""
