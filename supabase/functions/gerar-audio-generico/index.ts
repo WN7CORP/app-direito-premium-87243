@@ -77,7 +77,7 @@ serve(async (req) => {
           input: { text: textoLimitado },
           voice: {
             languageCode: 'pt-BR',
-            name: 'pt-BR-Chirp3-HD-Sadaltager',
+            name: 'pt-BR-Chirp3-HD-Fenrir',
             ssmlGender: 'MALE'
           },
           audioConfig: {
