@@ -1,17 +1,19 @@
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { Scale, Search, CheckCircle2, Clock, RefreshCw } from "lucide-react";
+import { Scale, Search, CheckCircle2, Clock, RefreshCw, ArrowDownAZ, ListOrdered } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Progress } from "@/components/ui/progress";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
 const QuestoesTemas = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const area = searchParams.get("area") || "";
   const [searchTerm, setSearchTerm] = useState("");
+  const [ordenacao, setOrdenacao] = useState<"cronologica" | "alfabetica">("cronologica");
 
   // Função para normalizar strings de forma consistente (remove acentos também)
   const normalizar = (str: string) => 
@@ -128,6 +130,10 @@ const QuestoesTemas = () => {
 
   const filteredTemas = temas?.filter(item =>
     item.tema.toLowerCase().includes(searchTerm.toLowerCase())
+  ).sort((a, b) => 
+    ordenacao === "alfabetica" 
+      ? a.tema.localeCompare(b.tema) 
+      : a.ordem - b.ordem
   );
 
   const temPendentes = temas?.some(t => !t.temQuestoes);
@@ -166,6 +172,34 @@ const QuestoesTemas = () => {
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-10"
           />
+        </div>
+
+        {/* Toggle de ordenação */}
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-muted-foreground">Ordenar:</span>
+          <ToggleGroup 
+            type="single" 
+            value={ordenacao} 
+            onValueChange={(value) => value && setOrdenacao(value as "cronologica" | "alfabetica")}
+            className="bg-muted/50 rounded-lg p-1"
+          >
+            <ToggleGroupItem 
+              value="cronologica" 
+              aria-label="Ordem cronológica"
+              className="text-xs px-3 py-1.5 h-auto data-[state=on]:bg-background data-[state=on]:shadow-sm"
+            >
+              <ListOrdered className="w-3.5 h-3.5 mr-1.5" />
+              Cronológica
+            </ToggleGroupItem>
+            <ToggleGroupItem 
+              value="alfabetica" 
+              aria-label="Ordem alfabética"
+              className="text-xs px-3 py-1.5 h-auto data-[state=on]:bg-background data-[state=on]:shadow-sm"
+            >
+              <ArrowDownAZ className="w-3.5 h-3.5 mr-1.5" />
+              Alfabética
+            </ToggleGroupItem>
+          </ToggleGroup>
         </div>
 
         {/* Lista de Temas */}
