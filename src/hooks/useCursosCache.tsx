@@ -31,7 +31,7 @@ export const useCursosCache = () => {
 
     // Configurar Realtime para atualização automática
     const channel: RealtimeChannel = supabase
-      .channel('cursos-changes')
+      .channel(`cursos-changes-${Math.random().toString(36).slice(2)}`)
       .on(
         'postgres_changes',
         {
