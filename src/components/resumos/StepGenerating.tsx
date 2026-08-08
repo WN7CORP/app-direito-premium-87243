@@ -29,7 +29,7 @@ export const StepGenerating = ({ nivel, onComplete }: StepGeneratingProps) => {
 
   useEffect(() => {
     let currentStep = 0;
-    let timeoutId: NodeJS.Timeout;
+    let timeoutId: any;
 
     const runStep = () => {
       if (currentStep < generatingSteps.length) {

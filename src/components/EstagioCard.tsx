@@ -33,7 +33,7 @@ export const EstagioCard = ({ vaga, isFavorited = false, onFavoriteChange }: Est
 
       if (isFavorited) {
         const { error } = await supabase
-          .from('estagios_favoritos')
+          .from('estagios_favoritos' as any)
           .delete()
           .eq('user_id', user.id)
           .eq('vaga_id', vaga.id);
@@ -42,7 +42,7 @@ export const EstagioCard = ({ vaga, isFavorited = false, onFavoriteChange }: Est
         toast.success("Vaga removida dos favoritos");
       } else {
         const { error } = await supabase
-          .from('estagios_favoritos')
+          .from('estagios_favoritos' as any)
           .insert({ user_id: user.id, vaga_id: vaga.id });
 
         if (error) throw error;

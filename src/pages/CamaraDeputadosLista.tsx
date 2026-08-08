@@ -37,7 +37,7 @@ const CamaraDeputadosLista = () => {
     // 1. Verificar cache se não for refresh forçado
     if (!forceRefresh) {
       const { data: cache } = await supabase
-        .from('cache_camara_deputados')
+        .from('cache_camara_deputados' as any)
         .select('*')
         .eq('tipo_cache', 'deputados')
         .eq('chave_cache', chaveCache)
@@ -73,7 +73,7 @@ const CamaraDeputadosLista = () => {
     
     // 3. Salvar no cache
     await supabase
-      .from('cache_camara_deputados')
+      .from('cache_camara_deputados' as any)
       .upsert({
         tipo_cache: 'deputados',
         chave_cache: chaveCache,

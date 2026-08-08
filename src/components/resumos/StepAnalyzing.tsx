@@ -18,7 +18,7 @@ export const StepAnalyzing = ({ onComplete }: StepAnalyzingProps) => {
 
   useEffect(() => {
     let currentStep = 0;
-    let timeoutId: NodeJS.Timeout;
+    let timeoutId: any;
 
     const runStep = () => {
       if (currentStep < analysisSteps.length) {
