@@ -7904,6 +7904,51 @@ export type Database = {
           },
         ]
       }
+      checkout_screenshots: {
+        Row: {
+          amount: number | null
+          created_at: string
+          event_type: string
+          id: string
+          payment_method: string | null
+          plan_type: string | null
+          route: string | null
+          storage_path: string
+          user_agent: string | null
+          user_id: string
+          viewport_height: number | null
+          viewport_width: number | null
+        }
+        Insert: {
+          amount?: number | null
+          created_at?: string
+          event_type: string
+          id?: string
+          payment_method?: string | null
+          plan_type?: string | null
+          route?: string | null
+          storage_path: string
+          user_agent?: string | null
+          user_id: string
+          viewport_height?: number | null
+          viewport_width?: number | null
+        }
+        Update: {
+          amount?: number | null
+          created_at?: string
+          event_type?: string
+          id?: string
+          payment_method?: string | null
+          plan_type?: string | null
+          route?: string | null
+          storage_path?: string
+          user_agent?: string | null
+          user_id?: string
+          viewport_height?: number | null
+          viewport_width?: number | null
+        }
+        Relationships: []
+      }
       "CLT - Consolidação das Leis do Trabalho": {
         Row: {
           Artigo: string | null
@@ -9579,6 +9624,93 @@ export type Database = {
           tema?: string | null
           titulo?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      desktop_link_tokens: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          created_at: string
+          device_info: string | null
+          expires_at: string
+          id: string
+          otp_code: string | null
+          otp_email: string | null
+          session_token: string | null
+          status: string
+          token: string
+          updated_at: string
+          user_agent: string | null
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          device_info?: string | null
+          expires_at?: string
+          id?: string
+          otp_code?: string | null
+          otp_email?: string | null
+          session_token?: string | null
+          status?: string
+          token: string
+          updated_at?: string
+          user_agent?: string | null
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          device_info?: string | null
+          expires_at?: string
+          id?: string
+          otp_code?: string | null
+          otp_email?: string | null
+          session_token?: string | null
+          status?: string
+          token?: string
+          updated_at?: string
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
+      desktop_sessions: {
+        Row: {
+          created_at: string
+          device_info: string | null
+          expires_at: string
+          id: string
+          last_seen_at: string
+          revoked: boolean
+          session_token: string
+          updated_at: string
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          device_info?: string | null
+          expires_at?: string
+          id?: string
+          last_seen_at?: string
+          revoked?: boolean
+          session_token: string
+          updated_at?: string
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          device_info?: string | null
+          expires_at?: string
+          id?: string
+          last_seen_at?: string
+          revoked?: boolean
+          session_token?: string
+          updated_at?: string
+          user_agent?: string | null
+          user_id?: string
         }
         Relationships: []
       }
@@ -11845,6 +11977,7 @@ export type Database = {
           perfil: string | null
           periodo_teste_expirado: boolean | null
           telefone: string
+          telefone_verificado: boolean | null
           tempo_teste_minutos: number | null
           teste_inicio: string | null
           total_mensagens: number | null
@@ -11866,6 +11999,7 @@ export type Database = {
           perfil?: string | null
           periodo_teste_expirado?: boolean | null
           telefone: string
+          telefone_verificado?: boolean | null
           tempo_teste_minutos?: number | null
           teste_inicio?: string | null
           total_mensagens?: number | null
@@ -11887,12 +12021,43 @@ export type Database = {
           perfil?: string | null
           periodo_teste_expirado?: boolean | null
           telefone?: string
+          telefone_verificado?: boolean | null
           tempo_teste_minutos?: number | null
           teste_inicio?: string | null
           total_mensagens?: number | null
           ultima_saudacao_premium?: string | null
           ultimo_contato?: string | null
           updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      evelyn_verificacoes_telefone: {
+        Row: {
+          codigo: string
+          created_at: string
+          expira_em: string
+          id: string
+          telefone: string
+          usado: boolean
+          user_id: string | null
+        }
+        Insert: {
+          codigo: string
+          created_at?: string
+          expira_em: string
+          id?: string
+          telefone: string
+          usado?: boolean
+          user_id?: string | null
+        }
+        Update: {
+          codigo?: string
+          created_at?: string
+          expira_em?: string
+          id?: string
+          telefone?: string
+          usado?: boolean
           user_id?: string | null
         }
         Relationships: []
@@ -12774,6 +12939,66 @@ export type Database = {
         }
         Relationships: []
       }
+      fraude_analises_ia: {
+        Row: {
+          acao_recomendada: string | null
+          created_at: string
+          expires_at: string
+          grupo_hash: string
+          id: string
+          justificativa: string | null
+          metadata: Json | null
+          veredicto: string
+        }
+        Insert: {
+          acao_recomendada?: string | null
+          created_at?: string
+          expires_at?: string
+          grupo_hash: string
+          id?: string
+          justificativa?: string | null
+          metadata?: Json | null
+          veredicto: string
+        }
+        Update: {
+          acao_recomendada?: string | null
+          created_at?: string
+          expires_at?: string
+          grupo_hash?: string
+          id?: string
+          justificativa?: string | null
+          metadata?: Json | null
+          veredicto?: string
+        }
+        Relationships: []
+      }
+      fraude_whitelist: {
+        Row: {
+          created_at: string
+          id: string
+          marcado_por: string | null
+          motivo: string | null
+          tipo: string
+          valor: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          marcado_por?: string | null
+          motivo?: string | null
+          tipo: string
+          valor: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          marcado_por?: string | null
+          motivo?: string | null
+          tipo?: string
+          valor?: string
+        }
+        Relationships: []
+      }
       free_usage_quotas: {
         Row: {
           created_at: string
@@ -13059,6 +13284,60 @@ export type Database = {
         }
         Relationships: []
       }
+      github_repos: {
+        Row: {
+          created_at: string
+          id: string
+          last_status: string | null
+          last_synced_at: string | null
+          owner: string
+          repo: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          last_status?: string | null
+          last_synced_at?: string | null
+          owner: string
+          repo: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          last_status?: string | null
+          last_synced_at?: string | null
+          owner?: string
+          repo?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      github_secrets: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          updated_at: string
+          value: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          updated_at?: string
+          value: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          updated_at?: string
+          value?: string
+        }
+        Relationships: []
+      }
       historico_alteracoes: {
         Row: {
           ano_alteracao: number | null
@@ -13110,420 +13389,6 @@ export type Database = {
           tipo_alteracao?: string
           updated_at?: string | null
           url_lei_alteradora?: string | null
-        }
-        Relationships: []
-      }
-      horus_boas_vindas_fila: {
-        Row: {
-          created_at: string
-          id: string
-          nome: string | null
-          profile_id: string
-          scheduled_for: string
-          sent_at: string | null
-          telefone: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          nome?: string | null
-          profile_id: string
-          scheduled_for?: string
-          sent_at?: string | null
-          telefone: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          nome?: string | null
-          profile_id?: string
-          scheduled_for?: string
-          sent_at?: string | null
-          telefone?: string
-        }
-        Relationships: []
-      }
-      horus_conversas: {
-        Row: {
-          aguardando_nome: boolean | null
-          contexto: Json | null
-          created_at: string | null
-          id: string
-          instance_name: string | null
-          remote_jid: string | null
-          status: string | null
-          telefone: string | null
-          tema_atual: string | null
-          ultimo_conteudo_resumivel: string | null
-          ultimo_conteudo_titulo: string | null
-          updated_at: string | null
-          usuario_id: string | null
-        }
-        Insert: {
-          aguardando_nome?: boolean | null
-          contexto?: Json | null
-          created_at?: string | null
-          id?: string
-          instance_name?: string | null
-          remote_jid?: string | null
-          status?: string | null
-          telefone?: string | null
-          tema_atual?: string | null
-          ultimo_conteudo_resumivel?: string | null
-          ultimo_conteudo_titulo?: string | null
-          updated_at?: string | null
-          usuario_id?: string | null
-        }
-        Update: {
-          aguardando_nome?: boolean | null
-          contexto?: Json | null
-          created_at?: string | null
-          id?: string
-          instance_name?: string | null
-          remote_jid?: string | null
-          status?: string | null
-          telefone?: string | null
-          tema_atual?: string | null
-          ultimo_conteudo_resumivel?: string | null
-          ultimo_conteudo_titulo?: string | null
-          updated_at?: string | null
-          usuario_id?: string | null
-        }
-        Relationships: []
-      }
-      horus_disparos_log: {
-        Row: {
-          created_at: string
-          detalhes: Json | null
-          disparado_por: string | null
-          id: string
-          intervalo_ms: number | null
-          mensagem_preview: string | null
-          segmento: string | null
-          tipo: string
-          total_enviados: number
-          total_erros: number
-        }
-        Insert: {
-          created_at?: string
-          detalhes?: Json | null
-          disparado_por?: string | null
-          id?: string
-          intervalo_ms?: number | null
-          mensagem_preview?: string | null
-          segmento?: string | null
-          tipo: string
-          total_enviados?: number
-          total_erros?: number
-        }
-        Update: {
-          created_at?: string
-          detalhes?: Json | null
-          disparado_por?: string | null
-          id?: string
-          intervalo_ms?: number | null
-          mensagem_preview?: string | null
-          segmento?: string | null
-          tipo?: string
-          total_enviados?: number
-          total_erros?: number
-        }
-        Relationships: []
-      }
-      horus_envios_falhos: {
-        Row: {
-          conversa_id: string | null
-          created_at: string
-          erro: string | null
-          id: string
-          instance_name: string | null
-          mensagem: string | null
-          motivo: string | null
-          payload: Json | null
-          remote_jid: string | null
-          status_code: number | null
-          telefone: string | null
-        }
-        Insert: {
-          conversa_id?: string | null
-          created_at?: string
-          erro?: string | null
-          id?: string
-          instance_name?: string | null
-          mensagem?: string | null
-          motivo?: string | null
-          payload?: Json | null
-          remote_jid?: string | null
-          status_code?: number | null
-          telefone?: string | null
-        }
-        Update: {
-          conversa_id?: string | null
-          created_at?: string
-          erro?: string | null
-          id?: string
-          instance_name?: string | null
-          mensagem?: string | null
-          motivo?: string | null
-          payload?: Json | null
-          remote_jid?: string | null
-          status_code?: number | null
-          telefone?: string | null
-        }
-        Relationships: []
-      }
-      horus_instance_status: {
-        Row: {
-          checked_at: string
-          id: string
-          instance_name: string
-          raw: Json | null
-          state: string
-        }
-        Insert: {
-          checked_at?: string
-          id?: string
-          instance_name: string
-          raw?: Json | null
-          state: string
-        }
-        Update: {
-          checked_at?: string
-          id?: string
-          instance_name?: string
-          raw?: Json | null
-          state?: string
-        }
-        Relationships: []
-      }
-      horus_mensagens: {
-        Row: {
-          conteudo: string | null
-          conversa_id: string | null
-          created_at: string | null
-          feedback: string | null
-          id: string
-          metadata: Json | null
-          processado: boolean | null
-          remetente: string | null
-          tipo: string | null
-        }
-        Insert: {
-          conteudo?: string | null
-          conversa_id?: string | null
-          created_at?: string | null
-          feedback?: string | null
-          id?: string
-          metadata?: Json | null
-          processado?: boolean | null
-          remetente?: string | null
-          tipo?: string | null
-        }
-        Update: {
-          conteudo?: string | null
-          conversa_id?: string | null
-          created_at?: string | null
-          feedback?: string | null
-          id?: string
-          metadata?: Json | null
-          processado?: boolean | null
-          remetente?: string | null
-          tipo?: string | null
-        }
-        Relationships: []
-      }
-      horus_mensagens_processadas: {
-        Row: {
-          message_id: string
-          processed_at: string | null
-          remote_jid: string
-        }
-        Insert: {
-          message_id: string
-          processed_at?: string | null
-          remote_jid: string
-        }
-        Update: {
-          message_id?: string
-          processed_at?: string | null
-          remote_jid?: string
-        }
-        Relationships: []
-      }
-      horus_preferencias_notificacao: {
-        Row: {
-          ativo: boolean
-          created_at: string
-          horario_envio: string
-          id: string
-          receber_alertas_leis: boolean
-          receber_atualizacoes_app: boolean
-          receber_dica_estudo: boolean
-          receber_filme_dia: boolean
-          receber_leis_dia: boolean
-          receber_livro_dia: boolean
-          receber_noticias_juridicas: boolean
-          telefone: string
-          telefone_verificado: boolean
-          trial_expirado_avisado_em: string | null
-          trial_iniciado_em: string | null
-          updated_at: string
-          usuario_id: string
-          verificado_em: string | null
-        }
-        Insert: {
-          ativo?: boolean
-          created_at?: string
-          horario_envio?: string
-          id?: string
-          receber_alertas_leis?: boolean
-          receber_atualizacoes_app?: boolean
-          receber_dica_estudo?: boolean
-          receber_filme_dia?: boolean
-          receber_leis_dia?: boolean
-          receber_livro_dia?: boolean
-          receber_noticias_juridicas?: boolean
-          telefone: string
-          telefone_verificado?: boolean
-          trial_expirado_avisado_em?: string | null
-          trial_iniciado_em?: string | null
-          updated_at?: string
-          usuario_id: string
-          verificado_em?: string | null
-        }
-        Update: {
-          ativo?: boolean
-          created_at?: string
-          horario_envio?: string
-          id?: string
-          receber_alertas_leis?: boolean
-          receber_atualizacoes_app?: boolean
-          receber_dica_estudo?: boolean
-          receber_filme_dia?: boolean
-          receber_leis_dia?: boolean
-          receber_livro_dia?: boolean
-          receber_noticias_juridicas?: boolean
-          telefone?: string
-          telefone_verificado?: boolean
-          trial_expirado_avisado_em?: string | null
-          trial_iniciado_em?: string | null
-          updated_at?: string
-          usuario_id?: string
-          verificado_em?: string | null
-        }
-        Relationships: []
-      }
-      horus_usuarios: {
-        Row: {
-          ativo: boolean | null
-          autorizado: boolean | null
-          aviso_teste_enviado: boolean | null
-          aviso_verificacao_em: string | null
-          created_at: string | null
-          data_primeiro_contato: string | null
-          foto_perfil: string | null
-          id: string
-          nome: string | null
-          nome_app: string | null
-          nome_confirmado: boolean | null
-          perfil: string | null
-          periodo_teste_expirado: boolean | null
-          persona: string | null
-          persona_atualizada_em: string | null
-          profile_id: string | null
-          telefone: string
-          tempo_teste_minutos: number | null
-          teste_inicio: string | null
-          total_mensagens: number | null
-          ultima_saudacao_premium: string | null
-          ultimo_contato: string | null
-          updated_at: string | null
-          user_id: string | null
-        }
-        Insert: {
-          ativo?: boolean | null
-          autorizado?: boolean | null
-          aviso_teste_enviado?: boolean | null
-          aviso_verificacao_em?: string | null
-          created_at?: string | null
-          data_primeiro_contato?: string | null
-          foto_perfil?: string | null
-          id?: string
-          nome?: string | null
-          nome_app?: string | null
-          nome_confirmado?: boolean | null
-          perfil?: string | null
-          periodo_teste_expirado?: boolean | null
-          persona?: string | null
-          persona_atualizada_em?: string | null
-          profile_id?: string | null
-          telefone: string
-          tempo_teste_minutos?: number | null
-          teste_inicio?: string | null
-          total_mensagens?: number | null
-          ultima_saudacao_premium?: string | null
-          ultimo_contato?: string | null
-          updated_at?: string | null
-          user_id?: string | null
-        }
-        Update: {
-          ativo?: boolean | null
-          autorizado?: boolean | null
-          aviso_teste_enviado?: boolean | null
-          aviso_verificacao_em?: string | null
-          created_at?: string | null
-          data_primeiro_contato?: string | null
-          foto_perfil?: string | null
-          id?: string
-          nome?: string | null
-          nome_app?: string | null
-          nome_confirmado?: boolean | null
-          perfil?: string | null
-          periodo_teste_expirado?: boolean | null
-          persona?: string | null
-          persona_atualizada_em?: string | null
-          profile_id?: string | null
-          telefone?: string
-          tempo_teste_minutos?: number | null
-          teste_inicio?: string | null
-          total_mensagens?: number | null
-          ultima_saudacao_premium?: string | null
-          ultimo_contato?: string | null
-          updated_at?: string | null
-          user_id?: string | null
-        }
-        Relationships: []
-      }
-      horus_verificacoes_telefone: {
-        Row: {
-          codigo: string
-          created_at: string
-          expira_em: string
-          id: string
-          telefone: string
-          tentativas: number
-          usado: boolean
-          usuario_id: string
-        }
-        Insert: {
-          codigo: string
-          created_at?: string
-          expira_em: string
-          id?: string
-          telefone: string
-          tentativas?: number
-          usado?: boolean
-          usuario_id: string
-        }
-        Update: {
-          codigo?: string
-          created_at?: string
-          expira_em?: string
-          id?: string
-          telefone?: string
-          tentativas?: number
-          usado?: boolean
-          usuario_id?: string
         }
         Relationships: []
       }
@@ -13763,6 +13628,30 @@ export type Database = {
           power_ups_usados?: number | null
           updated_at?: string | null
           user_id?: string
+        }
+        Relationships: []
+      }
+      ips_bloqueados: {
+        Row: {
+          bloqueado_por: string | null
+          created_at: string
+          id: string
+          ip: string
+          motivo: string | null
+        }
+        Insert: {
+          bloqueado_por?: string | null
+          created_at?: string
+          id?: string
+          ip: string
+          motivo?: string | null
+        }
+        Update: {
+          bloqueado_por?: string | null
+          created_at?: string
+          id?: string
+          ip?: string
+          motivo?: string | null
         }
         Relationships: []
       }
@@ -14130,6 +14019,48 @@ export type Database = {
           juriflix_id?: number
           ordem?: number
           user_id?: string
+        }
+        Relationships: []
+      }
+      juris_prontas: {
+        Row: {
+          assunto: string | null
+          created_at: string
+          id: string
+          ordem: number
+          query_string: string | null
+          query_url: string | null
+          ramo: string | null
+          slug: string
+          titulo: string
+          tribunal: string
+          updated_at: string
+        }
+        Insert: {
+          assunto?: string | null
+          created_at?: string
+          id?: string
+          ordem?: number
+          query_string?: string | null
+          query_url?: string | null
+          ramo?: string | null
+          slug: string
+          titulo: string
+          tribunal?: string
+          updated_at?: string
+        }
+        Update: {
+          assunto?: string | null
+          created_at?: string
+          id?: string
+          ordem?: number
+          query_string?: string | null
+          query_url?: string | null
+          ramo?: string | null
+          slug?: string
+          titulo?: string
+          tribunal?: string
+          updated_at?: string
         }
         Relationships: []
       }
@@ -20782,6 +20713,30 @@ export type Database = {
           },
         ]
       }
+      padroes_email_bloqueados: {
+        Row: {
+          bloqueado_por: string | null
+          created_at: string
+          id: string
+          motivo: string | null
+          padrao_regex: string
+        }
+        Insert: {
+          bloqueado_por?: string | null
+          created_at?: string
+          id?: string
+          motivo?: string | null
+          padrao_regex: string
+        }
+        Update: {
+          bloqueado_por?: string | null
+          created_at?: string
+          id?: string
+          motivo?: string | null
+          padrao_regex?: string
+        }
+        Relationships: []
+      }
       page_views: {
         Row: {
           country: string | null
@@ -21759,7 +21714,10 @@ export type Database = {
           promo_iniciada_em: string | null
           quiz_dificuldades: string[] | null
           telefone: string | null
+          telefone_confirmado_em: string | null
+          telefone_ddi: string | null
           telefone_escritorio: string | null
+          telefone_pais: string | null
           telefone_verificado_em: string | null
           titulo: string | null
           tour_home_completed_at: string | null
@@ -21809,7 +21767,10 @@ export type Database = {
           promo_iniciada_em?: string | null
           quiz_dificuldades?: string[] | null
           telefone?: string | null
+          telefone_confirmado_em?: string | null
+          telefone_ddi?: string | null
           telefone_escritorio?: string | null
+          telefone_pais?: string | null
           telefone_verificado_em?: string | null
           titulo?: string | null
           tour_home_completed_at?: string | null
@@ -21859,7 +21820,10 @@ export type Database = {
           promo_iniciada_em?: string | null
           quiz_dificuldades?: string[] | null
           telefone?: string | null
+          telefone_confirmado_em?: string | null
+          telefone_ddi?: string | null
           telefone_escritorio?: string | null
+          telefone_pais?: string | null
           telefone_verificado_em?: string | null
           titulo?: string | null
           tour_home_completed_at?: string | null
@@ -27668,6 +27632,14 @@ export type Database = {
         }
         Relationships: []
       }
+      mv_resumos_areas_stats: {
+        Row: {
+          area: string | null
+          capa: string | null
+          count: number | null
+        }
+        Relationships: []
+      }
       questoes_artigos_areas_count_mv: {
         Row: {
           area: string | null
@@ -27680,6 +27652,35 @@ export type Database = {
       admin_ajustar_trial: {
         Args: { p_desativado?: boolean; p_extra_ms?: number; p_user_id: string }
         Returns: undefined
+      }
+      admin_contas_duplicadas_por_dispositivo: {
+        Args: { min_contas?: number }
+        Returns: {
+          cidade: string
+          contas: Json
+          device_os: string
+          estado: string
+          first_created: string
+          ip_cadastro: string
+          last_created: string
+          premium_count: number
+          total_contas: number
+          ua_hash: string
+          user_agent: string
+        }[]
+      }
+      admin_contas_duplicadas_por_ip: {
+        Args: { min_contas?: number }
+        Returns: {
+          cidade: string
+          contas: Json
+          estado: string
+          first_created: string
+          ip_cadastro: string
+          last_created: string
+          premium_count: number
+          total_contas: number
+        }[]
       }
       admin_evelyn_usuarios_dashboard: {
         Args: never
@@ -27699,6 +27700,42 @@ export type Database = {
           total_mensagens: number
           ultima_mensagem: string
           user_id: string
+        }[]
+      }
+      admin_fraude_stats: { Args: never; Returns: Json }
+      admin_grupo_fraude_detalhes: {
+        Args: { _user_ids: string[] }
+        Returns: {
+          amount: number
+          banido: boolean
+          created_at: string
+          device_os: string
+          device_type: string
+          email: string
+          ip_cadastro: string
+          nome: string
+          plano: string
+          status_assinatura: string
+          ultimo_acesso: string
+          user_agent: string
+          user_id: string
+        }[]
+      }
+      admin_grupos_fraude: {
+        Args: { _limite?: number; _min_contas?: number }
+        Returns: {
+          emails: string[]
+          grupo_hash: string
+          ips: string[]
+          nivel_risco: string
+          nomes: string[]
+          primeira_conta: string
+          tipo_sinal: string
+          total_assinantes: number
+          total_contas: number
+          ultima_conta: string
+          user_ids: string[]
+          valor_sinal: string
         }[]
       }
       aic_is_admin: { Args: never; Returns: boolean }
@@ -27775,11 +27812,33 @@ export type Database = {
           titulo: string
         }[]
       }
+      busca_global_livros_diarias: {
+        Args: { p_limite?: number; p_termo: string }
+        Returns: {
+          categoria: string
+          extra: string
+          imagem: string
+          item_id: string
+          route: string
+          score: number
+          subtitulo: string
+          tabela: string
+          titulo: string
+        }[]
+      }
       busca_populares: {
         Args: { p_dias?: number; p_limite?: number }
         Returns: {
           termo: string
           total: number
+        }[]
+      }
+      busca_ranking_por_termo: {
+        Args: { p_limite?: number; p_termo_norm: string }
+        Returns: {
+          categoria: string
+          cliques: number
+          resultado_id: string
         }[]
       }
       busca_sugestoes: {
@@ -27945,6 +28004,14 @@ export type Database = {
           user_id: string
         }[]
       }
+      get_admin_hoje_novos_antigos: {
+        Args: { p_end: string; p_start: string }
+        Returns: {
+          antigos: number
+          novos: number
+          total_unicos: number
+        }[]
+      }
       get_admin_novos_detalhes: {
         Args: { p_dias?: number }
         Returns: {
@@ -28005,6 +28072,23 @@ export type Database = {
         Returns: {
           pageviews: number
           unicos: number
+        }[]
+      }
+      get_admin_tempo_medio_hoje: {
+        Args: never
+        Returns: {
+          avg_minutes: number
+          sessions_count: number
+          users_count: number
+        }[]
+      }
+      get_admin_tempo_medio_por_dia: {
+        Args: { dias?: number }
+        Returns: {
+          avg_minutes: number
+          dia: string
+          sessions_count: number
+          users_count: number
         }[]
       }
       get_admin_total_pageviews: { Args: { p_dias?: number }; Returns: number }
@@ -28231,7 +28315,6 @@ export type Database = {
         | { Args: { _user_id: string }; Returns: boolean }
       is_admin_user: { Args: never; Returns: boolean }
       limpar_evelyn_mensagens_processadas: { Args: never; Returns: undefined }
-      limpar_horus_mensagens_processadas: { Args: never; Returns: undefined }
       limpar_noticias_antigas: {
         Args: { dias_reter?: number }
         Returns: {
@@ -28245,6 +28328,10 @@ export type Database = {
         Returns: undefined
       }
       normalizar_numero_artigo: { Args: { num: string }; Returns: number }
+      normalizar_telefone_e164: {
+        Args: { _input: string; _pais?: string }
+        Returns: string
+      }
       normalizar_telefone_evelyn: {
         Args: { telefone: string }
         Returns: string
@@ -28305,6 +28392,7 @@ export type Database = {
       }
       refresh_admin_stats_mv: { Args: never; Returns: undefined }
       refresh_flashcard_areas_mv: { Args: never; Returns: undefined }
+      refresh_mv_resumos_areas_stats: { Args: never; Returns: undefined }
       refresh_questoes_artigos_areas_count_mv: {
         Args: never
         Returns: undefined
@@ -28352,10 +28440,20 @@ export type Database = {
       }
       show_limit: { Args: never; Returns: number }
       show_trgm: { Args: { "": string }; Returns: string[] }
+      telefone_parece_valido: { Args: { _e164: string }; Returns: boolean }
       unaccent: { Args: { "": string }; Returns: string }
       verificar_banimento: {
         Args: { p_email?: string; p_telefone?: string }
         Returns: boolean
+      }
+      verificar_cadastro_permitido: {
+        Args: {
+          _device_os: string
+          _email: string
+          _ip: string
+          _user_agent: string
+        }
+        Returns: Json
       }
       verificar_status_premium: {
         Args: { p_user_id: string }
