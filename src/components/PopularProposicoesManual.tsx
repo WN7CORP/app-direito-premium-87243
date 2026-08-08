@@ -25,7 +25,7 @@ const PopularProposicoesManual = () => {
           .limit(10);
 
         const { data: plpsData } = await supabase
-          .from('cache_plp_recentes')
+          .from('cache_plp_recentes' as any)
           .select('id_proposicao, autor_principal_nome, autor_principal_foto')
           .limit(5);
 

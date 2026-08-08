@@ -80,7 +80,7 @@ export default function MapaMentalTemas() {
       const {
         data,
         error
-      } = await supabase.from<any>('MAPA MENTAL' as any).select('id, tema, link, sequencia, area').eq('area', areaDecoded).order('sequencia', {
+      } = await supabase.from('MAPA MENTAL' as any).select('id, tema, link, sequencia, area').eq('area', areaDecoded).order('sequencia', {
         ascending: true
       });
       if (error) throw error;

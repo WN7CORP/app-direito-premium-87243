@@ -25,7 +25,7 @@ const SimuladosPersonalizado = () => {
       const {
         data,
         error
-      } = (await supabase.from<any>("SIMULADO-OAB" as any).select("area").not("area", "is", null).neq("area", "").neq("area", "Erro na API")) as any;
+      } = (await supabase.from("SIMULADO-OAB" as any).select("area").not("area", "is", null).neq("area", "").neq("area", "Erro na API")) as any;
       if (error) throw error;
 
       // Get unique areas with counts

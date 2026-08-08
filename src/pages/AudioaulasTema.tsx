@@ -26,7 +26,7 @@ const AudioaulasTema = () => {
       const {
         data,
         error
-      } = await supabase.from<any>("AUDIO-AULA" as any).select("*").eq("area", decodeURIComponent(area || "")).order("sequencia", {
+      } = await supabase.from("AUDIO-AULA" as any).select("*").eq("area", decodeURIComponent(area || "")).order("sequencia", {
         ascending: true
       });
       if (error) throw error;

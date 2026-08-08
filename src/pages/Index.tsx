@@ -38,7 +38,7 @@ const Index = () => {
       const {
         data,
         error
-      } = await supabase.from<any>("VIDEO AULAS-NOVO" as any).select("*").eq("categoria", "Faculdade");
+      } = await supabase.from("VIDEO AULAS-NOVO" as any).select("*").eq("categoria", "Faculdade");
       if (error) throw error;
 
       // Buscar todos os vídeos de todas as playlists

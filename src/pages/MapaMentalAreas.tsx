@@ -79,7 +79,7 @@ export default function MapaMentalAreas() {
       const {
         data,
         error
-      } = await supabase.from<any>('MAPA MENTAL' as any).select('area');
+      } = await supabase.from('MAPA MENTAL' as any).select('area');
       if (error) throw error;
 
       // Agrupar por área e contar temas

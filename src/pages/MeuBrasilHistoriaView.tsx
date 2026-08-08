@@ -44,7 +44,7 @@ const MeuBrasilHistoriaView = () => {
       const {
         data: cached,
         error: cacheError
-      } = await supabase.from<any>('meu_brasil_historia').select('*').eq('periodo', periodoDecodificado).single();
+      } = await supabase.from('meu_brasil_historia').select('*').eq('periodo', periodoDecodificado).single();
       if (cached && cached.conteudo_melhorado) {
         console.log('✅ História encontrada no cache');
         setHistoria({
@@ -96,7 +96,7 @@ const MeuBrasilHistoriaView = () => {
       setLoadingMessage("Salvando...");
       const {
         error: saveError
-      } = await supabase.from<any>('meu_brasil_historia').upsert({
+      } = await supabase.from('meu_brasil_historia').upsert({
         periodo: periodoDecodificado,
         titulo: periodoDecodificado,
         conteudo_original: wikiData,

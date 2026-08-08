@@ -40,7 +40,7 @@ const JogoConfig = () => {
       const {
         data,
         error
-      } = await supabase.from<any>('BIBLIOTECA-ESTUDOS').select('Área, Tema').order('Área');
+      } = await supabase.from('BIBLIOTECA-ESTUDOS').select('Área, Tema').order('Área');
       if (error) throw error;
       const agrupados = data?.reduce((acc, item) => {
         const area = item['Área'] || '';

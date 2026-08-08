@@ -25,7 +25,7 @@ const CamaraOrgaos = () => {
     
     if (!forceRefresh) {
       const { data: cache } = await supabase
-        .from('cache_camara_deputados')
+        .from('cache_camara_deputados' as any)
         .select('*')
         .eq('tipo_cache', 'orgaos')
         .eq('chave_cache', chaveCache)
@@ -52,7 +52,7 @@ const CamaraOrgaos = () => {
     setOrgaos(orgaosData);
     
     await supabase
-      .from('cache_camara_deputados')
+      .from('cache_camara_deputados' as any)
       .upsert({
         tipo_cache: 'orgaos',
         chave_cache: chaveCache,

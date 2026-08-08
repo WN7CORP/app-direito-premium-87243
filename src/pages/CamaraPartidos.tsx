@@ -25,7 +25,7 @@ const CamaraPartidos = () => {
     
     if (!forceRefresh) {
       const { data: cache } = await supabase
-        .from('cache_camara_deputados')
+        .from('cache_camara_deputados' as any)
         .select('*')
         .eq('tipo_cache', 'partidos')
         .eq('chave_cache', chaveCache)
@@ -52,7 +52,7 @@ const CamaraPartidos = () => {
     setPartidos(partidosData);
     
     await supabase
-      .from('cache_camara_deputados')
+      .from('cache_camara_deputados' as any)
       .upsert({
         tipo_cache: 'partidos',
         chave_cache: chaveCache,

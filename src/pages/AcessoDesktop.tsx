@@ -42,7 +42,7 @@ const AcessoDesktop = () => {
         const {
           data,
           error
-        } = await supabase.from<any>("IMAGEM - DESKTOP" as any).select("link").order("Imagem", {
+        } = await supabase.from("IMAGEM - DESKTOP" as any).select("link").order("Imagem", {
           ascending: true
         });
         if (error) throw error;

@@ -128,7 +128,7 @@ const VideoaulasPlayer = () => {
         const {
           data,
           error
-        } = await supabase.from<any>('VIDEO AULAS-NOVO' as any).select('*').ilike('area', `%${areaParam}%`).order('titulo', {
+        } = await supabase.from('VIDEO AULAS-NOVO' as any).select('*').ilike('area', `%${areaParam}%`).order('titulo', {
           ascending: true
         });
         if (error) {

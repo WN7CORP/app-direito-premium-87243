@@ -30,7 +30,7 @@ const CursosModulos = () => {
       const {
         data,
         error
-      } = await supabase.from<any>("CURSOS" as any).select("Modulo, Aula, Tema, \"capa-modulo\"").eq("Area", area).order("Modulo", {
+      } = await supabase.from("CURSOS" as any).select("Modulo, Aula, Tema, \"capa-modulo\"").eq("Area", area).order("Modulo", {
         ascending: true
       }).order("Aula", {
         ascending: true

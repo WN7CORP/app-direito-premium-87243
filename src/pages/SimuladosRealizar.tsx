@@ -90,7 +90,7 @@ const SimuladosRealizar = () => {
     queryFn: async () => {
       // Se for TJSP, buscar da tabela SIMULADO-TJSP
       if (origemTJSP) {
-        let query = supabase.from<any>("SIMULADO-TJSP").select("*");
+        let query = supabase.from("SIMULADO-TJSP").select("*");
         
         if (areaFiltro) {
           query = query.eq('area', areaFiltro);
@@ -118,7 +118,7 @@ const SimuladosRealizar = () => {
       }
 
       // Lógica existente para OAB
-      let query = supabase.from<any>("SIMULADO-OAB" as any).select("*");
+      let query = supabase.from("SIMULADO-OAB" as any).select("*");
 
       if (exame && ano) {
         query = query.eq("Exame", exame).eq("Ano", parseInt(ano));

@@ -57,7 +57,7 @@ export const WikipediaArtigo = ({ titulo, categoria }: WikipediaArtigoProps) => 
       if (!user) return;
 
       const { data } = await supabase
-        .from('wikipedia_favoritos')
+        .from('wikipedia_favoritos' as any)
         .select('id')
         .eq('user_id', user.id)
         .eq('titulo', titulo)
@@ -79,7 +79,7 @@ export const WikipediaArtigo = ({ titulo, categoria }: WikipediaArtigoProps) => 
 
       if (isFavorito) {
         await supabase
-          .from('wikipedia_favoritos')
+          .from('wikipedia_favoritos' as any)
           .delete()
           .eq('user_id', user.id)
           .eq('titulo', titulo);
@@ -88,7 +88,7 @@ export const WikipediaArtigo = ({ titulo, categoria }: WikipediaArtigoProps) => 
         toast.success('Removido dos favoritos');
       } else {
         await supabase
-          .from('wikipedia_favoritos')
+          .from('wikipedia_favoritos' as any)
           .insert({
             user_id: user.id,
             titulo,

@@ -53,7 +53,7 @@ const BibliotecaOAB = () => {
       const {
         data,
         error
-      } = await supabase.from<any>("BIBILIOTECA-OAB").select("*").order("Ordem", {
+      } = await supabase.from("BIBILIOTECA-OAB").select("*").order("Ordem", {
         ascending: true
       });
       if (error) throw error;

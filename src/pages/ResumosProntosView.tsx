@@ -110,7 +110,7 @@ const ResumosProntosView = () => {
       const {
         data,
         error
-      } = await supabase.from<any>("RESUMO").select("*").eq("area", decodedArea).eq("tema", decodedTema).not("subtema", "is", null).order("ordem subtema", {
+      } = await supabase.from("RESUMO").select("*").eq("area", decodedArea).eq("tema", decodedTema).not("subtema", "is", null).order("ordem subtema", {
         ascending: true
       });
       if (error) throw error;
