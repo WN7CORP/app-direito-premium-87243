@@ -107,7 +107,7 @@ const Pesquisar = () => {
   const { data: allCursos } = useQuery({
     queryKey: ["all-cursos"],
     queryFn: async () => {
-      const { data } = await supabase.from('CURSOS' as any).select('*');
+      const { data } = await supabase.from<any>('CURSOS' as any).select('*');
       return data || [];
     },
     staleTime: 10 * 60 * 1000, // 10 minutos
@@ -118,7 +118,7 @@ const Pesquisar = () => {
   const { data: allFlashcards } = useQuery({
     queryKey: ["all-flashcards"],
     queryFn: async () => {
-      const { data } = await supabase.from('FLASHCARDS' as any).select('area, tema');
+      const { data } = await supabase.from<any>('FLASHCARDS' as any).select('area, tema');
       return data || [];
     },
     staleTime: 10 * 60 * 1000,
@@ -361,11 +361,11 @@ const Pesquisar = () => {
         let query;
         // Ajustar a query de acordo com as colunas da tabela
         if (bib.tabela === 'BIBLIOTECA-CLASSICOS') {
-          query = supabase.from(bib.tabela as any).select('*')
+          query = supabase.from<any>(bib.tabela as any).select('*')
             .or(`livro.ilike.%${searchTerm}%,autor.ilike.%${searchTerm}%,area.ilike.%${searchTerm}%`);
         } else {
           // Para ESTUDOS e OAB que usam Tema e Área
-          query = supabase.from(bib.tabela as any).select('*')
+          query = supabase.from<any>(bib.tabela as any).select('*')
             .or(`Tema.ilike.%${searchTerm}%,Área.ilike.%${searchTerm}%`);
         }
         
@@ -398,7 +398,7 @@ const Pesquisar = () => {
     const allResults: BibliotecaResult[] = [];
     for (const bib of bibliotecas) {
       try {
-        const { data } = await supabase.from(bib.tabela as any).select('*')
+        const { data } = await supabase.from<any>(bib.tabela as any).select('*')
           .or(`livro.ilike.%${searchTerm}%,autor.ilike.%${searchTerm}%`).limit(5);
         if (data) {
           allResults.push(...data.map((item: any) => ({

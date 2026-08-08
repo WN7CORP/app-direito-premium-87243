@@ -26,7 +26,7 @@ const SimulacaoCaso = () => {
       const {
         data,
         error
-      } = await supabase.from('SIMULACAO_CASOS').select('*').eq('id', parseInt(id)).single();
+      } = await supabase.from<any>('SIMULACAO_CASOS').select('*').eq('id', parseInt(id)).single();
       if (error) throw error;
       setCaso(data);
     } catch (error: any) {
@@ -43,7 +43,7 @@ const SimulacaoCaso = () => {
     const {
       data: partida,
       error
-    } = await supabase.from('SIMULACAO_PARTIDAS').insert({
+    } = await supabase.from<any>('SIMULACAO_PARTIDAS').insert({
       caso_id: parseInt(id),
       avatar_escolhido: avatar || 'homem_branco',
       pontuacao_final: 0

@@ -16,7 +16,7 @@ const SimuladosExames = () => {
       const {
         data,
         error
-      } = (await supabase.from("SIMULADO-OAB" as any).select("Exame, Ano, Banca").not("Exame", "is", null).not("Ano", "is", null)) as any;
+      } = (await supabase.from<any>("SIMULADO-OAB" as any).select("Exame, Ano, Banca").not("Exame", "is", null).not("Ano", "is", null)) as any;
       if (error) throw error;
 
       // Group by exam and year

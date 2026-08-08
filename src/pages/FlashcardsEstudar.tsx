@@ -23,7 +23,7 @@ const FlashcardsEstudar = () => {
       let allData: any[] = [];
       let hasMore = true;
       while (hasMore) {
-        let query = supabase.from("FLASHCARDS").select("*").eq("area", area).not("pergunta", "is", null).not("resposta", "is", null).range(offset, offset + pageSize - 1);
+        let query = supabase.from<any>("FLASHCARDS").select("*").eq("area", area).not("pergunta", "is", null).not("resposta", "is", null).range(offset, offset + pageSize - 1);
         if (tema) {
           query = query.eq("tema", tema);
         }

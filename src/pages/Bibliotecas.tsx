@@ -28,12 +28,12 @@ const Bibliotecas = () => {
     queryKey: ["contagens-bibliotecas"],
     queryFn: async () => {
       const [estudos, classicos, oab, oratoria, lideranca, fora] = await Promise.all([
-        supabase.from("BIBLIOTECA-ESTUDOS" as any).select("*", { count: "exact", head: true }),
-        supabase.from("BIBLIOTECA-CLASSICOS" as any).select("*", { count: "exact", head: true }),
-        supabase.from("BIBILIOTECA-OAB" as any).select("*", { count: "exact", head: true }),
-        supabase.from("BIBLIOTECA-ORATORIA" as any).select("*", { count: "exact", head: true }),
-        supabase.from("BIBLIOTECA-LIDERANÇA" as any).select("*", { count: "exact", head: true }),
-        supabase.from("BIBLIOTECA-FORA-DA-TOGA" as any).select("*", { count: "exact", head: true }),
+        supabase.from<any>("BIBLIOTECA-ESTUDOS" as any).select("*", { count: "exact", head: true }),
+        supabase.from<any>("BIBLIOTECA-CLASSICOS" as any).select("*", { count: "exact", head: true }),
+        supabase.from<any>("BIBILIOTECA-OAB" as any).select("*", { count: "exact", head: true }),
+        supabase.from<any>("BIBLIOTECA-ORATORIA" as any).select("*", { count: "exact", head: true }),
+        supabase.from<any>("BIBLIOTECA-LIDERANÇA" as any).select("*", { count: "exact", head: true }),
+        supabase.from<any>("BIBLIOTECA-FORA-DA-TOGA" as any).select("*", { count: "exact", head: true }),
       ]);
       return {
         estudos: estudos.count || 0,

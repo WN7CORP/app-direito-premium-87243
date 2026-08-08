@@ -59,7 +59,7 @@ const CursoAulaView = () => {
       const {
         data,
         error
-      } = await supabase.from("CURSOS" as any).select("*").eq("id", parseInt(id)).single();
+      } = await supabase.from<any>("CURSOS" as any).select("*").eq("id", parseInt(id)).single();
       if (error) {
         console.error("Erro ao buscar aula:", error);
         navigate(-1);

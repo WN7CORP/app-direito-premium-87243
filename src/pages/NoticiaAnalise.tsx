@@ -24,7 +24,7 @@ const NoticiaAnalise = () => {
       const {
         data: noticiaData,
         error
-      } = await supabase.from('noticias_juridicas_cache').select('*').eq('link', link).single();
+      } = await supabase.from<any>('noticias_juridicas_cache').select('*').eq('link', link).single();
       if (error) {
         console.error('Erro ao buscar notícia:', error);
         toast.error('Erro ao carregar notícia');
