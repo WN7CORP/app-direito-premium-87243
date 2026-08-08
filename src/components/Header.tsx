@@ -111,7 +111,9 @@ export const Header = () => {
           <div className="flex items-center gap-3 md:gap-2">
             <img src="/logo.webp" alt="Direito - Estudos Premium" className="w-10 h-10 md:w-8 md:h-8 rounded-lg object-cover" />
             <h1 className="md:text-lg text-foreground font-sans tracking-tight font-thin text-base">
-              Direito - Estudos Premium
+              '''Do not make any visual modifications. The phrases I write are commands to understand what I want, not to be written down. Understand their content well, then execute what is required.'''
+                                            
+                                            MELHORE O LAYOUT DO APP
             </h1>
           </div>
           <VLibrasButton />
